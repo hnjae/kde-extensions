@@ -1,0 +1,21 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Email": "sample@example.invalid",
+        "Name": "Plasma Extensions"
+      }
+    ],
+    "Category": "Utilities",
+    "Description": "A small Plasma 6 widget built from TypeScript.",
+    "EnabledByDefault": true,
+    "Icon": "applications-development",
+    "Id": "com.example.plasmaextensions.sample",
+    "License": "AGPL-3.0-or-later",
+    "Name": "Sample TypeScript Widget",
+    "Version": "0.1.0",
+    "Website": "https://github.com/hnjae/plasma-extensions"
+  },
+  "X-Plasma-API-Minimum-Version": "6.0"
+}

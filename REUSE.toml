@@ -1,0 +1,29 @@
+version = 1
+SPDX-PackageName = "plasma-extensions"
+
+[[annotations]]
+path = [
+  ".biome.json",
+  ".editorconfig",
+  ".gitignore",
+  ".gitlint",
+  ".rumdl.toml",
+  ".taplo.toml",
+  ".typos.toml",
+  ".yamlfmt.yaml",
+  "cog.toml",
+  "flake.lock",
+  "statix.toml",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "README.md",
+  "SPEC.md",
+  "justfile",
+  "nix/partitions/dev/flake.lock",
+  "packages/*/biome.json",
+  "packages/*/package/metadata.json",
+  "packages/*/tsconfig.json",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 KIM Hyunjae"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
