@@ -8,10 +8,18 @@ _:
     @just --list
 
 alias fmt := format
+alias ci := check
+
+[group('ci')]
+check: flake-check
 
 [group('ci')]
 format:
     nix develop ".#default" --command treefmt
+
+[group('dev')]
+pre-commit:
+    nix develop ".#default" --command prek run --hook-stage pre-commit --all-files
 
 [group('ci')]
 flake-check:

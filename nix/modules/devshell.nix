@@ -64,7 +64,7 @@
           ++ config.pre-commit.settings.enabledPackages;
 
           pre-commit = {
-            check.enable = false;
+            check.enable = true;
             pkgs = devPkgs;
             settings = {
               package = devPkgs.prek;

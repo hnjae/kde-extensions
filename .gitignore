@@ -1,6 +1,9 @@
 # Managed by devshell:
 /.pre-commit-config.yaml
 
+# Tool caches:
+/.rumdl_cache/
+
 # Build results:
 result
 

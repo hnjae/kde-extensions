@@ -15,7 +15,7 @@
     "License": "AGPL-3.0-or-later",
     "Name": "Tab Pager",
     "Version": "0.1.0",
-    "Website": "https://github.com/hnjae/plasma-extensions"
+    "Website": "https://github.com/hnjae/kde-plasma-extensions"
   },
   "X-Plasma-API-Minimum-Version": "6.0"
 }
