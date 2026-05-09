@@ -16,7 +16,8 @@ include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Qml)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick)
+find_package(LibTaskManager REQUIRED)
 
 include(CTest)
 
@@ -36,6 +37,8 @@ target_include_directories(tabpagercore PUBLIC
 )
 target_link_libraries(tabpagercore PUBLIC
     Qt6::Core
+    Qt6::Gui
+    PW::LibTaskManager
 )
 
 add_library(tabpagerplugin SHARED
@@ -69,6 +72,9 @@ if(BUILD_TESTING)
     )
 
     add_test(NAME tabpagerbackend COMMAND tabpagerbackend_test)
+    set_tests_properties(tabpagerbackend PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+    )
 endif()
 
 install(TARGETS tabpagerplugin

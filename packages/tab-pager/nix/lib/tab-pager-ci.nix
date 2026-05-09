@@ -130,6 +130,8 @@ let
   ];
 
   checkBuildInputs = [
+    pkgs.kdePackages.kitemmodels
+    pkgs.kdePackages.plasma-workspace
     pkgs.kdePackages.qtbase
     pkgs.kdePackages.qtdeclarative
   ];
