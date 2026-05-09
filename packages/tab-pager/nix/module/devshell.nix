@@ -23,18 +23,10 @@
         devShells.tab-pager = pkgs.mkShellNoCC {
           packages = config.plasmaExtensions.devShell.commonPackages ++ ci.devShellPackages;
 
-          shellHook = ''
-            ${config.pre-commit.installationScript}
-
-            echo "Tab Pager C++/QML Plasma extension" >&2
-            echo "  nix build path:../..#tab-pager" >&2
-            echo "  tab-pager-ci-local" >&2
-            echo "  tab-pager-test" >&2
-            echo "  tab-pager-lint" >&2
-            echo "  lint-qml | lint-clang-tidy | lint-clazy" >&2
-            echo '  "$(nix build path:../..#tab-pager --no-link --print-out-paths)/bin/tab-pager-hello"' >&2
-            echo '  QML_IMPORT_PATH="$(nix build path:../..#tab-pager --no-link --print-out-paths)/lib/qt-6/qml" plasmoidviewer -a "$(nix build path:../..#tab-pager --no-link --print-out-paths)/share/plasma/plasmoids/${package.pluginId}"' >&2
-          '';
+          shellHook = # sh
+            ''
+              ${config.pre-commit.installationScript}
+            '';
         };
       };
   };
