@@ -53,13 +53,6 @@ target_link_libraries(tabpagerplugin PRIVATE
     tabpagercore
 )
 
-add_executable(tab-pager-hello
-    src/hello.cpp
-)
-target_link_libraries(tab-pager-hello PRIVATE
-    tabpagercore
-)
-
 if(BUILD_TESTING)
     find_package(Qt6 REQUIRED COMPONENTS Test)
 
@@ -83,9 +76,6 @@ install(TARGETS tabpagerplugin
 install(FILES src/qmldir
     src/tabpagerplugin.qmltypes
     DESTINATION "${KDE_INSTALL_QMLDIR}/${QML_MODULE_DIR}"
-)
-install(TARGETS tab-pager-hello
-    RUNTIME DESTINATION "${KDE_INSTALL_BINDIR}"
 )
 install(DIRECTORY package/
     DESTINATION "${KDE_INSTALL_DATADIR}/plasma/plasmoids/${PLASMOID_ID}"

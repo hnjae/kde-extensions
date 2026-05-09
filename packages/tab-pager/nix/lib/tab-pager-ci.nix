@@ -69,7 +69,6 @@ let
       --extra-arg=-I${gccIncludeDir} \
       --extra-arg=-I${gccIncludeDir}/${pkgs.stdenv.hostPlatform.config} \
       --extra-arg=-I${pkgs.stdenv.cc.libc_dev}/include \
-      src/hello.cpp \
       src/tabpagerbackend.cpp \
       src/tabpagerplugin.cpp \
       tests/tabpagerbackend_test.cpp

@@ -7,7 +7,7 @@
       }
     ],
     "Category": "Windows and Tasks",
-    "Description": "A Plasma 6 pager experiment built with C++ and QML.",
+    "Description": "A Plasma 6 widget for switching between virtual desktops.",
     "EnabledByDefault": true,
     "Icon": "user-desktop",
     "Id": "io.github.hnjae.plasma.tabpager",

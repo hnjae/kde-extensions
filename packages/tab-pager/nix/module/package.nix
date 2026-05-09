@@ -53,7 +53,7 @@
           };
 
           meta = {
-            description = "A Plasma 6 pager experiment built with C++ and QML";
+            description = "A Plasma 6 widget for switching between virtual desktops";
             homepage = "https://github.com/hnjae/kde-plasma-extensions";
             license = lib.licenses.agpl3Plus;
             platforms = lib.platforms.linux;
