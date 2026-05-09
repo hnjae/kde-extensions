@@ -5,114 +5,77 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # KWin Run or Raise Specification
 
-KWin Run or Raise is a KWin extension for binding global shortcuts to
-application-specific run-or-raise actions.
+KWin Run or Raise lets the user assign global shortcuts to applications.
 
-For each configured shortcut, the extension searches for a matching application
-window on the current virtual desktop. If a matching window exists, it is raised
-and focused. If no matching window exists on the current virtual desktop, the
-configured desktop entry is launched.
+When the user presses a configured shortcut, the matching application is either
+brought to the front or launched.
 
 ## Example
 
-A user configures `Meta+W` for `firefox.desktop`.
+A user assigns `Meta+W` to Firefox.
 
 When `Meta+W` is pressed:
 
 1. If a Firefox window exists on the current virtual desktop, that window is
    unminimized if necessary, raised, and focused.
-2. If no Firefox window exists on the current virtual desktop, `firefox.desktop`
-   is launched.
+2. If no Firefox window exists on the current virtual desktop, Firefox is
+   launched.
 3. Firefox windows on other virtual desktops are ignored.
-
-## Package
-
-The package id is `kwin-run-or-raise`.
-
-The user-facing name is `Run or Raise`.
-
-The package is implemented as a KWin Script because KWin owns the window list,
-virtual desktop state, window activation, and global shortcuts needed by this
-feature.
 
 ## Bindings
 
-Each binding has:
+Each binding pairs one global shortcut with one application.
 
-- a global shortcut
-- a desktop entry id, such as `firefox.desktop` or `org.kde.konsole.desktop`
-- optional match hints for applications whose window metadata does not map
-  cleanly to the desktop entry id
+The same application may have more than one binding.
 
-The initial version may define bindings statically in the script package.
-Configuration UI and dynamic editing are not required for the initial version.
+Different applications may use different shortcuts.
 
-## Window Matching
+Pressing a binding never launches a second copy of the application when a
+matching window is already present on the current virtual desktop.
 
-A window matches a binding when it belongs to the configured desktop entry.
+## Matching Windows
 
-The primary match key is the KWin window `desktopFileName` property, normalized
-against the configured desktop entry id without the `.desktop` suffix.
+A window matches when it belongs to the application assigned to the pressed
+shortcut.
 
-Fallback matching may use window metadata such as `resourceClass` for
-applications that do not expose a useful `desktopFileName`.
-
-Only normal application windows are candidates. Desktop windows, panels, menus,
-tooltips, notifications, splash screens, and other special-purpose windows are
+Only regular application windows are considered. Panels, desktop backgrounds,
+menus, tooltips, notifications, splash screens, and similar temporary windows are
 ignored.
 
-Only windows on the current virtual desktop are candidates. Windows shown on all
-virtual desktops are considered candidates because they are visible on the
-current virtual desktop.
+Only windows on the current virtual desktop are considered.
 
-If multiple matching windows exist on the current virtual desktop, the extension
-raises the topmost matching window according to KWin stacking order.
+A window shown on all virtual desktops is considered to be on the current virtual
+desktop.
 
-## Raise Behavior
+If several matching windows exist on the current virtual desktop, the frontmost
+matching window is chosen.
 
-When a matching window is found, the extension:
+## Bringing A Window Forward
 
-1. clears the minimized state if the window is minimized
-2. raises the window
-3. focuses the window
+When a matching window is found:
 
-The action must not move a window from another virtual desktop to the current
-virtual desktop.
+1. If the window is minimized, it is restored.
+2. The window is brought in front of other windows.
+3. The window receives keyboard focus.
 
-The action must not switch to another virtual desktop.
+The current virtual desktop does not change.
 
-## Launch Behavior
+No window is moved from another virtual desktop to the current virtual desktop.
 
-When no matching window is found on the current virtual desktop, the extension
-launches the configured desktop entry.
+## Launching An Application
 
-The launch path should preserve the semantics of KDE application launching, so
-desktop entry metadata such as `Exec`, `StartupNotify`, `Terminal`, and icon
-metadata are respected.
+When no matching window is found on the current virtual desktop, the assigned
+application is launched in the same way it would be launched from KDE's
+application launcher.
 
-If KWin Script APIs cannot launch desktop entries directly, the package may use a
-small helper process or D-Bus service that resolves desktop entries through KDE
-Frameworks and starts them through the standard KDE application launcher APIs.
+The newly launched application opens on the current virtual desktop unless the
+application or the user's KDE settings choose otherwise.
 
-Launch failures should be logged for debugging.
+## Out Of Scope
 
-## Non-Goals
+The extension does not:
 
-The initial version does not need to:
-
-- search across all virtual desktops
+- switch to another virtual desktop to find an existing window
 - move windows between virtual desktops
-- cycle through every window of an application
-- support per-activity behavior beyond KWin's current visible window state
-- provide migrations or backward compatibility for configuration formats
-- replace KDE's task manager, application launcher, or KRunner behavior
-
-## Testing
-
-The implementation should be testable with at least:
-
-- a unit-testable window selection function that receives window-like data and
-  returns the selected candidate
-- manual KWin Script testing from the Plasma interactive KWin console
-- an installed-package smoke test that verifies a shortcut can raise an existing
-  window and launch the desktop entry when no matching window exists
+- cycle through all windows of an application
+- replace KDE's task manager, application launcher, or KRunner
