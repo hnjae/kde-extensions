@@ -102,6 +102,8 @@ void TabPagerBackendTest::formatsDesktopLabel_data() {
   QTest::newRow("custom") << 2 << QStringLiteral("Work")
                           << QStringLiteral("Work");
   QTest::newRow("empty") << 3 << QString() << QStringLiteral("3");
+  QTest::newRow("prefix only")
+      << 5 << QStringLiteral("Desktop 5x") << QStringLiteral("Desktop 5x");
   QTest::newRow("number mismatch")
       << 4 << QStringLiteral("Desktop 5") << QStringLiteral("Desktop 5");
 }

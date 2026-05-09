@@ -6,7 +6,7 @@ Tab Pager is a Plasma widget for switching between virtual desktops.
 
 The widget presents the virtual desktops as a single horizontal row of adjacent boxes.
 
-Each box represents one virtual desktop. A desktop whose name starts with `Desktop` is shown only by its current desktop number, such as `1` or `2`.
+Each box represents one virtual desktop. A desktop whose name is exactly `Desktop [number]` is shown only by its current desktop number, such as `1` or `2`.
 
 A desktop with any other name is shown by that name.
 
