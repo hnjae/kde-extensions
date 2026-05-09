@@ -1,14 +1,10 @@
-<!--
-SPDX-FileCopyrightText: 2026 hnjae
-SPDX-License-Identifier: AGPL-3.0-or-later
--->
-
 # KWin Run or Raise Specification
 
 KWin Run or Raise lets the user assign global shortcuts to applications.
 
-When the user presses a configured shortcut, the matching application is brought
-to the front, cycled to another matching window, or launched.
+When the user presses a configured shortcut, KWin Run or Raise brings the
+matching application to the front, cycles to another matching window, or asks KDE
+to launch the application.
 
 ## Example
 
@@ -27,7 +23,7 @@ When `Meta+W` is pressed:
    current Activity, the most recently used Firefox window is restored, raised,
    and focused.
 5. If no Firefox window exists in the current virtual desktop and current
-   Activity, Firefox is launched.
+   Activity, KDE is asked to launch Firefox.
 6. Firefox windows on other virtual desktops or other Activities are ignored.
 
 ## Bindings
@@ -40,9 +36,8 @@ The same application may have more than one binding.
 
 Different applications may use different shortcuts.
 
-Pressing a binding never launches a second copy of the application when a
-matching window is already present in the current virtual desktop and current
-Activity.
+Pressing a binding never asks KDE to launch the application when a matching
+window is already present in the current virtual desktop and current Activity.
 
 ## Matching Windows
 
@@ -74,6 +69,8 @@ When the focused window already belongs to the application assigned to the
 pressed shortcut, the shortcut cycles through matching windows in the current
 virtual desktop and current Activity.
 
+Cycling candidates include both visible and minimized matching windows.
+
 If more than one matching window exists, the next matching window follows KDE's
 Task Switcher order for windows of the current application, restricted to the
 current virtual desktop and current Activity. The cycle repeats when the user
@@ -101,11 +98,13 @@ No window is moved from another Activity to the current Activity.
 ## Launching An Application
 
 When no matching window is found in the current virtual desktop and current
-Activity, the assigned application is launched in the same way it would be
-launched from KDE's application launcher.
+Activity, KDE is asked to launch the assigned application in the same way it
+would be launched from KDE's application launcher.
 
-The newly launched application opens in the current virtual desktop and current
-Activity unless the application or the user's KDE settings choose otherwise.
+This launch request does not guarantee that a new window will appear. A
+single-instance application may reuse an existing process or window, and the
+application or the user's KDE settings may choose where the resulting window
+appears.
 
 ## Out Of Scope
 
