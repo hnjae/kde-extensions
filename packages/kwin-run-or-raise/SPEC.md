@@ -74,8 +74,10 @@ When the focused window already belongs to the application assigned to the
 pressed shortcut, the shortcut cycles through matching windows in the current
 virtual desktop and current Activity.
 
-If more than one matching window exists, the next matching window in recent focus
-order is chosen. The cycle repeats when the user presses the shortcut again.
+If more than one matching window exists, the next matching window follows KDE's
+Task Switcher order for windows of the current application, restricted to the
+current virtual desktop and current Activity. The cycle repeats when the user
+presses the shortcut again.
 
 If the chosen next window is minimized, it is restored before receiving focus.
 
