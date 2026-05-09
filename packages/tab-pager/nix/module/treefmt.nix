@@ -3,7 +3,7 @@
 {
   partitions.dev.module = {
     perSystem =
-      { lib, pkgs, ... }:
+      { pkgs, ... }:
       {
         plasmaExtensions.treefmt.overrides.tab-pager = {
           root = "packages/tab-pager";
