@@ -16,38 +16,50 @@ A user assigns `Meta+W` to Firefox.
 
 When `Meta+W` is pressed:
 
-1. If a Firefox window exists on the current virtual desktop, that window is
-   unminimized if necessary, raised, and focused.
-2. If no Firefox window exists on the current virtual desktop, Firefox is
-   launched.
-3. Firefox windows on other virtual desktops are ignored.
+1. If a Firefox window is visible in the current virtual desktop and current
+   Activity, that window is raised and focused.
+2. If only minimized Firefox windows exist in the current virtual desktop and
+   current Activity, the most recently used Firefox window is restored, raised,
+   and focused.
+3. If no Firefox window exists in the current virtual desktop and current
+   Activity, Firefox is launched.
+4. Firefox windows on other virtual desktops or other Activities are ignored.
 
 ## Bindings
 
 Each binding pairs one global shortcut with one application.
+
+Each shortcut may be assigned to only one application.
 
 The same application may have more than one binding.
 
 Different applications may use different shortcuts.
 
 Pressing a binding never launches a second copy of the application when a
-matching window is already present on the current virtual desktop.
+matching window is already present in the current virtual desktop and current
+Activity.
 
 ## Matching Windows
 
 A window matches when it belongs to the application assigned to the pressed
 shortcut.
 
-Only regular application windows are considered. Panels, desktop backgrounds,
-menus, tooltips, notifications, splash screens, and similar temporary windows are
-ignored.
+Regular application windows and user-facing dialogs for that application are
+considered. Panels, desktop backgrounds, menus, tooltips, notifications, splash
+screens, and similar temporary windows are ignored.
 
-Only windows on the current virtual desktop are considered.
+Only windows in the current virtual desktop and current Activity are considered.
 
 A window shown on all virtual desktops is considered to be on the current virtual
 desktop.
 
-If several matching windows exist on the current virtual desktop, the frontmost
+A window shown on all Activities is considered to be in the current Activity.
+
+If several visible matching windows exist in the current virtual desktop and
+current Activity, the frontmost matching window is chosen.
+
+If no matching window is visible, but one or more minimized matching windows
+exist in the current virtual desktop and current Activity, the most recently used
 matching window is chosen.
 
 ## Bringing A Window Forward
@@ -62,20 +74,24 @@ The current virtual desktop does not change.
 
 No window is moved from another virtual desktop to the current virtual desktop.
 
+No window is moved from another Activity to the current Activity.
+
 ## Launching An Application
 
-When no matching window is found on the current virtual desktop, the assigned
-application is launched in the same way it would be launched from KDE's
-application launcher.
+When no matching window is found in the current virtual desktop and current
+Activity, the assigned application is launched in the same way it would be
+launched from KDE's application launcher.
 
-The newly launched application opens on the current virtual desktop unless the
-application or the user's KDE settings choose otherwise.
+The newly launched application opens in the current virtual desktop and current
+Activity unless the application or the user's KDE settings choose otherwise.
 
 ## Out Of Scope
 
 The extension does not:
 
 - switch to another virtual desktop to find an existing window
+- switch to another Activity to find an existing window
 - move windows between virtual desktops
+- move windows between Activities
 - cycle through all windows of an application
 - replace KDE's task manager, application launcher, or KRunner
