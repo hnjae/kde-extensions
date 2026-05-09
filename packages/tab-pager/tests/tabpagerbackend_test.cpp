@@ -18,7 +18,7 @@ void TabPagerBackendTest::exposesConstants() {
   const TabPagerBackend backend;
 
   QCOMPARE(backend.pluginId(),
-           QStringLiteral("com.example.plasmaextensions.tab-pager"));
+           QStringLiteral("io.github.hnjae.plasma.tabpager"));
   QCOMPARE(backend.greeting(), QStringLiteral("Hello from C++/QML"));
 }
 

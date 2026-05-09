@@ -1,3 +1,3 @@
-module com.example.plasmaextensions.tabpager
+module io.github.hnjae.plasma.tabpager
 plugin tabpagerplugin
 typeinfo tabpagerplugin.qmltypes

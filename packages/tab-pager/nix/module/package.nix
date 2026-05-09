@@ -6,7 +6,7 @@
     {
       packages.tab-pager =
         let
-          pluginId = "com.example.plasmaextensions.tab-pager";
+          pluginId = "io.github.hnjae.plasma.tabpager";
           version = "0.1.0";
 
           sourceRoot = ../../.;

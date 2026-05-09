@@ -10,7 +10,7 @@ QString TabPagerBackend::greeting() const {
 }
 
 QString TabPagerBackend::pluginId() const {
-  return QStringLiteral("com.example.plasmaextensions.tab-pager");
+  return QStringLiteral("io.github.hnjae.plasma.tabpager");
 }
 
 QString TabPagerBackend::greetingFor(const QString &target) const {

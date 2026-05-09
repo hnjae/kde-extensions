@@ -7,7 +7,7 @@ import QtQuick as QtQuick
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 
-import com.example.plasmaextensions.tabpager as TabPager
+import io.github.hnjae.plasma.tabpager as TabPager
 
 PlasmoidItem {
     id: root
