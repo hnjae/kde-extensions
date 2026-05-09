@@ -81,6 +81,8 @@ private Q_SLOTS:
   void tracksCurrentDesktop();
   void updatesNavigationWrapping();
   void activatesDesktopByIndex();
+  void ignoresRelativeActivationWithoutCurrentDesktop();
+  void stopsAtEdgesWithoutWrapping();
   void activatesNextAndPreviousWithoutWrapping();
   void activatesNextAndPreviousWithWrapping();
 };
@@ -223,6 +225,35 @@ void TabPagerBackendTest::activatesDesktopByIndex() {
 
   QCOMPARE(fixture.source.activatedDesktops(),
            QList<QVariant>{QStringLiteral("b")});
+}
+
+void TabPagerBackendTest::ignoresRelativeActivationWithoutCurrentDesktop() {
+  BackendFixture fixture({
+      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+      {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+  });
+
+  fixture.backend.activateNext();
+  fixture.backend.activatePrevious();
+
+  const QList<QVariant> expected;
+  QCOMPARE(fixture.source.activatedDesktops(), expected);
+}
+
+void TabPagerBackendTest::stopsAtEdgesWithoutWrapping() {
+  BackendFixture fixture(
+      {
+          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+          {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+      },
+      QStringLiteral("a"), false);
+
+  fixture.backend.activatePrevious();
+  fixture.source.setCurrentDesktop(QStringLiteral("b"));
+  fixture.backend.activateNext();
+
+  const QList<QVariant> expected;
+  QCOMPARE(fixture.source.activatedDesktops(), expected);
 }
 
 void TabPagerBackendTest::activatesNextAndPreviousWithoutWrapping() {
