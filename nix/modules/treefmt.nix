@@ -8,15 +8,34 @@
 let
   inherit (lib) types;
 
+  projectRootPath = ../..;
+  projectRootString = toString projectRootPath;
+  ignoredPathNames = [
+    ".devenv"
+    ".direnv"
+    ".git"
+    ".pre-commit-config.yaml"
+    ".rumdl_cache"
+  ];
+
   projectRoot = builtins.path {
     name = "kde-plasma-extensions-treefmt-source";
-    path = ../..;
+    path = projectRootPath;
     filter =
       path: _type:
       let
-        name = baseNameOf path;
+        pathString = toString path;
+        relativePath = lib.removePrefix "${projectRootString}/" pathString;
+        segments = lib.splitString "/" relativePath;
+        packageLocalName =
+          if builtins.length segments >= 3 && builtins.elemAt segments 0 == "packages" then
+            builtins.elemAt segments 2
+          else
+            "";
       in
-      name != ".git" && name != ".pre-commit-config.yaml";
+      !lib.any (name: builtins.elem name ignoredPathNames) segments
+      && packageLocalName != "build"
+      && !(lib.hasPrefix "." packageLocalName && lib.hasSuffix "-install" packageLocalName);
   };
 
   formatterOverrideType = types.submodule {
