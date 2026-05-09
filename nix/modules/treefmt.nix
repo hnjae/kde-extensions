@@ -164,6 +164,15 @@ in
           settings.formatter =
             globalOverrideExcludes
             // {
+              clang-format = {
+                command = "${pkgs.clang-tools}/bin/clang-format";
+                includes = [
+                  "*.cpp"
+                  "*.h"
+                  "*.hpp"
+                ];
+              };
+
               shell-fmt = {
                 command = lib.getExe (
                   pkgs.writeShellScriptBin "treefmt-shell-fmt" ''

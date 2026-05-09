@@ -3,3 +3,7 @@
 
 # Build results:
 result
+
+# Local development builds:
+/packages/tab-pager/.tab-pager-install/
+/packages/tab-pager/build/

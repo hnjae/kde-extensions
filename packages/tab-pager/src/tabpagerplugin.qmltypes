@@ -1,0 +1,18 @@
+import QtQuick.tooling 1.2
+
+Module {
+    Component {
+        name: "TabPagerBackend"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["com.example.plasmaextensions.tabpager/TabPagerBackend 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property { name: "greeting"; type: "QString"; isReadonly: true }
+        Property { name: "pluginId"; type: "QString"; isReadonly: true }
+        Method {
+            name: "greetingFor"
+            type: "QString"
+            Parameter { name: "target"; type: "QString" }
+        }
+    }
+}

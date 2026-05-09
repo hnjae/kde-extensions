@@ -41,11 +41,25 @@
             devPkgs.shellcheck
             devPkgs.shellharden
 
+            pkgs.clazy
+            pkgs.cmake
+            pkgs.llvmPackages.clang-unwrapped
+            pkgs.kdePackages.extra-cmake-modules
+            pkgs.kdePackages.kconfig
             pkgs.kdePackages.kpackage
+            pkgs.kdePackages.kirigami
+            pkgs.kdePackages.kwindowsystem
+            pkgs.kdePackages.libplasma
+            pkgs.kdePackages.plasma-activities
             pkgs.kdePackages.plasma-sdk
+            pkgs.kdePackages.plasma-workspace
+            pkgs.kdePackages.ksvg
+            pkgs.ninja
             pkgs.nodejs
+            pkgs.pkg-config
+            pkgs.kdePackages.qtbase
+            pkgs.kdePackages.qtdeclarative
             pkgs.qt6.qtdeclarative
-            pkgs.typescript
           ]
           ++ config.pre-commit.settings.enabledPackages;
 

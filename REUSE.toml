@@ -20,9 +20,15 @@ path = [
   "SPEC.md",
   "justfile",
   "nix/partitions/dev/flake.lock",
+  "packages/*/.biome.json",
+  "packages/*/.clang-tidy",
+  "packages/*/AGENTS.md",
   "packages/*/biome.json",
   "packages/*/package/metadata.json",
+  "packages/*/src/*.qmltypes",
+  "packages/*/src/qmldir",
   "packages/*/tsconfig.json",
+  "packages/*/AGENTS.md",
 ]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 KIM Hyunjae"

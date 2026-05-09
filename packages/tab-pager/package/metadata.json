@@ -3,17 +3,17 @@
   "KPlugin": {
     "Authors": [
       {
-        "Email": "sample@example.invalid",
-        "Name": "Plasma Extensions"
+        "Email": "hnjae@example.invalid",
+        "Name": "KIM Hyunjae"
       }
     ],
-    "Category": "Utilities",
-    "Description": "A small Plasma 6 widget built from TypeScript.",
+    "Category": "Windows and Tasks",
+    "Description": "A Plasma 6 pager experiment built with C++ and QML.",
     "EnabledByDefault": true,
-    "Icon": "applications-development",
+    "Icon": "user-desktop",
     "Id": "com.example.plasmaextensions.tab-pager",
     "License": "AGPL-3.0-or-later",
-    "Name": "Sample TypeScript Widget",
+    "Name": "Tab Pager",
     "Version": "0.1.0",
     "Website": "https://github.com/hnjae/plasma-extensions"
   },

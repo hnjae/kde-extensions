@@ -13,40 +13,32 @@
           source = lib.fileset.toSource {
             root = sourceRoot;
             fileset = lib.fileset.unions [
+              ../../.clang-tidy
+              ../../CMakeLists.txt
               ../../package
               ../../src
-              ../../test
-              ../../tsconfig.json
             ];
           };
         in
-        pkgs.stdenvNoCC.mkDerivation {
+        pkgs.kdePackages.mkKdeDerivation {
           pname = "plasma-extension-tab-pager";
           inherit version source;
           src = source;
 
-          nativeBuildInputs = with pkgs; [
-            typescript
+          extraNativeBuildInputs = [
+            pkgs.kdePackages.extra-cmake-modules
           ];
 
-          dontConfigure = true;
+          extraBuildInputs = [
+            pkgs.kdePackages.qtbase
+            pkgs.kdePackages.qtdeclarative
+          ];
 
-          buildPhase = ''
-            runHook preBuild
-            tsc --project tsconfig.json --outDir build
-            runHook postBuild
-          '';
-
-          installPhase = ''
-            runHook preInstall
-
-            plasmoid="$out/share/plasma/plasmoids/${pluginId}"
-            mkdir -p "$plasmoid"
-            cp -R package/. "$plasmoid/"
-            install -Dm0644 build/logic.js "$plasmoid/contents/ui/generated/logic.js"
-
-            runHook postInstall
-          '';
+          extraCmakeFlags = [
+            "-DECM_DIR=${pkgs.kdePackages.extra-cmake-modules}/share/ECM/cmake"
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+            "-DKDE_INSTALL_QMLDIR=lib/qt-6/qml"
+          ];
 
           passthru = {
             inherit
@@ -57,7 +49,7 @@
           };
 
           meta = {
-            description = "Sample Plasma 6 widget built from TypeScript";
+            description = "A Plasma 6 pager experiment built with C++ and QML";
             homepage = "https://github.com/hnjae/kde-plasma-extensions";
             license = lib.licenses.agpl3Plus;
             platforms = lib.platforms.linux;

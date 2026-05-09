@@ -8,18 +8,14 @@
         plasmaExtensions.treefmt.overrides.tab-pager = {
           root = "packages/tab-pager";
 
-          formatters.biome = {
+          formatters.clang-format = {
             includes = [
-              "*.json"
-              "*.ts"
+              "*.cpp"
+              "*.h"
             ];
-            command = lib.getExe pkgs.biome;
+            command = "${pkgs.clang-tools}/bin/clang-format";
             options = [
-              "format"
-              "--write"
-              "--config-path"
-              "packages/tab-pager/biome.json"
-              "--no-errors-on-unmatched"
+              "-i"
             ];
           };
         };
