@@ -165,9 +165,26 @@ in
               };
             };
 
+            deadnix = {
+              enable = true;
+              priority = 10;
+            };
+
             just.enable = true;
-            nixfmt.enable = true;
+            nixfmt = {
+              enable = true;
+              priority = 30;
+            };
             qmlformat.enable = true;
+            statix = {
+              enable = true;
+              disabled-lints = [
+                "manual_inherit"
+                "manual_inherit_from"
+                "repeated_keys"
+              ];
+              priority = 20;
+            };
             taplo.enable = true;
 
             yamlfmt = {

@@ -72,9 +72,7 @@
 
               hooks = {
                 # Static checkers:
-                deadnix.enable = true;
                 detect-private-keys.enable = true;
-                statix.enable = true;
                 cocogitto = {
                   enable = true;
                   name = "cog verify";
