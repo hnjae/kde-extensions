@@ -19,10 +19,6 @@ _:
 build:
     nix build "{{ root }}#tab-pager" --no-link --print-out-paths
 
-[group('build')]
-hello:
-    "$(nix build "{{ root }}#tab-pager" --no-link --print-out-paths)/bin/tab-pager-hello"
-
 [group('ci')]
 check:
     nix build "{{ check_prefix }}tab-pager-check" --no-link --print-out-paths

@@ -8,10 +8,7 @@ _:
     @just --list
 
 alias fmt := format
-alias ci := check
-
-[group('ci')]
-check: flake-check
+alias ci := flake-check
 
 [group('ci')]
 format:
