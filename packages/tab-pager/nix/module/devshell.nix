@@ -21,11 +21,13 @@
       in
       {
         devShells.tab-pager = pkgs.mkShellNoCC {
-          packages = config.plasmaExtensions.devShell.commonPackages ++ ci.devShellPackages;
+          packages =
+            ci.lspDevShellPackages ++ config.plasmaExtensions.devShell.commonPackages ++ ci.devShellPackages;
 
           shellHook = # sh
             ''
               ${config.pre-commit.installationScript}
+              ${ci.devShellHook}
             '';
         };
       };

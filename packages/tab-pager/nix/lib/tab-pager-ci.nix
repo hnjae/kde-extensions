@@ -13,6 +13,7 @@ let
     "${pkgs.kdePackages.ksvg}/lib/qt-6/qml"
     "${pkgs.kdePackages.libplasma}/lib/qt-6/qml"
   ];
+  qmlImportPath = lib.concatStringsSep ":" qmlImportPaths;
   qmlImportFlags = lib.concatMapStringsSep " " (path: "-I ${lib.escapeShellArg path}") qmlImportPaths;
   gccIncludeDir = "${pkgs.stdenv.cc.cc}/include/c++/${lib.getVersion pkgs.stdenv.cc.cc}";
 
@@ -148,6 +149,43 @@ let
       runtimeInputs = devRuntimeInputs;
       text = localPreamble + text;
     };
+
+  clangdWrapper = pkgs.writeShellApplication {
+    name = "clangd";
+    text = ''
+      exec ${pkgs.llvmPackages.clang-tools}/bin/clangd \
+        --query-driver=${pkgs.stdenv.cc}/bin/c++,${pkgs.stdenv.cc}/bin/g++,/home/*/.nix-profile/bin/c++ \
+        "$@"
+    '';
+  };
+
+  qmllsWrapper = pkgs.writeShellApplication {
+    name = "qmlls";
+    text = localPreamble + ''
+      exec ${pkgs.kdePackages.qtdeclarative}/bin/qmlls \
+        --no-cmake-calls \
+        --build-dir "$build_dir" \
+        -I "$install_prefix/lib/qt-6/qml" \
+        ${qmlImportFlags} \
+        "$@"
+    '';
+  };
+
+  devShellHook = ''
+    tab_pager_project_dir="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+    if [ -d "$tab_pager_project_dir/packages/tab-pager" ]; then
+      tab_pager_project_dir="$tab_pager_project_dir/packages/tab-pager"
+    fi
+
+    tab_pager_build_dir="''${TAB_PAGER_BUILD_DIR:-$tab_pager_project_dir/build}"
+    tab_pager_install_prefix="''${TAB_PAGER_INSTALL_PREFIX:-$tab_pager_project_dir/.tab-pager-install}"
+
+    export QML_IMPORT_PATH="$tab_pager_install_prefix/lib/qt-6/qml:${qmlImportPath}''${QML_IMPORT_PATH:+:$QML_IMPORT_PATH}"
+    export QML2_IMPORT_PATH="$QML_IMPORT_PATH"
+    export QT_PLUGIN_PATH="${pkgs.kdePackages.libplasma}/lib/qt-6/plugins''${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
+    export TAB_PAGER_BUILD_DIR="$tab_pager_build_dir"
+    export TAB_PAGER_INSTALL_PREFIX="$tab_pager_install_prefix"
+  '';
 in
 {
   inherit
@@ -159,9 +197,17 @@ in
     cmakeConfigure
     cmakeInstall
     cmakeTest
+    devShellHook
     kpackage
     qmlLint
     ;
+
+  lspDevShellPackages = [
+    clangdWrapper
+    qmllsWrapper
+    pkgs.git
+    pkgs.stdenv.cc
+  ];
 
   devShellPackages = [
     (mkDevCommand "tab-pager-configure" cmakeConfigure)
