@@ -7,8 +7,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 KWin Run or Raise lets the user assign global shortcuts to applications.
 
-When the user presses a configured shortcut, the matching application is either
-brought to the front or launched.
+When the user presses a configured shortcut, the matching application is brought
+to the front, cycled to another matching window, or launched.
 
 ## Example
 
@@ -16,14 +16,19 @@ A user assigns `Meta+W` to Firefox.
 
 When `Meta+W` is pressed:
 
-1. If a Firefox window is visible in the current virtual desktop and current
+1. If Firefox is already focused and multiple Firefox windows exist in the
+   current virtual desktop and current Activity, focus moves to the next Firefox
+   window.
+2. If Firefox is already focused and only one Firefox window exists in the
+   current virtual desktop and current Activity, nothing changes.
+3. If a Firefox window is visible in the current virtual desktop and current
    Activity, that window is raised and focused.
-2. If only minimized Firefox windows exist in the current virtual desktop and
+4. If only minimized Firefox windows exist in the current virtual desktop and
    current Activity, the most recently used Firefox window is restored, raised,
    and focused.
-3. If no Firefox window exists in the current virtual desktop and current
+5. If no Firefox window exists in the current virtual desktop and current
    Activity, Firefox is launched.
-4. Firefox windows on other virtual desktops or other Activities are ignored.
+6. Firefox windows on other virtual desktops or other Activities are ignored.
 
 ## Bindings
 
@@ -55,12 +60,27 @@ desktop.
 
 A window shown on all Activities is considered to be in the current Activity.
 
-If several visible matching windows exist in the current virtual desktop and
-current Activity, the frontmost matching window is chosen.
+When focused-window cycling does not apply, if several visible matching windows
+exist in the current virtual desktop and current Activity, the frontmost matching
+window is chosen.
 
-If no matching window is visible, but one or more minimized matching windows
-exist in the current virtual desktop and current Activity, the most recently used
-matching window is chosen.
+When focused-window cycling does not apply, if no matching window is visible,
+but one or more minimized matching windows exist in the current virtual desktop
+and current Activity, the most recently used matching window is chosen.
+
+## Cycling Focused Windows
+
+When the focused window already belongs to the application assigned to the
+pressed shortcut, the shortcut cycles through matching windows in the current
+virtual desktop and current Activity.
+
+If more than one matching window exists, the next matching window in recent focus
+order is chosen. The cycle repeats when the user presses the shortcut again.
+
+If the chosen next window is minimized, it is restored before receiving focus.
+
+If only one matching window exists, pressing the shortcut leaves that window
+focused and does not launch the application.
 
 ## Bringing A Window Forward
 
@@ -93,5 +113,5 @@ The extension does not:
 - switch to another Activity to find an existing window
 - move windows between virtual desktops
 - move windows between Activities
-- cycle through all windows of an application
+- cycle through windows outside the current virtual desktop and current Activity
 - replace KDE's task manager, application launcher, or KRunner
