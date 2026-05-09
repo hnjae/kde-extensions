@@ -8,9 +8,9 @@
 
 int main(int argc, char *argv[]) {
   QCoreApplication app(argc, argv);
-  TabPagerBackend backend;
-
-  QTextStream(stdout) << backend.greeting() << Qt::endl;
+  QTextStream(stdout) << TabPagerBackend::labelForDesktop(
+                             1, QStringLiteral("Desktop 1"))
+                      << Qt::endl;
 
   return 0;
 }

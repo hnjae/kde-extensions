@@ -3,19 +3,94 @@
 
 #pragma once
 
-#include <QObject>
+#include <QAbstractListModel>
+#include <QFont>
+#include <QList>
 #include <QString>
+#include <QVariant>
 
-class TabPagerBackend : public QObject {
+#include <cstdint>
+#include <memory>
+
+struct TabPagerDesktop {
+  QVariant id;
+  QString name;
+};
+
+class TabPagerDesktopSource : public QObject {
   Q_OBJECT
-  Q_PROPERTY(QString greeting READ greeting CONSTANT)
-  Q_PROPERTY(QString pluginId READ pluginId CONSTANT)
 
 public:
+  explicit TabPagerDesktopSource(QObject *parent = nullptr);
+  ~TabPagerDesktopSource() override;
+
+  [[nodiscard]] virtual QList<TabPagerDesktop> desktops() const = 0;
+  [[nodiscard]] virtual QVariant currentDesktop() const = 0;
+  [[nodiscard]] virtual bool navigationWrappingAround() const = 0;
+  virtual void activateDesktop(const QVariant &desktopId) = 0;
+
+Q_SIGNALS:
+  void desktopsChanged();
+  void currentDesktopChanged();
+  void navigationWrappingAroundChanged();
+};
+
+class TabPagerBackend : public QAbstractListModel {
+  Q_OBJECT
+  Q_PROPERTY(int count READ count NOTIFY countChanged)
+  Q_PROPERTY(int currentIndex READ currentIndex NOTIFY currentIndexChanged)
+  Q_PROPERTY(bool navigationWrappingAround READ navigationWrappingAround NOTIFY
+                 navigationWrappingAroundChanged)
+  Q_PROPERTY(QFont labelFont READ labelFont CONSTANT)
+
+public:
+  enum Role : std::uint16_t {
+    DesktopIdRole = Qt::UserRole + 1,
+    NameRole,
+    LabelRole,
+    NumberRole,
+    ActiveRole,
+  };
+  Q_ENUM(Role)
+
   explicit TabPagerBackend(QObject *parent = nullptr);
+  explicit TabPagerBackend(TabPagerDesktopSource *source,
+                           QObject *parent = nullptr);
+  ~TabPagerBackend() override;
 
-  [[nodiscard]] QString greeting() const;
-  [[nodiscard]] QString pluginId() const;
+  [[nodiscard]] int
+  rowCount(const QModelIndex &parent = QModelIndex()) const override;
+  [[nodiscard]] QVariant data(const QModelIndex &index,
+                              int role = Qt::DisplayRole) const override;
+  [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
 
-  Q_INVOKABLE [[nodiscard]] QString greetingFor(const QString &target) const;
+  [[nodiscard]] int count() const;
+  [[nodiscard]] int currentIndex() const;
+  [[nodiscard]] bool navigationWrappingAround() const;
+  [[nodiscard]] QFont labelFont() const;
+
+  Q_INVOKABLE void activate(int index);
+  Q_INVOKABLE void activateNext();
+  Q_INVOKABLE void activatePrevious();
+
+  [[nodiscard]] static QString labelForDesktop(int number, const QString &name);
+
+Q_SIGNALS:
+  void countChanged();
+  void currentIndexChanged();
+  void navigationWrappingAroundChanged();
+
+private:
+  void connectSource();
+  void reloadDesktops();
+  void reloadCurrentDesktop();
+  void reloadNavigationWrappingAround();
+  void activateOffset(int offset);
+  [[nodiscard]] int indexOfDesktop(const QVariant &desktopId) const;
+
+  std::unique_ptr<TabPagerDesktopSource> m_ownedSource;
+  TabPagerDesktopSource *m_source = nullptr;
+  QList<TabPagerDesktop> m_desktops;
+  QVariant m_currentDesktop;
+  bool m_navigationWrappingAround = false;
 };

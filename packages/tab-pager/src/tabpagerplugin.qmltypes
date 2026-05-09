@@ -4,15 +4,25 @@ Module {
     Component {
         name: "TabPagerBackend"
         accessSemantics: "reference"
-        prototype: "QObject"
+        prototype: "QAbstractListModel"
         exports: ["io.github.hnjae.plasma.tabpager/TabPagerBackend 1.0"]
         exportMetaObjectRevisions: [256]
-        Property { name: "greeting"; type: "QString"; isReadonly: true }
-        Property { name: "pluginId"; type: "QString"; isReadonly: true }
-        Method {
-            name: "greetingFor"
-            type: "QString"
-            Parameter { name: "target"; type: "QString" }
+        Enum {
+            name: "Role"
+            values: ["DesktopIdRole", "NameRole", "LabelRole", "NumberRole", "ActiveRole"]
         }
+        Method {
+            name: "activate"
+            Parameter { name: "index"; type: "int" }
+        }
+        Method { name: "activateNext" }
+        Method { name: "activatePrevious" }
+        Property { name: "count"; type: "int"; isReadonly: true }
+        Property { name: "currentIndex"; type: "int"; isReadonly: true }
+        Property { name: "navigationWrappingAround"; type: "bool"; isReadonly: true }
+        Property { name: "labelFont"; type: "QFont"; isReadonly: true }
+        Signal { name: "countChanged" }
+        Signal { name: "currentIndexChanged" }
+        Signal { name: "navigationWrappingAroundChanged" }
     }
 }
