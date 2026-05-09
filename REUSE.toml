@@ -29,6 +29,7 @@ path = [
   "packages/*/src/qmldir",
   "packages/*/tsconfig.json",
   "packages/*/AGENTS.md",
+  "packages/*/SPEC.md",
 ]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 KIM Hyunjae"
