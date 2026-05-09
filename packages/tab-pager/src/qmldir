@@ -1,3 +1,5 @@
 module io.github.hnjae.plasma.tabpager
+depends QtQml.Models
+depends QtQuick
 plugin tabpagerplugin
 typeinfo tabpagerplugin.qmltypes
