@@ -40,6 +40,7 @@
 
               ${ci.cmakeConfigure}
               ${ci.cmakeBuild}
+              ${ci.cmakeTest}
               ${ci.cmakeInstall}
               ${ci.qmlLint}
               ${ci.clangTidy}

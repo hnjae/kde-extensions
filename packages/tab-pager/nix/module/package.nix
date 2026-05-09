@@ -17,6 +17,7 @@
               ../../CMakeLists.txt
               ../../package
               ../../src
+              ../../tests
             ];
           };
         in
@@ -37,6 +38,7 @@
           extraCmakeFlags = [
             "-DECM_DIR=${pkgs.kdePackages.extra-cmake-modules}/share/ECM/cmake"
             "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+            "-DBUILD_TESTING=OFF"
             "-DKDE_INSTALL_QMLDIR=lib/qt-6/qml"
           ];
 

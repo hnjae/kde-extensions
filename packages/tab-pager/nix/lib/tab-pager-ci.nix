@@ -19,12 +19,17 @@ let
   cmakeConfigure = ''
     cmake -S . -B "$build_dir" -G Ninja \
       -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+      -DBUILD_TESTING=ON \
       -DKDE_INSTALL_QMLDIR=lib/qt-6/qml \
       -DCMAKE_INSTALL_PREFIX="$install_prefix"
   '';
 
   cmakeBuild = ''
     cmake --build "$build_dir"
+  '';
+
+  cmakeTest = ''
+    ctest --test-dir "$build_dir" --output-on-failure
   '';
 
   cmakeInstall = ''
@@ -50,7 +55,7 @@ let
       -config-file .clang-tidy \
       -extra-arg=-I${pkgs.kdePackages.qtbase}/include \
       -extra-arg=-I${pkgs.kdePackages.qtdeclarative}/include \
-      '.*src/.*\.cpp'
+      '.*(src|tests)/.*\.cpp'
   '';
 
   clazy = ''
@@ -65,7 +70,8 @@ let
       --extra-arg=-I${pkgs.stdenv.cc.libc_dev}/include \
       src/hello.cpp \
       src/tabpagerbackend.cpp \
-      src/tabpagerplugin.cpp
+      src/tabpagerplugin.cpp \
+      tests/tabpagerbackend_test.cpp
   '';
 
   kpackage = ''
@@ -152,12 +158,24 @@ in
     cmakeBuild
     cmakeConfigure
     cmakeInstall
+    cmakeTest
     kpackage
     qmlLint
     ;
 
   devShellPackages = [
     (mkDevCommand "tab-pager-configure" cmakeConfigure)
+    (mkDevCommand "tab-pager-test" ''
+      ${cmakeConfigure}
+      ${cmakeBuild}
+      ${cmakeTest}
+    '')
+    (mkDevCommand "tab-pager-lint" ''
+      ${localBuildAndInstall}
+      ${qmlLint}
+      ${clangTidy}
+      ${clazy}
+    '')
     (mkDevCommand "lint-qml" ''
       ${localBuildAndInstall}
       ${qmlLint}
@@ -172,6 +190,7 @@ in
     '')
     (mkDevCommand "tab-pager-ci-local" ''
       ${localBuildAndInstall}
+      ${cmakeTest}
       ${qmlLint}
       ${clangTidy}
       ${clazy}

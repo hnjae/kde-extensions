@@ -10,8 +10,8 @@
 
           formatters.clang-format = {
             includes = [
-              "*.cpp"
-              "*.h"
+              "**/*.cpp"
+              "**/*.h"
             ];
             command = "${pkgs.clang-tools}/bin/clang-format";
             options = [

@@ -18,6 +18,8 @@ include(KDECompilerSettings NO_POLICY_SCOPE)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Qml)
 
+include(CTest)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -54,6 +56,20 @@ add_executable(tab-pager-hello
 target_link_libraries(tab-pager-hello PRIVATE
     tabpagercore
 )
+
+if(BUILD_TESTING)
+    find_package(Qt6 REQUIRED COMPONENTS Test)
+
+    add_executable(tabpagerbackend_test
+        tests/tabpagerbackend_test.cpp
+    )
+    target_link_libraries(tabpagerbackend_test PRIVATE
+        Qt6::Test
+        tabpagercore
+    )
+
+    add_test(NAME tabpagerbackend COMMAND tabpagerbackend_test)
+endif()
 
 install(TARGETS tabpagerplugin
     LIBRARY DESTINATION "${KDE_INSTALL_QMLDIR}/${QML_MODULE_DIR}"

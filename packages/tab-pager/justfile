@@ -27,6 +27,22 @@ hello:
 check:
     nix build "{{ check_prefix }}tab-pager-check" --no-link --print-out-paths
 
-[group('ci')]
+[group('lint')]
+lint:
+    nix develop "{{ root }}#tab-pager" -c tab-pager-lint
+
+[group('lint')]
+lint-qml:
+    nix develop "{{ root }}#tab-pager" -c lint-qml
+
+[group('lint')]
+lint-clang-tidy:
+    nix develop "{{ root }}#tab-pager" -c lint-clang-tidy
+
+[group('lint')]
+lint-clazy:
+    nix develop "{{ root }}#tab-pager" -c lint-clazy
+
+[group('test')]
 test:
-    @just check
+    nix develop "{{ root }}#tab-pager" -c tab-pager-test
