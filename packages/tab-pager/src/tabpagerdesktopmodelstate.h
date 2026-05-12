@@ -16,32 +16,17 @@ struct TabPagerDesktopRowUpdate {
   QList<int> roles;
 };
 
-class TabPagerDesktopModelChange final {
-public:
+struct TabPagerDesktopModelChange {
   enum class Type : std::uint8_t {
     Unchanged,
     Reset,
     RowsChanged,
   };
 
-  [[nodiscard]] static TabPagerDesktopModelChange unchanged();
-  [[nodiscard]] static TabPagerDesktopModelChange
-  reset(bool countChanged, bool currentIndexChanged);
-  [[nodiscard]] static TabPagerDesktopModelChange
-  rowsChanged(bool currentIndexChanged, QList<TabPagerDesktopRowUpdate> rows);
-
-  [[nodiscard]] Type type() const;
-  [[nodiscard]] bool countChanged() const;
-  [[nodiscard]] bool currentIndexChanged() const;
-  [[nodiscard]] const QList<TabPagerDesktopRowUpdate> &rows() const;
-
-private:
-  TabPagerDesktopModelChange() = default;
-
-  Type m_type = Type::Unchanged;
-  bool m_countChanged = false;
-  bool m_currentIndexChanged = false;
-  QList<TabPagerDesktopRowUpdate> m_rows;
+  Type type = Type::Unchanged;
+  bool countChanged = false;
+  bool currentIndexChanged = false;
+  QList<TabPagerDesktopRowUpdate> rows;
 };
 
 class TabPagerDesktopModelState final {

@@ -112,17 +112,17 @@ void TabPagerBackend::applyDesktopSnapshot(
   bool shouldEmitCountChanged = false;
   bool shouldEmitCurrentIndexChanged = false;
 
-  switch (change.type()) {
+  switch (change.type) {
   case TabPagerDesktopModelChange::Type::Unchanged:
     return;
   case TabPagerDesktopModelChange::Type::Reset:
-    shouldEmitCountChanged = change.countChanged();
-    shouldEmitCurrentIndexChanged = change.currentIndexChanged();
+    shouldEmitCountChanged = change.countChanged;
+    shouldEmitCurrentIndexChanged = change.currentIndexChanged;
     resetDesktopState(std::move(nextState));
     break;
   case TabPagerDesktopModelChange::Type::RowsChanged:
-    shouldEmitCurrentIndexChanged = change.currentIndexChanged();
-    updateDesktopStateRows(std::move(nextState), change.rows());
+    shouldEmitCurrentIndexChanged = change.currentIndexChanged;
+    updateDesktopStateRows(std::move(nextState), change.rows);
     break;
   }
 
