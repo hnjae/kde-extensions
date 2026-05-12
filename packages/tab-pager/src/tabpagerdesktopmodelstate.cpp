@@ -46,12 +46,21 @@ rowUpdatesForChangedRoles(const QList<TabPagerDesktopRowData> &previousRows,
     const TabPagerDesktopRowData &previousRow = previousRows.at(row);
     const TabPagerDesktopRowData &nextRow = nextRows.at(row);
     QList<int> roles = tabPagerDesktopRowChangedRoles(previousRow, nextRow);
-    if (!roles.isEmpty()) {
-      rowUpdates.append(TabPagerDesktopRowUpdate{
-          .row = row,
-          .roles = std::move(roles),
-      });
+    if (roles.isEmpty()) {
+      continue;
     }
+
+    if (!rowUpdates.isEmpty() && rowUpdates.last().lastRow + 1 == row &&
+        rowUpdates.last().roles == roles) {
+      rowUpdates.last().lastRow = row;
+      continue;
+    }
+
+    rowUpdates.append(TabPagerDesktopRowUpdate{
+        .firstRow = row,
+        .lastRow = row,
+        .roles = std::move(roles),
+    });
   }
 
   return rowUpdates;

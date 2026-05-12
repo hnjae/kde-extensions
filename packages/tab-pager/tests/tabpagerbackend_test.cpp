@@ -208,7 +208,11 @@ void TabPagerBackendTest::tracksCurrentDesktopFromDesktopReload() {
 
   QCOMPARE(fixture.backend.currentIndex(), 1);
   QCOMPARE(currentSpy.count(), 1);
-  QCOMPARE(dataSpy.count(), 2);
+  QCOMPARE(dataSpy.count(), 1);
+  const DataChangedEmission emission = takeDataChangedEmission(dataSpy);
+  QCOMPARE(emission.firstRow, 0);
+  QCOMPARE(emission.lastRow, 1);
+  QCOMPARE(emission.roles, QList<int>{role(TabPagerDesktopRowRole::Active)});
   QCOMPARE(fixture.backend.data(fixture.backend.index(0),
                                 role(TabPagerDesktopRowRole::Active)),
            QVariant(false));

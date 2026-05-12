@@ -13,7 +13,8 @@
 #include <optional>
 
 struct TabPagerDesktopRowUpdate {
-  qsizetype row = -1;
+  qsizetype firstRow = -1;
+  qsizetype lastRow = -1;
   QList<int> roles;
 };
 

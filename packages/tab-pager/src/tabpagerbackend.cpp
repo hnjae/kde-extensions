@@ -144,8 +144,11 @@ void TabPagerBackend::updateDesktopStateRows(
   m_state = std::move(nextState);
 
   for (const TabPagerDesktopRowUpdate &rowUpdate : rows) {
-    const QModelIndex changedIndex = index(static_cast<int>(rowUpdate.row));
-    Q_EMIT dataChanged(changedIndex, changedIndex, rowUpdate.roles);
+    const QModelIndex firstChangedIndex =
+        index(static_cast<int>(rowUpdate.firstRow));
+    const QModelIndex lastChangedIndex =
+        index(static_cast<int>(rowUpdate.lastRow));
+    Q_EMIT dataChanged(firstChangedIndex, lastChangedIndex, rowUpdate.roles);
   }
 }
 
