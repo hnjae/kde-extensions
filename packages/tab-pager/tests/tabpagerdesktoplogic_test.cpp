@@ -63,6 +63,9 @@ void TabPagerDesktopLogicTest::resolvesNavigationTarget_data() {
   QTest::newRow("stop after last") << 2 << 3 << 1 << false << -1;
   QTest::newRow("wrap before first") << 0 << 3 << -1 << true << 2;
   QTest::newRow("wrap after last") << 2 << 3 << 1 << true << 0;
+  QTest::newRow("wrap forward multiple") << 1 << 3 << 5 << true << 0;
+  QTest::newRow("wrap backward multiple") << 1 << 3 << -5 << true << 2;
+  QTest::newRow("wrap exact cycle") << 1 << 3 << 3 << true << 1;
 }
 
 void TabPagerDesktopLogicTest::resolvesNavigationTarget() {

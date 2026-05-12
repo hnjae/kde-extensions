@@ -3,6 +3,20 @@
 
 #include "tabpagerdesktoplogic.h"
 
+namespace {
+[[nodiscard]] int wrappedIndexForOffset(int currentIndex, int desktopCount,
+                                        int offset) {
+  const int wrappedOffset = offset % desktopCount;
+  int wrappedIndex = static_cast<int>(
+      (static_cast<long long>(currentIndex) + wrappedOffset) % desktopCount);
+  if (wrappedIndex < 0) {
+    wrappedIndex += desktopCount;
+  }
+
+  return wrappedIndex;
+}
+} // namespace
+
 namespace TabPagerDesktopLogic {
 QString labelForDesktop(int number, const QString &name) {
   if (name.isEmpty()) {
@@ -22,19 +36,17 @@ int targetIndexForOffset(const NavigationTargetRequest &request) {
     return -1;
   }
 
-  const int targetIndex = request.currentIndex + request.offset;
+  const long long targetIndex =
+      static_cast<long long>(request.currentIndex) + request.offset;
   if (targetIndex >= 0 && targetIndex < request.desktopCount) {
-    return targetIndex;
+    return static_cast<int>(targetIndex);
   }
 
   if (!request.wrappingAround) {
     return -1;
   }
 
-  if (targetIndex < 0) {
-    return request.desktopCount - 1;
-  }
-
-  return 0;
+  return wrappedIndexForOffset(request.currentIndex, request.desktopCount,
+                               request.offset);
 }
 } // namespace TabPagerDesktopLogic
