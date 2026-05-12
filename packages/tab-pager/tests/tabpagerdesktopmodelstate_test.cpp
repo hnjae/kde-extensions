@@ -53,6 +53,8 @@ private Q_SLOTS:
   void plansDesktopModelResetWhenRowIdentityChanges();
   void plansCurrentDesktopRowUpdates();
   void plansDesktopDataRowUpdates();
+  void groupsAdjacentDesktopDataRowUpdates();
+  void separatesDesktopDataRowUpdatesWithDifferentRoles();
 };
 
 void TabPagerDesktopModelStateTest::exposesDesktopRowRoleNames() {
@@ -276,6 +278,49 @@ void TabPagerDesktopModelStateTest::plansDesktopDataRowUpdates() {
                                        role(TabPagerDesktopRowRole::Name),
                                        role(TabPagerDesktopRowRole::Label),
                                    }));
+}
+
+void TabPagerDesktopModelStateTest::groupsAdjacentDesktopDataRowUpdates() {
+  const TabPagerDesktopModelState state = desktopModelState(
+      {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
+
+  const TabPagerDesktopModelState nextState = desktopModelState(
+      {namedDesktop("a", "Mail"), namedDesktop("b", "Chat")}, desktopId("a"));
+  const TabPagerDesktopModelChange change = state.changeForState(nextState);
+
+  expectRowsChanged(change, false, 1);
+
+  const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
+  QCOMPARE(rowUpdates.at(0).firstRow, 0);
+  QCOMPARE(rowUpdates.at(0).lastRow, 1);
+  QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
+                                       role(TabPagerDesktopRowRole::Name),
+                                       role(TabPagerDesktopRowRole::Label),
+                                   }));
+}
+
+void TabPagerDesktopModelStateTest::
+    separatesDesktopDataRowUpdatesWithDifferentRoles() {
+  const TabPagerDesktopModelState state =
+      desktopModelState({defaultDesktop("a", 1), defaultDesktop("b", 2)});
+
+  const TabPagerDesktopModelState nextState = desktopModelState(
+      {namedDesktop("a", "Mail"), defaultDesktop("b", 2)}, desktopId("b"));
+  const TabPagerDesktopModelChange change = state.changeForState(nextState);
+
+  expectRowsChanged(change, true, 2);
+
+  const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
+  QCOMPARE(rowUpdates.at(0).firstRow, 0);
+  QCOMPARE(rowUpdates.at(0).lastRow, 0);
+  QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
+                                       role(TabPagerDesktopRowRole::Name),
+                                       role(TabPagerDesktopRowRole::Label),
+                                   }));
+  QCOMPARE(rowUpdates.at(1).firstRow, 1);
+  QCOMPARE(rowUpdates.at(1).lastRow, 1);
+  QCOMPARE(rowUpdates.at(1).roles,
+           QList<int>{role(TabPagerDesktopRowRole::Active)});
 }
 
 QTEST_MAIN(TabPagerDesktopModelStateTest)

@@ -37,6 +37,30 @@ hasStableRowIdentity(const QList<TabPagerDesktopRowData> &previousRows,
   return true;
 }
 
+[[nodiscard]] bool canExtendRowUpdate(const TabPagerDesktopRowUpdate &rowUpdate,
+                                      qsizetype row, const QList<int> &roles) {
+  return rowUpdate.lastRow + 1 == row && rowUpdate.roles == roles;
+}
+
+void appendRowUpdate(QList<TabPagerDesktopRowUpdate> &rowUpdates, qsizetype row,
+                     QList<int> roles) {
+  if (roles.isEmpty()) {
+    return;
+  }
+
+  if (!rowUpdates.isEmpty() &&
+      canExtendRowUpdate(rowUpdates.last(), row, roles)) {
+    rowUpdates.last().lastRow = row;
+    return;
+  }
+
+  rowUpdates.append(TabPagerDesktopRowUpdate{
+      .firstRow = row,
+      .lastRow = row,
+      .roles = std::move(roles),
+  });
+}
+
 [[nodiscard]] QList<TabPagerDesktopRowUpdate>
 rowUpdatesForChangedRoles(const QList<TabPagerDesktopRowData> &previousRows,
                           const QList<TabPagerDesktopRowData> &nextRows) {
@@ -46,26 +70,37 @@ rowUpdatesForChangedRoles(const QList<TabPagerDesktopRowData> &previousRows,
     const TabPagerDesktopRowData &previousRow = previousRows.at(row);
     const TabPagerDesktopRowData &nextRow = nextRows.at(row);
     QList<int> roles = tabPagerDesktopRowChangedRoles(previousRow, nextRow);
-    if (roles.isEmpty()) {
-      continue;
-    }
-
-    if (!rowUpdates.isEmpty() && rowUpdates.last().lastRow + 1 == row &&
-        rowUpdates.last().roles == roles) {
-      rowUpdates.last().lastRow = row;
-      continue;
-    }
-
-    rowUpdates.append(TabPagerDesktopRowUpdate{
-        .firstRow = row,
-        .lastRow = row,
-        .roles = std::move(roles),
-    });
+    appendRowUpdate(rowUpdates, row, std::move(roles));
   }
 
   return rowUpdates;
 }
 } // namespace
+
+TabPagerDesktopModelChange TabPagerDesktopModelChange::unchanged() {
+  return {};
+}
+
+TabPagerDesktopModelChange
+TabPagerDesktopModelChange::reset(bool countChanged, bool currentIndexChanged) {
+  return TabPagerDesktopModelChange{
+      .type = TabPagerDesktopModelChange::Type::Reset,
+      .countChanged = countChanged,
+      .currentIndexChanged = currentIndexChanged,
+      .rows = {},
+  };
+}
+
+TabPagerDesktopModelChange
+TabPagerDesktopModelChange::rowsChanged(bool currentIndexChanged,
+                                        QList<TabPagerDesktopRowUpdate> rows) {
+  return TabPagerDesktopModelChange{
+      .type = TabPagerDesktopModelChange::Type::RowsChanged,
+      .countChanged = false,
+      .currentIndexChanged = currentIndexChanged,
+      .rows = std::move(rows),
+  };
+}
 
 TabPagerDesktopModelState TabPagerDesktopModelState::fromSnapshot(
     const TabPagerDesktopSnapshot &snapshot) {
@@ -119,24 +154,15 @@ TabPagerDesktopModelChange TabPagerDesktopModelState::changeForState(
   const bool currentIndexChanged = m_currentIndex != nextState.m_currentIndex;
 
   if (!hasStableRowIdentity(m_rows, nextState.m_rows)) {
-    return TabPagerDesktopModelChange{
-        .type = TabPagerDesktopModelChange::Type::Reset,
-        .countChanged = countChanged,
-        .currentIndexChanged = currentIndexChanged,
-        .rows = {},
-    };
+    return TabPagerDesktopModelChange::reset(countChanged, currentIndexChanged);
   }
 
   QList<TabPagerDesktopRowUpdate> rowUpdates =
       rowUpdatesForChangedRoles(m_rows, nextState.m_rows);
   if (!currentIndexChanged && rowUpdates.isEmpty()) {
-    return {};
+    return TabPagerDesktopModelChange::unchanged();
   }
 
-  return TabPagerDesktopModelChange{
-      .type = TabPagerDesktopModelChange::Type::RowsChanged,
-      .countChanged = false,
-      .currentIndexChanged = currentIndexChanged,
-      .rows = std::move(rowUpdates),
-  };
+  return TabPagerDesktopModelChange::rowsChanged(currentIndexChanged,
+                                                 std::move(rowUpdates));
 }

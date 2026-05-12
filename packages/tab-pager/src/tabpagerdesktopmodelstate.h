@@ -24,6 +24,12 @@ struct TabPagerDesktopModelChange {
     RowsChanged,
   };
 
+  [[nodiscard]] static TabPagerDesktopModelChange unchanged();
+  [[nodiscard]] static TabPagerDesktopModelChange
+  reset(bool countChanged, bool currentIndexChanged);
+  [[nodiscard]] static TabPagerDesktopModelChange
+  rowsChanged(bool currentIndexChanged, QList<TabPagerDesktopRowUpdate> rows);
+
   Type type = Type::Unchanged;
   bool countChanged = false;
   bool currentIndexChanged = false;
