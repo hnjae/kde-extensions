@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 #include "tabpagerbackend.h"
+#include "tabpagertesthelpers.h"
 
 #include <QSignalSpy>
 #include <QTest>
@@ -10,6 +11,11 @@
 #include <utility>
 
 namespace {
+using TabPagerTest::defaultDesktop;
+using TabPagerTest::desktopId;
+using TabPagerTest::namedDesktop;
+using TabPagerTest::unnamedDesktop;
+
 class FakeDesktopSource final : public TabPagerDesktopSource {
   Q_OBJECT
 
@@ -21,10 +27,7 @@ public:
         m_navigationWrappingAround(navigationWrappingAround) {}
 
   [[nodiscard]] TabPagerDesktopSnapshot desktopSnapshot() const override {
-    return TabPagerDesktopSnapshot{
-        .desktops = m_desktops,
-        .currentDesktop = m_currentDesktop,
-    };
+    return TabPagerTest::desktopSnapshot(m_desktops, m_currentDesktop);
   }
 
   [[nodiscard]] bool navigationWrappingAround() const override {
@@ -114,11 +117,11 @@ private Q_SLOTS:
 void TabPagerBackendTest::exposesModelState() {
   BackendFixture fixture(
       {
-          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-          {.id = QStringLiteral("b"), .name = QStringLiteral("Work")},
-          {.id = QStringLiteral("c"), .name = QString()},
+          defaultDesktop("a", 1),
+          namedDesktop("b", "Work"),
+          unnamedDesktop("c"),
       },
-      QStringLiteral("b"), true);
+      desktopId("b"), true);
   const TabPagerBackend &backend = fixture.backend;
 
   QCOMPARE(backend.count(), 3);
@@ -130,16 +133,15 @@ void TabPagerBackendTest::exposesModelState() {
 void TabPagerBackendTest::exposesModelData() {
   BackendFixture fixture(
       {
-          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-          {.id = QStringLiteral("b"), .name = QStringLiteral("Work")},
-          {.id = QStringLiteral("c"), .name = QString()},
+          defaultDesktop("a", 1),
+          namedDesktop("b", "Work"),
+          unnamedDesktop("c"),
       },
-      QStringLiteral("b"), true);
+      desktopId("b"), true);
   const TabPagerBackend &backend = fixture.backend;
 
   const QModelIndex first = backend.index(0);
-  QCOMPARE(backend.data(first, TabPagerBackend::DesktopIdRole),
-           QVariant(QStringLiteral("a")));
+  QCOMPARE(backend.data(first, TabPagerBackend::DesktopIdRole), desktopId("a"));
   QCOMPARE(backend.data(first, TabPagerBackend::NameRole),
            QVariant(QStringLiteral("Desktop 1")));
   QCOMPARE(backend.data(first, TabPagerBackend::LabelRole),
@@ -170,14 +172,14 @@ void TabPagerBackendTest::exposesRoleNames() {
 
 void TabPagerBackendTest::updatesWhenDesktopsChange() {
   BackendFixture fixture({
-      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+      defaultDesktop("a", 1),
   });
   QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
   QSignalSpy resetSpy(&fixture.backend, &QAbstractItemModel::modelReset);
 
   fixture.source->setDesktops({
-      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-      {.id = QStringLiteral("b"), .name = QStringLiteral("Chat")},
+      defaultDesktop("a", 1),
+      namedDesktop("b", "Chat"),
   });
 
   QCOMPARE(fixture.backend.count(), 2);
@@ -191,16 +193,16 @@ void TabPagerBackendTest::updatesWhenDesktopsChange() {
 void TabPagerBackendTest::resetsWhenDesktopIdentityChanges() {
   BackendFixture fixture(
       {
-          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-          {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
       },
-      QStringLiteral("a"));
+      desktopId("a"));
   QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
   QSignalSpy resetSpy(&fixture.backend, &QAbstractItemModel::modelReset);
 
   fixture.source->setDesktops({
-      {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 1")},
-      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 2")},
+      defaultDesktop("b", 1),
+      defaultDesktop("a", 2),
   });
 
   QCOMPARE(fixture.backend.count(), 2);
@@ -212,16 +214,16 @@ void TabPagerBackendTest::resetsWhenDesktopIdentityChanges() {
 void TabPagerBackendTest::updatesDesktopRowsWithoutReset() {
   BackendFixture fixture(
       {
-          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-          {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
       },
-      QStringLiteral("b"));
+      desktopId("b"));
   QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
   QSignalSpy resetSpy(&fixture.backend, &QAbstractItemModel::modelReset);
 
   fixture.source->setDesktops({
-      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-      {.id = QStringLiteral("b"), .name = QStringLiteral("Chat")},
+      defaultDesktop("a", 1),
+      namedDesktop("b", "Chat"),
   });
 
   QCOMPARE(fixture.backend.count(), 2);
@@ -235,15 +237,15 @@ void TabPagerBackendTest::updatesDesktopRowsWithoutReset() {
 void TabPagerBackendTest::emitsChangedRolesForUpdatedDesktopRows() {
   BackendFixture fixture(
       {
-          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-          {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
       },
-      QStringLiteral("b"));
+      desktopId("b"));
   QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
 
   fixture.source->setDesktops({
-      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-      {.id = QStringLiteral("b"), .name = QStringLiteral("Chat")},
+      defaultDesktop("a", 1),
+      namedDesktop("b", "Chat"),
   });
 
   QCOMPARE(dataSpy.count(), 1);
@@ -259,15 +261,15 @@ void TabPagerBackendTest::emitsChangedRolesForUpdatedDesktopRows() {
 
 void TabPagerBackendTest::tracksCurrentDesktopFromDesktopReload() {
   const QList<TabPagerDesktop> desktops = {
-      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-      {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+      defaultDesktop("a", 1),
+      defaultDesktop("b", 2),
   };
-  BackendFixture fixture(desktops, QStringLiteral("a"));
+  BackendFixture fixture(desktops, desktopId("a"));
   QSignalSpy currentSpy(&fixture.backend,
                         &TabPagerBackend::currentIndexChanged);
   QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
 
-  fixture.source->setDesktopState(desktops, QStringLiteral("b"));
+  fixture.source->setDesktopState(desktops, desktopId("b"));
 
   QCOMPARE(fixture.backend.currentIndex(), 1);
   QCOMPARE(currentSpy.count(), 1);
@@ -282,14 +284,14 @@ void TabPagerBackendTest::tracksCurrentDesktopFromDesktopReload() {
 
 void TabPagerBackendTest::tracksCurrentDesktop() {
   BackendFixture fixture({
-      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-      {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+      defaultDesktop("a", 1),
+      defaultDesktop("b", 2),
   });
   QSignalSpy currentSpy(&fixture.backend,
                         &TabPagerBackend::currentIndexChanged);
   QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
 
-  fixture.source->setCurrentDesktop(QStringLiteral("b"));
+  fixture.source->setCurrentDesktop(desktopId("b"));
 
   QCOMPARE(fixture.backend.currentIndex(), 1);
   QCOMPARE(currentSpy.count(), 1);
@@ -317,8 +319,8 @@ void TabPagerBackendTest::updatesNavigationWrapping() {
 
 void TabPagerBackendTest::activatesDesktopByIndex() {
   BackendFixture fixture({
-      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-      {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+      defaultDesktop("a", 1),
+      defaultDesktop("b", 2),
   });
 
   fixture.backend.activate(-1);
@@ -326,13 +328,13 @@ void TabPagerBackendTest::activatesDesktopByIndex() {
   fixture.backend.activate(1);
 
   QCOMPARE(fixture.source->activatedDesktops(),
-           QList<QVariant>{QStringLiteral("b")});
+           QList<QVariant>{desktopId("b")});
 }
 
 void TabPagerBackendTest::ignoresRelativeActivationWithoutCurrentDesktop() {
   BackendFixture fixture({
-      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-      {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+      defaultDesktop("a", 1),
+      defaultDesktop("b", 2),
   });
 
   fixture.backend.activateNext();
@@ -345,13 +347,13 @@ void TabPagerBackendTest::ignoresRelativeActivationWithoutCurrentDesktop() {
 void TabPagerBackendTest::stopsAtEdgesWithoutWrapping() {
   BackendFixture fixture(
       {
-          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-          {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
       },
-      QStringLiteral("a"), false);
+      desktopId("a"), false);
 
   fixture.backend.activatePrevious();
-  fixture.source->setCurrentDesktop(QStringLiteral("b"));
+  fixture.source->setCurrentDesktop(desktopId("b"));
   fixture.backend.activateNext();
 
   const QList<QVariant> expected;
@@ -361,35 +363,35 @@ void TabPagerBackendTest::stopsAtEdgesWithoutWrapping() {
 void TabPagerBackendTest::activatesNextAndPreviousWithoutWrapping() {
   BackendFixture fixture(
       {
-          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-          {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
-          {.id = QStringLiteral("c"), .name = QStringLiteral("Desktop 3")},
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+          defaultDesktop("c", 3),
       },
-      QStringLiteral("b"), false);
+      desktopId("b"), false);
 
   fixture.backend.activateNext();
   fixture.backend.activatePrevious();
-  fixture.source->setCurrentDesktop(QStringLiteral("c"));
+  fixture.source->setCurrentDesktop(desktopId("c"));
   fixture.backend.activateNext();
 
-  const QList<QVariant> expected = {QStringLiteral("c"), QStringLiteral("a")};
+  const QList<QVariant> expected = {desktopId("c"), desktopId("a")};
   QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 
 void TabPagerBackendTest::activatesNextAndPreviousWithWrapping() {
   BackendFixture fixture(
       {
-          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-          {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
-          {.id = QStringLiteral("c"), .name = QStringLiteral("Desktop 3")},
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+          defaultDesktop("c", 3),
       },
-      QStringLiteral("c"), true);
+      desktopId("c"), true);
 
   fixture.backend.activateNext();
-  fixture.source->setCurrentDesktop(QStringLiteral("a"));
+  fixture.source->setCurrentDesktop(desktopId("a"));
   fixture.backend.activatePrevious();
 
-  const QList<QVariant> expected = {QStringLiteral("a"), QStringLiteral("c")};
+  const QList<QVariant> expected = {desktopId("a"), desktopId("c")};
   QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 

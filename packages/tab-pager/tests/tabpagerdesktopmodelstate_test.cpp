@@ -2,10 +2,19 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 #include "tabpagerdesktopmodelstate.h"
+#include "tabpagertesthelpers.h"
 
 #include <QTest>
 
 namespace {
+using TabPagerTest::defaultDesktop;
+using TabPagerTest::desktopId;
+using TabPagerTest::desktopModelState;
+using TabPagerTest::desktopSnapshot;
+using TabPagerTest::namedDesktop;
+using TabPagerTest::role;
+using TabPagerTest::unnamedDesktop;
+
 void expectUnchanged(const TabPagerDesktopModelChange &change) {
   QCOMPARE(change.type, TabPagerDesktopModelChange::Type::Unchanged);
 }
@@ -54,11 +63,11 @@ void TabPagerDesktopModelStateTest::exposesDesktopRowRoleDefinitions() {
   }
 
   QCOMPARE(roles, (QList<int>{
-                      static_cast<int>(TabPagerDesktopRowRole::DesktopId),
-                      static_cast<int>(TabPagerDesktopRowRole::Name),
-                      static_cast<int>(TabPagerDesktopRowRole::Label),
-                      static_cast<int>(TabPagerDesktopRowRole::Number),
-                      static_cast<int>(TabPagerDesktopRowRole::Active),
+                      role(TabPagerDesktopRowRole::DesktopId),
+                      role(TabPagerDesktopRowRole::Name),
+                      role(TabPagerDesktopRowRole::Label),
+                      role(TabPagerDesktopRowRole::Number),
+                      role(TabPagerDesktopRowRole::Active),
                   }));
   QCOMPARE(names, (QList<QByteArray>{
                       "desktopId",
@@ -71,7 +80,7 @@ void TabPagerDesktopModelStateTest::exposesDesktopRowRoleDefinitions() {
 
 void TabPagerDesktopModelStateTest::readsDesktopRowDataByRole() {
   const TabPagerDesktopRowData rowData{
-      .desktopId = QStringLiteral("a"),
+      .desktopId = desktopId("a"),
       .name = QStringLiteral("Desktop 1"),
       .label = QStringLiteral("1"),
       .number = 1,
@@ -79,33 +88,33 @@ void TabPagerDesktopModelStateTest::readsDesktopRowDataByRole() {
   };
 
   QCOMPARE(tabPagerDesktopRowDataForRole(
-               rowData, static_cast<int>(TabPagerDesktopRowRole::DesktopId)),
-           QVariant(QStringLiteral("a")));
-  QCOMPARE(tabPagerDesktopRowDataForRole(
-               rowData, static_cast<int>(TabPagerDesktopRowRole::Name)),
+               rowData, role(TabPagerDesktopRowRole::DesktopId)),
+           desktopId("a"));
+  QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
+                                         role(TabPagerDesktopRowRole::Name)),
            QVariant(QStringLiteral("Desktop 1")));
-  QCOMPARE(tabPagerDesktopRowDataForRole(
-               rowData, static_cast<int>(TabPagerDesktopRowRole::Label)),
+  QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
+                                         role(TabPagerDesktopRowRole::Label)),
            QVariant(QStringLiteral("1")));
-  QCOMPARE(tabPagerDesktopRowDataForRole(
-               rowData, static_cast<int>(TabPagerDesktopRowRole::Number)),
+  QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
+                                         role(TabPagerDesktopRowRole::Number)),
            QVariant(1));
-  QCOMPARE(tabPagerDesktopRowDataForRole(
-               rowData, static_cast<int>(TabPagerDesktopRowRole::Active)),
+  QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
+                                         role(TabPagerDesktopRowRole::Active)),
            QVariant(true));
   QCOMPARE(tabPagerDesktopRowDataForRole(rowData, Qt::UserRole), QVariant());
 }
 
 void TabPagerDesktopModelStateTest::detectsDesktopRowChangedRoles() {
   const TabPagerDesktopRowData previousRow{
-      .desktopId = QStringLiteral("a"),
+      .desktopId = desktopId("a"),
       .name = QStringLiteral("Desktop 1"),
       .label = QStringLiteral("1"),
       .number = 1,
       .active = false,
   };
   const TabPagerDesktopRowData nextRow{
-      .desktopId = QStringLiteral("a"),
+      .desktopId = desktopId("a"),
       .name = QStringLiteral("Work"),
       .label = QStringLiteral("Work"),
       .number = 1,
@@ -114,79 +123,57 @@ void TabPagerDesktopModelStateTest::detectsDesktopRowChangedRoles() {
 
   QCOMPARE(tabPagerDesktopRowChangedRoles(previousRow, nextRow),
            (QList<int>{
-               static_cast<int>(TabPagerDesktopRowRole::Name),
-               static_cast<int>(TabPagerDesktopRowRole::Label),
-               static_cast<int>(TabPagerDesktopRowRole::Active),
+               role(TabPagerDesktopRowRole::Name),
+               role(TabPagerDesktopRowRole::Label),
+               role(TabPagerDesktopRowRole::Active),
            }));
   QCOMPARE(tabPagerDesktopRowChangedRoles(previousRow, previousRow).size(), 0);
 }
 
 void TabPagerDesktopModelStateTest::plansChangedDesktopRowRoles() {
   const TabPagerDesktopModelState state =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 1")},
-              },
-          .currentDesktop = {},
-      });
+      desktopModelState({defaultDesktop("a", 1)});
   const TabPagerDesktopModelState nextState =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"), .name = QStringLiteral("Work")},
-              },
-          .currentDesktop = QStringLiteral("a"),
-      });
+      desktopModelState({namedDesktop("a", "Work")}, desktopId("a"));
 
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
   expectRowsChanged(change, true, 1);
   const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
   QCOMPARE(rowUpdates.at(0).row, 0);
-  QCOMPARE(rowUpdates.at(0).roles,
-           (QList<int>{
-               static_cast<int>(TabPagerDesktopRowRole::Name),
-               static_cast<int>(TabPagerDesktopRowRole::Label),
-               static_cast<int>(TabPagerDesktopRowRole::Active),
-           }));
+  QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
+                                       role(TabPagerDesktopRowRole::Name),
+                                       role(TabPagerDesktopRowRole::Label),
+                                       role(TabPagerDesktopRowRole::Active),
+                                   }));
 }
 
 void TabPagerDesktopModelStateTest::tracksDesktopModelStateIndex() {
-  const TabPagerDesktopModelState state =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 1")},
-                  {.id = QStringLiteral("b"), .name = QStringLiteral("Work")},
-                  {.id = QStringLiteral("c"), .name = QString()},
-              },
-          .currentDesktop = QStringLiteral("b"),
-      });
+  const TabPagerDesktopModelState state = desktopModelState(
+      {
+          defaultDesktop("a", 1),
+          namedDesktop("b", "Work"),
+          unnamedDesktop("c"),
+      },
+      desktopId("b"));
 
   QCOMPARE(state.count(), 3);
   QCOMPARE(state.currentIndex(), 1);
   QCOMPARE(state.hasDesktopAt(-1), false);
   QCOMPARE(state.hasDesktopAt(3), false);
-  QCOMPARE(state.desktopIdAt(1), QVariant(QStringLiteral("b")));
+  QCOMPARE(state.desktopIdAt(1), desktopId("b"));
 }
 
 void TabPagerDesktopModelStateTest::derivesDesktopModelStateRows() {
-  const TabPagerDesktopModelState state =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 1")},
-                  {.id = QStringLiteral("b"), .name = QStringLiteral("Work")},
-              },
-          .currentDesktop = QStringLiteral("b"),
-      });
+  const TabPagerDesktopModelState state = desktopModelState(
+      {
+          defaultDesktop("a", 1),
+          namedDesktop("b", "Work"),
+      },
+      desktopId("b"));
 
   const TabPagerDesktopRowData firstRow = state.rowData(0);
-  QCOMPARE(firstRow.desktopId, QVariant(QStringLiteral("a")));
+  QCOMPARE(firstRow.desktopId, desktopId("a"));
   QCOMPARE(firstRow.name, QStringLiteral("Desktop 1"));
   QCOMPARE(firstRow.label, QStringLiteral("1"));
   QCOMPARE(firstRow.number, 1);
@@ -198,13 +185,8 @@ void TabPagerDesktopModelStateTest::derivesDesktopModelStateRows() {
 }
 
 void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelSnapshot() {
-  const TabPagerDesktopSnapshot snapshot{
-      .desktops =
-          {
-              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-          },
-      .currentDesktop = QStringLiteral("a"),
-  };
+  const TabPagerDesktopSnapshot snapshot =
+      desktopSnapshot({defaultDesktop("a", 1)}, desktopId("a"));
   const TabPagerDesktopModelState state =
       TabPagerDesktopModelState::fromSnapshot(snapshot);
 
@@ -217,18 +199,12 @@ void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelSnapshot() {
 void TabPagerDesktopModelStateTest::
     plansNoChangeForUnmatchedCurrentDesktopChange() {
   const QList<TabPagerDesktop> desktops = {
-      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+      defaultDesktop("a", 1),
   };
   const TabPagerDesktopModelState state =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops = desktops,
-          .currentDesktop = QStringLiteral("missing-a"),
-      });
+      desktopModelState(desktops, desktopId("missing-a"));
   const TabPagerDesktopModelState nextState =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops = desktops,
-          .currentDesktop = QStringLiteral("missing-b"),
-      });
+      desktopModelState(desktops, desktopId("missing-b"));
 
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
@@ -237,26 +213,10 @@ void TabPagerDesktopModelStateTest::
 
 void TabPagerDesktopModelStateTest::plansDesktopModelResetWhenCountChanges() {
   const TabPagerDesktopModelState state =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 1")},
-              },
-          .currentDesktop = QStringLiteral("a"),
-      });
+      desktopModelState({defaultDesktop("a", 1)}, desktopId("a"));
 
-  const TabPagerDesktopModelState nextState =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 1")},
-                  {.id = QStringLiteral("b"),
-                   .name = QStringLiteral("Desktop 2")},
-              },
-          .currentDesktop = QStringLiteral("b"),
-      });
+  const TabPagerDesktopModelState nextState = desktopModelState(
+      {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("b"));
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
   expectReset(change, true, true);
@@ -264,58 +224,22 @@ void TabPagerDesktopModelStateTest::plansDesktopModelResetWhenCountChanges() {
 
 void TabPagerDesktopModelStateTest::
     plansDesktopModelResetWhenRowIdentityChanges() {
-  const TabPagerDesktopModelState state =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 1")},
-                  {.id = QStringLiteral("b"),
-                   .name = QStringLiteral("Desktop 2")},
-              },
-          .currentDesktop = QStringLiteral("a"),
-      });
+  const TabPagerDesktopModelState state = desktopModelState(
+      {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelState nextState =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("b"),
-                   .name = QStringLiteral("Desktop 1")},
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 2")},
-              },
-          .currentDesktop = QStringLiteral("a"),
-      });
+  const TabPagerDesktopModelState nextState = desktopModelState(
+      {defaultDesktop("b", 1), defaultDesktop("a", 2)}, desktopId("a"));
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
   expectReset(change, false, true);
 }
 
 void TabPagerDesktopModelStateTest::plansCurrentDesktopRowUpdates() {
-  const TabPagerDesktopModelState state =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 1")},
-                  {.id = QStringLiteral("b"),
-                   .name = QStringLiteral("Desktop 2")},
-              },
-          .currentDesktop = QStringLiteral("a"),
-      });
+  const TabPagerDesktopModelState state = desktopModelState(
+      {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelState nextState =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 1")},
-                  {.id = QStringLiteral("b"),
-                   .name = QStringLiteral("Desktop 2")},
-              },
-          .currentDesktop = QStringLiteral("b"),
-      });
+  const TabPagerDesktopModelState nextState = desktopModelState(
+      {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("b"));
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
   expectRowsChanged(change, true, 2);
@@ -323,47 +247,29 @@ void TabPagerDesktopModelStateTest::plansCurrentDesktopRowUpdates() {
   const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
   QCOMPARE(rowUpdates.at(0).row, 0);
   QCOMPARE(rowUpdates.at(0).roles,
-           QList<int>{static_cast<int>(TabPagerDesktopRowRole::Active)});
+           QList<int>{role(TabPagerDesktopRowRole::Active)});
 
   QCOMPARE(rowUpdates.at(1).row, 1);
   QCOMPARE(rowUpdates.at(1).roles,
-           QList<int>{static_cast<int>(TabPagerDesktopRowRole::Active)});
+           QList<int>{role(TabPagerDesktopRowRole::Active)});
 }
 
 void TabPagerDesktopModelStateTest::plansDesktopDataRowUpdates() {
-  const TabPagerDesktopModelState state =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 1")},
-                  {.id = QStringLiteral("b"),
-                   .name = QStringLiteral("Desktop 2")},
-              },
-          .currentDesktop = QStringLiteral("a"),
-      });
+  const TabPagerDesktopModelState state = desktopModelState(
+      {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelState nextState =
-      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
-          .desktops =
-              {
-                  {.id = QStringLiteral("a"),
-                   .name = QStringLiteral("Desktop 1")},
-                  {.id = QStringLiteral("b"), .name = QStringLiteral("Chat")},
-              },
-          .currentDesktop = QStringLiteral("a"),
-      });
+  const TabPagerDesktopModelState nextState = desktopModelState(
+      {defaultDesktop("a", 1), namedDesktop("b", "Chat")}, desktopId("a"));
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
   expectRowsChanged(change, false, 1);
 
   const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
   QCOMPARE(rowUpdates.at(0).row, 1);
-  QCOMPARE(rowUpdates.at(0).roles,
-           (QList<int>{
-               static_cast<int>(TabPagerDesktopRowRole::Name),
-               static_cast<int>(TabPagerDesktopRowRole::Label),
-           }));
+  QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
+                                       role(TabPagerDesktopRowRole::Name),
+                                       role(TabPagerDesktopRowRole::Label),
+                                   }));
 }
 
 QTEST_MAIN(TabPagerDesktopModelStateTest)
