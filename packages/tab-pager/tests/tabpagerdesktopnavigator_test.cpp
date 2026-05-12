@@ -8,12 +8,13 @@
 #include <optional>
 
 namespace {
+constexpr int missingNavigationTarget = -1;
+
 void expectNavigationTarget(const std::optional<int> &actual,
                             const std::optional<int> &expected) {
   QCOMPARE(actual.has_value(), expected.has_value());
-  if (expected.has_value()) {
-    QCOMPARE(*actual, *expected);
-  }
+  QCOMPARE(actual.value_or(missingNavigationTarget),
+           expected.value_or(missingNavigationTarget));
 }
 } // namespace
 

@@ -68,11 +68,12 @@ let
       -p "$build_dir" \
       --checks=level1 \
       --ignore-included-files \
-      --extra-arg=-I${pkgs.kdePackages.qtbase}/include \
-      --extra-arg=-I${pkgs.kdePackages.qtdeclarative}/include \
-      --extra-arg=-I${gccIncludeDir} \
-      --extra-arg=-I${gccIncludeDir}/${pkgs.stdenv.hostPlatform.config} \
-      --extra-arg=-I${pkgs.stdenv.cc.libc_dev}/include \
+      --extra-arg=-Wno-unknown-warning-option \
+      --extra-arg=-isystem${pkgs.kdePackages.qtbase}/include \
+      --extra-arg=-isystem${pkgs.kdePackages.qtdeclarative}/include \
+      --extra-arg=-isystem${gccIncludeDir} \
+      --extra-arg=-isystem${gccIncludeDir}/${pkgs.stdenv.hostPlatform.config} \
+      --extra-arg=-isystem${pkgs.stdenv.cc.libc_dev}/include \
       "''${cxx_sources[@]}"
   '';
 
