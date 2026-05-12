@@ -117,6 +117,7 @@ private Q_SLOTS:
   void activatesNextAndPreviousWithoutWrapping();
   void activatesNextAndPreviousWithWrapping();
   void activatesFromAccumulatedWheelDelta();
+  void activatesFromMultipleWheelSteps();
 };
 
 void TabPagerBackendTest::exposesModelState() {
@@ -416,6 +417,22 @@ void TabPagerBackendTest::activatesFromAccumulatedWheelDelta() {
   fixture.backend.activateByWheelDelta(-wheelStepDelta);
 
   const QList<QVariant> expected = {desktopId("a"), desktopId("c")};
+  QCOMPARE(fixture.source->activatedDesktops(), expected);
+}
+
+void TabPagerBackendTest::activatesFromMultipleWheelSteps() {
+  BackendFixture fixture(
+      {
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+          defaultDesktop("c", 3),
+      },
+      desktopId("b"), true);
+
+  fixture.backend.activateByWheelDelta(wheelStepDelta * 2);
+  fixture.backend.activateByWheelDelta(-wheelStepDelta * 2);
+
+  const QList<QVariant> expected = {desktopId("c"), desktopId("a")};
   QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 

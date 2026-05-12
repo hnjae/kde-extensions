@@ -77,12 +77,8 @@ void TabPagerBackend::activateByWheelDelta(int delta) {
       TabPagerDesktopLogic::consumeWheelDelta(m_pendingWheelDelta, delta);
   m_pendingWheelDelta = result.remainingDelta;
 
-  for (int steps = result.steps; steps > 0; --steps) {
-    activatePrevious();
-  }
-
-  for (int steps = result.steps; steps < 0; ++steps) {
-    activateNext();
+  if (result.steps != 0) {
+    activateOffset(-result.steps);
   }
 }
 
