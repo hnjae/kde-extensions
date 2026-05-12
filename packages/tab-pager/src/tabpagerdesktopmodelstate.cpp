@@ -10,26 +10,51 @@
 #include <utility>
 
 namespace {
+[[nodiscard]] QVariant desktopIdForRow(const TabPagerDesktopRowData &rowData) {
+  return rowData.desktopId;
+}
+
+[[nodiscard]] QVariant nameForRow(const TabPagerDesktopRowData &rowData) {
+  return rowData.name;
+}
+
+[[nodiscard]] QVariant labelForRow(const TabPagerDesktopRowData &rowData) {
+  return rowData.label;
+}
+
+[[nodiscard]] QVariant numberForRow(const TabPagerDesktopRowData &rowData) {
+  return rowData.number;
+}
+
+[[nodiscard]] QVariant activeForRow(const TabPagerDesktopRowData &rowData) {
+  return rowData.active;
+}
+
 constexpr std::array<TabPagerDesktopRowRoleDefinition, 5> rowRoleDefinitions{{
     {
         .role = static_cast<int>(TabPagerDesktopRowRole::DesktopId),
         .name = "desktopId",
+        .readData = desktopIdForRow,
     },
     {
         .role = static_cast<int>(TabPagerDesktopRowRole::Name),
         .name = "name",
+        .readData = nameForRow,
     },
     {
         .role = static_cast<int>(TabPagerDesktopRowRole::Label),
         .name = "label",
+        .readData = labelForRow,
     },
     {
         .role = static_cast<int>(TabPagerDesktopRowRole::Number),
         .name = "number",
+        .readData = numberForRow,
     },
     {
         .role = static_cast<int>(TabPagerDesktopRowRole::Active),
         .name = "active",
+        .readData = activeForRow,
     },
 }};
 
@@ -89,17 +114,11 @@ tabPagerDesktopRowRoleDefinitions() {
 
 QVariant tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData,
                                        int role) {
-  switch (static_cast<TabPagerDesktopRowRole>(role)) {
-  case TabPagerDesktopRowRole::DesktopId:
-    return rowData.desktopId;
-  case TabPagerDesktopRowRole::Name:
-    return rowData.name;
-  case TabPagerDesktopRowRole::Label:
-    return rowData.label;
-  case TabPagerDesktopRowRole::Number:
-    return rowData.number;
-  case TabPagerDesktopRowRole::Active:
-    return rowData.active;
+  for (const TabPagerDesktopRowRoleDefinition &definition :
+       tabPagerDesktopRowRoleDefinitions()) {
+    if (definition.role == role && definition.readData != nullptr) {
+      return definition.readData(rowData);
+    }
   }
 
   return {};
@@ -111,8 +130,12 @@ tabPagerDesktopChangedRoles(const TabPagerDesktopRowChange &rowChange) {
 
   for (const TabPagerDesktopRowRoleDefinition &definition :
        tabPagerDesktopRowRoleDefinitions()) {
-    if (tabPagerDesktopRowDataForRole(rowChange.previousRow, definition.role) !=
-        tabPagerDesktopRowDataForRole(rowChange.nextRow, definition.role)) {
+    if (definition.readData == nullptr) {
+      continue;
+    }
+
+    if (definition.readData(rowChange.previousRow) !=
+        definition.readData(rowChange.nextRow)) {
       roles.append(definition.role);
     }
   }

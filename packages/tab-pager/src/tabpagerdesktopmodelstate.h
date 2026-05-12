@@ -21,17 +21,21 @@ enum class TabPagerDesktopRowRole : int {
   Active,
 };
 
-struct TabPagerDesktopRowRoleDefinition {
-  int role = 0;
-  const char *name = nullptr;
-};
-
 struct TabPagerDesktopRowData {
   QVariant desktopId;
   QString name;
   QString label;
   int number = 0;
   bool active = false;
+};
+
+using TabPagerDesktopRowRoleDataReader =
+    QVariant (*)(const TabPagerDesktopRowData &rowData);
+
+struct TabPagerDesktopRowRoleDefinition {
+  int role = 0;
+  const char *name = nullptr;
+  TabPagerDesktopRowRoleDataReader readData = nullptr;
 };
 
 struct TabPagerDesktopRowChange {
