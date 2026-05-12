@@ -5,6 +5,33 @@
 
 #include <QTest>
 
+namespace {
+void expectUnchanged(const TabPagerDesktopModelChange &change) {
+  QCOMPARE(change.isEmpty(), true);
+  QCOMPARE(change.modelUpdate, TabPagerDesktopModelChange::ModelUpdate::None);
+  QCOMPARE(change.countChanged, false);
+  QCOMPARE(change.currentIndexChanged, false);
+  QCOMPARE(change.rowUpdates.size(), 0);
+}
+
+void expectReset(const TabPagerDesktopModelChange &change, bool countChanged,
+                 bool currentIndexChanged) {
+  QCOMPARE(change.modelUpdate, TabPagerDesktopModelChange::ModelUpdate::Reset);
+  QCOMPARE(change.countChanged, countChanged);
+  QCOMPARE(change.currentIndexChanged, currentIndexChanged);
+  QCOMPARE(change.rowUpdates.size(), 0);
+}
+
+void expectRowsChanged(const TabPagerDesktopModelChange &change,
+                       bool currentIndexChanged, qsizetype rowUpdateCount) {
+  QCOMPARE(change.modelUpdate,
+           TabPagerDesktopModelChange::ModelUpdate::RowsChanged);
+  QCOMPARE(change.countChanged, false);
+  QCOMPARE(change.currentIndexChanged, currentIndexChanged);
+  QCOMPARE(change.rowUpdates.size(), rowUpdateCount);
+}
+} // namespace
+
 class TabPagerDesktopModelStateTest : public QObject {
   Q_OBJECT
 
@@ -122,11 +149,9 @@ void TabPagerDesktopModelStateTest::plansChangedDesktopRowRoles() {
 
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.modelUpdate(),
-           TabPagerDesktopModelChange::ModelUpdate::RowsChanged);
-  QCOMPARE(change.rowUpdates().size(), 1);
-  QCOMPARE(change.rowUpdates().at(0).row, 0);
-  QCOMPARE(change.rowUpdates().at(0).roles,
+  expectRowsChanged(change, true, 1);
+  QCOMPARE(change.rowUpdates.at(0).row, 0);
+  QCOMPARE(change.rowUpdates.at(0).roles,
            (QList<int>{
                static_cast<int>(TabPagerDesktopRowRole::Name),
                static_cast<int>(TabPagerDesktopRowRole::Label),
@@ -192,11 +217,7 @@ void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelSnapshot() {
   const TabPagerDesktopModelChange change =
       state.changeForState(TabPagerDesktopModelState::fromSnapshot(snapshot));
 
-  QCOMPARE(change.isEmpty(), true);
-  QCOMPARE(change.modelUpdate(), TabPagerDesktopModelChange::ModelUpdate::None);
-  QCOMPARE(change.countChanged(), false);
-  QCOMPARE(change.currentIndexChanged(), false);
-  QCOMPARE(change.rowUpdates().size(), 0);
+  expectUnchanged(change);
 }
 
 void TabPagerDesktopModelStateTest::
@@ -217,11 +238,7 @@ void TabPagerDesktopModelStateTest::
 
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.isEmpty(), true);
-  QCOMPARE(change.modelUpdate(), TabPagerDesktopModelChange::ModelUpdate::None);
-  QCOMPARE(change.countChanged(), false);
-  QCOMPARE(change.currentIndexChanged(), false);
-  QCOMPARE(change.rowUpdates().size(), 0);
+  expectUnchanged(change);
 }
 
 void TabPagerDesktopModelStateTest::plansDesktopModelResetWhenCountChanges() {
@@ -248,11 +265,7 @@ void TabPagerDesktopModelStateTest::plansDesktopModelResetWhenCountChanges() {
       });
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.modelUpdate(),
-           TabPagerDesktopModelChange::ModelUpdate::Reset);
-  QCOMPARE(change.countChanged(), true);
-  QCOMPARE(change.currentIndexChanged(), true);
-  QCOMPARE(change.rowUpdates().size(), 0);
+  expectReset(change, true, true);
 }
 
 void TabPagerDesktopModelStateTest::
@@ -282,11 +295,7 @@ void TabPagerDesktopModelStateTest::
       });
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.modelUpdate(),
-           TabPagerDesktopModelChange::ModelUpdate::Reset);
-  QCOMPARE(change.countChanged(), false);
-  QCOMPARE(change.currentIndexChanged(), true);
-  QCOMPARE(change.rowUpdates().size(), 0);
+  expectReset(change, false, true);
 }
 
 void TabPagerDesktopModelStateTest::plansCurrentDesktopRowUpdates() {
@@ -315,17 +324,14 @@ void TabPagerDesktopModelStateTest::plansCurrentDesktopRowUpdates() {
       });
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.modelUpdate(),
-           TabPagerDesktopModelChange::ModelUpdate::RowsChanged);
-  QCOMPARE(change.currentIndexChanged(), true);
-  QCOMPARE(change.rowUpdates().size(), 2);
+  expectRowsChanged(change, true, 2);
 
-  QCOMPARE(change.rowUpdates().at(0).row, 0);
-  QCOMPARE(change.rowUpdates().at(0).roles,
+  QCOMPARE(change.rowUpdates.at(0).row, 0);
+  QCOMPARE(change.rowUpdates.at(0).roles,
            QList<int>{static_cast<int>(TabPagerDesktopRowRole::Active)});
 
-  QCOMPARE(change.rowUpdates().at(1).row, 1);
-  QCOMPARE(change.rowUpdates().at(1).roles,
+  QCOMPARE(change.rowUpdates.at(1).row, 1);
+  QCOMPARE(change.rowUpdates.at(1).roles,
            QList<int>{static_cast<int>(TabPagerDesktopRowRole::Active)});
 }
 
@@ -354,14 +360,10 @@ void TabPagerDesktopModelStateTest::plansDesktopDataRowUpdates() {
       });
   const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.modelUpdate(),
-           TabPagerDesktopModelChange::ModelUpdate::RowsChanged);
-  QCOMPARE(change.countChanged(), false);
-  QCOMPARE(change.currentIndexChanged(), false);
-  QCOMPARE(change.rowUpdates().size(), 1);
+  expectRowsChanged(change, false, 1);
 
-  QCOMPARE(change.rowUpdates().at(0).row, 1);
-  QCOMPARE(change.rowUpdates().at(0).roles,
+  QCOMPARE(change.rowUpdates.at(0).row, 1);
+  QCOMPARE(change.rowUpdates.at(0).roles,
            (QList<int>{
                static_cast<int>(TabPagerDesktopRowRole::Name),
                static_cast<int>(TabPagerDesktopRowRole::Label),

@@ -112,22 +112,22 @@ void TabPagerBackend::applyDesktopSnapshot(
     return;
   }
 
-  switch (change.modelUpdate()) {
+  switch (change.modelUpdate) {
   case TabPagerDesktopModelChange::ModelUpdate::None:
     break;
   case TabPagerDesktopModelChange::ModelUpdate::Reset:
     resetDesktopState(std::move(nextState));
     break;
   case TabPagerDesktopModelChange::ModelUpdate::RowsChanged:
-    updateDesktopStateRows(std::move(nextState), change.rowUpdates());
+    updateDesktopStateRows(std::move(nextState), change.rowUpdates);
     break;
   }
 
-  if (change.countChanged()) {
+  if (change.countChanged) {
     Q_EMIT countChanged();
   }
 
-  if (change.currentIndexChanged()) {
+  if (change.currentIndexChanged) {
     Q_EMIT currentIndexChanged();
   }
 }
