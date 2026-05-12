@@ -10,27 +10,16 @@
 #include <QVariant>
 
 #include <cstdint>
-#include <variant>
 
 struct TabPagerDesktopRowUpdate {
   qsizetype row = -1;
   QList<int> roles;
 };
 
-struct TabPagerDesktopModelResetChange {
-  bool countChanged = false;
-  bool currentIndexChanged = false;
-};
-
-struct TabPagerDesktopModelRowsChange {
-  bool currentIndexChanged = false;
-  QList<TabPagerDesktopRowUpdate> rows;
-};
-
 class TabPagerDesktopModelChange final {
 public:
-  enum class ModelUpdate : std::uint8_t {
-    None,
+  enum class Type : std::uint8_t {
+    Unchanged,
     Reset,
     RowsChanged,
   };
@@ -41,19 +30,18 @@ public:
   [[nodiscard]] static TabPagerDesktopModelChange
   rowsChanged(bool currentIndexChanged, QList<TabPagerDesktopRowUpdate> rows);
 
-  [[nodiscard]] bool isEmpty() const;
-  [[nodiscard]] ModelUpdate modelUpdate() const;
-  [[nodiscard]] const TabPagerDesktopModelResetChange &resetChange() const;
-  [[nodiscard]] const TabPagerDesktopModelRowsChange &rowsChange() const;
+  [[nodiscard]] Type type() const;
+  [[nodiscard]] bool countChanged() const;
+  [[nodiscard]] bool currentIndexChanged() const;
+  [[nodiscard]] const QList<TabPagerDesktopRowUpdate> &rows() const;
 
 private:
-  using ChangeData =
-      std::variant<std::monostate, TabPagerDesktopModelResetChange,
-                   TabPagerDesktopModelRowsChange>;
-
   TabPagerDesktopModelChange() = default;
 
-  ChangeData m_data;
+  Type m_type = Type::Unchanged;
+  bool m_countChanged = false;
+  bool m_currentIndexChanged = false;
+  QList<TabPagerDesktopRowUpdate> m_rows;
 };
 
 class TabPagerDesktopModelState final {

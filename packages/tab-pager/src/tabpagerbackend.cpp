@@ -108,29 +108,22 @@ void TabPagerBackend::applyDesktopSnapshot(
   TabPagerDesktopModelState nextState =
       TabPagerDesktopModelState::fromSnapshot(snapshot);
   const TabPagerDesktopModelChange change = m_state.changeForState(nextState);
-  if (change.isEmpty()) {
-    return;
-  }
 
   bool shouldEmitCountChanged = false;
   bool shouldEmitCurrentIndexChanged = false;
 
-  switch (change.modelUpdate()) {
-  case TabPagerDesktopModelChange::ModelUpdate::None:
-    break;
-  case TabPagerDesktopModelChange::ModelUpdate::Reset: {
-    const TabPagerDesktopModelResetChange &resetChange = change.resetChange();
-    shouldEmitCountChanged = resetChange.countChanged;
-    shouldEmitCurrentIndexChanged = resetChange.currentIndexChanged;
+  switch (change.type()) {
+  case TabPagerDesktopModelChange::Type::Unchanged:
+    return;
+  case TabPagerDesktopModelChange::Type::Reset:
+    shouldEmitCountChanged = change.countChanged();
+    shouldEmitCurrentIndexChanged = change.currentIndexChanged();
     resetDesktopState(std::move(nextState));
     break;
-  }
-  case TabPagerDesktopModelChange::ModelUpdate::RowsChanged: {
-    const TabPagerDesktopModelRowsChange &rowsChange = change.rowsChange();
-    shouldEmitCurrentIndexChanged = rowsChange.currentIndexChanged;
-    updateDesktopStateRows(std::move(nextState), rowsChange.rows);
+  case TabPagerDesktopModelChange::Type::RowsChanged:
+    shouldEmitCurrentIndexChanged = change.currentIndexChanged();
+    updateDesktopStateRows(std::move(nextState), change.rows());
     break;
-  }
   }
 
   if (shouldEmitCountChanged) {
