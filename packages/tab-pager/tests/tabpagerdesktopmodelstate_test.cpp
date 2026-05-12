@@ -120,8 +120,10 @@ void TabPagerDesktopModelStateTest::plansChangedDesktopRowRoles() {
           .currentDesktop = QStringLiteral("a"),
       });
 
-  const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
+  QCOMPARE(change.modelUpdate(),
+           TabPagerDesktopModelChange::ModelUpdate::RowsChanged);
   QCOMPARE(change.rowUpdates().size(), 1);
   QCOMPARE(change.rowUpdates().at(0).row, 0);
   QCOMPARE(change.rowUpdates().at(0).roles,
@@ -187,10 +189,11 @@ void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelSnapshot() {
   const TabPagerDesktopModelState state =
       TabPagerDesktopModelState::fromSnapshot(snapshot);
 
-  const TabPagerDesktopSnapshotChange change =
+  const TabPagerDesktopModelChange change =
       state.changeForState(TabPagerDesktopModelState::fromSnapshot(snapshot));
 
   QCOMPARE(change.isEmpty(), true);
+  QCOMPARE(change.modelUpdate(), TabPagerDesktopModelChange::ModelUpdate::None);
   QCOMPARE(change.countChanged(), false);
   QCOMPARE(change.currentIndexChanged(), false);
   QCOMPARE(change.rowUpdates().size(), 0);
@@ -212,9 +215,10 @@ void TabPagerDesktopModelStateTest::
           .currentDesktop = QStringLiteral("missing-b"),
       });
 
-  const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
   QCOMPARE(change.isEmpty(), true);
+  QCOMPARE(change.modelUpdate(), TabPagerDesktopModelChange::ModelUpdate::None);
   QCOMPARE(change.countChanged(), false);
   QCOMPARE(change.currentIndexChanged(), false);
   QCOMPARE(change.rowUpdates().size(), 0);
@@ -242,9 +246,10 @@ void TabPagerDesktopModelStateTest::plansDesktopModelResetWhenCountChanges() {
               },
           .currentDesktop = QStringLiteral("b"),
       });
-  const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.requiresModelReset(), true);
+  QCOMPARE(change.modelUpdate(),
+           TabPagerDesktopModelChange::ModelUpdate::Reset);
   QCOMPARE(change.countChanged(), true);
   QCOMPARE(change.currentIndexChanged(), true);
   QCOMPARE(change.rowUpdates().size(), 0);
@@ -275,9 +280,10 @@ void TabPagerDesktopModelStateTest::
               },
           .currentDesktop = QStringLiteral("a"),
       });
-  const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.requiresModelReset(), true);
+  QCOMPARE(change.modelUpdate(),
+           TabPagerDesktopModelChange::ModelUpdate::Reset);
   QCOMPARE(change.countChanged(), false);
   QCOMPARE(change.currentIndexChanged(), true);
   QCOMPARE(change.rowUpdates().size(), 0);
@@ -307,9 +313,10 @@ void TabPagerDesktopModelStateTest::plansCurrentDesktopRowUpdates() {
               },
           .currentDesktop = QStringLiteral("b"),
       });
-  const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.updatesRows(), true);
+  QCOMPARE(change.modelUpdate(),
+           TabPagerDesktopModelChange::ModelUpdate::RowsChanged);
   QCOMPARE(change.currentIndexChanged(), true);
   QCOMPARE(change.rowUpdates().size(), 2);
 
@@ -345,9 +352,10 @@ void TabPagerDesktopModelStateTest::plansDesktopDataRowUpdates() {
               },
           .currentDesktop = QStringLiteral("a"),
       });
-  const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.updatesRows(), true);
+  QCOMPARE(change.modelUpdate(),
+           TabPagerDesktopModelChange::ModelUpdate::RowsChanged);
   QCOMPARE(change.countChanged(), false);
   QCOMPARE(change.currentIndexChanged(), false);
   QCOMPARE(change.rowUpdates().size(), 1);
