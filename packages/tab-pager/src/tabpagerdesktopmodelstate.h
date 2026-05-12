@@ -56,13 +56,8 @@ public:
 
   void setSnapshot(const TabPagerDesktopSnapshot &snapshot);
 
-  [[nodiscard]] static bool sameSnapshot(const TabPagerDesktopSnapshot &left,
-                                         const TabPagerDesktopSnapshot &right);
-  [[nodiscard]] static TabPagerDesktopRowData
-  rowData(qsizetype row, const TabPagerDesktop &desktop,
-          const QVariant &currentDesktop);
-
 private:
-  QList<TabPagerDesktop> m_desktops;
-  QVariant m_currentDesktop;
+  TabPagerDesktopSnapshot m_snapshot;
+  QList<TabPagerDesktopRowData> m_rows;
+  int m_currentIndex = -1;
 };
