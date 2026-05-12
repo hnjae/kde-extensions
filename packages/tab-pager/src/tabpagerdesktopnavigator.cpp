@@ -5,7 +5,6 @@
 
 namespace {
 constexpr int wheelDeltaPerStep = 120;
-constexpr int invalidDesktopIndex = -1;
 
 struct WheelDeltaResult {
   int remainingDelta = 0;
@@ -44,11 +43,11 @@ void TabPagerDesktopNavigator::setNavigationWrappingAround(
   m_navigationWrappingAround = navigationWrappingAround;
 }
 
-int TabPagerDesktopNavigator::targetIndexForOffset(
+std::optional<int> TabPagerDesktopNavigator::targetIndexForOffset(
     const TabPagerDesktopNavigationContext &context, int offset) const {
   if (context.desktopCount <= 0 || context.currentIndex < 0 ||
       context.currentIndex >= context.desktopCount) {
-    return invalidDesktopIndex;
+    return std::nullopt;
   }
 
   const long long targetIndex =
@@ -58,20 +57,20 @@ int TabPagerDesktopNavigator::targetIndexForOffset(
   }
 
   if (!m_navigationWrappingAround) {
-    return invalidDesktopIndex;
+    return std::nullopt;
   }
 
   return wrappedIndexForOffset(context.currentIndex, context.desktopCount,
                                offset);
 }
 
-int TabPagerDesktopNavigator::targetIndexForWheelDelta(
+std::optional<int> TabPagerDesktopNavigator::targetIndexForWheelDelta(
     const TabPagerDesktopNavigationContext &context, int delta) {
   const WheelDeltaResult result = consumeWheelDelta(m_pendingWheelDelta, delta);
   m_pendingWheelDelta = result.remainingDelta;
 
   if (result.steps == 0) {
-    return invalidDesktopIndex;
+    return std::nullopt;
   }
 
   return targetIndexForOffset(context, -result.steps);

@@ -12,6 +12,7 @@
 #include <QVariant>
 
 #include <memory>
+#include <optional>
 
 class TabPagerBackend : public QAbstractListModel {
   Q_OBJECT
@@ -57,7 +58,7 @@ private:
   void updateDesktopStateRows(TabPagerDesktopModelState nextState,
                               const QList<TabPagerDesktopRowUpdate> &rows);
   [[nodiscard]] TabPagerDesktopNavigationContext navigationContext() const;
-  void activateNavigationTarget(int targetIndex);
+  void activateNavigationTarget(std::optional<int> targetIndex);
   void activateOffset(int offset);
 
   std::unique_ptr<TabPagerDesktopSource> m_source;

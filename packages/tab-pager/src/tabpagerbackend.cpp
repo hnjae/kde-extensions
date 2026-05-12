@@ -153,9 +153,9 @@ TabPagerDesktopNavigationContext TabPagerBackend::navigationContext() const {
   };
 }
 
-void TabPagerBackend::activateNavigationTarget(int targetIndex) {
-  if (targetIndex >= 0) {
-    activate(targetIndex);
+void TabPagerBackend::activateNavigationTarget(std::optional<int> targetIndex) {
+  if (targetIndex.has_value()) {
+    activate(*targetIndex);
   }
 }
 
