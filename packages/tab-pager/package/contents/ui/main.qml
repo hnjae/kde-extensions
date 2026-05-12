@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
+import org.kde.ksvg as KSvg
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 
@@ -75,7 +76,7 @@ PlasmoidItem {
             QtQuick.Repeater {
                 model: backend
 
-                delegate: QtQuick.Rectangle {
+                delegate: QtQuick.Item {
                     id: desktopBox
 
                     required property bool active
@@ -85,33 +86,61 @@ PlasmoidItem {
                     readonly property int horizontalPadding: fullRepresentationItem.horizontalPadding
                     readonly property int verticalPadding: fullRepresentationItem.verticalPadding
 
-                    border.color: active ? fullRepresentationItem.palette.active.highlight : fullRepresentationItem.palette.disabled.text
-                    border.width: 1
-                    color: active ? fullRepresentationItem.palette.active.highlight : "transparent"
                     height: implicitHeight
-                    implicitHeight: desktopLabel.implicitHeight + verticalPadding * 2
-                    implicitWidth: desktopLabel.implicitWidth + horizontalPadding * 2
+                    implicitHeight: desktopLabel.implicitHeight + desktopFrame.margins.top + desktopFrame.margins.bottom + verticalPadding * 2
+                    implicitWidth: desktopLabel.implicitWidth + desktopFrame.margins.left + desktopFrame.margins.right + horizontalPadding * 2
+                    state: desktopMouseArea.containsMouse ? "hover" : active ? "active" : "normal"
                     width: implicitWidth
+
+                    PagerFrame {
+                        id: desktopFrame
+
+                        prefix: "hover"
+                        z: 2
+                    }
+
+                    PagerFrame {
+                        prefix: "active"
+                        z: 3
+                    }
+
+                    PagerFrame {
+                        prefix: "normal"
+                        z: 4
+                    }
 
                     PlasmaComponents.Label {
                         id: desktopLabel
 
-                        anchors.centerIn: parent
-                        color: desktopBox.active ? fullRepresentationItem.palette.active.highlightedText : fullRepresentationItem.palette.active.text
+                        anchors {
+                            fill: parent
+                            bottomMargin: desktopFrame.margins.bottom + desktopBox.verticalPadding
+                            leftMargin: desktopFrame.margins.left + desktopBox.horizontalPadding
+                            rightMargin: desktopFrame.margins.right + desktopBox.horizontalPadding
+                            topMargin: desktopFrame.margins.top + desktopBox.verticalPadding
+                        }
                         font: backend.labelFont
                         horizontalAlignment: QtQuick.Text.AlignHCenter
                         text: desktopBox.label
                         verticalAlignment: QtQuick.Text.AlignVCenter
+                        z: 9999
                     }
 
                     QtQuick.MouseArea {
                         anchors.fill: parent
                         cursorShape: QtQuick.Qt.PointingHandCursor
+                        hoverEnabled: true
 
                         onClicked: backend.activate(desktopBox.index)
                     }
                 }
             }
         }
+    }
+
+    component PagerFrame: KSvg.FrameSvgItem {
+        anchors.fill: parent
+        imagePath: "widgets/pager"
+        opacity: desktopBox.state === usedPrefix ? 1 : 0
     }
 }
