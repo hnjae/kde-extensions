@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 #include "tabpagerbackend.h"
+#include "tabpagerdesktoplogic.h"
 
 #include <QSignalSpy>
 #include <QTest>
@@ -74,6 +75,8 @@ class TabPagerBackendTest : public QObject {
 private Q_SLOTS:
   void formatsDesktopLabel_data();
   void formatsDesktopLabel();
+  void resolvesNavigationTarget_data();
+  void resolvesNavigationTarget();
   void exposesModelState();
   void exposesModelData();
   void exposesRoleNames();
@@ -115,7 +118,38 @@ void TabPagerBackendTest::formatsDesktopLabel() {
   QFETCH(QString, name);
   QFETCH(QString, expected);
 
-  QCOMPARE(TabPagerBackend::labelForDesktop(number, name), expected);
+  QCOMPARE(TabPagerDesktopLogic::labelForDesktop(number, name), expected);
+}
+
+void TabPagerBackendTest::resolvesNavigationTarget_data() {
+  QTest::addColumn<int>("currentIndex");
+  QTest::addColumn<int>("desktopCount");
+  QTest::addColumn<int>("offset");
+  QTest::addColumn<bool>("wrappingAround");
+  QTest::addColumn<int>("expected");
+
+  QTest::newRow("empty") << 0 << 0 << 1 << false << -1;
+  QTest::newRow("invalid count") << 0 << -1 << 1 << true << -1;
+  QTest::newRow("missing current") << -1 << 3 << 1 << true << -1;
+  QTest::newRow("past current") << 3 << 3 << -1 << true << -1;
+  QTest::newRow("next") << 1 << 3 << 1 << false << 2;
+  QTest::newRow("previous") << 1 << 3 << -1 << false << 0;
+  QTest::newRow("stop before first") << 0 << 3 << -1 << false << -1;
+  QTest::newRow("stop after last") << 2 << 3 << 1 << false << -1;
+  QTest::newRow("wrap before first") << 0 << 3 << -1 << true << 2;
+  QTest::newRow("wrap after last") << 2 << 3 << 1 << true << 0;
+}
+
+void TabPagerBackendTest::resolvesNavigationTarget() {
+  QFETCH(int, currentIndex);
+  QFETCH(int, desktopCount);
+  QFETCH(int, offset);
+  QFETCH(bool, wrappingAround);
+  QFETCH(int, expected);
+
+  QCOMPARE(TabPagerDesktopLogic::targetIndexForOffset(
+               currentIndex, desktopCount, offset, wrappingAround),
+           expected);
 }
 
 void TabPagerBackendTest::exposesModelState() {

@@ -3,6 +3,8 @@
 
 #include "tabpagerbackend.h"
 
+#include "tabpagerdesktoplogic.h"
+
 #include <QFontDatabase>
 
 #include <cassert>
@@ -44,7 +46,7 @@ QVariant TabPagerBackend::data(const QModelIndex &index, int role) const {
   case NameRole:
     return desktop.name;
   case LabelRole:
-    return labelForDesktop(row + 1, desktop.name);
+    return TabPagerDesktopLogic::labelForDesktop(row + 1, desktop.name);
   case NumberRole:
     return row + 1;
   case ActiveRole:
@@ -89,18 +91,6 @@ void TabPagerBackend::activate(int index) {
 void TabPagerBackend::activateNext() { activateOffset(1); }
 
 void TabPagerBackend::activatePrevious() { activateOffset(-1); }
-
-QString TabPagerBackend::labelForDesktop(int number, const QString &name) {
-  if (name.isEmpty()) {
-    return QString::number(number);
-  }
-
-  if (name == QStringLiteral("Desktop %1").arg(number)) {
-    return QString::number(number);
-  }
-
-  return name;
-}
 
 void TabPagerBackend::initializeSource() {
   assert(m_source != nullptr);
@@ -169,27 +159,10 @@ void TabPagerBackend::reloadNavigationWrappingAround() {
 }
 
 void TabPagerBackend::activateOffset(int offset) {
-  const int desktopCount = count();
-  const int sourceIndex = currentIndex();
-
-  if (desktopCount == 0 || sourceIndex < 0) {
-    return;
-  }
-
-  const int targetIndex = sourceIndex + offset;
-  if (targetIndex >= 0 && targetIndex < desktopCount) {
+  const int targetIndex = TabPagerDesktopLogic::targetIndexForOffset(
+      currentIndex(), count(), offset, m_navigationWrappingAround);
+  if (targetIndex >= 0) {
     activate(targetIndex);
-    return;
-  }
-
-  if (!m_navigationWrappingAround) {
-    return;
-  }
-
-  if (targetIndex < 0) {
-    activate(desktopCount - 1);
-  } else {
-    activate(0);
   }
 }
 

@@ -53,8 +53,6 @@ public:
   Q_INVOKABLE void activateNext();
   Q_INVOKABLE void activatePrevious();
 
-  [[nodiscard]] static QString labelForDesktop(int number, const QString &name);
-
 Q_SIGNALS:
   void countChanged();
   void currentIndexChanged();
