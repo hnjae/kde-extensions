@@ -2,100 +2,25 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 #include "tabpagerbackend.h"
+#include "tabpagerbackendtesthelpers.h"
 #include "tabpagertesthelpers.h"
 
 #include <QSignalSpy>
 #include <QTest>
 
-#include <memory>
-#include <utility>
-
 namespace {
+using TabPagerTest::BackendFixture;
+using TabPagerTest::DataChangedEmission;
 using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
 using TabPagerTest::namedDesktop;
 using TabPagerTest::role;
+using TabPagerTest::takeDataChangedEmission;
 using TabPagerTest::unnamedDesktop;
 
 constexpr int wheelStepDelta = 120;
 constexpr int halfWheelStepDelta = wheelStepDelta / 2;
 constexpr int almostHalfWheelStepDelta = halfWheelStepDelta - 1;
-
-class FakeDesktopSource final : public TabPagerDesktopSource {
-  Q_OBJECT
-
-public:
-  explicit FakeDesktopSource(const QList<TabPagerDesktop> &desktops = {},
-                             QVariant currentDesktop = {},
-                             bool navigationWrappingAround = false)
-      : m_desktops(desktops), m_currentDesktop(std::move(currentDesktop)),
-        m_navigationWrappingAround(navigationWrappingAround) {}
-
-  [[nodiscard]] TabPagerDesktopSnapshot desktopSnapshot() const override {
-    return TabPagerTest::desktopSnapshot(m_desktops, m_currentDesktop);
-  }
-
-  [[nodiscard]] bool navigationWrappingAround() const override {
-    return m_navigationWrappingAround;
-  }
-
-  void activateDesktop(const QVariant &desktopId) override {
-    m_activatedDesktops.append(desktopId);
-  }
-
-  void setDesktops(const QList<TabPagerDesktop> &desktops) {
-    m_desktops = desktops;
-    Q_EMIT desktopSnapshotChanged();
-  }
-
-  void setDesktopState(const QList<TabPagerDesktop> &desktops,
-                       const QVariant &currentDesktop) {
-    m_desktops = desktops;
-    m_currentDesktop = currentDesktop;
-    Q_EMIT desktopSnapshotChanged();
-  }
-
-  void setCurrentDesktop(const QVariant &desktopId) {
-    m_currentDesktop = desktopId;
-    Q_EMIT desktopSnapshotChanged();
-  }
-
-  void setNavigationWrappingAround(bool navigationWrappingAround) {
-    m_navigationWrappingAround = navigationWrappingAround;
-    Q_EMIT navigationWrappingAroundChanged();
-  }
-
-  [[nodiscard]] QList<QVariant> activatedDesktops() const {
-    return m_activatedDesktops;
-  }
-
-private:
-  QList<TabPagerDesktop> m_desktops;
-  QList<QVariant> m_activatedDesktops;
-  QVariant m_currentDesktop;
-  bool m_navigationWrappingAround = false;
-};
-
-struct BackendFixture {
-private:
-  struct AdoptSource {};
-
-public:
-  explicit BackendFixture(const QList<TabPagerDesktop> &desktops,
-                          const QVariant &currentDesktop = {},
-                          bool navigationWrappingAround = false)
-      : BackendFixture(AdoptSource{}, std::make_unique<FakeDesktopSource>(
-                                          desktops, currentDesktop,
-                                          navigationWrappingAround)) {}
-
-  FakeDesktopSource *source = nullptr;
-  TabPagerBackend backend;
-
-private:
-  explicit BackendFixture([[maybe_unused]] AdoptSource adoptSource,
-                          std::unique_ptr<FakeDesktopSource> fakeSource)
-      : source(fakeSource.get()), backend(std::move(fakeSource)) {}
-};
 } // namespace
 
 class TabPagerBackendTest : public QObject {
@@ -260,14 +185,13 @@ void TabPagerBackendTest::emitsChangedRolesForUpdatedDesktopRows() {
   });
 
   QCOMPARE(dataSpy.count(), 1);
-  const QList<QVariant> arguments = dataSpy.takeFirst();
-  QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(0)).row(), 1);
-  QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(1)).row(), 1);
-  const auto roles = qvariant_cast<QList<int>>(arguments.at(2));
-  QCOMPARE(roles, (QList<int>{
-                      role(TabPagerDesktopRowRole::Name),
-                      role(TabPagerDesktopRowRole::Label),
-                  }));
+  const DataChangedEmission emission = takeDataChangedEmission(dataSpy);
+  QCOMPARE(emission.firstRow, 1);
+  QCOMPARE(emission.lastRow, 1);
+  QCOMPARE(emission.roles, (QList<int>{
+                               role(TabPagerDesktopRowRole::Name),
+                               role(TabPagerDesktopRowRole::Label),
+                           }));
 }
 
 void TabPagerBackendTest::tracksCurrentDesktopFromDesktopReload() {
@@ -307,11 +231,10 @@ void TabPagerBackendTest::tracksCurrentDesktop() {
   QCOMPARE(fixture.backend.currentIndex(), 1);
   QCOMPARE(currentSpy.count(), 1);
   QCOMPARE(dataSpy.count(), 1);
-  const QList<QVariant> arguments = dataSpy.takeFirst();
-  QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(0)).row(), 1);
-  QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(1)).row(), 1);
-  const auto roles = qvariant_cast<QList<int>>(arguments.at(2));
-  QCOMPARE(roles, QList<int>{role(TabPagerDesktopRowRole::Active)});
+  const DataChangedEmission emission = takeDataChangedEmission(dataSpy);
+  QCOMPARE(emission.firstRow, 1);
+  QCOMPARE(emission.lastRow, 1);
+  QCOMPARE(emission.roles, QList<int>{role(TabPagerDesktopRowRole::Active)});
   QCOMPARE(fixture.backend.data(fixture.backend.index(1),
                                 role(TabPagerDesktopRowRole::Active)),
            QVariant(true));

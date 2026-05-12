@@ -83,6 +83,7 @@ if(BUILD_TESTING)
         set(test_target "${test_name}_test")
         add_executable("${test_target}"
             "${test_source}"
+            ${ARGN}
         )
         target_link_libraries("${test_target}" PRIVATE
             Qt6::Test
@@ -97,7 +98,9 @@ if(BUILD_TESTING)
 
     add_tabpager_test(tabpagerdesktoplogic tests/tabpagerdesktoplogic_test.cpp)
     add_tabpager_test(tabpagerdesktopmodelstate tests/tabpagerdesktopmodelstate_test.cpp)
-    add_tabpager_test(tabpagerbackend tests/tabpagerbackend_test.cpp)
+    add_tabpager_test(tabpagerbackend tests/tabpagerbackend_test.cpp
+        tests/tabpagerbackendtesthelpers.h
+    )
 endif()
 
 install(TARGETS tabpagerplugin
