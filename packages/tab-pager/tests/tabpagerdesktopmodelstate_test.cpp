@@ -76,10 +76,10 @@ void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelSnapshot() {
   const TabPagerDesktopSnapshotChange change =
       state.changeForState(TabPagerDesktopModelState::fromSnapshot(snapshot));
 
-  QCOMPARE(change.operation, TabPagerDesktopSnapshotChange::Operation::None);
-  QCOMPARE(change.countChanged, false);
-  QCOMPARE(change.currentIndexChanged, false);
-  QCOMPARE(change.rowChanges.size(), 0);
+  QCOMPARE(change.isEmpty(), true);
+  QCOMPARE(change.countChanged(), false);
+  QCOMPARE(change.currentIndexChanged(), false);
+  QCOMPARE(change.rowChanges().size(), 0);
 }
 
 void TabPagerDesktopModelStateTest::
@@ -100,10 +100,10 @@ void TabPagerDesktopModelStateTest::
 
   const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.operation, TabPagerDesktopSnapshotChange::Operation::None);
-  QCOMPARE(change.countChanged, false);
-  QCOMPARE(change.currentIndexChanged, false);
-  QCOMPARE(change.rowChanges.size(), 0);
+  QCOMPARE(change.isEmpty(), true);
+  QCOMPARE(change.countChanged(), false);
+  QCOMPARE(change.currentIndexChanged(), false);
+  QCOMPARE(change.rowChanges().size(), 0);
 }
 
 void TabPagerDesktopModelStateTest::plansDesktopModelResetWhenCountChanges() {
@@ -130,10 +130,10 @@ void TabPagerDesktopModelStateTest::plansDesktopModelResetWhenCountChanges() {
       });
   const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.operation, TabPagerDesktopSnapshotChange::Operation::Reset);
-  QCOMPARE(change.countChanged, true);
-  QCOMPARE(change.currentIndexChanged, true);
-  QCOMPARE(change.rowChanges.size(), 0);
+  QCOMPARE(change.requiresModelReset(), true);
+  QCOMPARE(change.countChanged(), true);
+  QCOMPARE(change.currentIndexChanged(), true);
+  QCOMPARE(change.rowChanges().size(), 0);
 }
 
 void TabPagerDesktopModelStateTest::plansCurrentDesktopRowUpdates() {
@@ -162,16 +162,15 @@ void TabPagerDesktopModelStateTest::plansCurrentDesktopRowUpdates() {
       });
   const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.operation,
-           TabPagerDesktopSnapshotChange::Operation::UpdateRows);
-  QCOMPARE(change.currentIndexChanged, true);
-  QCOMPARE(change.rowChanges.size(), 2);
+  QCOMPARE(change.updatesRows(), true);
+  QCOMPARE(change.currentIndexChanged(), true);
+  QCOMPARE(change.rowChanges().size(), 2);
 
-  QCOMPARE(change.rowChanges.at(0).row, 0);
-  QCOMPARE(change.rowChanges.at(0).nextRow.active, false);
+  QCOMPARE(change.rowChanges().at(0).row, 0);
+  QCOMPARE(change.rowChanges().at(0).nextRow.active, false);
 
-  QCOMPARE(change.rowChanges.at(1).row, 1);
-  QCOMPARE(change.rowChanges.at(1).nextRow.active, true);
+  QCOMPARE(change.rowChanges().at(1).row, 1);
+  QCOMPARE(change.rowChanges().at(1).nextRow.active, true);
 }
 
 void TabPagerDesktopModelStateTest::plansDesktopDataRowUpdates() {
@@ -199,18 +198,17 @@ void TabPagerDesktopModelStateTest::plansDesktopDataRowUpdates() {
       });
   const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
 
-  QCOMPARE(change.operation,
-           TabPagerDesktopSnapshotChange::Operation::UpdateRows);
-  QCOMPARE(change.countChanged, false);
-  QCOMPARE(change.currentIndexChanged, false);
-  QCOMPARE(change.rowChanges.size(), 1);
+  QCOMPARE(change.updatesRows(), true);
+  QCOMPARE(change.countChanged(), false);
+  QCOMPARE(change.currentIndexChanged(), false);
+  QCOMPARE(change.rowChanges().size(), 1);
 
-  QCOMPARE(change.rowChanges.at(0).row, 1);
-  QCOMPARE(change.rowChanges.at(0).previousRow.desktopId,
+  QCOMPARE(change.rowChanges().at(0).row, 1);
+  QCOMPARE(change.rowChanges().at(0).previousRow.desktopId,
            QVariant(QStringLiteral("b")));
-  QCOMPARE(change.rowChanges.at(0).nextRow.desktopId,
+  QCOMPARE(change.rowChanges().at(0).nextRow.desktopId,
            QVariant(QStringLiteral("c")));
-  QCOMPARE(change.rowChanges.at(0).nextRow.label, QStringLiteral("Chat"));
+  QCOMPARE(change.rowChanges().at(0).nextRow.label, QStringLiteral("Chat"));
 }
 
 QTEST_MAIN(TabPagerDesktopModelStateTest)

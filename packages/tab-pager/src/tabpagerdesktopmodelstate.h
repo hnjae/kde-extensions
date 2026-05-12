@@ -25,17 +25,32 @@ struct TabPagerDesktopRowChange {
   TabPagerDesktopRowData nextRow;
 };
 
-struct TabPagerDesktopSnapshotChange {
+class TabPagerDesktopSnapshotChange final {
+public:
+  [[nodiscard]] static TabPagerDesktopSnapshotChange unchanged();
+  [[nodiscard]] static TabPagerDesktopSnapshotChange
+  reset(bool currentIndexChanged);
+  [[nodiscard]] static TabPagerDesktopSnapshotChange
+  updateRows(bool currentIndexChanged, QList<TabPagerDesktopRowChange> rows);
+
+  [[nodiscard]] bool isEmpty() const;
+  [[nodiscard]] bool requiresModelReset() const;
+  [[nodiscard]] bool updatesRows() const;
+  [[nodiscard]] bool countChanged() const;
+  [[nodiscard]] bool currentIndexChanged() const;
+  [[nodiscard]] const QList<TabPagerDesktopRowChange> &rowChanges() const;
+
+private:
   enum class Operation : std::uint8_t {
     None,
     Reset,
     UpdateRows,
   };
 
-  Operation operation = Operation::None;
-  bool countChanged = false;
-  bool currentIndexChanged = false;
-  QList<TabPagerDesktopRowChange> rowChanges;
+  Operation m_operation = Operation::None;
+  bool m_countChanged = false;
+  bool m_currentIndexChanged = false;
+  QList<TabPagerDesktopRowChange> m_rowChanges;
 };
 
 class TabPagerDesktopModelState final {
