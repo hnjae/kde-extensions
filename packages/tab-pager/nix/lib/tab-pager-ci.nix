@@ -74,6 +74,8 @@ let
       src/tabpagerqmlbackend.cpp \
       src/tabpagerplugin.cpp \
       src/taskmanagerdesktopsource.cpp \
+      tests/tabpagerdesktoplogic_test.cpp \
+      tests/tabpagerdesktopmodelstate_test.cpp \
       tests/tabpagerbackend_test.cpp
   '';
 

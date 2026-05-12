@@ -77,18 +77,25 @@ target_link_libraries(tabpagerplugin PRIVATE
 if(BUILD_TESTING)
     find_package(Qt6 REQUIRED COMPONENTS Test)
 
-    add_executable(tabpagerbackend_test
-        tests/tabpagerbackend_test.cpp
-    )
-    target_link_libraries(tabpagerbackend_test PRIVATE
-        Qt6::Test
-        tabpagermodel
-    )
+    function(add_tabpager_test test_name test_source)
+        set(test_target "${test_name}_test")
+        add_executable("${test_target}"
+            "${test_source}"
+        )
+        target_link_libraries("${test_target}" PRIVATE
+            Qt6::Test
+            tabpagermodel
+        )
 
-    add_test(NAME tabpagerbackend COMMAND tabpagerbackend_test)
-    set_tests_properties(tabpagerbackend PROPERTIES
-        ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
-    )
+        add_test(NAME "${test_name}" COMMAND "${test_target}")
+        set_tests_properties("${test_name}" PROPERTIES
+            ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+        )
+    endfunction()
+
+    add_tabpager_test(tabpagerdesktoplogic tests/tabpagerdesktoplogic_test.cpp)
+    add_tabpager_test(tabpagerdesktopmodelstate tests/tabpagerdesktopmodelstate_test.cpp)
+    add_tabpager_test(tabpagerbackend tests/tabpagerbackend_test.cpp)
 endif()
 
 install(TARGETS tabpagerplugin
