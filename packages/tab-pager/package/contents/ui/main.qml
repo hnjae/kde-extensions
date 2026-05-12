@@ -83,33 +83,47 @@ PlasmoidItem {
                     required property int index
                     required property string label
 
+                    readonly property var frameLayers: [
+                        {
+                            "prefix": "hover",
+                            "z": 2
+                        },
+                        {
+                            "prefix": "active",
+                            "z": 3
+                        },
+                        {
+                            "prefix": "normal",
+                            "z": 4
+                        },
+                    ]
                     readonly property int horizontalPadding: fullRepresentationItem.horizontalPadding
                     readonly property int verticalPadding: fullRepresentationItem.verticalPadding
 
                     height: implicitHeight
-                    implicitHeight: desktopLabel.implicitHeight + desktopFrame.margins.top + desktopFrame.margins.bottom + verticalPadding * 2
-                    implicitWidth: desktopLabel.implicitWidth + desktopFrame.margins.left + desktopFrame.margins.right + horizontalPadding * 2
+                    implicitHeight: desktopLabel.implicitHeight + frameMetrics.margins.top + frameMetrics.margins.bottom + verticalPadding * 2
+                    implicitWidth: desktopLabel.implicitWidth + frameMetrics.margins.left + frameMetrics.margins.right + horizontalPadding * 2
                     state: desktopMouseArea.containsMouse ? "hover" : active ? "active" : "normal"
                     width: implicitWidth
 
-                    PagerFrame {
-                        id: desktopFrame
+                    KSvg.FrameSvgItem {
+                        id: frameMetrics
 
-                        desktopState: desktopBox.state
-                        framePrefix: "hover"
-                        z: 2
+                        imagePath: "widgets/pager"
+                        opacity: 0
+                        prefix: "normal"
                     }
 
-                    PagerFrame {
-                        desktopState: desktopBox.state
-                        framePrefix: "active"
-                        z: 3
-                    }
+                    QtQuick.Repeater {
+                        model: desktopBox.frameLayers
 
-                    PagerFrame {
-                        desktopState: desktopBox.state
-                        framePrefix: "normal"
-                        z: 4
+                        delegate: PagerFrame {
+                            required property var modelData
+
+                            desktopState: desktopBox.state
+                            framePrefix: modelData.prefix
+                            z: modelData.z
+                        }
                     }
 
                     PlasmaComponents.Label {
@@ -117,10 +131,10 @@ PlasmoidItem {
 
                         anchors {
                             fill: parent
-                            bottomMargin: desktopFrame.margins.bottom + desktopBox.verticalPadding
-                            leftMargin: desktopFrame.margins.left + desktopBox.horizontalPadding
-                            rightMargin: desktopFrame.margins.right + desktopBox.horizontalPadding
-                            topMargin: desktopFrame.margins.top + desktopBox.verticalPadding
+                            bottomMargin: frameMetrics.margins.bottom + desktopBox.verticalPadding
+                            leftMargin: frameMetrics.margins.left + desktopBox.horizontalPadding
+                            rightMargin: frameMetrics.margins.right + desktopBox.horizontalPadding
+                            topMargin: frameMetrics.margins.top + desktopBox.verticalPadding
                         }
                         font: backend.labelFont
                         horizontalAlignment: QtQuick.Text.AlignHCenter
@@ -147,7 +161,7 @@ PlasmoidItem {
 
         anchors.fill: parent
         imagePath: "widgets/pager"
-        opacity: desktopState === usedPrefix ? 1 : 0
+        opacity: desktopState === framePrefix ? 1 : 0
         prefix: framePrefix
     }
 }
