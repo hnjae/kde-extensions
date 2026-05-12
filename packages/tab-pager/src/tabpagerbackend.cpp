@@ -10,70 +10,31 @@
 #include <cassert>
 #include <utility>
 
-namespace {
-[[nodiscard]] int indexOfDesktop(const QList<TabPagerDesktop> &desktops,
-                                 const QVariant &desktopId) {
-  for (qsizetype index = 0; index < desktops.size(); ++index) {
-    if (desktops.at(index).id == desktopId) {
-      return static_cast<int>(index);
-    }
-  }
-
-  return -1;
-}
-
-} // namespace
-
-QList<int>
-TabPagerBackend::changedRolesForDesktop(qsizetype row,
-                                        const DesktopSnapshot &previousSnapshot,
-                                        const DesktopSnapshot &nextSnapshot) {
-  const DesktopRowData previousRow = desktopRowData(
-      row, previousSnapshot.desktops.at(row), previousSnapshot.currentDesktop);
-  const DesktopRowData nextRow = desktopRowData(
-      row, nextSnapshot.desktops.at(row), nextSnapshot.currentDesktop);
+QList<int> TabPagerBackend::rolesForChangedFields(
+    const QList<TabPagerDesktopField> &changedFields) {
   QList<int> roles;
 
-  if (previousRow.desktopId != nextRow.desktopId) {
+  if (changedFields.contains(TabPagerDesktopField::DesktopId)) {
     roles.append(TabPagerBackend::DesktopIdRole);
   }
 
-  if (previousRow.name != nextRow.name) {
+  if (changedFields.contains(TabPagerDesktopField::Name)) {
     roles.append(TabPagerBackend::NameRole);
   }
 
-  if (previousRow.label != nextRow.label) {
+  if (changedFields.contains(TabPagerDesktopField::Label)) {
     roles.append(TabPagerBackend::LabelRole);
   }
 
-  if (previousRow.number != nextRow.number) {
+  if (changedFields.contains(TabPagerDesktopField::Number)) {
     roles.append(TabPagerBackend::NumberRole);
   }
 
-  if (previousRow.active != nextRow.active) {
+  if (changedFields.contains(TabPagerDesktopField::Active)) {
     roles.append(TabPagerBackend::ActiveRole);
   }
 
   return roles;
-}
-
-bool TabPagerBackend::sameDesktopSnapshot(const DesktopSnapshot &left,
-                                          const DesktopSnapshot &right) {
-  return left.desktops == right.desktops &&
-         left.currentDesktop == right.currentDesktop;
-}
-
-TabPagerBackend::DesktopRowData
-TabPagerBackend::desktopRowData(qsizetype row, const TabPagerDesktop &desktop,
-                                const QVariant &currentDesktop) {
-  const int number = static_cast<int>(row + 1);
-  return DesktopRowData{
-      .desktopId = desktop.id,
-      .name = desktop.name,
-      .label = TabPagerDesktopLogic::labelForDesktop(number, desktop.name),
-      .number = number,
-      .active = desktop.id == currentDesktop,
-  };
 }
 
 TabPagerBackend::TabPagerBackend(TabPagerDesktopSource *source, QObject *parent)
@@ -99,13 +60,11 @@ int TabPagerBackend::rowCount(const QModelIndex &parent) const {
 }
 
 QVariant TabPagerBackend::data(const QModelIndex &index, int role) const {
-  if (!index.isValid() || index.row() < 0 || index.row() >= m_desktops.size()) {
+  if (!index.isValid() || index.row() < 0 || index.row() >= m_state.count()) {
     return {};
   }
 
-  const int row = index.row();
-  const TabPagerDesktop &desktop = m_desktops.at(row);
-  const DesktopRowData rowData = desktopRowData(row, desktop, m_currentDesktop);
+  const TabPagerDesktopRowData rowData = m_state.rowData(index.row());
 
   switch (role) {
   case DesktopIdRole:
@@ -131,13 +90,9 @@ QHash<int, QByteArray> TabPagerBackend::roleNames() const {
   };
 }
 
-int TabPagerBackend::count() const {
-  return static_cast<int>(m_desktops.size());
-}
+int TabPagerBackend::count() const { return m_state.count(); }
 
-int TabPagerBackend::currentIndex() const {
-  return indexOfDesktop(m_currentDesktop);
-}
+int TabPagerBackend::currentIndex() const { return m_state.currentIndex(); }
 
 bool TabPagerBackend::navigationWrappingAround() const {
   return m_navigationWrappingAround;
@@ -148,11 +103,11 @@ QFont TabPagerBackend::labelFont() const {
 }
 
 void TabPagerBackend::activate(int index) {
-  if (index < 0 || index >= m_desktops.size()) {
+  if (!m_state.hasDesktopAt(index)) {
     return;
   }
 
-  m_source->activateDesktop(m_desktops.at(index).id);
+  m_source->activateDesktop(m_state.desktopIdAt(index));
 }
 
 void TabPagerBackend::activateNext() { activateOffset(1); }
@@ -180,7 +135,7 @@ void TabPagerBackend::reloadDesktops() {
 }
 
 void TabPagerBackend::reloadCurrentDesktop() {
-  DesktopSnapshot snapshot = currentDesktopSnapshot();
+  TabPagerDesktopSnapshot snapshot = m_state.snapshot();
   snapshot.currentDesktop = m_source->currentDesktop();
   applyDesktopSnapshot(snapshot);
 }
@@ -197,25 +152,17 @@ void TabPagerBackend::reloadNavigationWrappingAround() {
   Q_EMIT navigationWrappingAroundChanged();
 }
 
-TabPagerBackend::DesktopSnapshot
-TabPagerBackend::currentDesktopSnapshot() const {
-  return DesktopSnapshot{
-      .desktops = m_desktops,
-      .currentDesktop = m_currentDesktop,
-  };
-}
-
-TabPagerBackend::DesktopSnapshot
-TabPagerBackend::sourceDesktopSnapshot() const {
-  return DesktopSnapshot{
+TabPagerDesktopSnapshot TabPagerBackend::sourceDesktopSnapshot() const {
+  return TabPagerDesktopSnapshot{
       .desktops = m_source->desktops(),
       .currentDesktop = m_source->currentDesktop(),
   };
 }
 
-void TabPagerBackend::applyDesktopSnapshot(const DesktopSnapshot &snapshot) {
-  const DesktopSnapshot previousSnapshot = currentDesktopSnapshot();
-  if (sameDesktopSnapshot(previousSnapshot, snapshot)) {
+void TabPagerBackend::applyDesktopSnapshot(
+    const TabPagerDesktopSnapshot &snapshot) {
+  const TabPagerDesktopSnapshot previousSnapshot = m_state.snapshot();
+  if (TabPagerDesktopModelState::sameSnapshot(previousSnapshot, snapshot)) {
     return;
   }
 
@@ -237,22 +184,22 @@ void TabPagerBackend::applyDesktopSnapshot(const DesktopSnapshot &snapshot) {
   }
 }
 
-void TabPagerBackend::resetDesktopSnapshot(const DesktopSnapshot &snapshot) {
+void TabPagerBackend::resetDesktopSnapshot(
+    const TabPagerDesktopSnapshot &snapshot) {
   beginResetModel();
-  m_desktops = snapshot.desktops;
-  m_currentDesktop = snapshot.currentDesktop;
+  m_state.setSnapshot(snapshot);
   endResetModel();
 }
 
 void TabPagerBackend::updateDesktopSnapshotRows(
-    const DesktopSnapshot &previousSnapshot,
-    const DesktopSnapshot &nextSnapshot) {
-  m_desktops = nextSnapshot.desktops;
-  m_currentDesktop = nextSnapshot.currentDesktop;
+    const TabPagerDesktopSnapshot &previousSnapshot,
+    const TabPagerDesktopSnapshot &nextSnapshot) {
+  m_state.setSnapshot(nextSnapshot);
 
-  for (qsizetype row = 0; row < m_desktops.size(); ++row) {
+  for (qsizetype row = 0; row < m_state.count(); ++row) {
     const QList<int> roles =
-        changedRolesForDesktop(row, previousSnapshot, nextSnapshot);
+        rolesForChangedFields(TabPagerDesktopModelState::changedFieldsForRow(
+            row, previousSnapshot, nextSnapshot));
     if (!roles.isEmpty()) {
       const QModelIndex changedIndex = index(static_cast<int>(row));
       Q_EMIT dataChanged(changedIndex, changedIndex, roles);
@@ -261,13 +208,14 @@ void TabPagerBackend::updateDesktopSnapshotRows(
 }
 
 void TabPagerBackend::activateOffset(int offset) {
-  const int targetIndex = TabPagerDesktopLogic::targetIndexForOffset(
-      currentIndex(), count(), offset, m_navigationWrappingAround);
+  const TabPagerDesktopLogic::NavigationTargetRequest request{
+      .currentIndex = currentIndex(),
+      .desktopCount = count(),
+      .offset = offset,
+      .wrappingAround = m_navigationWrappingAround,
+  };
+  const int targetIndex = TabPagerDesktopLogic::targetIndexForOffset(request);
   if (targetIndex >= 0) {
     activate(targetIndex);
   }
-}
-
-int TabPagerBackend::indexOfDesktop(const QVariant &desktopId) const {
-  return ::indexOfDesktop(m_desktops, desktopId);
 }

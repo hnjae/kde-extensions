@@ -16,23 +16,23 @@ QString labelForDesktop(int number, const QString &name) {
   return name;
 }
 
-int targetIndexForOffset(int currentIndex, int desktopCount, int offset,
-                         bool wrappingAround) {
-  if (desktopCount <= 0 || currentIndex < 0 || currentIndex >= desktopCount) {
+int targetIndexForOffset(const NavigationTargetRequest &request) {
+  if (request.desktopCount <= 0 || request.currentIndex < 0 ||
+      request.currentIndex >= request.desktopCount) {
     return -1;
   }
 
-  const int targetIndex = currentIndex + offset;
-  if (targetIndex >= 0 && targetIndex < desktopCount) {
+  const int targetIndex = request.currentIndex + request.offset;
+  if (targetIndex >= 0 && targetIndex < request.desktopCount) {
     return targetIndex;
   }
 
-  if (!wrappingAround) {
+  if (!request.wrappingAround) {
     return -1;
   }
 
   if (targetIndex < 0) {
-    return desktopCount - 1;
+    return request.desktopCount - 1;
   }
 
   return 0;

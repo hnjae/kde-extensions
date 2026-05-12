@@ -3,12 +3,11 @@
 
 #pragma once
 
+#include "tabpagerdesktopmodelstate.h"
 #include "tabpagerdesktopsource.h"
 
 #include <QAbstractListModel>
 #include <QFont>
-#include <QList>
-#include <QString>
 #include <QVariant>
 
 #include <cstdint>
@@ -59,44 +58,23 @@ Q_SIGNALS:
   void navigationWrappingAroundChanged();
 
 private:
-  struct DesktopSnapshot {
-    QList<TabPagerDesktop> desktops;
-    QVariant currentDesktop;
-  };
-
-  struct DesktopRowData {
-    QVariant desktopId;
-    QString name;
-    QString label;
-    int number = 0;
-    bool active = false;
-  };
-
   void initializeSource();
   void connectSource();
   void reloadDesktops();
   void reloadCurrentDesktop();
   void reloadNavigationWrappingAround();
-  [[nodiscard]] DesktopSnapshot currentDesktopSnapshot() const;
-  [[nodiscard]] DesktopSnapshot sourceDesktopSnapshot() const;
-  static bool sameDesktopSnapshot(const DesktopSnapshot &left,
-                                  const DesktopSnapshot &right);
+  [[nodiscard]] TabPagerDesktopSnapshot sourceDesktopSnapshot() const;
   static QList<int>
-  changedRolesForDesktop(qsizetype row, const DesktopSnapshot &previousSnapshot,
-                         const DesktopSnapshot &nextSnapshot);
-  [[nodiscard]] static DesktopRowData
-  desktopRowData(qsizetype row, const TabPagerDesktop &desktop,
-                 const QVariant &currentDesktop);
-  void applyDesktopSnapshot(const DesktopSnapshot &snapshot);
-  void resetDesktopSnapshot(const DesktopSnapshot &snapshot);
-  void updateDesktopSnapshotRows(const DesktopSnapshot &previousSnapshot,
-                                 const DesktopSnapshot &nextSnapshot);
+  rolesForChangedFields(const QList<TabPagerDesktopField> &changedFields);
+  void applyDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
+  void resetDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
+  void
+  updateDesktopSnapshotRows(const TabPagerDesktopSnapshot &previousSnapshot,
+                            const TabPagerDesktopSnapshot &nextSnapshot);
   void activateOffset(int offset);
-  [[nodiscard]] int indexOfDesktop(const QVariant &desktopId) const;
 
   std::unique_ptr<TabPagerDesktopSource> m_ownedSource;
   TabPagerDesktopSource *m_source = nullptr;
-  QList<TabPagerDesktop> m_desktops;
-  QVariant m_currentDesktop;
+  TabPagerDesktopModelState m_state;
   bool m_navigationWrappingAround = false;
 };

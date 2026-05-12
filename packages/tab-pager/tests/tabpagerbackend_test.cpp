@@ -3,6 +3,7 @@
 
 #include "tabpagerbackend.h"
 #include "tabpagerdesktoplogic.h"
+#include "tabpagerdesktopmodelstate.h"
 
 #include <QSignalSpy>
 #include <QTest>
@@ -84,11 +85,15 @@ private Q_SLOTS:
   void formatsDesktopLabel();
   void resolvesNavigationTarget_data();
   void resolvesNavigationTarget();
+  void tracksDesktopModelStateIndex();
+  void derivesDesktopModelStateRows();
+  void reportsDesktopModelStateChanges();
   void exposesModelState();
   void exposesModelData();
   void exposesRoleNames();
   void updatesWhenDesktopsChange();
   void updatesDesktopRowsWithoutReset();
+  void emitsChangedRolesForUpdatedDesktopRows();
   void tracksCurrentDesktopFromDesktopReload();
   void tracksCurrentDesktop();
   void updatesNavigationWrapping();
@@ -157,8 +162,93 @@ void TabPagerBackendTest::resolvesNavigationTarget() {
   QFETCH(int, expected);
 
   QCOMPARE(TabPagerDesktopLogic::targetIndexForOffset(
-               currentIndex, desktopCount, offset, wrappingAround),
+               TabPagerDesktopLogic::NavigationTargetRequest{
+                   .currentIndex = currentIndex,
+                   .desktopCount = desktopCount,
+                   .offset = offset,
+                   .wrappingAround = wrappingAround,
+               }),
            expected);
+}
+
+void TabPagerBackendTest::tracksDesktopModelStateIndex() {
+  TabPagerDesktopModelState state;
+  state.setSnapshot(TabPagerDesktopSnapshot{
+      .desktops =
+          {
+              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+              {.id = QStringLiteral("b"), .name = QStringLiteral("Work")},
+              {.id = QStringLiteral("c"), .name = QString()},
+          },
+      .currentDesktop = QStringLiteral("b"),
+  });
+
+  QCOMPARE(state.count(), 3);
+  QCOMPARE(state.currentIndex(), 1);
+  QCOMPARE(state.hasDesktopAt(-1), false);
+  QCOMPARE(state.hasDesktopAt(3), false);
+  QCOMPARE(state.desktopIdAt(1), QVariant(QStringLiteral("b")));
+}
+
+void TabPagerBackendTest::derivesDesktopModelStateRows() {
+  TabPagerDesktopModelState state;
+  state.setSnapshot(TabPagerDesktopSnapshot{
+      .desktops =
+          {
+              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+              {.id = QStringLiteral("b"), .name = QStringLiteral("Work")},
+          },
+      .currentDesktop = QStringLiteral("b"),
+  });
+
+  const TabPagerDesktopRowData firstRow = state.rowData(0);
+  QCOMPARE(firstRow.desktopId, QVariant(QStringLiteral("a")));
+  QCOMPARE(firstRow.name, QStringLiteral("Desktop 1"));
+  QCOMPARE(firstRow.label, QStringLiteral("1"));
+  QCOMPARE(firstRow.number, 1);
+  QCOMPARE(firstRow.active, false);
+
+  const TabPagerDesktopRowData secondRow = state.rowData(1);
+  QCOMPARE(secondRow.label, QStringLiteral("Work"));
+  QCOMPARE(secondRow.active, true);
+}
+
+void TabPagerBackendTest::reportsDesktopModelStateChanges() {
+  const TabPagerDesktopSnapshot previousSnapshot{
+      .desktops =
+          {
+              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+              {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+          },
+      .currentDesktop = QStringLiteral("a"),
+  };
+  const TabPagerDesktopSnapshot nextSnapshot{
+      .desktops =
+          {
+              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+              {.id = QStringLiteral("c"), .name = QStringLiteral("Chat")},
+          },
+      .currentDesktop = QStringLiteral("c"),
+  };
+
+  const QList<TabPagerDesktopField> firstRowChanges =
+      TabPagerDesktopModelState::changedFieldsForRow(0, previousSnapshot,
+                                                     nextSnapshot);
+  const QList<TabPagerDesktopField> expectedFirstRowChanges = {
+      TabPagerDesktopField::Active,
+  };
+  QVERIFY(firstRowChanges == expectedFirstRowChanges);
+
+  const QList<TabPagerDesktopField> secondRowChanges =
+      TabPagerDesktopModelState::changedFieldsForRow(1, previousSnapshot,
+                                                     nextSnapshot);
+  const QList<TabPagerDesktopField> expectedSecondRowChanges = {
+      TabPagerDesktopField::DesktopId,
+      TabPagerDesktopField::Name,
+      TabPagerDesktopField::Label,
+      TabPagerDesktopField::Active,
+  };
+  QVERIFY(secondRowChanges == expectedSecondRowChanges);
 }
 
 void TabPagerBackendTest::exposesModelState() {
@@ -243,7 +333,6 @@ void TabPagerBackendTest::updatesDesktopRowsWithoutReset() {
       QStringLiteral("b"));
   QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
   QSignalSpy resetSpy(&fixture.backend, &QAbstractItemModel::modelReset);
-  QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
 
   fixture.source.setDesktops({
       {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
@@ -253,15 +342,29 @@ void TabPagerBackendTest::updatesDesktopRowsWithoutReset() {
   QCOMPARE(fixture.backend.count(), 2);
   QCOMPARE(countSpy.count(), 0);
   QCOMPARE(resetSpy.count(), 0);
-  QCOMPARE(dataSpy.count(), 1);
   QCOMPARE(fixture.backend.data(fixture.backend.index(1),
                                 TabPagerBackend::LabelRole),
            QVariant(QStringLiteral("Chat")));
+}
+
+void TabPagerBackendTest::emitsChangedRolesForUpdatedDesktopRows() {
+  BackendFixture fixture(
+      {
+          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+          {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+      },
+      QStringLiteral("b"));
+  QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
+
+  fixture.source.setDesktops({
+      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+      {.id = QStringLiteral("b"), .name = QStringLiteral("Chat")},
+  });
 
   const QList<QVariant> arguments = dataSpy.takeFirst();
   QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(0)).row(), 1);
   QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(1)).row(), 1);
-  const QList<int> roles = qvariant_cast<QList<int>>(arguments.at(2));
+  const auto roles = qvariant_cast<QList<int>>(arguments.at(2));
   QVERIFY(roles.contains(TabPagerBackend::NameRole));
   QVERIFY(roles.contains(TabPagerBackend::LabelRole));
 }
@@ -306,7 +409,7 @@ void TabPagerBackendTest::tracksCurrentDesktop() {
   const QList<QVariant> arguments = dataSpy.takeFirst();
   QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(0)).row(), 1);
   QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(1)).row(), 1);
-  const QList<int> roles = qvariant_cast<QList<int>>(arguments.at(2));
+  const auto roles = qvariant_cast<QList<int>>(arguments.at(2));
   QCOMPARE(roles, QList<int>{TabPagerBackend::ActiveRole});
   QCOMPARE(fixture.backend.data(fixture.backend.index(1),
                                 TabPagerBackend::ActiveRole),

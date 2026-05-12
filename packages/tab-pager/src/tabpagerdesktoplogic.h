@@ -6,7 +6,13 @@
 #include <QString>
 
 namespace TabPagerDesktopLogic {
+struct NavigationTargetRequest {
+  int currentIndex = -1;
+  int desktopCount = 0;
+  int offset = 0;
+  bool wrappingAround = false;
+};
+
 [[nodiscard]] QString labelForDesktop(int number, const QString &name);
-[[nodiscard]] int targetIndexForOffset(int currentIndex, int desktopCount,
-                                       int offset, bool wrappingAround);
+[[nodiscard]] int targetIndexForOffset(const NavigationTargetRequest &request);
 } // namespace TabPagerDesktopLogic
