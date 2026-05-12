@@ -259,10 +259,14 @@ void TabPagerBackendTest::exposesRoleNames() {
   const TabPagerBackend &backend = fixture.backend;
   const QHash<int, QByteArray> roles = backend.roleNames();
 
-  QCOMPARE(roles.value(TabPagerBackend::DesktopIdRole),
-           QByteArray("desktopId"));
-  QCOMPARE(roles.value(TabPagerBackend::LabelRole), QByteArray("label"));
-  QCOMPARE(roles.value(TabPagerBackend::ActiveRole), QByteArray("active"));
+  const QHash<int, QByteArray> expected = {
+      {TabPagerBackend::DesktopIdRole, "desktopId"},
+      {TabPagerBackend::NameRole, "name"},
+      {TabPagerBackend::LabelRole, "label"},
+      {TabPagerBackend::NumberRole, "number"},
+      {TabPagerBackend::ActiveRole, "active"},
+  };
+  QCOMPARE(roles, expected);
 }
 
 void TabPagerBackendTest::updatesWhenDesktopsChange() {
