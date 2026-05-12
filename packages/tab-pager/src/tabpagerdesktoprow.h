@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "tabpagerdesktopid.h"
+
 #include <QHash>
 #include <QList>
 #include <QString>
@@ -19,7 +21,7 @@ enum class TabPagerDesktopRowRole : int { // NOLINT(performance-enum-size)
 };
 
 struct TabPagerDesktopRowData {
-  QVariant desktopId;
+  TabPagerDesktopId desktopId;
   QString name;
   QString label;
   int number = 0;

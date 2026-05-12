@@ -13,6 +13,7 @@ using TabPagerTest::BackendFixture;
 using TabPagerTest::DataChangedEmission;
 using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
+using TabPagerTest::invalidDesktop;
 using TabPagerTest::namedDesktop;
 using TabPagerTest::role;
 using TabPagerTest::takeDataChangedEmission;
@@ -38,6 +39,7 @@ private Q_SLOTS:
   void tracksCurrentDesktop();
   void updatesNavigationWrapping();
   void activatesDesktopByIndex();
+  void ignoresActivationForInvalidDesktopId();
   void ignoresRelativeActivationWithoutCurrentDesktop();
   void stopsAtEdgesWithoutWrapping();
   void activatesNextAndPreviousWithoutWrapping();
@@ -266,7 +268,18 @@ void TabPagerBackendTest::activatesDesktopByIndex() {
   fixture.backend.activate(1);
 
   QCOMPARE(fixture.source->activatedDesktops(),
-           QList<QVariant>{desktopId("b")});
+           QList<TabPagerDesktopId>{desktopId("b")});
+}
+
+void TabPagerBackendTest::ignoresActivationForInvalidDesktopId() {
+  BackendFixture fixture({
+      invalidDesktop(QStringLiteral("Broken")),
+  });
+
+  fixture.backend.activate(0);
+
+  const QList<TabPagerDesktopId> expected;
+  QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 
 void TabPagerBackendTest::ignoresRelativeActivationWithoutCurrentDesktop() {
@@ -278,7 +291,7 @@ void TabPagerBackendTest::ignoresRelativeActivationWithoutCurrentDesktop() {
   fixture.backend.activateNext();
   fixture.backend.activatePrevious();
 
-  const QList<QVariant> expected;
+  const QList<TabPagerDesktopId> expected;
   QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 
@@ -294,7 +307,7 @@ void TabPagerBackendTest::stopsAtEdgesWithoutWrapping() {
   fixture.source->setCurrentDesktop(desktopId("b"));
   fixture.backend.activateNext();
 
-  const QList<QVariant> expected;
+  const QList<TabPagerDesktopId> expected;
   QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 
@@ -312,7 +325,7 @@ void TabPagerBackendTest::activatesNextAndPreviousWithoutWrapping() {
   fixture.source->setCurrentDesktop(desktopId("c"));
   fixture.backend.activateNext();
 
-  const QList<QVariant> expected = {desktopId("c"), desktopId("a")};
+  const QList<TabPagerDesktopId> expected = {desktopId("c"), desktopId("a")};
   QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 
@@ -329,7 +342,7 @@ void TabPagerBackendTest::activatesNextAndPreviousWithWrapping() {
   fixture.source->setCurrentDesktop(desktopId("a"));
   fixture.backend.activatePrevious();
 
-  const QList<QVariant> expected = {desktopId("a"), desktopId("c")};
+  const QList<TabPagerDesktopId> expected = {desktopId("a"), desktopId("c")};
   QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 
@@ -348,7 +361,7 @@ void TabPagerBackendTest::activatesFromAccumulatedWheelDelta() {
   fixture.source->setCurrentDesktop(desktopId("b"));
   fixture.backend.activateByWheelDelta(-wheelStepDelta);
 
-  const QList<QVariant> expected = {desktopId("a"), desktopId("c")};
+  const QList<TabPagerDesktopId> expected = {desktopId("a"), desktopId("c")};
   QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 
@@ -364,7 +377,7 @@ void TabPagerBackendTest::activatesFromMultipleWheelSteps() {
   fixture.backend.activateByWheelDelta(wheelStepDelta * 2);
   fixture.backend.activateByWheelDelta(-wheelStepDelta * 2);
 
-  const QList<QVariant> expected = {desktopId("c"), desktopId("a")};
+  const QList<TabPagerDesktopId> expected = {desktopId("c"), desktopId("a")};
   QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 

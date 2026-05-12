@@ -7,7 +7,6 @@
 #include "tabpagerdesktopsource.h"
 
 #include <QList>
-#include <QVariant>
 
 #include <cstdint>
 #include <optional>
@@ -38,7 +37,8 @@ public:
 
   [[nodiscard]] int count() const;
   [[nodiscard]] int currentIndex() const;
-  [[nodiscard]] std::optional<QVariant> desktopIdForIndex(int index) const;
+  [[nodiscard]] std::optional<TabPagerDesktopId>
+  desktopIdForIndex(int index) const;
   [[nodiscard]] TabPagerDesktopRowData rowData(qsizetype row) const;
   [[nodiscard]] TabPagerDesktopModelChange
   changeForState(const TabPagerDesktopModelState &nextState) const;

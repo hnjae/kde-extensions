@@ -10,14 +10,14 @@
 namespace {
 [[nodiscard]] TabPagerDesktopRowData
 rowDataForDesktop(qsizetype row, const TabPagerDesktop &desktop,
-                  const QVariant &currentDesktop) {
+                  const TabPagerDesktopId &currentDesktop) {
   const int number = static_cast<int>(row + 1);
   return TabPagerDesktopRowData{
       .desktopId = desktop.id,
       .name = desktop.name,
       .label = TabPagerDesktopLogic::labelForDesktop(number, desktop.name),
       .number = number,
-      .active = desktop.id == currentDesktop,
+      .active = tabPagerDesktopIdsEqual(desktop.id, currentDesktop),
   };
 }
 
@@ -91,13 +91,18 @@ int TabPagerDesktopModelState::count() const {
 
 int TabPagerDesktopModelState::currentIndex() const { return m_currentIndex; }
 
-std::optional<QVariant>
+std::optional<TabPagerDesktopId>
 TabPagerDesktopModelState::desktopIdForIndex(int index) const {
   if (index < 0 || index >= m_rows.size()) {
     return std::nullopt;
   }
 
-  return m_rows.at(index).desktopId;
+  const TabPagerDesktopId &desktopId = m_rows.at(index).desktopId;
+  if (!tabPagerDesktopIdIsValid(desktopId)) {
+    return std::nullopt;
+  }
+
+  return desktopId;
 }
 
 TabPagerDesktopRowData TabPagerDesktopModelState::rowData(qsizetype row) const {

@@ -16,7 +16,7 @@ public:
 
   [[nodiscard]] TabPagerDesktopSnapshot desktopSnapshot() const override;
   [[nodiscard]] bool navigationWrappingAround() const override;
-  void activateDesktop(const QVariant &desktopId) override;
+  void activateDesktop(const TabPagerDesktopId &desktopId) override;
 
 private:
   TaskManager::VirtualDesktopInfo m_info;

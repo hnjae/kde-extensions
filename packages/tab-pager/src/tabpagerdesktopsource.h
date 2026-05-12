@@ -3,19 +3,20 @@
 
 #pragma once
 
+#include "tabpagerdesktopid.h"
+
 #include <QList>
 #include <QObject>
 #include <QString>
-#include <QVariant>
 
 struct TabPagerDesktop {
-  QVariant id;
+  TabPagerDesktopId id;
   QString name;
 };
 
 struct TabPagerDesktopSnapshot {
   QList<TabPagerDesktop> desktops;
-  QVariant currentDesktop;
+  TabPagerDesktopId currentDesktop;
 };
 
 class TabPagerDesktopSource : public QObject {
@@ -27,7 +28,7 @@ public:
 
   [[nodiscard]] virtual TabPagerDesktopSnapshot desktopSnapshot() const = 0;
   [[nodiscard]] virtual bool navigationWrappingAround() const = 0;
-  virtual void activateDesktop(const QVariant &desktopId) = 0;
+  virtual void activateDesktop(const TabPagerDesktopId &desktopId) = 0;
 
 Q_SIGNALS:
   void desktopSnapshotChanged();

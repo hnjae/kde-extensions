@@ -16,7 +16,7 @@ namespace TabPagerTest {
 class FakeDesktopSource final : public TabPagerDesktopSource {
 public:
   explicit FakeDesktopSource(const QList<TabPagerDesktop> &desktops = {},
-                             QVariant currentDesktop = {},
+                             TabPagerDesktopId currentDesktop = {},
                              bool navigationWrappingAround = false)
       : m_desktops(desktops), m_currentDesktop(std::move(currentDesktop)),
         m_navigationWrappingAround(navigationWrappingAround) {}
@@ -29,7 +29,7 @@ public:
     return m_navigationWrappingAround;
   }
 
-  void activateDesktop(const QVariant &desktopId) override {
+  void activateDesktop(const TabPagerDesktopId &desktopId) override {
     m_activatedDesktops.append(desktopId);
   }
 
@@ -39,13 +39,13 @@ public:
   }
 
   void setDesktopState(const QList<TabPagerDesktop> &desktops,
-                       const QVariant &currentDesktop) {
+                       const TabPagerDesktopId &currentDesktop) {
     m_desktops = desktops;
     m_currentDesktop = currentDesktop;
     Q_EMIT desktopSnapshotChanged();
   }
 
-  void setCurrentDesktop(const QVariant &desktopId) {
+  void setCurrentDesktop(const TabPagerDesktopId &desktopId) {
     m_currentDesktop = desktopId;
     Q_EMIT desktopSnapshotChanged();
   }
@@ -55,14 +55,14 @@ public:
     Q_EMIT navigationWrappingAroundChanged();
   }
 
-  [[nodiscard]] QList<QVariant> activatedDesktops() const {
+  [[nodiscard]] QList<TabPagerDesktopId> activatedDesktops() const {
     return m_activatedDesktops;
   }
 
 private:
   QList<TabPagerDesktop> m_desktops;
-  QList<QVariant> m_activatedDesktops;
-  QVariant m_currentDesktop;
+  QList<TabPagerDesktopId> m_activatedDesktops;
+  TabPagerDesktopId m_currentDesktop;
   bool m_navigationWrappingAround = false;
 };
 
@@ -72,7 +72,7 @@ private:
 
 public:
   explicit BackendFixture(const QList<TabPagerDesktop> &desktops,
-                          const QVariant &currentDesktop = {},
+                          const TabPagerDesktopId &currentDesktop = {},
                           bool navigationWrappingAround = false)
       : BackendFixture(AdoptSource{}, std::make_unique<FakeDesktopSource>(
                                           desktops, currentDesktop,

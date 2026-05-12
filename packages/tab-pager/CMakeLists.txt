@@ -28,6 +28,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(tabpagermodel STATIC
     src/tabpagerbackend.cpp
     src/tabpagerbackend.h
+    src/tabpagerdesktopid.cpp
+    src/tabpagerdesktopid.h
     src/tabpagerdesktoplogic.cpp
     src/tabpagerdesktoplogic.h
     src/tabpagerdesktopmodelstate.cpp

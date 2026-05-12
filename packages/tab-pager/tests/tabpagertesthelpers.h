@@ -7,14 +7,15 @@
 #include "tabpagerdesktopsource.h"
 
 #include <QString>
-#include <QVariant>
 
 #include <utility>
 
 namespace TabPagerTest {
-[[nodiscard]] inline QVariant desktopId(const char *id) {
+[[nodiscard]] inline TabPagerDesktopId desktopId(const char *id) {
   return QString::fromLatin1(id);
 }
+
+[[nodiscard]] inline TabPagerDesktopId invalidDesktopId() { return {}; }
 
 [[nodiscard]] inline TabPagerDesktop namedDesktop(const char *id,
                                                   const QString &name) {
@@ -38,8 +39,16 @@ namespace TabPagerTest {
   return namedDesktop(id, QString());
 }
 
+[[nodiscard]] inline TabPagerDesktop invalidDesktop(const QString &name) {
+  return TabPagerDesktop{
+      .id = invalidDesktopId(),
+      .name = name,
+  };
+}
+
 [[nodiscard]] inline TabPagerDesktopSnapshot
-desktopSnapshot(QList<TabPagerDesktop> desktops, QVariant currentDesktop = {}) {
+desktopSnapshot(QList<TabPagerDesktop> desktops,
+                TabPagerDesktopId currentDesktop = {}) {
   return TabPagerDesktopSnapshot{
       .desktops = std::move(desktops),
       .currentDesktop = std::move(currentDesktop),
@@ -48,7 +57,7 @@ desktopSnapshot(QList<TabPagerDesktop> desktops, QVariant currentDesktop = {}) {
 
 [[nodiscard]] inline TabPagerDesktopModelState
 desktopModelState(QList<TabPagerDesktop> desktops,
-                  QVariant currentDesktop = {}) {
+                  TabPagerDesktopId currentDesktop = {}) {
   return TabPagerDesktopModelState::fromSnapshot(
       desktopSnapshot(std::move(desktops), std::move(currentDesktop)));
 }

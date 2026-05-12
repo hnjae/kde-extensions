@@ -51,7 +51,8 @@ QFont TabPagerBackend::labelFont() const {
 }
 
 void TabPagerBackend::activate(int index) {
-  const std::optional<QVariant> desktopId = m_state.desktopIdForIndex(index);
+  const std::optional<TabPagerDesktopId> desktopId =
+      m_state.desktopIdForIndex(index);
   if (!desktopId.has_value()) {
     return;
   }
@@ -64,14 +65,8 @@ void TabPagerBackend::activateNext() { activateOffset(1); }
 void TabPagerBackend::activatePrevious() { activateOffset(-1); }
 
 void TabPagerBackend::activateByWheelDelta(int delta) {
-  const TabPagerDesktopNavigationContext context{
-      .currentIndex = currentIndex(),
-      .desktopCount = count(),
-  };
-  const int targetIndex = m_navigator.targetIndexForWheelDelta(context, delta);
-  if (targetIndex >= 0) {
-    activate(targetIndex);
-  }
+  activateNavigationTarget(
+      m_navigator.targetIndexForWheelDelta(navigationContext(), delta));
 }
 
 void TabPagerBackend::initializeSource() {
@@ -151,13 +146,20 @@ void TabPagerBackend::updateDesktopStateRows(
   }
 }
 
-void TabPagerBackend::activateOffset(int offset) {
-  const TabPagerDesktopNavigationContext context{
+TabPagerDesktopNavigationContext TabPagerBackend::navigationContext() const {
+  return TabPagerDesktopNavigationContext{
       .currentIndex = currentIndex(),
       .desktopCount = count(),
   };
-  const int targetIndex = m_navigator.targetIndexForOffset(context, offset);
+}
+
+void TabPagerBackend::activateNavigationTarget(int targetIndex) {
   if (targetIndex >= 0) {
     activate(targetIndex);
   }
+}
+
+void TabPagerBackend::activateOffset(int offset) {
+  activateNavigationTarget(
+      m_navigator.targetIndexForOffset(navigationContext(), offset));
 }

@@ -46,8 +46,9 @@ bool TaskManagerDesktopSource::navigationWrappingAround() const {
   return m_info.navigationWrappingAround();
 }
 
-void TaskManagerDesktopSource::activateDesktop(const QVariant &desktopId) {
-  if (desktopId.isValid()) {
+void TaskManagerDesktopSource::activateDesktop(
+    const TabPagerDesktopId &desktopId) {
+  if (tabPagerDesktopIdIsValid(desktopId)) {
     m_info.requestActivate(desktopId);
   }
 }

@@ -56,6 +56,8 @@ private:
   void resetDesktopState(TabPagerDesktopModelState nextState);
   void updateDesktopStateRows(TabPagerDesktopModelState nextState,
                               const QList<TabPagerDesktopRowUpdate> &rows);
+  [[nodiscard]] TabPagerDesktopNavigationContext navigationContext() const;
+  void activateNavigationTarget(int targetIndex);
   void activateOffset(int offset);
 
   std::unique_ptr<TabPagerDesktopSource> m_source;
