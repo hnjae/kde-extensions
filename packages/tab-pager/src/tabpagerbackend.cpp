@@ -149,28 +149,20 @@ void TabPagerBackend::activatePrevious() { activateOffset(-1); }
 void TabPagerBackend::initializeSource() {
   assert(m_source != nullptr);
   connectSource();
-  reloadDesktops();
+  reloadDesktopSnapshot();
   reloadNavigationWrappingAround();
 }
 
 void TabPagerBackend::connectSource() {
-  connect(m_source.get(), &TabPagerDesktopSource::desktopsChanged, this,
-          &TabPagerBackend::reloadDesktops);
-  connect(m_source.get(), &TabPagerDesktopSource::currentDesktopChanged, this,
-          &TabPagerBackend::reloadCurrentDesktop);
+  connect(m_source.get(), &TabPagerDesktopSource::desktopSnapshotChanged, this,
+          &TabPagerBackend::reloadDesktopSnapshot);
   connect(m_source.get(),
           &TabPagerDesktopSource::navigationWrappingAroundChanged, this,
           &TabPagerBackend::reloadNavigationWrappingAround);
 }
 
-void TabPagerBackend::reloadDesktops() {
-  applyDesktopSnapshot(sourceDesktopSnapshot());
-}
-
-void TabPagerBackend::reloadCurrentDesktop() {
-  TabPagerDesktopSnapshot snapshot = m_state.snapshot();
-  snapshot.currentDesktop = m_source->currentDesktop();
-  applyDesktopSnapshot(snapshot);
+void TabPagerBackend::reloadDesktopSnapshot() {
+  applyDesktopSnapshot(m_source->desktopSnapshot());
 }
 
 void TabPagerBackend::reloadNavigationWrappingAround() {
@@ -183,13 +175,6 @@ void TabPagerBackend::reloadNavigationWrappingAround() {
 
   m_navigationWrappingAround = nextNavigationWrappingAround;
   Q_EMIT navigationWrappingAroundChanged();
-}
-
-TabPagerDesktopSnapshot TabPagerBackend::sourceDesktopSnapshot() const {
-  return TabPagerDesktopSnapshot{
-      .desktops = m_source->desktops(),
-      .currentDesktop = m_source->currentDesktop(),
-  };
 }
 
 void TabPagerBackend::applyDesktopSnapshot(

@@ -15,13 +15,13 @@ public:
 TaskManagerDesktopSource::TaskManagerDesktopSource(QObject *parent)
     : TabPagerDesktopSource(parent), d(std::make_unique<Private>()) {
   connect(&d->info, &TaskManager::VirtualDesktopInfo::desktopIdsChanged, this,
-          &TabPagerDesktopSource::desktopsChanged);
+          &TabPagerDesktopSource::desktopSnapshotChanged);
   connect(&d->info, &TaskManager::VirtualDesktopInfo::desktopNamesChanged, this,
-          &TabPagerDesktopSource::desktopsChanged);
+          &TabPagerDesktopSource::desktopSnapshotChanged);
   connect(&d->info, &TaskManager::VirtualDesktopInfo::numberOfDesktopsChanged,
-          this, &TabPagerDesktopSource::desktopsChanged);
+          this, &TabPagerDesktopSource::desktopSnapshotChanged);
   connect(&d->info, &TaskManager::VirtualDesktopInfo::currentDesktopChanged,
-          this, &TabPagerDesktopSource::currentDesktopChanged);
+          this, &TabPagerDesktopSource::desktopSnapshotChanged);
   connect(&d->info,
           &TaskManager::VirtualDesktopInfo::navigationWrappingAroundChanged,
           this, &TabPagerDesktopSource::navigationWrappingAroundChanged);
@@ -29,7 +29,7 @@ TaskManagerDesktopSource::TaskManagerDesktopSource(QObject *parent)
 
 TaskManagerDesktopSource::~TaskManagerDesktopSource() = default;
 
-QList<TabPagerDesktop> TaskManagerDesktopSource::desktops() const {
+TabPagerDesktopSnapshot TaskManagerDesktopSource::desktopSnapshot() const {
   const QVariantList ids = d->info.desktopIds();
   const QStringList names = d->info.desktopNames();
 
@@ -43,11 +43,10 @@ QList<TabPagerDesktop> TaskManagerDesktopSource::desktops() const {
     });
   }
 
-  return desktops;
-}
-
-QVariant TaskManagerDesktopSource::currentDesktop() const {
-  return d->info.currentDesktop();
+  return TabPagerDesktopSnapshot{
+      .desktops = desktops,
+      .currentDesktop = d->info.currentDesktop(),
+  };
 }
 
 bool TaskManagerDesktopSource::navigationWrappingAround() const {

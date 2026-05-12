@@ -58,10 +58,8 @@ Q_SIGNALS:
 private:
   void initializeSource();
   void connectSource();
-  void reloadDesktops();
-  void reloadCurrentDesktop();
+  void reloadDesktopSnapshot();
   void reloadNavigationWrappingAround();
-  [[nodiscard]] TabPagerDesktopSnapshot sourceDesktopSnapshot() const;
   [[nodiscard]] static QList<int>
   changedRolesForRow(const TabPagerDesktopRowChange &rowChange);
   void applyDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);

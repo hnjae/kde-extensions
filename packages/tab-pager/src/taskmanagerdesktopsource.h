@@ -14,8 +14,7 @@ public:
   explicit TaskManagerDesktopSource(QObject *parent = nullptr);
   ~TaskManagerDesktopSource() override;
 
-  [[nodiscard]] QList<TabPagerDesktop> desktops() const override;
-  [[nodiscard]] QVariant currentDesktop() const override;
+  [[nodiscard]] TabPagerDesktopSnapshot desktopSnapshot() const override;
   [[nodiscard]] bool navigationWrappingAround() const override;
   void activateDesktop(const QVariant &desktopId) override;
 

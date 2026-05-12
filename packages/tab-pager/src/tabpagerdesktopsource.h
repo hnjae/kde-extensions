@@ -16,6 +16,11 @@ struct TabPagerDesktop {
 [[nodiscard]] bool operator==(const TabPagerDesktop &left,
                               const TabPagerDesktop &right);
 
+struct TabPagerDesktopSnapshot {
+  QList<TabPagerDesktop> desktops;
+  QVariant currentDesktop;
+};
+
 class TabPagerDesktopSource : public QObject {
   Q_OBJECT
 
@@ -23,13 +28,11 @@ public:
   explicit TabPagerDesktopSource(QObject *parent = nullptr);
   ~TabPagerDesktopSource() override;
 
-  [[nodiscard]] virtual QList<TabPagerDesktop> desktops() const = 0;
-  [[nodiscard]] virtual QVariant currentDesktop() const = 0;
+  [[nodiscard]] virtual TabPagerDesktopSnapshot desktopSnapshot() const = 0;
   [[nodiscard]] virtual bool navigationWrappingAround() const = 0;
   virtual void activateDesktop(const QVariant &desktopId) = 0;
 
 Q_SIGNALS:
-  void desktopsChanged();
-  void currentDesktopChanged();
+  void desktopSnapshotChanged();
   void navigationWrappingAroundChanged();
 };

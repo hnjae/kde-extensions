@@ -11,11 +11,6 @@
 
 #include <cstdint>
 
-struct TabPagerDesktopSnapshot {
-  QList<TabPagerDesktop> desktops;
-  QVariant currentDesktop;
-};
-
 struct TabPagerDesktopRowData {
   QVariant desktopId;
   QString name;

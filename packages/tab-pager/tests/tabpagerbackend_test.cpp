@@ -20,12 +20,11 @@ public:
       : m_desktops(desktops), m_currentDesktop(std::move(currentDesktop)),
         m_navigationWrappingAround(navigationWrappingAround) {}
 
-  [[nodiscard]] QList<TabPagerDesktop> desktops() const override {
-    return m_desktops;
-  }
-
-  [[nodiscard]] QVariant currentDesktop() const override {
-    return m_currentDesktop;
+  [[nodiscard]] TabPagerDesktopSnapshot desktopSnapshot() const override {
+    return TabPagerDesktopSnapshot{
+        .desktops = m_desktops,
+        .currentDesktop = m_currentDesktop,
+    };
   }
 
   [[nodiscard]] bool navigationWrappingAround() const override {
@@ -38,19 +37,19 @@ public:
 
   void setDesktops(const QList<TabPagerDesktop> &desktops) {
     m_desktops = desktops;
-    Q_EMIT desktopsChanged();
+    Q_EMIT desktopSnapshotChanged();
   }
 
   void setDesktopState(const QList<TabPagerDesktop> &desktops,
                        const QVariant &currentDesktop) {
     m_desktops = desktops;
     m_currentDesktop = currentDesktop;
-    Q_EMIT desktopsChanged();
+    Q_EMIT desktopSnapshotChanged();
   }
 
   void setCurrentDesktop(const QVariant &desktopId) {
     m_currentDesktop = desktopId;
-    Q_EMIT currentDesktopChanged();
+    Q_EMIT desktopSnapshotChanged();
   }
 
   void setNavigationWrappingAround(bool navigationWrappingAround) {
