@@ -48,12 +48,10 @@ public:
   [[nodiscard]] bool hasDesktopAt(int index) const;
   [[nodiscard]] QVariant desktopIdAt(int index) const;
   [[nodiscard]] TabPagerDesktopRowData rowData(qsizetype row) const;
-  [[nodiscard]] TabPagerDesktopSnapshot snapshot() const;
   [[nodiscard]] TabPagerDesktopSnapshotChange
   changeForState(const TabPagerDesktopModelState &nextState) const;
 
 private:
-  TabPagerDesktopSnapshot m_snapshot;
   QList<TabPagerDesktopRowData> m_rows;
   int m_currentIndex = -1;
 };

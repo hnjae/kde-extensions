@@ -6,12 +6,6 @@
 #include "tabpagerdesktoplogic.h"
 
 namespace {
-[[nodiscard]] bool sameSnapshot(const TabPagerDesktopSnapshot &left,
-                                const TabPagerDesktopSnapshot &right) {
-  return left.desktops == right.desktops &&
-         left.currentDesktop == right.currentDesktop;
-}
-
 [[nodiscard]] bool operator==(const TabPagerDesktopRowData &left,
                               const TabPagerDesktopRowData &right) {
   return left.desktopId == right.desktopId && left.name == right.name &&
@@ -57,7 +51,6 @@ changedRowsForStates(const QList<TabPagerDesktopRowData> &previousRows,
 TabPagerDesktopModelState TabPagerDesktopModelState::fromSnapshot(
     const TabPagerDesktopSnapshot &snapshot) {
   TabPagerDesktopModelState state;
-  state.m_snapshot = snapshot;
   state.m_rows.reserve(snapshot.desktops.size());
 
   for (qsizetype row = 0; row < snapshot.desktops.size(); ++row) {
@@ -91,20 +84,19 @@ TabPagerDesktopRowData TabPagerDesktopModelState::rowData(qsizetype row) const {
   return m_rows.at(row);
 }
 
-TabPagerDesktopSnapshot TabPagerDesktopModelState::snapshot() const {
-  return m_snapshot;
-}
-
 TabPagerDesktopSnapshotChange TabPagerDesktopModelState::changeForState(
     const TabPagerDesktopModelState &nextState) const {
-  if (sameSnapshot(m_snapshot, nextState.m_snapshot)) {
-    return {};
-  }
-
   const int previousCount = count();
   const int nextCount = nextState.count();
   const bool countChanged = previousCount != nextCount;
   const bool currentIndexChanged = m_currentIndex != nextState.m_currentIndex;
+  const QList<TabPagerDesktopRowChange> rowChanges =
+      countChanged ? QList<TabPagerDesktopRowChange>{}
+                   : changedRowsForStates(m_rows, nextState.m_rows);
+
+  if (!countChanged && !currentIndexChanged && rowChanges.isEmpty()) {
+    return {};
+  }
 
   if (countChanged) {
     return TabPagerDesktopSnapshotChange{
@@ -119,6 +111,6 @@ TabPagerDesktopSnapshotChange TabPagerDesktopModelState::changeForState(
       .operation = TabPagerDesktopSnapshotChange::Operation::UpdateRows,
       .countChanged = false,
       .currentIndexChanged = currentIndexChanged,
-      .rowChanges = changedRowsForStates(m_rows, nextState.m_rows),
+      .rowChanges = rowChanges,
   };
 }

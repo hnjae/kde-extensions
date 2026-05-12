@@ -12,6 +12,7 @@ private Q_SLOTS:
   void tracksDesktopModelStateIndex();
   void derivesDesktopModelStateRows();
   void plansNoChangeForSameDesktopModelSnapshot();
+  void plansNoChangeForUnmatchedCurrentDesktopChange();
   void plansDesktopModelResetWhenCountChanges();
   void plansCurrentDesktopRowUpdates();
   void plansDesktopDataRowUpdates();
@@ -74,6 +75,30 @@ void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelSnapshot() {
 
   const TabPagerDesktopSnapshotChange change =
       state.changeForState(TabPagerDesktopModelState::fromSnapshot(snapshot));
+
+  QCOMPARE(change.operation, TabPagerDesktopSnapshotChange::Operation::None);
+  QCOMPARE(change.countChanged, false);
+  QCOMPARE(change.currentIndexChanged, false);
+  QCOMPARE(change.rowChanges.size(), 0);
+}
+
+void TabPagerDesktopModelStateTest::
+    plansNoChangeForUnmatchedCurrentDesktopChange() {
+  const QList<TabPagerDesktop> desktops = {
+      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+  };
+  const TabPagerDesktopModelState state =
+      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
+          .desktops = desktops,
+          .currentDesktop = QStringLiteral("missing-a"),
+      });
+  const TabPagerDesktopModelState nextState =
+      TabPagerDesktopModelState::fromSnapshot(TabPagerDesktopSnapshot{
+          .desktops = desktops,
+          .currentDesktop = QStringLiteral("missing-b"),
+      });
+
+  const TabPagerDesktopSnapshotChange change = state.changeForState(nextState);
 
   QCOMPARE(change.operation, TabPagerDesktopSnapshotChange::Operation::None);
   QCOMPARE(change.countChanged, false);
