@@ -116,7 +116,7 @@ void TabPagerBackend::applyDesktopSnapshot(
   if (change.requiresModelReset()) {
     resetDesktopState(std::move(nextState));
   } else if (change.updatesRows()) {
-    updateDesktopStateRows(std::move(nextState), change.rowChanges());
+    updateDesktopStateRows(std::move(nextState), change.rowUpdates());
   }
 
   if (change.countChanged()) {
@@ -136,15 +136,12 @@ void TabPagerBackend::resetDesktopState(TabPagerDesktopModelState nextState) {
 
 void TabPagerBackend::updateDesktopStateRows(
     TabPagerDesktopModelState nextState,
-    const QList<TabPagerDesktopRowChange> &rows) {
+    const QList<TabPagerDesktopRowUpdate> &rows) {
   m_state = std::move(nextState);
 
-  for (const TabPagerDesktopRowChange &rowChange : rows) {
-    const QList<int> roles = tabPagerDesktopChangedRoles(rowChange);
-    if (!roles.isEmpty()) {
-      const QModelIndex changedIndex = index(static_cast<int>(rowChange.row));
-      Q_EMIT dataChanged(changedIndex, changedIndex, roles);
-    }
+  for (const TabPagerDesktopRowUpdate &rowUpdate : rows) {
+    const QModelIndex changedIndex = index(static_cast<int>(rowUpdate.row));
+    Q_EMIT dataChanged(changedIndex, changedIndex, rowUpdate.roles);
   }
 }
 

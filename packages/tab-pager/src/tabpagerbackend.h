@@ -62,7 +62,7 @@ private:
   void applyDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
   void resetDesktopState(TabPagerDesktopModelState nextState);
   void updateDesktopStateRows(TabPagerDesktopModelState nextState,
-                              const QList<TabPagerDesktopRowChange> &rows);
+                              const QList<TabPagerDesktopRowUpdate> &rows);
   void activateOffset(int offset);
 
   std::unique_ptr<TabPagerDesktopSource> m_source;

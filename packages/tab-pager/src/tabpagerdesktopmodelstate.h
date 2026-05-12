@@ -38,18 +38,15 @@ struct TabPagerDesktopRowRoleDefinition {
   TabPagerDesktopRowRoleDataReader readData = nullptr;
 };
 
-struct TabPagerDesktopRowChange {
+struct TabPagerDesktopRowUpdate {
   qsizetype row = -1;
-  TabPagerDesktopRowData previousRow;
-  TabPagerDesktopRowData nextRow;
+  QList<int> roles;
 };
 
 [[nodiscard]] std::span<const TabPagerDesktopRowRoleDefinition>
 tabPagerDesktopRowRoleDefinitions();
 [[nodiscard]] QVariant
 tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData, int role);
-[[nodiscard]] QList<int>
-tabPagerDesktopChangedRoles(const TabPagerDesktopRowChange &rowChange);
 
 class TabPagerDesktopSnapshotChange final {
 public:
@@ -57,14 +54,14 @@ public:
   [[nodiscard]] static TabPagerDesktopSnapshotChange
   reset(bool countChanged, bool currentIndexChanged);
   [[nodiscard]] static TabPagerDesktopSnapshotChange
-  updateRows(bool currentIndexChanged, QList<TabPagerDesktopRowChange> rows);
+  updateRows(bool currentIndexChanged, QList<TabPagerDesktopRowUpdate> rows);
 
   [[nodiscard]] bool isEmpty() const;
   [[nodiscard]] bool requiresModelReset() const;
   [[nodiscard]] bool updatesRows() const;
   [[nodiscard]] bool countChanged() const;
   [[nodiscard]] bool currentIndexChanged() const;
-  [[nodiscard]] const QList<TabPagerDesktopRowChange> &rowChanges() const;
+  [[nodiscard]] const QList<TabPagerDesktopRowUpdate> &rowUpdates() const;
 
 private:
   enum class Operation : std::uint8_t {
@@ -76,7 +73,7 @@ private:
   Operation m_operation = Operation::None;
   bool m_countChanged = false;
   bool m_currentIndexChanged = false;
-  QList<TabPagerDesktopRowChange> m_rowChanges;
+  QList<TabPagerDesktopRowUpdate> m_rowUpdates;
 };
 
 class TabPagerDesktopModelState final {
