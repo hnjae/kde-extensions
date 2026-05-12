@@ -9,16 +9,6 @@
 #include <QString>
 #include <QVariant>
 
-#include <cstdint>
-
-enum class TabPagerDesktopField : std::uint8_t {
-  DesktopId,
-  Name,
-  Label,
-  Number,
-  Active,
-};
-
 struct TabPagerDesktopSnapshot {
   QList<TabPagerDesktop> desktops;
   QVariant currentDesktop;
@@ -48,10 +38,6 @@ public:
   [[nodiscard]] static TabPagerDesktopRowData
   rowData(qsizetype row, const TabPagerDesktop &desktop,
           const QVariant &currentDesktop);
-  [[nodiscard]] static QList<TabPagerDesktopField>
-  changedFieldsForRow(qsizetype row,
-                      const TabPagerDesktopSnapshot &previousSnapshot,
-                      const TabPagerDesktopSnapshot &nextSnapshot);
 
 private:
   QList<TabPagerDesktop> m_desktops;

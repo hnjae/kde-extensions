@@ -64,8 +64,10 @@ private:
   void reloadCurrentDesktop();
   void reloadNavigationWrappingAround();
   [[nodiscard]] TabPagerDesktopSnapshot sourceDesktopSnapshot() const;
-  static QList<int>
-  rolesForChangedFields(const QList<TabPagerDesktopField> &changedFields);
+  [[nodiscard]] static QList<int>
+  changedRolesForRow(qsizetype row,
+                     const TabPagerDesktopSnapshot &previousSnapshot,
+                     const TabPagerDesktopSnapshot &nextSnapshot);
   void applyDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
   void resetDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
   void

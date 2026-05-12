@@ -70,35 +70,3 @@ TabPagerDesktopModelState::rowData(qsizetype row,
       .active = desktop.id == currentDesktop,
   };
 }
-
-QList<TabPagerDesktopField> TabPagerDesktopModelState::changedFieldsForRow(
-    qsizetype row, const TabPagerDesktopSnapshot &previousSnapshot,
-    const TabPagerDesktopSnapshot &nextSnapshot) {
-  const TabPagerDesktopRowData previousRow = rowData(
-      row, previousSnapshot.desktops.at(row), previousSnapshot.currentDesktop);
-  const TabPagerDesktopRowData nextRow =
-      rowData(row, nextSnapshot.desktops.at(row), nextSnapshot.currentDesktop);
-  QList<TabPagerDesktopField> fields;
-
-  if (previousRow.desktopId != nextRow.desktopId) {
-    fields.append(TabPagerDesktopField::DesktopId);
-  }
-
-  if (previousRow.name != nextRow.name) {
-    fields.append(TabPagerDesktopField::Name);
-  }
-
-  if (previousRow.label != nextRow.label) {
-    fields.append(TabPagerDesktopField::Label);
-  }
-
-  if (previousRow.number != nextRow.number) {
-    fields.append(TabPagerDesktopField::Number);
-  }
-
-  if (previousRow.active != nextRow.active) {
-    fields.append(TabPagerDesktopField::Active);
-  }
-
-  return fields;
-}

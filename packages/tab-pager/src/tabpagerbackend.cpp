@@ -10,27 +10,32 @@
 #include <cassert>
 #include <utility>
 
-QList<int> TabPagerBackend::rolesForChangedFields(
-    const QList<TabPagerDesktopField> &changedFields) {
+QList<int> TabPagerBackend::changedRolesForRow(
+    qsizetype row, const TabPagerDesktopSnapshot &previousSnapshot,
+    const TabPagerDesktopSnapshot &nextSnapshot) {
+  const TabPagerDesktopRowData previousRow = TabPagerDesktopModelState::rowData(
+      row, previousSnapshot.desktops.at(row), previousSnapshot.currentDesktop);
+  const TabPagerDesktopRowData nextRow = TabPagerDesktopModelState::rowData(
+      row, nextSnapshot.desktops.at(row), nextSnapshot.currentDesktop);
   QList<int> roles;
 
-  if (changedFields.contains(TabPagerDesktopField::DesktopId)) {
+  if (previousRow.desktopId != nextRow.desktopId) {
     roles.append(TabPagerBackend::DesktopIdRole);
   }
 
-  if (changedFields.contains(TabPagerDesktopField::Name)) {
+  if (previousRow.name != nextRow.name) {
     roles.append(TabPagerBackend::NameRole);
   }
 
-  if (changedFields.contains(TabPagerDesktopField::Label)) {
+  if (previousRow.label != nextRow.label) {
     roles.append(TabPagerBackend::LabelRole);
   }
 
-  if (changedFields.contains(TabPagerDesktopField::Number)) {
+  if (previousRow.number != nextRow.number) {
     roles.append(TabPagerBackend::NumberRole);
   }
 
-  if (changedFields.contains(TabPagerDesktopField::Active)) {
+  if (previousRow.active != nextRow.active) {
     roles.append(TabPagerBackend::ActiveRole);
   }
 
@@ -198,8 +203,7 @@ void TabPagerBackend::updateDesktopSnapshotRows(
 
   for (qsizetype row = 0; row < m_state.count(); ++row) {
     const QList<int> roles =
-        rolesForChangedFields(TabPagerDesktopModelState::changedFieldsForRow(
-            row, previousSnapshot, nextSnapshot));
+        changedRolesForRow(row, previousSnapshot, nextSnapshot);
     if (!roles.isEmpty()) {
       const QModelIndex changedIndex = index(static_cast<int>(row));
       Q_EMIT dataChanged(changedIndex, changedIndex, roles);

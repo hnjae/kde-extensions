@@ -87,7 +87,6 @@ private Q_SLOTS:
   void resolvesNavigationTarget();
   void tracksDesktopModelStateIndex();
   void derivesDesktopModelStateRows();
-  void reportsDesktopModelStateChanges();
   void exposesModelState();
   void exposesModelData();
   void exposesRoleNames();
@@ -213,44 +212,6 @@ void TabPagerBackendTest::derivesDesktopModelStateRows() {
   QCOMPARE(secondRow.active, true);
 }
 
-void TabPagerBackendTest::reportsDesktopModelStateChanges() {
-  const TabPagerDesktopSnapshot previousSnapshot{
-      .desktops =
-          {
-              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-              {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
-          },
-      .currentDesktop = QStringLiteral("a"),
-  };
-  const TabPagerDesktopSnapshot nextSnapshot{
-      .desktops =
-          {
-              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-              {.id = QStringLiteral("c"), .name = QStringLiteral("Chat")},
-          },
-      .currentDesktop = QStringLiteral("c"),
-  };
-
-  const QList<TabPagerDesktopField> firstRowChanges =
-      TabPagerDesktopModelState::changedFieldsForRow(0, previousSnapshot,
-                                                     nextSnapshot);
-  const QList<TabPagerDesktopField> expectedFirstRowChanges = {
-      TabPagerDesktopField::Active,
-  };
-  QVERIFY(firstRowChanges == expectedFirstRowChanges);
-
-  const QList<TabPagerDesktopField> secondRowChanges =
-      TabPagerDesktopModelState::changedFieldsForRow(1, previousSnapshot,
-                                                     nextSnapshot);
-  const QList<TabPagerDesktopField> expectedSecondRowChanges = {
-      TabPagerDesktopField::DesktopId,
-      TabPagerDesktopField::Name,
-      TabPagerDesktopField::Label,
-      TabPagerDesktopField::Active,
-  };
-  QVERIFY(secondRowChanges == expectedSecondRowChanges);
-}
-
 void TabPagerBackendTest::exposesModelState() {
   BackendFixture fixture(
       {
@@ -358,15 +319,20 @@ void TabPagerBackendTest::emitsChangedRolesForUpdatedDesktopRows() {
 
   fixture.source.setDesktops({
       {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-      {.id = QStringLiteral("b"), .name = QStringLiteral("Chat")},
+      {.id = QStringLiteral("c"), .name = QStringLiteral("Chat")},
   });
 
+  QCOMPARE(dataSpy.count(), 1);
   const QList<QVariant> arguments = dataSpy.takeFirst();
   QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(0)).row(), 1);
   QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(1)).row(), 1);
   const auto roles = qvariant_cast<QList<int>>(arguments.at(2));
-  QVERIFY(roles.contains(TabPagerBackend::NameRole));
-  QVERIFY(roles.contains(TabPagerBackend::LabelRole));
+  QCOMPARE(roles, (QList<int>{
+                      TabPagerBackend::DesktopIdRole,
+                      TabPagerBackend::NameRole,
+                      TabPagerBackend::LabelRole,
+                      TabPagerBackend::ActiveRole,
+                  }));
 }
 
 void TabPagerBackendTest::tracksCurrentDesktopFromDesktopReload() {
