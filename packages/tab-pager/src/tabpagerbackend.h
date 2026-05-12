@@ -21,16 +21,6 @@ class TabPagerBackend : public QAbstractListModel {
   Q_PROPERTY(QFont labelFont READ labelFont CONSTANT)
 
 public:
-  // Q_ENUM exposes these role ids to QML, but the model API still consumes int.
-  enum Role : int { // NOLINT(performance-enum-size)
-    DesktopIdRole = static_cast<int>(TabPagerDesktopRowRole::DesktopId),
-    NameRole = static_cast<int>(TabPagerDesktopRowRole::Name),
-    LabelRole = static_cast<int>(TabPagerDesktopRowRole::Label),
-    NumberRole = static_cast<int>(TabPagerDesktopRowRole::Number),
-    ActiveRole = static_cast<int>(TabPagerDesktopRowRole::Active),
-  };
-  Q_ENUM(Role)
-
   explicit TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
                            QObject *parent = nullptr);
   ~TabPagerBackend() override;

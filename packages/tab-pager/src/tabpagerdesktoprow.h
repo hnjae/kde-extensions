@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <QHash>
 #include <QList>
 #include <QString>
 #include <QVariant>
@@ -42,6 +43,7 @@ struct TabPagerDesktopRowRoleDefinition {
 
 [[nodiscard]] std::span<const TabPagerDesktopRowRoleDefinition>
 tabPagerDesktopRowRoleDefinitions();
+[[nodiscard]] QHash<int, QByteArray> tabPagerDesktopRowRoleNames();
 [[nodiscard]] QVariant
 tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData, int role);
 [[nodiscard]] QList<int>

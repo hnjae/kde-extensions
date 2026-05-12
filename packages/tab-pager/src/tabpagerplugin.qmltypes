@@ -7,10 +7,6 @@ Module {
         prototype: "QAbstractListModel"
         exports: ["io.github.hnjae.plasma.tabpager/TabPagerBackend 1.0"]
         exportMetaObjectRevisions: [256]
-        Enum {
-            name: "Role"
-            values: ["DesktopIdRole", "NameRole", "LabelRole", "NumberRole", "ActiveRole"]
-        }
         Method {
             name: "activate"
             Parameter { name: "index"; type: "int" }

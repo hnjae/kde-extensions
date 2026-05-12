@@ -14,6 +14,7 @@ namespace {
 using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
 using TabPagerTest::namedDesktop;
+using TabPagerTest::role;
 using TabPagerTest::unnamedDesktop;
 
 constexpr int wheelStepDelta = 120;
@@ -147,18 +148,22 @@ void TabPagerBackendTest::exposesModelData() {
   const TabPagerBackend &backend = fixture.backend;
 
   const QModelIndex first = backend.index(0);
-  QCOMPARE(backend.data(first, TabPagerBackend::DesktopIdRole), desktopId("a"));
-  QCOMPARE(backend.data(first, TabPagerBackend::NameRole),
+  QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::DesktopId)),
+           desktopId("a"));
+  QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::Name)),
            QVariant(QStringLiteral("Desktop 1")));
-  QCOMPARE(backend.data(first, TabPagerBackend::LabelRole),
+  QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::Label)),
            QVariant(QStringLiteral("1")));
-  QCOMPARE(backend.data(first, TabPagerBackend::NumberRole), QVariant(1));
-  QCOMPARE(backend.data(first, TabPagerBackend::ActiveRole), QVariant(false));
+  QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::Number)),
+           QVariant(1));
+  QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::Active)),
+           QVariant(false));
 
   const QModelIndex second = backend.index(1);
-  QCOMPARE(backend.data(second, TabPagerBackend::LabelRole),
+  QCOMPARE(backend.data(second, role(TabPagerDesktopRowRole::Label)),
            QVariant(QStringLiteral("Work")));
-  QCOMPARE(backend.data(second, TabPagerBackend::ActiveRole), QVariant(true));
+  QCOMPARE(backend.data(second, role(TabPagerDesktopRowRole::Active)),
+           QVariant(true));
 }
 
 void TabPagerBackendTest::exposesRoleNames() {
@@ -167,11 +172,11 @@ void TabPagerBackendTest::exposesRoleNames() {
   const QHash<int, QByteArray> roles = backend.roleNames();
 
   const QHash<int, QByteArray> expected = {
-      {TabPagerBackend::DesktopIdRole, "desktopId"},
-      {TabPagerBackend::NameRole, "name"},
-      {TabPagerBackend::LabelRole, "label"},
-      {TabPagerBackend::NumberRole, "number"},
-      {TabPagerBackend::ActiveRole, "active"},
+      {role(TabPagerDesktopRowRole::DesktopId), "desktopId"},
+      {role(TabPagerDesktopRowRole::Name), "name"},
+      {role(TabPagerDesktopRowRole::Label), "label"},
+      {role(TabPagerDesktopRowRole::Number), "number"},
+      {role(TabPagerDesktopRowRole::Active), "active"},
   };
   QCOMPARE(roles, expected);
 }
@@ -192,7 +197,7 @@ void TabPagerBackendTest::updatesWhenDesktopsChange() {
   QCOMPARE(countSpy.count(), 1);
   QCOMPARE(resetSpy.count(), 1);
   QCOMPARE(fixture.backend.data(fixture.backend.index(1),
-                                TabPagerBackend::LabelRole),
+                                role(TabPagerDesktopRowRole::Label)),
            QVariant(QStringLiteral("Chat")));
 }
 
@@ -236,7 +241,7 @@ void TabPagerBackendTest::updatesDesktopRowsWithoutReset() {
   QCOMPARE(countSpy.count(), 0);
   QCOMPARE(resetSpy.count(), 0);
   QCOMPARE(fixture.backend.data(fixture.backend.index(1),
-                                TabPagerBackend::LabelRole),
+                                role(TabPagerDesktopRowRole::Label)),
            QVariant(QStringLiteral("Chat")));
 }
 
@@ -260,8 +265,8 @@ void TabPagerBackendTest::emitsChangedRolesForUpdatedDesktopRows() {
   QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(1)).row(), 1);
   const auto roles = qvariant_cast<QList<int>>(arguments.at(2));
   QCOMPARE(roles, (QList<int>{
-                      TabPagerBackend::NameRole,
-                      TabPagerBackend::LabelRole,
+                      role(TabPagerDesktopRowRole::Name),
+                      role(TabPagerDesktopRowRole::Label),
                   }));
 }
 
@@ -281,10 +286,10 @@ void TabPagerBackendTest::tracksCurrentDesktopFromDesktopReload() {
   QCOMPARE(currentSpy.count(), 1);
   QCOMPARE(dataSpy.count(), 2);
   QCOMPARE(fixture.backend.data(fixture.backend.index(0),
-                                TabPagerBackend::ActiveRole),
+                                role(TabPagerDesktopRowRole::Active)),
            QVariant(false));
   QCOMPARE(fixture.backend.data(fixture.backend.index(1),
-                                TabPagerBackend::ActiveRole),
+                                role(TabPagerDesktopRowRole::Active)),
            QVariant(true));
 }
 
@@ -306,9 +311,9 @@ void TabPagerBackendTest::tracksCurrentDesktop() {
   QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(0)).row(), 1);
   QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(1)).row(), 1);
   const auto roles = qvariant_cast<QList<int>>(arguments.at(2));
-  QCOMPARE(roles, QList<int>{TabPagerBackend::ActiveRole});
+  QCOMPARE(roles, QList<int>{role(TabPagerDesktopRowRole::Active)});
   QCOMPARE(fixture.backend.data(fixture.backend.index(1),
-                                TabPagerBackend::ActiveRole),
+                                role(TabPagerDesktopRowRole::Active)),
            QVariant(true));
 }
 

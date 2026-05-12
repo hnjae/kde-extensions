@@ -47,6 +47,19 @@ tabPagerDesktopRowRoleDefinitions() {
   return rowRoleDefinitions;
 }
 
+QHash<int, QByteArray> tabPagerDesktopRowRoleNames() {
+  QHash<int, QByteArray> names;
+  const std::span<const TabPagerDesktopRowRoleDefinition> definitions =
+      tabPagerDesktopRowRoleDefinitions();
+  names.reserve(static_cast<qsizetype>(definitions.size()));
+
+  for (const TabPagerDesktopRowRoleDefinition &definition : definitions) {
+    names.insert(definition.role, definition.name);
+  }
+
+  return names;
+}
+
 QVariant tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData,
                                        int role) {
   for (const TabPagerDesktopRowRoleDefinition &definition :

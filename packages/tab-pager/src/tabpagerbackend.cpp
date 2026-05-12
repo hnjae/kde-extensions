@@ -37,16 +37,7 @@ QVariant TabPagerBackend::data(const QModelIndex &index, int role) const {
 }
 
 QHash<int, QByteArray> TabPagerBackend::roleNames() const {
-  QHash<int, QByteArray> names;
-  const std::span<const TabPagerDesktopRowRoleDefinition> definitions =
-      tabPagerDesktopRowRoleDefinitions();
-  names.reserve(static_cast<qsizetype>(definitions.size()));
-
-  for (const TabPagerDesktopRowRoleDefinition &definition : definitions) {
-    names.insert(definition.role, definition.name);
-  }
-
-  return names;
+  return tabPagerDesktopRowRoleNames();
 }
 
 int TabPagerBackend::count() const { return m_state.count(); }
