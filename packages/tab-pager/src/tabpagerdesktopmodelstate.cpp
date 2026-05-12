@@ -16,6 +16,38 @@ namespace {
 
   return -1;
 }
+
+[[nodiscard]] bool sameRowData(const TabPagerDesktopRowData &left,
+                               const TabPagerDesktopRowData &right) {
+  return left.desktopId == right.desktopId && left.name == right.name &&
+         left.label == right.label && left.number == right.number &&
+         left.active == right.active;
+}
+
+[[nodiscard]] QList<TabPagerDesktopRowChange>
+changedRowsForSnapshots(const TabPagerDesktopSnapshot &previousSnapshot,
+                        const TabPagerDesktopSnapshot &nextSnapshot) {
+  QList<TabPagerDesktopRowChange> rowChanges;
+
+  for (qsizetype row = 0; row < nextSnapshot.desktops.size(); ++row) {
+    const TabPagerDesktopRowData previousRow =
+        TabPagerDesktopModelState::rowData(row,
+                                           previousSnapshot.desktops.at(row),
+                                           previousSnapshot.currentDesktop);
+    const TabPagerDesktopRowData nextRow = TabPagerDesktopModelState::rowData(
+        row, nextSnapshot.desktops.at(row), nextSnapshot.currentDesktop);
+
+    if (!sameRowData(previousRow, nextRow)) {
+      rowChanges.append(TabPagerDesktopRowChange{
+          .row = row,
+          .previousRow = previousRow,
+          .nextRow = nextRow,
+      });
+    }
+  }
+
+  return rowChanges;
+}
 } // namespace
 
 int TabPagerDesktopModelState::count() const {
@@ -42,6 +74,37 @@ TabPagerDesktopSnapshot TabPagerDesktopModelState::snapshot() const {
   return TabPagerDesktopSnapshot{
       .desktops = m_desktops,
       .currentDesktop = m_currentDesktop,
+  };
+}
+
+TabPagerDesktopSnapshotChange TabPagerDesktopModelState::changeForSnapshot(
+    const TabPagerDesktopSnapshot &nextSnapshot) const {
+  const TabPagerDesktopSnapshot previousSnapshot = snapshot();
+  if (sameSnapshot(previousSnapshot, nextSnapshot)) {
+    return {};
+  }
+
+  const int previousCount = count();
+  const int nextCount = static_cast<int>(nextSnapshot.desktops.size());
+  const bool countChanged = previousCount != nextCount;
+  const bool currentIndexChanged =
+      currentIndex() !=
+      indexOfDesktop(nextSnapshot.desktops, nextSnapshot.currentDesktop);
+
+  if (countChanged) {
+    return TabPagerDesktopSnapshotChange{
+        .operation = TabPagerDesktopSnapshotChange::Operation::Reset,
+        .countChanged = true,
+        .currentIndexChanged = currentIndexChanged,
+        .rowChanges = {},
+    };
+  }
+
+  return TabPagerDesktopSnapshotChange{
+      .operation = TabPagerDesktopSnapshotChange::Operation::UpdateRows,
+      .countChanged = false,
+      .currentIndexChanged = currentIndexChanged,
+      .rowChanges = changedRowsForSnapshots(previousSnapshot, nextSnapshot),
   };
 }
 

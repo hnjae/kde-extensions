@@ -9,6 +9,8 @@
 #include <QString>
 #include <QVariant>
 
+#include <cstdint>
+
 struct TabPagerDesktopSnapshot {
   QList<TabPagerDesktop> desktops;
   QVariant currentDesktop;
@@ -22,6 +24,25 @@ struct TabPagerDesktopRowData {
   bool active = false;
 };
 
+struct TabPagerDesktopRowChange {
+  qsizetype row = -1;
+  TabPagerDesktopRowData previousRow;
+  TabPagerDesktopRowData nextRow;
+};
+
+struct TabPagerDesktopSnapshotChange {
+  enum class Operation : std::uint8_t {
+    None,
+    Reset,
+    UpdateRows,
+  };
+
+  Operation operation = Operation::None;
+  bool countChanged = false;
+  bool currentIndexChanged = false;
+  QList<TabPagerDesktopRowChange> rowChanges;
+};
+
 class TabPagerDesktopModelState final {
 public:
   [[nodiscard]] int count() const;
@@ -30,6 +51,8 @@ public:
   [[nodiscard]] QVariant desktopIdAt(int index) const;
   [[nodiscard]] TabPagerDesktopRowData rowData(qsizetype row) const;
   [[nodiscard]] TabPagerDesktopSnapshot snapshot() const;
+  [[nodiscard]] TabPagerDesktopSnapshotChange
+  changeForSnapshot(const TabPagerDesktopSnapshot &snapshot) const;
 
   void setSnapshot(const TabPagerDesktopSnapshot &snapshot);
 

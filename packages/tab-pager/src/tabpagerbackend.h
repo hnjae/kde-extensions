@@ -63,14 +63,11 @@ private:
   void reloadNavigationWrappingAround();
   [[nodiscard]] TabPagerDesktopSnapshot sourceDesktopSnapshot() const;
   [[nodiscard]] static QList<int>
-  changedRolesForRow(qsizetype row,
-                     const TabPagerDesktopSnapshot &previousSnapshot,
-                     const TabPagerDesktopSnapshot &nextSnapshot);
+  changedRolesForRow(const TabPagerDesktopRowChange &rowChange);
   void applyDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
   void resetDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
-  void
-  updateDesktopSnapshotRows(const TabPagerDesktopSnapshot &previousSnapshot,
-                            const TabPagerDesktopSnapshot &nextSnapshot);
+  void updateDesktopSnapshotRows(const TabPagerDesktopSnapshot &snapshot,
+                                 const QList<TabPagerDesktopRowChange> &rows);
   void activateOffset(int offset);
 
   std::unique_ptr<TabPagerDesktopSource> m_source;

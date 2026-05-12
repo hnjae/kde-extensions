@@ -67,17 +67,13 @@ constexpr std::array<RoleDefinition, 5> roleDefinitions{{
 }
 } // namespace
 
-QList<int> TabPagerBackend::changedRolesForRow(
-    qsizetype row, const TabPagerDesktopSnapshot &previousSnapshot,
-    const TabPagerDesktopSnapshot &nextSnapshot) {
-  const TabPagerDesktopRowData previousRow = TabPagerDesktopModelState::rowData(
-      row, previousSnapshot.desktops.at(row), previousSnapshot.currentDesktop);
-  const TabPagerDesktopRowData nextRow = TabPagerDesktopModelState::rowData(
-      row, nextSnapshot.desktops.at(row), nextSnapshot.currentDesktop);
+QList<int>
+TabPagerBackend::changedRolesForRow(const TabPagerDesktopRowChange &rowChange) {
   QList<int> roles;
 
   for (const RoleDefinition &definition : roleDefinitions) {
-    if (definition.value(previousRow) != definition.value(nextRow)) {
+    if (definition.value(rowChange.previousRow) !=
+        definition.value(rowChange.nextRow)) {
       roles.append(static_cast<int>(definition.role));
     }
   }
@@ -198,25 +194,23 @@ TabPagerDesktopSnapshot TabPagerBackend::sourceDesktopSnapshot() const {
 
 void TabPagerBackend::applyDesktopSnapshot(
     const TabPagerDesktopSnapshot &snapshot) {
-  const TabPagerDesktopSnapshot previousSnapshot = m_state.snapshot();
-  if (TabPagerDesktopModelState::sameSnapshot(previousSnapshot, snapshot)) {
+  const TabPagerDesktopSnapshotChange change =
+      m_state.changeForSnapshot(snapshot);
+  if (change.operation == TabPagerDesktopSnapshotChange::Operation::None) {
     return;
   }
 
-  const int previousCount = count();
-  const int previousCurrentIndex = currentIndex();
-
-  if (previousCount != snapshot.desktops.size()) {
+  if (change.operation == TabPagerDesktopSnapshotChange::Operation::Reset) {
     resetDesktopSnapshot(snapshot);
   } else {
-    updateDesktopSnapshotRows(previousSnapshot, snapshot);
+    updateDesktopSnapshotRows(snapshot, change.rowChanges);
   }
 
-  if (previousCount != count()) {
+  if (change.countChanged) {
     Q_EMIT countChanged();
   }
 
-  if (previousCurrentIndex != currentIndex()) {
+  if (change.currentIndexChanged) {
     Q_EMIT currentIndexChanged();
   }
 }
@@ -229,15 +223,14 @@ void TabPagerBackend::resetDesktopSnapshot(
 }
 
 void TabPagerBackend::updateDesktopSnapshotRows(
-    const TabPagerDesktopSnapshot &previousSnapshot,
-    const TabPagerDesktopSnapshot &nextSnapshot) {
-  m_state.setSnapshot(nextSnapshot);
+    const TabPagerDesktopSnapshot &snapshot,
+    const QList<TabPagerDesktopRowChange> &rows) {
+  m_state.setSnapshot(snapshot);
 
-  for (qsizetype row = 0; row < m_state.count(); ++row) {
-    const QList<int> roles =
-        changedRolesForRow(row, previousSnapshot, nextSnapshot);
+  for (const TabPagerDesktopRowChange &rowChange : rows) {
+    const QList<int> roles = changedRolesForRow(rowChange);
     if (!roles.isEmpty()) {
-      const QModelIndex changedIndex = index(static_cast<int>(row));
+      const QModelIndex changedIndex = index(static_cast<int>(rowChange.row));
       Q_EMIT dataChanged(changedIndex, changedIndex, roles);
     }
   }

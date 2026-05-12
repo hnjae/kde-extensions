@@ -103,6 +103,10 @@ private Q_SLOTS:
   void resolvesNavigationTarget();
   void tracksDesktopModelStateIndex();
   void derivesDesktopModelStateRows();
+  void plansNoChangeForSameDesktopModelSnapshot();
+  void plansDesktopModelResetWhenCountChanges();
+  void plansCurrentDesktopRowUpdates();
+  void plansDesktopDataRowUpdates();
   void exposesModelState();
   void exposesModelData();
   void exposesRoleNames();
@@ -226,6 +230,125 @@ void TabPagerBackendTest::derivesDesktopModelStateRows() {
   const TabPagerDesktopRowData secondRow = state.rowData(1);
   QCOMPARE(secondRow.label, QStringLiteral("Work"));
   QCOMPARE(secondRow.active, true);
+}
+
+void TabPagerBackendTest::plansNoChangeForSameDesktopModelSnapshot() {
+  const TabPagerDesktopSnapshot snapshot{
+      .desktops =
+          {
+              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+          },
+      .currentDesktop = QStringLiteral("a"),
+  };
+  TabPagerDesktopModelState state;
+  state.setSnapshot(snapshot);
+
+  const TabPagerDesktopSnapshotChange change =
+      state.changeForSnapshot(snapshot);
+
+  QCOMPARE(change.operation, TabPagerDesktopSnapshotChange::Operation::None);
+  QCOMPARE(change.countChanged, false);
+  QCOMPARE(change.currentIndexChanged, false);
+  QCOMPARE(change.rowChanges.size(), 0);
+}
+
+void TabPagerBackendTest::plansDesktopModelResetWhenCountChanges() {
+  TabPagerDesktopModelState state;
+  state.setSnapshot(TabPagerDesktopSnapshot{
+      .desktops =
+          {
+              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+          },
+      .currentDesktop = QStringLiteral("a"),
+  });
+
+  const TabPagerDesktopSnapshotChange change =
+      state.changeForSnapshot(TabPagerDesktopSnapshot{
+          .desktops =
+              {
+                  {.id = QStringLiteral("a"),
+                   .name = QStringLiteral("Desktop 1")},
+                  {.id = QStringLiteral("b"),
+                   .name = QStringLiteral("Desktop 2")},
+              },
+          .currentDesktop = QStringLiteral("b"),
+      });
+
+  QCOMPARE(change.operation, TabPagerDesktopSnapshotChange::Operation::Reset);
+  QCOMPARE(change.countChanged, true);
+  QCOMPARE(change.currentIndexChanged, true);
+  QCOMPARE(change.rowChanges.size(), 0);
+}
+
+void TabPagerBackendTest::plansCurrentDesktopRowUpdates() {
+  TabPagerDesktopModelState state;
+  state.setSnapshot(TabPagerDesktopSnapshot{
+      .desktops =
+          {
+              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+              {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+          },
+      .currentDesktop = QStringLiteral("a"),
+  });
+
+  const TabPagerDesktopSnapshotChange change =
+      state.changeForSnapshot(TabPagerDesktopSnapshot{
+          .desktops =
+              {
+                  {.id = QStringLiteral("a"),
+                   .name = QStringLiteral("Desktop 1")},
+                  {.id = QStringLiteral("b"),
+                   .name = QStringLiteral("Desktop 2")},
+              },
+          .currentDesktop = QStringLiteral("b"),
+      });
+
+  QCOMPARE(change.operation,
+           TabPagerDesktopSnapshotChange::Operation::UpdateRows);
+  QCOMPARE(change.currentIndexChanged, true);
+  QCOMPARE(change.rowChanges.size(), 2);
+
+  QCOMPARE(change.rowChanges.at(0).row, 0);
+  QCOMPARE(change.rowChanges.at(0).nextRow.active, false);
+
+  QCOMPARE(change.rowChanges.at(1).row, 1);
+  QCOMPARE(change.rowChanges.at(1).nextRow.active, true);
+}
+
+void TabPagerBackendTest::plansDesktopDataRowUpdates() {
+  TabPagerDesktopModelState state;
+  state.setSnapshot(TabPagerDesktopSnapshot{
+      .desktops =
+          {
+              {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+              {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+          },
+      .currentDesktop = QStringLiteral("a"),
+  });
+
+  const TabPagerDesktopSnapshotChange change =
+      state.changeForSnapshot(TabPagerDesktopSnapshot{
+          .desktops =
+              {
+                  {.id = QStringLiteral("a"),
+                   .name = QStringLiteral("Desktop 1")},
+                  {.id = QStringLiteral("c"), .name = QStringLiteral("Chat")},
+              },
+          .currentDesktop = QStringLiteral("a"),
+      });
+
+  QCOMPARE(change.operation,
+           TabPagerDesktopSnapshotChange::Operation::UpdateRows);
+  QCOMPARE(change.countChanged, false);
+  QCOMPARE(change.currentIndexChanged, false);
+  QCOMPARE(change.rowChanges.size(), 1);
+
+  QCOMPARE(change.rowChanges.at(0).row, 1);
+  QCOMPARE(change.rowChanges.at(0).previousRow.desktopId,
+           QVariant(QStringLiteral("b")));
+  QCOMPARE(change.rowChanges.at(0).nextRow.desktopId,
+           QVariant(QStringLiteral("c")));
+  QCOMPARE(change.rowChanges.at(0).nextRow.label, QStringLiteral("Chat"));
 }
 
 void TabPagerBackendTest::exposesModelState() {
