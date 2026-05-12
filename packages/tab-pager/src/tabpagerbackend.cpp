@@ -19,26 +19,41 @@ struct RoleDefinition {
 };
 
 constexpr std::array<RoleDefinition, 5> roleDefinitions{{
-    {TabPagerBackend::DesktopIdRole, "desktopId",
-     +[](const TabPagerDesktopRowData &rowData) -> QVariant {
-       return rowData.desktopId;
-     }},
-    {TabPagerBackend::NameRole, "name",
-     +[](const TabPagerDesktopRowData &rowData) -> QVariant {
-       return rowData.name;
-     }},
-    {TabPagerBackend::LabelRole, "label",
-     +[](const TabPagerDesktopRowData &rowData) -> QVariant {
-       return rowData.label;
-     }},
-    {TabPagerBackend::NumberRole, "number",
-     +[](const TabPagerDesktopRowData &rowData) -> QVariant {
-       return rowData.number;
-     }},
-    {TabPagerBackend::ActiveRole, "active",
-     +[](const TabPagerDesktopRowData &rowData) -> QVariant {
-       return rowData.active;
-     }},
+    {
+        .role = TabPagerBackend::DesktopIdRole,
+        .name = "desktopId",
+        .value = +[](const TabPagerDesktopRowData &rowData) -> QVariant {
+          return rowData.desktopId;
+        },
+    },
+    {
+        .role = TabPagerBackend::NameRole,
+        .name = "name",
+        .value = +[](const TabPagerDesktopRowData &rowData) -> QVariant {
+          return rowData.name;
+        },
+    },
+    {
+        .role = TabPagerBackend::LabelRole,
+        .name = "label",
+        .value = +[](const TabPagerDesktopRowData &rowData) -> QVariant {
+          return rowData.label;
+        },
+    },
+    {
+        .role = TabPagerBackend::NumberRole,
+        .name = "number",
+        .value = +[](const TabPagerDesktopRowData &rowData) -> QVariant {
+          return rowData.number;
+        },
+    },
+    {
+        .role = TabPagerBackend::ActiveRole,
+        .name = "active",
+        .value = +[](const TabPagerDesktopRowData &rowData) -> QVariant {
+          return rowData.active;
+        },
+    },
 }};
 
 [[nodiscard]] const RoleDefinition *roleDefinitionFor(int role) {
@@ -70,15 +85,9 @@ QList<int> TabPagerBackend::changedRolesForRow(
   return roles;
 }
 
-TabPagerBackend::TabPagerBackend(TabPagerDesktopSource *source, QObject *parent)
-    : QAbstractListModel(parent), m_source(source) {
-  initializeSource();
-}
-
 TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
                                  QObject *parent)
-    : QAbstractListModel(parent), m_ownedSource(std::move(source)),
-      m_source(m_ownedSource.get()) {
+    : QAbstractListModel(parent), m_source(std::move(source)) {
   initializeSource();
 }
 
@@ -149,12 +158,13 @@ void TabPagerBackend::initializeSource() {
 }
 
 void TabPagerBackend::connectSource() {
-  connect(m_source, &TabPagerDesktopSource::desktopsChanged, this,
+  connect(m_source.get(), &TabPagerDesktopSource::desktopsChanged, this,
           &TabPagerBackend::reloadDesktops);
-  connect(m_source, &TabPagerDesktopSource::currentDesktopChanged, this,
+  connect(m_source.get(), &TabPagerDesktopSource::currentDesktopChanged, this,
           &TabPagerBackend::reloadCurrentDesktop);
-  connect(m_source, &TabPagerDesktopSource::navigationWrappingAroundChanged,
-          this, &TabPagerBackend::reloadNavigationWrappingAround);
+  connect(m_source.get(),
+          &TabPagerDesktopSource::navigationWrappingAroundChanged, this,
+          &TabPagerBackend::reloadNavigationWrappingAround);
 }
 
 void TabPagerBackend::reloadDesktops() {

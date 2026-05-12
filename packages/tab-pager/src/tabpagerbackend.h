@@ -31,8 +31,6 @@ public:
   };
   Q_ENUM(Role)
 
-  explicit TabPagerBackend(TabPagerDesktopSource *source,
-                           QObject *parent = nullptr);
   explicit TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
                            QObject *parent = nullptr);
   ~TabPagerBackend() override;
@@ -75,8 +73,7 @@ private:
                             const TabPagerDesktopSnapshot &nextSnapshot);
   void activateOffset(int offset);
 
-  std::unique_ptr<TabPagerDesktopSource> m_ownedSource;
-  TabPagerDesktopSource *m_source = nullptr;
+  std::unique_ptr<TabPagerDesktopSource> m_source;
   TabPagerDesktopModelState m_state;
   bool m_navigationWrappingAround = false;
 };
