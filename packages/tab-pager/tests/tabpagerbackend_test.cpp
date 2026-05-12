@@ -33,6 +33,13 @@ public:
     Q_EMIT desktopsChanged();
   }
 
+  void setDesktopState(const QList<TabPagerDesktop> &desktops,
+                       const QVariant &currentDesktop) {
+    m_desktops = desktops;
+    m_currentDesktop = currentDesktop;
+    Q_EMIT desktopsChanged();
+  }
+
   void setCurrentDesktop(const QVariant &desktopId) {
     m_currentDesktop = desktopId;
     Q_EMIT currentDesktopChanged();
@@ -81,6 +88,8 @@ private Q_SLOTS:
   void exposesModelData();
   void exposesRoleNames();
   void updatesWhenDesktopsChange();
+  void updatesDesktopRowsWithoutReset();
+  void tracksCurrentDesktopFromDesktopReload();
   void tracksCurrentDesktop();
   void updatesNavigationWrapping();
   void activatesDesktopByIndex();
@@ -210,6 +219,7 @@ void TabPagerBackendTest::updatesWhenDesktopsChange() {
       {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
   });
   QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
+  QSignalSpy resetSpy(&fixture.backend, &QAbstractItemModel::modelReset);
 
   fixture.source.setDesktops({
       {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
@@ -218,9 +228,65 @@ void TabPagerBackendTest::updatesWhenDesktopsChange() {
 
   QCOMPARE(fixture.backend.count(), 2);
   QCOMPARE(countSpy.count(), 1);
+  QCOMPARE(resetSpy.count(), 1);
   QCOMPARE(fixture.backend.data(fixture.backend.index(1),
                                 TabPagerBackend::LabelRole),
            QVariant(QStringLiteral("Chat")));
+}
+
+void TabPagerBackendTest::updatesDesktopRowsWithoutReset() {
+  BackendFixture fixture(
+      {
+          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+          {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+      },
+      QStringLiteral("b"));
+  QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
+  QSignalSpy resetSpy(&fixture.backend, &QAbstractItemModel::modelReset);
+  QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
+
+  fixture.source.setDesktops({
+      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+      {.id = QStringLiteral("b"), .name = QStringLiteral("Chat")},
+  });
+
+  QCOMPARE(fixture.backend.count(), 2);
+  QCOMPARE(countSpy.count(), 0);
+  QCOMPARE(resetSpy.count(), 0);
+  QCOMPARE(dataSpy.count(), 1);
+  QCOMPARE(fixture.backend.data(fixture.backend.index(1),
+                                TabPagerBackend::LabelRole),
+           QVariant(QStringLiteral("Chat")));
+
+  const QList<QVariant> arguments = dataSpy.takeFirst();
+  QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(0)).row(), 1);
+  QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(1)).row(), 1);
+  const QList<int> roles = qvariant_cast<QList<int>>(arguments.at(2));
+  QVERIFY(roles.contains(TabPagerBackend::NameRole));
+  QVERIFY(roles.contains(TabPagerBackend::LabelRole));
+}
+
+void TabPagerBackendTest::tracksCurrentDesktopFromDesktopReload() {
+  const QList<TabPagerDesktop> desktops = {
+      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+      {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+  };
+  BackendFixture fixture(desktops, QStringLiteral("a"));
+  QSignalSpy currentSpy(&fixture.backend,
+                        &TabPagerBackend::currentIndexChanged);
+  QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
+
+  fixture.source.setDesktopState(desktops, QStringLiteral("b"));
+
+  QCOMPARE(fixture.backend.currentIndex(), 1);
+  QCOMPARE(currentSpy.count(), 1);
+  QCOMPARE(dataSpy.count(), 2);
+  QCOMPARE(fixture.backend.data(fixture.backend.index(0),
+                                TabPagerBackend::ActiveRole),
+           QVariant(false));
+  QCOMPARE(fixture.backend.data(fixture.backend.index(1),
+                                TabPagerBackend::ActiveRole),
+           QVariant(true));
 }
 
 void TabPagerBackendTest::tracksCurrentDesktop() {

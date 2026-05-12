@@ -64,6 +64,11 @@ private:
   void reloadDesktops();
   void reloadCurrentDesktop();
   void reloadNavigationWrappingAround();
+  void resetDesktops(const QList<TabPagerDesktop> &desktops,
+                     const QVariant &currentDesktop);
+  void updateDesktopRows(const QList<TabPagerDesktop> &desktops,
+                         const QVariant &currentDesktop);
+  void setCurrentDesktop(const QVariant &currentDesktop);
   void activateOffset(int offset);
   [[nodiscard]] int indexOfDesktop(const QVariant &desktopId) const;
 

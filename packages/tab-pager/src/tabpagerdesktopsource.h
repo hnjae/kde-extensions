@@ -13,6 +13,9 @@ struct TabPagerDesktop {
   QString name;
 };
 
+[[nodiscard]] bool operator==(const TabPagerDesktop &left,
+                              const TabPagerDesktop &right);
+
 class TabPagerDesktopSource : public QObject {
   Q_OBJECT
 

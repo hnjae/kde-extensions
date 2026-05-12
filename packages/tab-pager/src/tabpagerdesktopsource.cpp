@@ -3,6 +3,10 @@
 
 #include "tabpagerdesktopsource.h"
 
+bool operator==(const TabPagerDesktop &left, const TabPagerDesktop &right) {
+  return left.id == right.id && left.name == right.name;
+}
+
 TabPagerDesktopSource::TabPagerDesktopSource(QObject *parent)
     : QObject(parent) {}
 

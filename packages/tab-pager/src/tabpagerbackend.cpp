@@ -10,6 +10,48 @@
 #include <cassert>
 #include <utility>
 
+namespace {
+[[nodiscard]] int indexOfDesktop(const QList<TabPagerDesktop> &desktops,
+                                 const QVariant &desktopId) {
+  for (qsizetype index = 0; index < desktops.size(); ++index) {
+    if (desktops.at(index).id == desktopId) {
+      return static_cast<int>(index);
+    }
+  }
+
+  return -1;
+}
+
+[[nodiscard]] QList<int>
+changedRolesForDesktop(qsizetype row, const TabPagerDesktop &previousDesktop,
+                       const TabPagerDesktop &nextDesktop,
+                       const QVariant &previousCurrentDesktop,
+                       const QVariant &nextCurrentDesktop) {
+  QList<int> roles;
+
+  if (previousDesktop.id != nextDesktop.id) {
+    roles.append(TabPagerBackend::DesktopIdRole);
+  }
+
+  if (previousDesktop.name != nextDesktop.name) {
+    roles.append(TabPagerBackend::NameRole);
+  }
+
+  const int number = static_cast<int>(row + 1);
+  if (TabPagerDesktopLogic::labelForDesktop(number, previousDesktop.name) !=
+      TabPagerDesktopLogic::labelForDesktop(number, nextDesktop.name)) {
+    roles.append(TabPagerBackend::LabelRole);
+  }
+
+  if ((previousDesktop.id == previousCurrentDesktop) !=
+      (nextDesktop.id == nextCurrentDesktop)) {
+    roles.append(TabPagerBackend::ActiveRole);
+  }
+
+  return roles;
+}
+} // namespace
+
 TabPagerBackend::TabPagerBackend(TabPagerDesktopSource *source, QObject *parent)
     : QAbstractListModel(parent), m_source(source) {
   initializeSource();
@@ -111,11 +153,14 @@ void TabPagerBackend::connectSource() {
 void TabPagerBackend::reloadDesktops() {
   const int previousCount = count();
   const int previousCurrentIndex = currentIndex();
+  const QList<TabPagerDesktop> nextDesktops = m_source->desktops();
+  const QVariant nextCurrentDesktop = m_source->currentDesktop();
 
-  beginResetModel();
-  m_desktops = m_source->desktops();
-  m_currentDesktop = m_source->currentDesktop();
-  endResetModel();
+  if (previousCount != nextDesktops.size()) {
+    resetDesktops(nextDesktops, nextCurrentDesktop);
+  } else {
+    updateDesktopRows(nextDesktops, nextCurrentDesktop);
+  }
 
   if (previousCount != count()) {
     Q_EMIT countChanged();
@@ -127,8 +172,55 @@ void TabPagerBackend::reloadDesktops() {
 }
 
 void TabPagerBackend::reloadCurrentDesktop() {
+  setCurrentDesktop(m_source->currentDesktop());
+}
+
+void TabPagerBackend::reloadNavigationWrappingAround() {
+  const bool nextNavigationWrappingAround =
+      m_source->navigationWrappingAround();
+
+  if (m_navigationWrappingAround == nextNavigationWrappingAround) {
+    return;
+  }
+
+  m_navigationWrappingAround = nextNavigationWrappingAround;
+  Q_EMIT navigationWrappingAroundChanged();
+}
+
+void TabPagerBackend::resetDesktops(const QList<TabPagerDesktop> &desktops,
+                                    const QVariant &currentDesktop) {
+  beginResetModel();
+  m_desktops = desktops;
+  m_currentDesktop = currentDesktop;
+  endResetModel();
+}
+
+void TabPagerBackend::updateDesktopRows(const QList<TabPagerDesktop> &desktops,
+                                        const QVariant &currentDesktop) {
+  if (m_desktops == desktops && m_currentDesktop == currentDesktop) {
+    return;
+  }
+
+  const QList<TabPagerDesktop> previousDesktops = m_desktops;
+  const QVariant previousCurrentDesktop = m_currentDesktop;
+
+  m_desktops = desktops;
+  m_currentDesktop = currentDesktop;
+
+  for (qsizetype row = 0; row < m_desktops.size(); ++row) {
+    const QList<int> roles = changedRolesForDesktop(
+        row, previousDesktops.at(row), m_desktops.at(row),
+        previousCurrentDesktop, m_currentDesktop);
+    if (!roles.isEmpty()) {
+      const QModelIndex changedIndex = index(static_cast<int>(row));
+      Q_EMIT dataChanged(changedIndex, changedIndex, roles);
+    }
+  }
+}
+
+void TabPagerBackend::setCurrentDesktop(const QVariant &currentDesktop) {
   const int previousIndex = currentIndex();
-  m_currentDesktop = m_source->currentDesktop();
+  m_currentDesktop = currentDesktop;
   const int nextIndex = currentIndex();
 
   if (previousIndex == nextIndex) {
@@ -146,18 +238,6 @@ void TabPagerBackend::reloadCurrentDesktop() {
   }
 }
 
-void TabPagerBackend::reloadNavigationWrappingAround() {
-  const bool nextNavigationWrappingAround =
-      m_source->navigationWrappingAround();
-
-  if (m_navigationWrappingAround == nextNavigationWrappingAround) {
-    return;
-  }
-
-  m_navigationWrappingAround = nextNavigationWrappingAround;
-  Q_EMIT navigationWrappingAroundChanged();
-}
-
 void TabPagerBackend::activateOffset(int offset) {
   const int targetIndex = TabPagerDesktopLogic::targetIndexForOffset(
       currentIndex(), count(), offset, m_navigationWrappingAround);
@@ -167,11 +247,5 @@ void TabPagerBackend::activateOffset(int offset) {
 }
 
 int TabPagerBackend::indexOfDesktop(const QVariant &desktopId) const {
-  for (qsizetype index = 0; index < m_desktops.size(); ++index) {
-    if (m_desktops.at(index).id == desktopId) {
-      return static_cast<int>(index);
-    }
-  }
-
-  return -1;
+  return ::indexOfDesktop(m_desktops, desktopId);
 }
