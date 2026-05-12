@@ -5,8 +5,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
-import org.kde.ksvg as KSvg
-import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 
 import io.github.hnjae.plasma.tabpager as TabPager
@@ -65,92 +63,14 @@ PlasmoidItem {
             QtQuick.Repeater {
                 model: backend
 
-                delegate: QtQuick.Item {
-                    id: desktopBox
+                delegate: DesktopButton {
+                    horizontalPadding: fullRepresentationItem.horizontalPadding
+                    labelFont: backend.labelFont
+                    verticalPadding: fullRepresentationItem.verticalPadding
 
-                    required property bool active
-                    required property int index
-                    required property string label
-
-                    readonly property var frameLayers: [
-                        {
-                            "prefix": "hover",
-                            "z": 2
-                        },
-                        {
-                            "prefix": "active",
-                            "z": 3
-                        },
-                        {
-                            "prefix": "normal",
-                            "z": 4
-                        },
-                    ]
-                    readonly property int horizontalPadding: fullRepresentationItem.horizontalPadding
-                    readonly property int verticalPadding: fullRepresentationItem.verticalPadding
-
-                    height: implicitHeight
-                    implicitHeight: desktopLabel.implicitHeight + frameMetrics.margins.top + frameMetrics.margins.bottom + verticalPadding * 2
-                    implicitWidth: desktopLabel.implicitWidth + frameMetrics.margins.left + frameMetrics.margins.right + horizontalPadding * 2
-                    state: desktopMouseArea.containsMouse ? "hover" : active ? "active" : "normal"
-                    width: implicitWidth
-
-                    KSvg.FrameSvgItem {
-                        id: frameMetrics
-
-                        imagePath: "widgets/pager"
-                        opacity: 0
-                        prefix: "normal"
-                    }
-
-                    QtQuick.Repeater {
-                        model: desktopBox.frameLayers
-
-                        delegate: PagerFrame {
-                            required property var modelData
-
-                            desktopState: desktopBox.state
-                            framePrefix: modelData.prefix
-                            z: modelData.z
-                        }
-                    }
-
-                    PlasmaComponents.Label {
-                        id: desktopLabel
-
-                        anchors {
-                            fill: parent
-                            bottomMargin: frameMetrics.margins.bottom + desktopBox.verticalPadding
-                            leftMargin: frameMetrics.margins.left + desktopBox.horizontalPadding
-                            rightMargin: frameMetrics.margins.right + desktopBox.horizontalPadding
-                            topMargin: frameMetrics.margins.top + desktopBox.verticalPadding
-                        }
-                        font: backend.labelFont
-                        horizontalAlignment: QtQuick.Text.AlignHCenter
-                        text: desktopBox.label
-                        verticalAlignment: QtQuick.Text.AlignVCenter
-                        z: 9999
-                    }
-
-                    QtQuick.MouseArea {
-                        anchors.fill: parent
-                        cursorShape: QtQuick.Qt.PointingHandCursor
-                        hoverEnabled: true
-
-                        onClicked: backend.activate(desktopBox.index)
-                    }
+                    onActivated: desktopIndex => backend.activate(desktopIndex)
                 }
             }
         }
-    }
-
-    component PagerFrame: KSvg.FrameSvgItem {
-        required property string desktopState
-        required property string framePrefix
-
-        anchors.fill: parent
-        imagePath: "widgets/pager"
-        opacity: desktopState === framePrefix ? 1 : 0
-        prefix: framePrefix
     }
 }

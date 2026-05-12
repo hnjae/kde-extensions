@@ -10,6 +10,7 @@
 #include <QVariant>
 
 #include <cstdint>
+#include <optional>
 
 struct TabPagerDesktopRowUpdate {
   qsizetype row = -1;
@@ -36,8 +37,7 @@ public:
 
   [[nodiscard]] int count() const;
   [[nodiscard]] int currentIndex() const;
-  [[nodiscard]] bool hasDesktopAt(int index) const;
-  [[nodiscard]] QVariant desktopIdAt(int index) const;
+  [[nodiscard]] std::optional<QVariant> desktopIdForIndex(int index) const;
   [[nodiscard]] TabPagerDesktopRowData rowData(qsizetype row) const;
   [[nodiscard]] TabPagerDesktopModelChange
   changeForState(const TabPagerDesktopModelState &nextState) const;

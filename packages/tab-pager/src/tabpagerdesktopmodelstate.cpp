@@ -82,11 +82,12 @@ int TabPagerDesktopModelState::count() const {
 
 int TabPagerDesktopModelState::currentIndex() const { return m_currentIndex; }
 
-bool TabPagerDesktopModelState::hasDesktopAt(int index) const {
-  return index >= 0 && index < m_rows.size();
-}
+std::optional<QVariant>
+TabPagerDesktopModelState::desktopIdForIndex(int index) const {
+  if (index < 0 || index >= m_rows.size()) {
+    return std::nullopt;
+  }
 
-QVariant TabPagerDesktopModelState::desktopIdAt(int index) const {
   return m_rows.at(index).desktopId;
 }
 

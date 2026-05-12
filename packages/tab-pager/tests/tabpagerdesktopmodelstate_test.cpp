@@ -159,9 +159,9 @@ void TabPagerDesktopModelStateTest::tracksDesktopModelStateIndex() {
 
   QCOMPARE(state.count(), 3);
   QCOMPARE(state.currentIndex(), 1);
-  QCOMPARE(state.hasDesktopAt(-1), false);
-  QCOMPARE(state.hasDesktopAt(3), false);
-  QCOMPARE(state.desktopIdAt(1), desktopId("b"));
+  QCOMPARE(state.desktopIdForIndex(-1).has_value(), false);
+  QCOMPARE(state.desktopIdForIndex(3).has_value(), false);
+  QCOMPARE(*state.desktopIdForIndex(1), desktopId("b"));
 }
 
 void TabPagerDesktopModelStateTest::derivesDesktopModelStateRows() {

@@ -8,6 +8,7 @@
 #include <QFontDatabase>
 
 #include <cassert>
+#include <optional>
 #include <utility>
 
 TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
@@ -61,11 +62,12 @@ QFont TabPagerBackend::labelFont() const {
 }
 
 void TabPagerBackend::activate(int index) {
-  if (!m_state.hasDesktopAt(index)) {
+  const std::optional<QVariant> desktopId = m_state.desktopIdForIndex(index);
+  if (!desktopId.has_value()) {
     return;
   }
 
-  m_source->activateDesktop(m_state.desktopIdAt(index));
+  m_source->activateDesktop(*desktopId);
 }
 
 void TabPagerBackend::activateNext() { activateOffset(1); }
