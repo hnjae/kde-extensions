@@ -38,13 +38,15 @@ let
   '';
 
   qmlLint = ''
+    mapfile -t qml_sources < <(${pkgs.findutils}/bin/find package/contents/ui -name '*.qml' -print | sort)
+
     qmllint \
       --ignore-settings \
       --max-warnings 0 \
       --unqualified disable \
       -I "$install_prefix/lib/qt-6/qml" \
       ${qmlImportFlags} \
-      package/contents/ui/main.qml
+      "''${qml_sources[@]}"
   '';
 
   clangTidy = ''
@@ -60,6 +62,8 @@ let
   '';
 
   clazy = ''
+    mapfile -t cxx_sources < <(${pkgs.findutils}/bin/find src tests -name '*.cpp' -print | sort)
+
     clazy-standalone \
       -p "$build_dir" \
       --checks=level1 \
@@ -69,17 +73,7 @@ let
       --extra-arg=-I${gccIncludeDir} \
       --extra-arg=-I${gccIncludeDir}/${pkgs.stdenv.hostPlatform.config} \
       --extra-arg=-I${pkgs.stdenv.cc.libc_dev}/include \
-      src/tabpagerdesktopsource.cpp \
-      src/tabpagerbackend.cpp \
-      src/tabpagerdesktoplogic.cpp \
-      src/tabpagerdesktopmodelstate.cpp \
-      src/tabpagerdesktoprow.cpp \
-      src/tabpagerqmlbackend.cpp \
-      src/tabpagerplugin.cpp \
-      src/taskmanagerdesktopsource.cpp \
-      tests/tabpagerdesktoplogic_test.cpp \
-      tests/tabpagerdesktopmodelstate_test.cpp \
-      tests/tabpagerbackend_test.cpp
+      "''${cxx_sources[@]}"
   '';
 
   kpackage = ''
