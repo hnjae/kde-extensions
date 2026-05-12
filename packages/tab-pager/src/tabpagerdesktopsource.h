@@ -13,9 +13,6 @@ struct TabPagerDesktop {
   QString name;
 };
 
-[[nodiscard]] bool operator==(const TabPagerDesktop &left,
-                              const TabPagerDesktop &right);
-
 struct TabPagerDesktopSnapshot {
   QList<TabPagerDesktop> desktops;
   QVariant currentDesktop;

@@ -5,6 +5,7 @@
 
 #include "tabpagerdesktoplogic.h"
 
+#include <optional>
 #include <utility>
 
 namespace {
@@ -28,14 +29,21 @@ rowDataForDesktop(qsizetype row, const TabPagerDesktop &desktop,
   };
 }
 
-[[nodiscard]] QList<TabPagerDesktopRowChange>
-changedRowsForStates(const QList<TabPagerDesktopRowData> &previousRows,
-                     const QList<TabPagerDesktopRowData> &nextRows) {
+[[nodiscard]] std::optional<QList<TabPagerDesktopRowChange>>
+changedRowsForStableIdentity(const QList<TabPagerDesktopRowData> &previousRows,
+                             const QList<TabPagerDesktopRowData> &nextRows) {
+  if (previousRows.size() != nextRows.size()) {
+    return std::nullopt;
+  }
+
   QList<TabPagerDesktopRowChange> rowChanges;
 
   for (qsizetype row = 0; row < nextRows.size(); ++row) {
     const TabPagerDesktopRowData &previousRow = previousRows.at(row);
     const TabPagerDesktopRowData &nextRow = nextRows.at(row);
+    if (previousRow.desktopId != nextRow.desktopId) {
+      return std::nullopt;
+    }
 
     if (previousRow != nextRow) {
       rowChanges.append(TabPagerDesktopRowChange{
@@ -47,22 +55,6 @@ changedRowsForStates(const QList<TabPagerDesktopRowData> &previousRows,
   }
 
   return rowChanges;
-}
-
-[[nodiscard]] bool
-hasSameRowIdentity(const QList<TabPagerDesktopRowData> &previousRows,
-                   const QList<TabPagerDesktopRowData> &nextRows) {
-  if (previousRows.size() != nextRows.size()) {
-    return false;
-  }
-
-  for (qsizetype row = 0; row < nextRows.size(); ++row) {
-    if (previousRows.at(row).desktopId != nextRows.at(row).desktopId) {
-      return false;
-    }
-  }
-
-  return true;
 }
 } // namespace
 
@@ -156,20 +148,18 @@ TabPagerDesktopSnapshotChange TabPagerDesktopModelState::changeForState(
   const int nextCount = nextState.count();
   const bool countChanged = previousCount != nextCount;
   const bool currentIndexChanged = m_currentIndex != nextState.m_currentIndex;
-  const bool rowIdentityChanged = !hasSameRowIdentity(m_rows, nextState.m_rows);
-  const QList<TabPagerDesktopRowChange> rowChanges =
-      rowIdentityChanged ? QList<TabPagerDesktopRowChange>{}
-                         : changedRowsForStates(m_rows, nextState.m_rows);
+  const std::optional<QList<TabPagerDesktopRowChange>> rowChanges =
+      changedRowsForStableIdentity(m_rows, nextState.m_rows);
 
-  if (!rowIdentityChanged && !currentIndexChanged && rowChanges.isEmpty()) {
+  if (rowChanges.has_value() && !currentIndexChanged && rowChanges->isEmpty()) {
     return TabPagerDesktopSnapshotChange::unchanged();
   }
 
-  if (rowIdentityChanged) {
+  if (!rowChanges.has_value()) {
     return TabPagerDesktopSnapshotChange::reset(countChanged,
                                                 currentIndexChanged);
   }
 
   return TabPagerDesktopSnapshotChange::updateRows(currentIndexChanged,
-                                                   rowChanges);
+                                                   *rowChanges);
 }
