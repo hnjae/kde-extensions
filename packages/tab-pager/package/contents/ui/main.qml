@@ -4,6 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
+import QtQuick.Layouts as QtQuickLayouts
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 
@@ -29,6 +30,15 @@ PlasmoidItem {
 
         implicitWidth: Math.max(pagerRow.implicitWidth, 1)
         implicitHeight: Math.max(pagerRow.implicitHeight, 1)
+
+        QtQuickLayouts.Layout.minimumWidth: implicitWidth
+        QtQuickLayouts.Layout.preferredWidth: implicitWidth
+        QtQuickLayouts.Layout.maximumWidth: implicitWidth
+        QtQuickLayouts.Layout.minimumHeight: implicitHeight
+        QtQuickLayouts.Layout.preferredHeight: implicitHeight
+        QtQuickLayouts.Layout.maximumHeight: implicitHeight
+
+        clip: true
 
         QtQuick.FontMetrics {
             id: labelMetrics
