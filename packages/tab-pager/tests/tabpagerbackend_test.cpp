@@ -98,6 +98,7 @@ private Q_SLOTS:
   void exposesModelData();
   void exposesRoleNames();
   void updatesWhenDesktopsChange();
+  void resetsWhenDesktopIdentityChanges();
   void updatesDesktopRowsWithoutReset();
   void emitsChangedRolesForUpdatedDesktopRows();
   void tracksCurrentDesktopFromDesktopReload();
@@ -187,6 +188,27 @@ void TabPagerBackendTest::updatesWhenDesktopsChange() {
            QVariant(QStringLiteral("Chat")));
 }
 
+void TabPagerBackendTest::resetsWhenDesktopIdentityChanges() {
+  BackendFixture fixture(
+      {
+          {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
+          {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 2")},
+      },
+      QStringLiteral("a"));
+  QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
+  QSignalSpy resetSpy(&fixture.backend, &QAbstractItemModel::modelReset);
+
+  fixture.source->setDesktops({
+      {.id = QStringLiteral("b"), .name = QStringLiteral("Desktop 1")},
+      {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 2")},
+  });
+
+  QCOMPARE(fixture.backend.count(), 2);
+  QCOMPARE(fixture.backend.currentIndex(), 1);
+  QCOMPARE(countSpy.count(), 0);
+  QCOMPARE(resetSpy.count(), 1);
+}
+
 void TabPagerBackendTest::updatesDesktopRowsWithoutReset() {
   BackendFixture fixture(
       {
@@ -221,7 +243,7 @@ void TabPagerBackendTest::emitsChangedRolesForUpdatedDesktopRows() {
 
   fixture.source->setDesktops({
       {.id = QStringLiteral("a"), .name = QStringLiteral("Desktop 1")},
-      {.id = QStringLiteral("c"), .name = QStringLiteral("Chat")},
+      {.id = QStringLiteral("b"), .name = QStringLiteral("Chat")},
   });
 
   QCOMPARE(dataSpy.count(), 1);
@@ -230,10 +252,8 @@ void TabPagerBackendTest::emitsChangedRolesForUpdatedDesktopRows() {
   QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(1)).row(), 1);
   const auto roles = qvariant_cast<QList<int>>(arguments.at(2));
   QCOMPARE(roles, (QList<int>{
-                      TabPagerBackend::DesktopIdRole,
                       TabPagerBackend::NameRole,
                       TabPagerBackend::LabelRole,
-                      TabPagerBackend::ActiveRole,
                   }));
 }
 

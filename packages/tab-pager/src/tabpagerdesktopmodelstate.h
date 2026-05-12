@@ -29,7 +29,7 @@ class TabPagerDesktopSnapshotChange final {
 public:
   [[nodiscard]] static TabPagerDesktopSnapshotChange unchanged();
   [[nodiscard]] static TabPagerDesktopSnapshotChange
-  reset(bool currentIndexChanged);
+  reset(bool countChanged, bool currentIndexChanged);
   [[nodiscard]] static TabPagerDesktopSnapshotChange
   updateRows(bool currentIndexChanged, QList<TabPagerDesktopRowChange> rows);
 
