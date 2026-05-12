@@ -45,7 +45,7 @@ private Q_SLOTS:
   void detectsDesktopRowChangedRoles();
   void plansChangedDesktopRowRoles();
   void tracksDesktopModelStateIndex();
-  void ignoresInvalidDesktopIds();
+  void filtersInvalidDesktopIds();
   void derivesDesktopModelStateRows();
   void plansNoChangeForSameDesktopModelSnapshot();
   void plansNoChangeForUnmatchedCurrentDesktopChange();
@@ -154,13 +154,22 @@ void TabPagerDesktopModelStateTest::tracksDesktopModelStateIndex() {
   QCOMPARE(state.desktopIdForIndex(1).value_or(QVariant()), desktopId("b"));
 }
 
-void TabPagerDesktopModelStateTest::ignoresInvalidDesktopIds() {
+void TabPagerDesktopModelStateTest::filtersInvalidDesktopIds() {
   const TabPagerDesktopModelState state = desktopModelState(
-      {invalidDesktop(QStringLiteral("Broken"))}, invalidDesktopId());
+      {
+          invalidDesktop(QStringLiteral("Broken")),
+          defaultDesktop("b", 2),
+      },
+      desktopId("b"));
 
-  QCOMPARE(state.currentIndex(), -1);
-  QCOMPARE(state.desktopIdForIndex(0).has_value(), false);
-  QCOMPARE(state.rowData(0).active, false);
+  QCOMPARE(state.count(), 1);
+  QCOMPARE(state.currentIndex(), 0);
+  QCOMPARE(state.desktopIdForIndex(0).value_or(QVariant()), desktopId("b"));
+
+  const TabPagerDesktopRowData row = state.rowData(0);
+  QCOMPARE(row.number, 2);
+  QCOMPARE(row.label, QStringLiteral("2"));
+  QCOMPARE(row.active, true);
 }
 
 void TabPagerDesktopModelStateTest::derivesDesktopModelStateRows() {

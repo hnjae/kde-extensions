@@ -72,11 +72,17 @@ TabPagerDesktopModelState TabPagerDesktopModelState::fromSnapshot(
   TabPagerDesktopModelState state;
   state.m_rows.reserve(snapshot.desktops.size());
 
-  for (qsizetype row = 0; row < snapshot.desktops.size(); ++row) {
-    const TabPagerDesktopRowData rowData = rowDataForDesktop(
-        row, snapshot.desktops.at(row), snapshot.currentDesktop);
+  for (qsizetype sourceRow = 0; sourceRow < snapshot.desktops.size();
+       ++sourceRow) {
+    const TabPagerDesktop &desktop = snapshot.desktops.at(sourceRow);
+    if (!tabPagerDesktopIdIsValid(desktop.id)) {
+      continue;
+    }
+
+    const TabPagerDesktopRowData rowData =
+        rowDataForDesktop(sourceRow, desktop, snapshot.currentDesktop);
     if (rowData.active && state.m_currentIndex < 0) {
-      state.m_currentIndex = static_cast<int>(row);
+      state.m_currentIndex = static_cast<int>(state.m_rows.size());
     }
 
     state.m_rows.append(rowData);
@@ -98,10 +104,6 @@ TabPagerDesktopModelState::desktopIdForIndex(int index) const {
   }
 
   const TabPagerDesktopId &desktopId = m_rows.at(index).desktopId;
-  if (!tabPagerDesktopIdIsValid(desktopId)) {
-    return std::nullopt;
-  }
-
   return desktopId;
 }
 

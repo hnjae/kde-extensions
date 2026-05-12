@@ -276,6 +276,7 @@ void TabPagerBackendTest::ignoresActivationForInvalidDesktopId() {
       invalidDesktop(QStringLiteral("Broken")),
   });
 
+  QCOMPARE(fixture.backend.count(), 0);
   fixture.backend.activate(0);
 
   const QList<TabPagerDesktopId> expected;
