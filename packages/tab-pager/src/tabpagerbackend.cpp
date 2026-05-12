@@ -6,85 +6,18 @@
 #include <QFontDatabase>
 
 #include <cassert>
-
-#include <virtualdesktopinfo.h>
-
-namespace {
-class TaskManagerDesktopSource final : public TabPagerDesktopSource {
-  Q_OBJECT
-
-public:
-  explicit TaskManagerDesktopSource(QObject *parent = nullptr)
-      : TabPagerDesktopSource(parent) {
-    connect(&m_info, &TaskManager::VirtualDesktopInfo::desktopIdsChanged, this,
-            &TabPagerDesktopSource::desktopsChanged);
-    connect(&m_info, &TaskManager::VirtualDesktopInfo::desktopNamesChanged,
-            this, &TabPagerDesktopSource::desktopsChanged);
-    connect(&m_info, &TaskManager::VirtualDesktopInfo::numberOfDesktopsChanged,
-            this, &TabPagerDesktopSource::desktopsChanged);
-    connect(&m_info, &TaskManager::VirtualDesktopInfo::currentDesktopChanged,
-            this, &TabPagerDesktopSource::currentDesktopChanged);
-    connect(&m_info,
-            &TaskManager::VirtualDesktopInfo::navigationWrappingAroundChanged,
-            this, &TabPagerDesktopSource::navigationWrappingAroundChanged);
-  }
-
-  [[nodiscard]] QList<TabPagerDesktop> desktops() const override {
-    const QVariantList ids = m_info.desktopIds();
-    const QStringList names = m_info.desktopNames();
-
-    QList<TabPagerDesktop> desktops;
-    desktops.reserve(ids.size());
-
-    for (qsizetype index = 0; index < ids.size(); ++index) {
-      desktops.append(TabPagerDesktop{
-          .id = ids.at(index),
-          .name = names.value(index),
-      });
-    }
-
-    return desktops;
-  }
-
-  [[nodiscard]] QVariant currentDesktop() const override {
-    return m_info.currentDesktop();
-  }
-
-  [[nodiscard]] bool navigationWrappingAround() const override {
-    return m_info.navigationWrappingAround();
-  }
-
-  void activateDesktop(const QVariant &desktopId) override {
-    if (desktopId.isValid()) {
-      m_info.requestActivate(desktopId);
-    }
-  }
-
-private:
-  TaskManager::VirtualDesktopInfo m_info;
-};
-} // namespace
-
-TabPagerDesktopSource::TabPagerDesktopSource(QObject *parent)
-    : QObject(parent) {}
-
-TabPagerDesktopSource::~TabPagerDesktopSource() = default;
-
-TabPagerBackend::TabPagerBackend(QObject *parent)
-    : QAbstractListModel(parent),
-      m_ownedSource(std::make_unique<TaskManagerDesktopSource>()),
-      m_source(m_ownedSource.get()) {
-  connectSource();
-  reloadDesktops();
-  reloadNavigationWrappingAround();
-}
+#include <utility>
 
 TabPagerBackend::TabPagerBackend(TabPagerDesktopSource *source, QObject *parent)
     : QAbstractListModel(parent), m_source(source) {
-  assert(m_source != nullptr);
-  connectSource();
-  reloadDesktops();
-  reloadNavigationWrappingAround();
+  initializeSource();
+}
+
+TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
+                                 QObject *parent)
+    : QAbstractListModel(parent), m_ownedSource(std::move(source)),
+      m_source(m_ownedSource.get()) {
+  initializeSource();
 }
 
 TabPagerBackend::~TabPagerBackend() = default;
@@ -167,6 +100,13 @@ QString TabPagerBackend::labelForDesktop(int number, const QString &name) {
   }
 
   return name;
+}
+
+void TabPagerBackend::initializeSource() {
+  assert(m_source != nullptr);
+  connectSource();
+  reloadDesktops();
+  reloadNavigationWrappingAround();
 }
 
 void TabPagerBackend::connectSource() {
@@ -262,5 +202,3 @@ int TabPagerBackend::indexOfDesktop(const QVariant &desktopId) const {
 
   return -1;
 }
-
-#include "tabpagerbackend.moc"

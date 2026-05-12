@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "tabpagerdesktopsource.h"
+
 #include <QAbstractListModel>
 #include <QFont>
 #include <QList>
@@ -11,29 +13,6 @@
 
 #include <cstdint>
 #include <memory>
-
-struct TabPagerDesktop {
-  QVariant id;
-  QString name;
-};
-
-class TabPagerDesktopSource : public QObject {
-  Q_OBJECT
-
-public:
-  explicit TabPagerDesktopSource(QObject *parent = nullptr);
-  ~TabPagerDesktopSource() override;
-
-  [[nodiscard]] virtual QList<TabPagerDesktop> desktops() const = 0;
-  [[nodiscard]] virtual QVariant currentDesktop() const = 0;
-  [[nodiscard]] virtual bool navigationWrappingAround() const = 0;
-  virtual void activateDesktop(const QVariant &desktopId) = 0;
-
-Q_SIGNALS:
-  void desktopsChanged();
-  void currentDesktopChanged();
-  void navigationWrappingAroundChanged();
-};
 
 class TabPagerBackend : public QAbstractListModel {
   Q_OBJECT
@@ -53,8 +32,9 @@ public:
   };
   Q_ENUM(Role)
 
-  explicit TabPagerBackend(QObject *parent = nullptr);
   explicit TabPagerBackend(TabPagerDesktopSource *source,
+                           QObject *parent = nullptr);
+  explicit TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
                            QObject *parent = nullptr);
   ~TabPagerBackend() override;
 
@@ -81,6 +61,7 @@ Q_SIGNALS:
   void navigationWrappingAroundChanged();
 
 private:
+  void initializeSource();
   void connectSource();
   void reloadDesktops();
   void reloadCurrentDesktop();

@@ -88,6 +88,7 @@ private Q_SLOTS:
 };
 
 void TabPagerBackendTest::formatsDesktopLabel_data() {
+  constexpr int prefixOnlyDesktopNumber = 5;
   constexpr int laterDesktopNumber = 12;
 
   QTest::addColumn<int>("number");
@@ -103,7 +104,8 @@ void TabPagerBackendTest::formatsDesktopLabel_data() {
                           << QStringLiteral("Work");
   QTest::newRow("empty") << 3 << QString() << QStringLiteral("3");
   QTest::newRow("prefix only")
-      << 5 << QStringLiteral("Desktop 5x") << QStringLiteral("Desktop 5x");
+      << prefixOnlyDesktopNumber << QStringLiteral("Desktop 5x")
+      << QStringLiteral("Desktop 5x");
   QTest::newRow("number mismatch")
       << 4 << QStringLiteral("Desktop 5") << QStringLiteral("Desktop 5");
 }

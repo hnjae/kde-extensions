@@ -25,19 +25,36 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(tabpagercore STATIC
+add_library(tabpagermodel STATIC
     src/tabpagerbackend.cpp
     src/tabpagerbackend.h
+    src/tabpagerdesktopsource.cpp
+    src/tabpagerdesktopsource.h
 )
-set_target_properties(tabpagercore PROPERTIES
+set_target_properties(tabpagermodel PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
-target_include_directories(tabpagercore PUBLIC
+target_include_directories(tabpagermodel PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
-target_link_libraries(tabpagercore PUBLIC
+target_link_libraries(tabpagermodel PUBLIC
     Qt6::Core
     Qt6::Gui
+)
+
+add_library(tabpagerplasma STATIC
+    src/tabpagerqmlbackend.cpp
+    src/tabpagerqmlbackend.h
+    src/taskmanagerdesktopsource.cpp
+    src/taskmanagerdesktopsource.h
+)
+set_target_properties(tabpagerplasma PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+)
+target_link_libraries(tabpagerplasma PUBLIC
+    tabpagermodel
+)
+target_link_libraries(tabpagerplasma PRIVATE
     PW::LibTaskManager
 )
 
@@ -50,7 +67,7 @@ target_compile_definitions(tabpagerplugin PRIVATE
 )
 target_link_libraries(tabpagerplugin PRIVATE
     Qt6::Qml
-    tabpagercore
+    tabpagerplasma
 )
 
 if(BUILD_TESTING)
@@ -61,7 +78,7 @@ if(BUILD_TESTING)
     )
     target_link_libraries(tabpagerbackend_test PRIVATE
         Qt6::Test
-        tabpagercore
+        tabpagermodel
     )
 
     add_test(NAME tabpagerbackend COMMAND tabpagerbackend_test)
