@@ -3,8 +3,6 @@
 
 #include "tabpagerbackend.h"
 
-#include "tabpagerdesktoplogic.h"
-
 #include <QFontDatabase>
 
 #include <cassert>
@@ -45,7 +43,7 @@ int TabPagerBackend::count() const { return m_state.count(); }
 int TabPagerBackend::currentIndex() const { return m_state.currentIndex(); }
 
 bool TabPagerBackend::navigationWrappingAround() const {
-  return m_navigationWrappingAround;
+  return m_navigator.navigationWrappingAround();
 }
 
 QFont TabPagerBackend::labelFont() const {
@@ -66,12 +64,13 @@ void TabPagerBackend::activateNext() { activateOffset(1); }
 void TabPagerBackend::activatePrevious() { activateOffset(-1); }
 
 void TabPagerBackend::activateByWheelDelta(int delta) {
-  const TabPagerDesktopLogic::WheelDeltaResult result =
-      TabPagerDesktopLogic::consumeWheelDelta(m_pendingWheelDelta, delta);
-  m_pendingWheelDelta = result.remainingDelta;
-
-  if (result.steps != 0) {
-    activateOffset(-result.steps);
+  const TabPagerDesktopNavigationContext context{
+      .currentIndex = currentIndex(),
+      .desktopCount = count(),
+  };
+  const int targetIndex = m_navigator.targetIndexForWheelDelta(context, delta);
+  if (targetIndex >= 0) {
+    activate(targetIndex);
   }
 }
 
@@ -98,11 +97,11 @@ void TabPagerBackend::reloadNavigationWrappingAround() {
   const bool nextNavigationWrappingAround =
       m_source->navigationWrappingAround();
 
-  if (m_navigationWrappingAround == nextNavigationWrappingAround) {
+  if (m_navigator.navigationWrappingAround() == nextNavigationWrappingAround) {
     return;
   }
 
-  m_navigationWrappingAround = nextNavigationWrappingAround;
+  m_navigator.setNavigationWrappingAround(nextNavigationWrappingAround);
   Q_EMIT navigationWrappingAroundChanged();
 }
 
@@ -153,13 +152,11 @@ void TabPagerBackend::updateDesktopStateRows(
 }
 
 void TabPagerBackend::activateOffset(int offset) {
-  const TabPagerDesktopLogic::NavigationTargetRequest request{
+  const TabPagerDesktopNavigationContext context{
       .currentIndex = currentIndex(),
       .desktopCount = count(),
-      .offset = offset,
-      .wrappingAround = m_navigationWrappingAround,
   };
-  const int targetIndex = TabPagerDesktopLogic::targetIndexForOffset(request);
+  const int targetIndex = m_navigator.targetIndexForOffset(context, offset);
   if (targetIndex >= 0) {
     activate(targetIndex);
   }

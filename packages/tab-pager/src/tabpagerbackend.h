@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tabpagerdesktopmodelstate.h"
+#include "tabpagerdesktopnavigator.h"
 #include "tabpagerdesktopsource.h"
 
 #include <QAbstractListModel>
@@ -59,6 +60,5 @@ private:
 
   std::unique_ptr<TabPagerDesktopSource> m_source;
   TabPagerDesktopModelState m_state;
-  bool m_navigationWrappingAround = false;
-  int m_pendingWheelDelta = 0;
+  TabPagerDesktopNavigator m_navigator;
 };

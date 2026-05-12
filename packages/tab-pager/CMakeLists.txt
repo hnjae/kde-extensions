@@ -32,6 +32,8 @@ add_library(tabpagermodel STATIC
     src/tabpagerdesktoplogic.h
     src/tabpagerdesktopmodelstate.cpp
     src/tabpagerdesktopmodelstate.h
+    src/tabpagerdesktopnavigator.cpp
+    src/tabpagerdesktopnavigator.h
     src/tabpagerdesktoprow.cpp
     src/tabpagerdesktoprow.h
     src/tabpagerdesktopsource.cpp
@@ -98,6 +100,7 @@ if(BUILD_TESTING)
 
     add_tabpager_test(tabpagerdesktoplogic tests/tabpagerdesktoplogic_test.cpp)
     add_tabpager_test(tabpagerdesktopmodelstate tests/tabpagerdesktopmodelstate_test.cpp)
+    add_tabpager_test(tabpagerdesktopnavigator tests/tabpagerdesktopnavigator_test.cpp)
     add_tabpager_test(tabpagerbackend tests/tabpagerbackend_test.cpp
         tests/tabpagerbackendtesthelpers.h
     )
