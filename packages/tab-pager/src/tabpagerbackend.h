@@ -65,9 +65,9 @@ private:
   [[nodiscard]] static QList<int>
   changedRolesForRow(const TabPagerDesktopRowChange &rowChange);
   void applyDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
-  void resetDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
-  void updateDesktopSnapshotRows(const TabPagerDesktopSnapshot &snapshot,
-                                 const QList<TabPagerDesktopRowChange> &rows);
+  void resetDesktopState(TabPagerDesktopModelState nextState);
+  void updateDesktopStateRows(TabPagerDesktopModelState nextState,
+                              const QList<TabPagerDesktopRowChange> &rows);
   void activateOffset(int offset);
 
   std::unique_ptr<TabPagerDesktopSource> m_source;

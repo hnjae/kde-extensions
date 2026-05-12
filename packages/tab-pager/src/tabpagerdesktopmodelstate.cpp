@@ -6,12 +6,6 @@
 #include "tabpagerdesktoplogic.h"
 
 namespace {
-struct ResolvedSnapshot {
-  TabPagerDesktopSnapshot snapshot;
-  QList<TabPagerDesktopRowData> rows;
-  int currentIndex = -1;
-};
-
 [[nodiscard]] bool sameSnapshot(const TabPagerDesktopSnapshot &left,
                                 const TabPagerDesktopSnapshot &right) {
   return left.desktops == right.desktops &&
@@ -38,36 +32,14 @@ rowDataForDesktop(qsizetype row, const TabPagerDesktop &desktop,
   };
 }
 
-[[nodiscard]] ResolvedSnapshot
-resolveSnapshot(const TabPagerDesktopSnapshot &snapshot) {
-  ResolvedSnapshot resolved{
-      .snapshot = snapshot,
-      .rows = {},
-      .currentIndex = -1,
-  };
-  resolved.rows.reserve(snapshot.desktops.size());
-
-  for (qsizetype row = 0; row < snapshot.desktops.size(); ++row) {
-    const TabPagerDesktopRowData rowData = rowDataForDesktop(
-        row, snapshot.desktops.at(row), snapshot.currentDesktop);
-    if (rowData.active && resolved.currentIndex < 0) {
-      resolved.currentIndex = static_cast<int>(row);
-    }
-
-    resolved.rows.append(rowData);
-  }
-
-  return resolved;
-}
-
 [[nodiscard]] QList<TabPagerDesktopRowChange>
-changedRowsForSnapshots(const QList<TabPagerDesktopRowData> &previousRows,
-                        const QList<TabPagerDesktopRowData> &nextRows) {
+changedRowsForStates(const QList<TabPagerDesktopRowData> &previousRows,
+                     const QList<TabPagerDesktopRowData> &nextRows) {
   QList<TabPagerDesktopRowChange> rowChanges;
 
   for (qsizetype row = 0; row < nextRows.size(); ++row) {
-    const TabPagerDesktopRowData previousRow = previousRows.at(row);
-    const TabPagerDesktopRowData nextRow = nextRows.at(row);
+    const TabPagerDesktopRowData &previousRow = previousRows.at(row);
+    const TabPagerDesktopRowData &nextRow = nextRows.at(row);
 
     if (previousRow != nextRow) {
       rowChanges.append(TabPagerDesktopRowChange{
@@ -81,6 +53,25 @@ changedRowsForSnapshots(const QList<TabPagerDesktopRowData> &previousRows,
   return rowChanges;
 }
 } // namespace
+
+TabPagerDesktopModelState TabPagerDesktopModelState::fromSnapshot(
+    const TabPagerDesktopSnapshot &snapshot) {
+  TabPagerDesktopModelState state;
+  state.m_snapshot = snapshot;
+  state.m_rows.reserve(snapshot.desktops.size());
+
+  for (qsizetype row = 0; row < snapshot.desktops.size(); ++row) {
+    const TabPagerDesktopRowData rowData = rowDataForDesktop(
+        row, snapshot.desktops.at(row), snapshot.currentDesktop);
+    if (rowData.active && state.m_currentIndex < 0) {
+      state.m_currentIndex = static_cast<int>(row);
+    }
+
+    state.m_rows.append(rowData);
+  }
+
+  return state;
+}
 
 int TabPagerDesktopModelState::count() const {
   return static_cast<int>(m_rows.size());
@@ -104,18 +95,16 @@ TabPagerDesktopSnapshot TabPagerDesktopModelState::snapshot() const {
   return m_snapshot;
 }
 
-TabPagerDesktopSnapshotChange TabPagerDesktopModelState::changeForSnapshot(
-    const TabPagerDesktopSnapshot &nextSnapshot) const {
-  if (sameSnapshot(m_snapshot, nextSnapshot)) {
+TabPagerDesktopSnapshotChange TabPagerDesktopModelState::changeForState(
+    const TabPagerDesktopModelState &nextState) const {
+  if (sameSnapshot(m_snapshot, nextState.m_snapshot)) {
     return {};
   }
 
   const int previousCount = count();
-  const int nextCount = static_cast<int>(nextSnapshot.desktops.size());
+  const int nextCount = nextState.count();
   const bool countChanged = previousCount != nextCount;
-  const ResolvedSnapshot resolvedNextSnapshot = resolveSnapshot(nextSnapshot);
-  const bool currentIndexChanged =
-      m_currentIndex != resolvedNextSnapshot.currentIndex;
+  const bool currentIndexChanged = m_currentIndex != nextState.m_currentIndex;
 
   if (countChanged) {
     return TabPagerDesktopSnapshotChange{
@@ -130,14 +119,6 @@ TabPagerDesktopSnapshotChange TabPagerDesktopModelState::changeForSnapshot(
       .operation = TabPagerDesktopSnapshotChange::Operation::UpdateRows,
       .countChanged = false,
       .currentIndexChanged = currentIndexChanged,
-      .rowChanges = changedRowsForSnapshots(m_rows, resolvedNextSnapshot.rows),
+      .rowChanges = changedRowsForStates(m_rows, nextState.m_rows),
   };
-}
-
-void TabPagerDesktopModelState::setSnapshot(
-    const TabPagerDesktopSnapshot &snapshot) {
-  const ResolvedSnapshot resolvedSnapshot = resolveSnapshot(snapshot);
-  m_snapshot = resolvedSnapshot.snapshot;
-  m_rows = resolvedSnapshot.rows;
-  m_currentIndex = resolvedSnapshot.currentIndex;
 }

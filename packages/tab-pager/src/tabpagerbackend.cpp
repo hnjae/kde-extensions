@@ -194,16 +194,18 @@ TabPagerDesktopSnapshot TabPagerBackend::sourceDesktopSnapshot() const {
 
 void TabPagerBackend::applyDesktopSnapshot(
     const TabPagerDesktopSnapshot &snapshot) {
+  TabPagerDesktopModelState nextState =
+      TabPagerDesktopModelState::fromSnapshot(snapshot);
   const TabPagerDesktopSnapshotChange change =
-      m_state.changeForSnapshot(snapshot);
+      m_state.changeForState(nextState);
   if (change.operation == TabPagerDesktopSnapshotChange::Operation::None) {
     return;
   }
 
   if (change.operation == TabPagerDesktopSnapshotChange::Operation::Reset) {
-    resetDesktopSnapshot(snapshot);
+    resetDesktopState(std::move(nextState));
   } else {
-    updateDesktopSnapshotRows(snapshot, change.rowChanges);
+    updateDesktopStateRows(std::move(nextState), change.rowChanges);
   }
 
   if (change.countChanged) {
@@ -215,17 +217,16 @@ void TabPagerBackend::applyDesktopSnapshot(
   }
 }
 
-void TabPagerBackend::resetDesktopSnapshot(
-    const TabPagerDesktopSnapshot &snapshot) {
+void TabPagerBackend::resetDesktopState(TabPagerDesktopModelState nextState) {
   beginResetModel();
-  m_state.setSnapshot(snapshot);
+  m_state = std::move(nextState);
   endResetModel();
 }
 
-void TabPagerBackend::updateDesktopSnapshotRows(
-    const TabPagerDesktopSnapshot &snapshot,
+void TabPagerBackend::updateDesktopStateRows(
+    TabPagerDesktopModelState nextState,
     const QList<TabPagerDesktopRowChange> &rows) {
-  m_state.setSnapshot(snapshot);
+  m_state = std::move(nextState);
 
   for (const TabPagerDesktopRowChange &rowChange : rows) {
     const QList<int> roles = changedRolesForRow(rowChange);

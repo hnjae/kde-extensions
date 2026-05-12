@@ -45,6 +45,9 @@ struct TabPagerDesktopSnapshotChange {
 
 class TabPagerDesktopModelState final {
 public:
+  [[nodiscard]] static TabPagerDesktopModelState
+  fromSnapshot(const TabPagerDesktopSnapshot &snapshot);
+
   [[nodiscard]] int count() const;
   [[nodiscard]] int currentIndex() const;
   [[nodiscard]] bool hasDesktopAt(int index) const;
@@ -52,9 +55,7 @@ public:
   [[nodiscard]] TabPagerDesktopRowData rowData(qsizetype row) const;
   [[nodiscard]] TabPagerDesktopSnapshot snapshot() const;
   [[nodiscard]] TabPagerDesktopSnapshotChange
-  changeForSnapshot(const TabPagerDesktopSnapshot &snapshot) const;
-
-  void setSnapshot(const TabPagerDesktopSnapshot &snapshot);
+  changeForState(const TabPagerDesktopModelState &nextState) const;
 
 private:
   TabPagerDesktopSnapshot m_snapshot;
