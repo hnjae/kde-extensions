@@ -38,7 +38,7 @@ class TabPagerDesktopModelStateTest : public QObject {
   Q_OBJECT
 
 private Q_SLOTS:
-  void exposesDesktopRowRoleDefinitions();
+  void exposesDesktopRowRoleNames();
   void readsDesktopRowDataByRole();
   void detectsDesktopRowChangedRoles();
   void plansChangedDesktopRowRoles();
@@ -52,30 +52,16 @@ private Q_SLOTS:
   void plansDesktopDataRowUpdates();
 };
 
-void TabPagerDesktopModelStateTest::exposesDesktopRowRoleDefinitions() {
-  QList<int> roles;
-  QList<QByteArray> names;
+void TabPagerDesktopModelStateTest::exposesDesktopRowRoleNames() {
+  const QHash<int, QByteArray> expected = {
+      {role(TabPagerDesktopRowRole::DesktopId), "desktopId"},
+      {role(TabPagerDesktopRowRole::Name), "name"},
+      {role(TabPagerDesktopRowRole::Label), "label"},
+      {role(TabPagerDesktopRowRole::Number), "number"},
+      {role(TabPagerDesktopRowRole::Active), "active"},
+  };
 
-  for (const TabPagerDesktopRowRoleDefinition &definition :
-       tabPagerDesktopRowRoleDefinitions()) {
-    roles.append(definition.role);
-    names.append(definition.name);
-  }
-
-  QCOMPARE(roles, (QList<int>{
-                      role(TabPagerDesktopRowRole::DesktopId),
-                      role(TabPagerDesktopRowRole::Name),
-                      role(TabPagerDesktopRowRole::Label),
-                      role(TabPagerDesktopRowRole::Number),
-                      role(TabPagerDesktopRowRole::Active),
-                  }));
-  QCOMPARE(names, (QList<QByteArray>{
-                      "desktopId",
-                      "name",
-                      "label",
-                      "number",
-                      "active",
-                  }));
+  QCOMPARE(tabPagerDesktopRowRoleNames(), expected);
 }
 
 void TabPagerDesktopModelStateTest::readsDesktopRowDataByRole() {

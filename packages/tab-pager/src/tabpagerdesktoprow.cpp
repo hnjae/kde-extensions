@@ -4,8 +4,22 @@
 #include "tabpagerdesktoprow.h"
 
 #include <array>
+#include <span>
 
 namespace {
+using TabPagerDesktopRowRoleDataReader =
+    QVariant (*)(const TabPagerDesktopRowData &rowData);
+using TabPagerDesktopRowRoleChangeDetector =
+    bool (*)(const TabPagerDesktopRowData &previousRow,
+             const TabPagerDesktopRowData &nextRow);
+
+struct TabPagerDesktopRowRoleDefinition {
+  int role = 0;
+  const char *name = nullptr;
+  TabPagerDesktopRowRoleDataReader readData;
+  TabPagerDesktopRowRoleChangeDetector hasChanged;
+};
+
 template <auto Field>
 [[nodiscard]] QVariant readRowField(const TabPagerDesktopRowData &rowData) {
   return rowData.*Field;
@@ -40,12 +54,12 @@ constexpr auto rowRoleDefinitions = std::to_array({
     rowRoleDefinition<&TabPagerDesktopRowData::active>(
         TabPagerDesktopRowRole::Active, "active"),
 });
-} // namespace
 
-std::span<const TabPagerDesktopRowRoleDefinition>
+[[nodiscard]] std::span<const TabPagerDesktopRowRoleDefinition>
 tabPagerDesktopRowRoleDefinitions() {
   return rowRoleDefinitions;
 }
+} // namespace
 
 QHash<int, QByteArray> tabPagerDesktopRowRoleNames() {
   QHash<int, QByteArray> names;

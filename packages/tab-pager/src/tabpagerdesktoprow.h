@@ -9,8 +9,6 @@
 #include <QVariant>
 #include <Qt>
 
-#include <span>
-
 // Model roles are int-valued throughout QAbstractItemModel APIs.
 enum class TabPagerDesktopRowRole : int { // NOLINT(performance-enum-size)
   DesktopId = Qt::UserRole + 1,
@@ -28,21 +26,6 @@ struct TabPagerDesktopRowData {
   bool active = false;
 };
 
-using TabPagerDesktopRowRoleDataReader =
-    QVariant (*)(const TabPagerDesktopRowData &rowData);
-using TabPagerDesktopRowRoleChangeDetector =
-    bool (*)(const TabPagerDesktopRowData &previousRow,
-             const TabPagerDesktopRowData &nextRow);
-
-struct TabPagerDesktopRowRoleDefinition {
-  int role = 0;
-  const char *name = nullptr;
-  TabPagerDesktopRowRoleDataReader readData;
-  TabPagerDesktopRowRoleChangeDetector hasChanged;
-};
-
-[[nodiscard]] std::span<const TabPagerDesktopRowRoleDefinition>
-tabPagerDesktopRowRoleDefinitions();
 [[nodiscard]] QHash<int, QByteArray> tabPagerDesktopRowRoleNames();
 [[nodiscard]] QVariant
 tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData, int role);
