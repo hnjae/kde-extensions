@@ -95,17 +95,20 @@ PlasmoidItem {
                     PagerFrame {
                         id: desktopFrame
 
-                        prefix: "hover"
+                        desktopState: desktopBox.state
+                        framePrefix: "hover"
                         z: 2
                     }
 
                     PagerFrame {
-                        prefix: "active"
+                        desktopState: desktopBox.state
+                        framePrefix: "active"
                         z: 3
                     }
 
                     PagerFrame {
-                        prefix: "normal"
+                        desktopState: desktopBox.state
+                        framePrefix: "normal"
                         z: 4
                     }
 
@@ -139,8 +142,12 @@ PlasmoidItem {
     }
 
     component PagerFrame: KSvg.FrameSvgItem {
+        required property string desktopState
+        required property string framePrefix
+
         anchors.fill: parent
         imagePath: "widgets/pager"
-        opacity: desktopBox.state === usedPrefix ? 1 : 0
+        opacity: desktopState === usedPrefix ? 1 : 0
+        prefix: framePrefix
     }
 }
