@@ -24,12 +24,25 @@ public:
     RowsChanged,
   };
 
-  [[nodiscard]] bool isEmpty() const;
+  [[nodiscard]] static TabPagerDesktopModelChange unchanged();
+  [[nodiscard]] static TabPagerDesktopModelChange
+  reset(bool countChanged, bool currentIndexChanged);
+  [[nodiscard]] static TabPagerDesktopModelChange
+  rowsChanged(bool currentIndexChanged, QList<TabPagerDesktopRowUpdate> rows);
 
-  ModelUpdate modelUpdate = ModelUpdate::None;
-  bool countChanged = false;
-  bool currentIndexChanged = false;
-  QList<TabPagerDesktopRowUpdate> rowUpdates;
+  [[nodiscard]] bool isEmpty() const;
+  [[nodiscard]] ModelUpdate modelUpdate() const;
+  [[nodiscard]] bool countChanged() const;
+  [[nodiscard]] bool currentIndexChanged() const;
+  [[nodiscard]] const QList<TabPagerDesktopRowUpdate> &rowUpdates() const;
+
+private:
+  TabPagerDesktopModelChange() = default;
+
+  ModelUpdate m_modelUpdate = ModelUpdate::None;
+  bool m_countChanged = false;
+  bool m_currentIndexChanged = false;
+  QList<TabPagerDesktopRowUpdate> m_rowUpdates;
 };
 
 class TabPagerDesktopModelState final {

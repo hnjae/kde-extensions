@@ -52,7 +52,46 @@ rowUpdatesForStableIdentity(const QList<TabPagerDesktopRowData> &previousRows,
 } // namespace
 
 bool TabPagerDesktopModelChange::isEmpty() const {
-  return modelUpdate == ModelUpdate::None;
+  return m_modelUpdate == ModelUpdate::None;
+}
+
+TabPagerDesktopModelChange TabPagerDesktopModelChange::unchanged() {
+  return {};
+}
+
+TabPagerDesktopModelChange
+TabPagerDesktopModelChange::reset(bool countChanged, bool currentIndexChanged) {
+  TabPagerDesktopModelChange change;
+  change.m_modelUpdate = ModelUpdate::Reset;
+  change.m_countChanged = countChanged;
+  change.m_currentIndexChanged = currentIndexChanged;
+  return change;
+}
+
+TabPagerDesktopModelChange
+TabPagerDesktopModelChange::rowsChanged(bool currentIndexChanged,
+                                        QList<TabPagerDesktopRowUpdate> rows) {
+  TabPagerDesktopModelChange change;
+  change.m_modelUpdate = ModelUpdate::RowsChanged;
+  change.m_currentIndexChanged = currentIndexChanged;
+  change.m_rowUpdates = std::move(rows);
+  return change;
+}
+
+TabPagerDesktopModelChange::ModelUpdate
+TabPagerDesktopModelChange::modelUpdate() const {
+  return m_modelUpdate;
+}
+
+bool TabPagerDesktopModelChange::countChanged() const { return m_countChanged; }
+
+bool TabPagerDesktopModelChange::currentIndexChanged() const {
+  return m_currentIndexChanged;
+}
+
+const QList<TabPagerDesktopRowUpdate> &
+TabPagerDesktopModelChange::rowUpdates() const {
+  return m_rowUpdates;
 }
 
 TabPagerDesktopModelState TabPagerDesktopModelState::fromSnapshot(
@@ -97,26 +136,17 @@ TabPagerDesktopModelChange TabPagerDesktopModelState::changeForState(
   const int nextCount = nextState.count();
   const bool countChanged = previousCount != nextCount;
   const bool currentIndexChanged = m_currentIndex != nextState.m_currentIndex;
-  const std::optional<QList<TabPagerDesktopRowUpdate>> rowUpdates =
+  std::optional<QList<TabPagerDesktopRowUpdate>> rowUpdates =
       rowUpdatesForStableIdentity(m_rows, nextState.m_rows);
 
   if (rowUpdates.has_value() && !currentIndexChanged && rowUpdates->isEmpty()) {
-    return {};
+    return TabPagerDesktopModelChange::unchanged();
   }
 
   if (!rowUpdates.has_value()) {
-    return TabPagerDesktopModelChange{
-        .modelUpdate = TabPagerDesktopModelChange::ModelUpdate::Reset,
-        .countChanged = countChanged,
-        .currentIndexChanged = currentIndexChanged,
-        .rowUpdates = {},
-    };
+    return TabPagerDesktopModelChange::reset(countChanged, currentIndexChanged);
   }
 
-  return TabPagerDesktopModelChange{
-      .modelUpdate = TabPagerDesktopModelChange::ModelUpdate::RowsChanged,
-      .countChanged = false,
-      .currentIndexChanged = currentIndexChanged,
-      .rowUpdates = *rowUpdates,
-  };
+  return TabPagerDesktopModelChange::rowsChanged(currentIndexChanged,
+                                                 std::move(*rowUpdates));
 }
