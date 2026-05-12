@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.25)
 
-project(tab-pager VERSION 0.1.0 LANGUAGES CXX)
+project(tab-pager VERSION 0.1.0 LANGUAGES C CXX)
 
 set(QML_MODULE_URI "io.github.hnjae.plasma.tabpager")
 set(QML_MODULE_DIR "io/github/hnjae/plasma/tabpager")

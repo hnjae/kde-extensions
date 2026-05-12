@@ -6,6 +6,7 @@
     {
       packages.tab-pager =
         let
+          clangToolchain = pkgs.llvmPackages.clang;
           pluginId = "io.github.hnjae.plasma.tabpager";
           version = "0.1.0";
 
@@ -27,6 +28,7 @@
           src = source;
 
           extraNativeBuildInputs = [
+            clangToolchain
             pkgs.kdePackages.extra-cmake-modules
           ];
 
@@ -38,6 +40,8 @@
           ];
 
           extraCmakeFlags = [
+            "-DCMAKE_C_COMPILER=${clangToolchain}/bin/clang"
+            "-DCMAKE_CXX_COMPILER=${clangToolchain}/bin/clang++"
             "-DECM_DIR=${pkgs.kdePackages.extra-cmake-modules}/share/ECM/cmake"
             "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
             "-DBUILD_TESTING=OFF"

@@ -6,6 +6,16 @@
   pkgs,
 }:
 let
+  clangToolchain = pkgs.llvmPackages.clang;
+  clangSupportFlagFiles = [
+    "${clangToolchain}/nix-support/cc-cflags"
+    "${clangToolchain}/nix-support/libcxx-cxxflags"
+    "${clangToolchain}/nix-support/libc-cflags"
+  ];
+  qtAnalysisIncludeArgs = [
+    "-isystem${pkgs.kdePackages.qtbase}/include"
+    "-isystem${pkgs.kdePackages.qtdeclarative}/include"
+  ];
   qmlImportPaths = [
     "${pkgs.kdePackages.qtdeclarative}/lib/qt-6/qml"
     "${pkgs.kdePackages.kconfig}/lib/qt-6/qml"
@@ -15,10 +25,27 @@ let
   ];
   qmlImportPath = lib.concatStringsSep ":" qmlImportPaths;
   qmlImportFlags = lib.concatMapStringsSep " " (path: "-I ${lib.escapeShellArg path}") qmlImportPaths;
-  gccIncludeDir = "${pkgs.stdenv.cc.cc}/include/c++/${lib.getVersion pkgs.stdenv.cc.cc}";
+
+  mkClangAnalysisArgs = extraArgFlag: ''
+    clang_analysis_args=(
+      ${lib.concatMapStringsSep "\n      " (
+        arg: lib.escapeShellArg "${extraArgFlag}${arg}"
+      ) qtAnalysisIncludeArgs}
+    )
+    for clang_support_flag_file in ${
+      lib.concatMapStringsSep " " lib.escapeShellArg clangSupportFlagFiles
+    }; do
+      read -r -a clang_support_flags < "$clang_support_flag_file" || true
+      for clang_support_flag in "''${clang_support_flags[@]}"; do
+        clang_analysis_args+=("${extraArgFlag}''${clang_support_flag}")
+      done
+    done
+  '';
 
   cmakeConfigure = ''
     cmake -S . -B "$build_dir" -G Ninja \
+      -DCMAKE_C_COMPILER=${clangToolchain}/bin/clang \
+      -DCMAKE_CXX_COMPILER=${clangToolchain}/bin/clang++ \
       -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
       -DBUILD_TESTING=ON \
       -DKDE_INSTALL_QMLDIR=lib/qt-6/qml \
@@ -50,30 +77,27 @@ let
   '';
 
   clangTidy = ''
+    ${mkClangAnalysisArgs "-extra-arg="}
+
     python3 ${pkgs.llvmPackages.clang-unwrapped}/bin/run-clang-tidy \
       -p "$build_dir" \
       -j "''${NIX_BUILD_CORES:-$(nproc)}" \
       -quiet \
       -clang-tidy-binary ${pkgs.llvmPackages.clang-tools}/bin/clang-tidy \
       -config-file .clang-tidy \
-      -extra-arg=-I${pkgs.kdePackages.qtbase}/include \
-      -extra-arg=-I${pkgs.kdePackages.qtdeclarative}/include \
+      "''${clang_analysis_args[@]}" \
       '.*(src|tests)/.*\.cpp'
   '';
 
   clazy = ''
     mapfile -t cxx_sources < <(${pkgs.findutils}/bin/find src tests -name '*.cpp' -print | sort)
+    ${mkClangAnalysisArgs "--extra-arg="}
 
     clazy-standalone \
       -p "$build_dir" \
       --checks=level1 \
       --ignore-included-files \
-      --extra-arg=-Wno-unknown-warning-option \
-      --extra-arg=-isystem${pkgs.kdePackages.qtbase}/include \
-      --extra-arg=-isystem${pkgs.kdePackages.qtdeclarative}/include \
-      --extra-arg=-isystem${gccIncludeDir} \
-      --extra-arg=-isystem${gccIncludeDir}/${pkgs.stdenv.hostPlatform.config} \
-      --extra-arg=-isystem${pkgs.stdenv.cc.libc_dev}/include \
+      "''${clang_analysis_args[@]}" \
       "''${cxx_sources[@]}"
   '';
 
@@ -119,6 +143,7 @@ let
   '';
 
   checkNativeBuildInputs = [
+    clangToolchain
     pkgs.cmake
     pkgs.clazy
     pkgs.kdePackages.extra-cmake-modules
@@ -158,7 +183,7 @@ let
     name = "clangd";
     text = ''
       exec ${pkgs.llvmPackages.clang-tools}/bin/clangd \
-        --query-driver=${pkgs.stdenv.cc}/bin/c++,${pkgs.stdenv.cc}/bin/g++,/home/*/.nix-profile/bin/c++ \
+        --query-driver=${clangToolchain}/bin/clang++,${clangToolchain}/bin/clang \
         "$@"
     '';
   };
@@ -187,6 +212,8 @@ let
     export QML_IMPORT_PATH="$tab_pager_install_prefix/lib/qt-6/qml:${qmlImportPath}''${QML_IMPORT_PATH:+:$QML_IMPORT_PATH}"
     export QML2_IMPORT_PATH="$QML_IMPORT_PATH"
     export QT_PLUGIN_PATH="${pkgs.kdePackages.libplasma}/lib/qt-6/plugins''${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
+    export CC="${clangToolchain}/bin/clang"
+    export CXX="${clangToolchain}/bin/clang++"
     export TAB_PAGER_BUILD_DIR="$tab_pager_build_dir"
     export TAB_PAGER_INSTALL_PREFIX="$tab_pager_install_prefix"
   '';
@@ -210,7 +237,7 @@ in
     clangdWrapper
     qmllsWrapper
     pkgs.git
-    pkgs.stdenv.cc
+    clangToolchain
   ];
 
   devShellPackages = [
