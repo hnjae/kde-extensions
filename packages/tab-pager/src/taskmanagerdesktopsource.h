@@ -5,7 +5,7 @@
 
 #include "tabpagerdesktopsource.h"
 
-#include <memory>
+#include <virtualdesktopinfo.h>
 
 class TaskManagerDesktopSource final : public TabPagerDesktopSource {
   Q_OBJECT
@@ -19,6 +19,5 @@ public:
   void activateDesktop(const QVariant &desktopId) override;
 
 private:
-  class Private;
-  std::unique_ptr<Private> d;
+  TaskManager::VirtualDesktopInfo m_info;
 };

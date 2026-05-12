@@ -71,6 +71,9 @@ let
       --extra-arg=-I${pkgs.stdenv.cc.libc_dev}/include \
       src/tabpagerdesktopsource.cpp \
       src/tabpagerbackend.cpp \
+      src/tabpagerdesktoplogic.cpp \
+      src/tabpagerdesktopmodelstate.cpp \
+      src/tabpagerdesktoprow.cpp \
       src/tabpagerqmlbackend.cpp \
       src/tabpagerplugin.cpp \
       src/taskmanagerdesktopsource.cpp \
