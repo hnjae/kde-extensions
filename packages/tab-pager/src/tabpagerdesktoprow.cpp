@@ -6,52 +6,39 @@
 #include <array>
 
 namespace {
-[[nodiscard]] QVariant desktopIdForRow(const TabPagerDesktopRowData &rowData) {
-  return rowData.desktopId;
+template <auto Field>
+[[nodiscard]] QVariant readRowField(const TabPagerDesktopRowData &rowData) {
+  return rowData.*Field;
 }
 
-[[nodiscard]] QVariant nameForRow(const TabPagerDesktopRowData &rowData) {
-  return rowData.name;
+template <auto Field>
+[[nodiscard]] bool rowFieldChanged(const TabPagerDesktopRowData &previousRow,
+                                   const TabPagerDesktopRowData &nextRow) {
+  return previousRow.*Field != nextRow.*Field;
 }
 
-[[nodiscard]] QVariant labelForRow(const TabPagerDesktopRowData &rowData) {
-  return rowData.label;
-}
-
-[[nodiscard]] QVariant numberForRow(const TabPagerDesktopRowData &rowData) {
-  return rowData.number;
-}
-
-[[nodiscard]] QVariant activeForRow(const TabPagerDesktopRowData &rowData) {
-  return rowData.active;
+template <auto Field>
+[[nodiscard]] constexpr TabPagerDesktopRowRoleDefinition
+rowRoleDefinition(TabPagerDesktopRowRole role, const char *name) {
+  return TabPagerDesktopRowRoleDefinition{
+      .role = static_cast<int>(role),
+      .name = name,
+      .readData = readRowField<Field>,
+      .hasChanged = rowFieldChanged<Field>,
+  };
 }
 
 constexpr std::array<TabPagerDesktopRowRoleDefinition, 5> rowRoleDefinitions{{
-    {
-        .role = static_cast<int>(TabPagerDesktopRowRole::DesktopId),
-        .name = "desktopId",
-        .readData = desktopIdForRow,
-    },
-    {
-        .role = static_cast<int>(TabPagerDesktopRowRole::Name),
-        .name = "name",
-        .readData = nameForRow,
-    },
-    {
-        .role = static_cast<int>(TabPagerDesktopRowRole::Label),
-        .name = "label",
-        .readData = labelForRow,
-    },
-    {
-        .role = static_cast<int>(TabPagerDesktopRowRole::Number),
-        .name = "number",
-        .readData = numberForRow,
-    },
-    {
-        .role = static_cast<int>(TabPagerDesktopRowRole::Active),
-        .name = "active",
-        .readData = activeForRow,
-    },
+    rowRoleDefinition<&TabPagerDesktopRowData::desktopId>(
+        TabPagerDesktopRowRole::DesktopId, "desktopId"),
+    rowRoleDefinition<&TabPagerDesktopRowData::name>(
+        TabPagerDesktopRowRole::Name, "name"),
+    rowRoleDefinition<&TabPagerDesktopRowData::label>(
+        TabPagerDesktopRowRole::Label, "label"),
+    rowRoleDefinition<&TabPagerDesktopRowData::number>(
+        TabPagerDesktopRowRole::Number, "number"),
+    rowRoleDefinition<&TabPagerDesktopRowData::active>(
+        TabPagerDesktopRowRole::Active, "active"),
 }};
 } // namespace
 
@@ -79,7 +66,7 @@ tabPagerDesktopRowChangedRoles(const TabPagerDesktopRowData &previousRow,
 
   for (const TabPagerDesktopRowRoleDefinition &definition :
        tabPagerDesktopRowRoleDefinitions()) {
-    if (definition.readData(previousRow) != definition.readData(nextRow)) {
+    if (definition.hasChanged(previousRow, nextRow)) {
       roles.append(definition.role);
     }
   }
