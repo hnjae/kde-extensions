@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <QList>
 #include <QString>
 #include <QVariant>
 #include <Qt>
@@ -31,10 +32,13 @@ using TabPagerDesktopRowRoleDataReader =
 struct TabPagerDesktopRowRoleDefinition {
   int role = 0;
   const char *name = nullptr;
-  TabPagerDesktopRowRoleDataReader readData = nullptr;
+  TabPagerDesktopRowRoleDataReader readData;
 };
 
 [[nodiscard]] std::span<const TabPagerDesktopRowRoleDefinition>
 tabPagerDesktopRowRoleDefinitions();
 [[nodiscard]] QVariant
 tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData, int role);
+[[nodiscard]] QList<int>
+tabPagerDesktopRowChangedRoles(const TabPagerDesktopRowData &previousRow,
+                               const TabPagerDesktopRowData &nextRow);

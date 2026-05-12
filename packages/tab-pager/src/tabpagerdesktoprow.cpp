@@ -64,10 +64,25 @@ QVariant tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData,
                                        int role) {
   for (const TabPagerDesktopRowRoleDefinition &definition :
        tabPagerDesktopRowRoleDefinitions()) {
-    if (definition.role == role && definition.readData != nullptr) {
+    if (definition.role == role) {
       return definition.readData(rowData);
     }
   }
 
   return {};
+}
+
+QList<int>
+tabPagerDesktopRowChangedRoles(const TabPagerDesktopRowData &previousRow,
+                               const TabPagerDesktopRowData &nextRow) {
+  QList<int> roles;
+
+  for (const TabPagerDesktopRowRoleDefinition &definition :
+       tabPagerDesktopRowRoleDefinitions()) {
+    if (definition.readData(previousRow) != definition.readData(nextRow)) {
+      roles.append(definition.role);
+    }
+  }
+
+  return roles;
 }

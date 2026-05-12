@@ -22,25 +22,6 @@ rowDataForDesktop(qsizetype row, const TabPagerDesktop &desktop,
   };
 }
 
-[[nodiscard]] QList<int>
-changedRolesForRows(const TabPagerDesktopRowData &previousRow,
-                    const TabPagerDesktopRowData &nextRow) {
-  QList<int> roles;
-
-  for (const TabPagerDesktopRowRoleDefinition &definition :
-       tabPagerDesktopRowRoleDefinitions()) {
-    if (definition.readData == nullptr) {
-      continue;
-    }
-
-    if (definition.readData(previousRow) != definition.readData(nextRow)) {
-      roles.append(definition.role);
-    }
-  }
-
-  return roles;
-}
-
 [[nodiscard]] std::optional<QList<TabPagerDesktopRowUpdate>>
 rowUpdatesForStableIdentity(const QList<TabPagerDesktopRowData> &previousRows,
                             const QList<TabPagerDesktopRowData> &nextRows) {
@@ -57,7 +38,7 @@ rowUpdatesForStableIdentity(const QList<TabPagerDesktopRowData> &previousRows,
       return std::nullopt;
     }
 
-    QList<int> roles = changedRolesForRows(previousRow, nextRow);
+    QList<int> roles = tabPagerDesktopRowChangedRoles(previousRow, nextRow);
     if (!roles.isEmpty()) {
       rowUpdates.append(TabPagerDesktopRowUpdate{
           .row = row,

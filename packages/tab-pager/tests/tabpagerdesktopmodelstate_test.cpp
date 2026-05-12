@@ -11,6 +11,7 @@ class TabPagerDesktopModelStateTest : public QObject {
 private Q_SLOTS:
   void exposesDesktopRowRoleDefinitions();
   void readsDesktopRowDataByRole();
+  void detectsDesktopRowChangedRoles();
   void plansChangedDesktopRowRoles();
   void tracksDesktopModelStateIndex();
   void derivesDesktopModelStateRows();
@@ -73,6 +74,31 @@ void TabPagerDesktopModelStateTest::readsDesktopRowDataByRole() {
                rowData, static_cast<int>(TabPagerDesktopRowRole::Active)),
            QVariant(true));
   QCOMPARE(tabPagerDesktopRowDataForRole(rowData, Qt::UserRole), QVariant());
+}
+
+void TabPagerDesktopModelStateTest::detectsDesktopRowChangedRoles() {
+  const TabPagerDesktopRowData previousRow{
+      .desktopId = QStringLiteral("a"),
+      .name = QStringLiteral("Desktop 1"),
+      .label = QStringLiteral("1"),
+      .number = 1,
+      .active = false,
+  };
+  const TabPagerDesktopRowData nextRow{
+      .desktopId = QStringLiteral("a"),
+      .name = QStringLiteral("Work"),
+      .label = QStringLiteral("Work"),
+      .number = 1,
+      .active = true,
+  };
+
+  QCOMPARE(tabPagerDesktopRowChangedRoles(previousRow, nextRow),
+           (QList<int>{
+               static_cast<int>(TabPagerDesktopRowRole::Name),
+               static_cast<int>(TabPagerDesktopRowRole::Label),
+               static_cast<int>(TabPagerDesktopRowRole::Active),
+           }));
+  QCOMPARE(tabPagerDesktopRowChangedRoles(previousRow, previousRow).size(), 0);
 }
 
 void TabPagerDesktopModelStateTest::plansChangedDesktopRowRoles() {
