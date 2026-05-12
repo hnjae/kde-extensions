@@ -5,10 +5,34 @@
 
 #include "tabpagerdesktoplogic.h"
 
+#include <array>
 #include <optional>
 #include <utility>
 
 namespace {
+constexpr std::array<TabPagerDesktopRowRoleDefinition, 5> rowRoleDefinitions{{
+    {
+        .role = static_cast<int>(TabPagerDesktopRowRole::DesktopId),
+        .name = "desktopId",
+    },
+    {
+        .role = static_cast<int>(TabPagerDesktopRowRole::Name),
+        .name = "name",
+    },
+    {
+        .role = static_cast<int>(TabPagerDesktopRowRole::Label),
+        .name = "label",
+    },
+    {
+        .role = static_cast<int>(TabPagerDesktopRowRole::Number),
+        .name = "number",
+    },
+    {
+        .role = static_cast<int>(TabPagerDesktopRowRole::Active),
+        .name = "active",
+    },
+}};
+
 [[nodiscard]] bool operator==(const TabPagerDesktopRowData &left,
                               const TabPagerDesktopRowData &right) {
   return left.desktopId == right.desktopId && left.name == right.name &&
@@ -57,6 +81,44 @@ changedRowsForStableIdentity(const QList<TabPagerDesktopRowData> &previousRows,
   return rowChanges;
 }
 } // namespace
+
+std::span<const TabPagerDesktopRowRoleDefinition>
+tabPagerDesktopRowRoleDefinitions() {
+  return rowRoleDefinitions;
+}
+
+QVariant tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData,
+                                       int role) {
+  switch (static_cast<TabPagerDesktopRowRole>(role)) {
+  case TabPagerDesktopRowRole::DesktopId:
+    return rowData.desktopId;
+  case TabPagerDesktopRowRole::Name:
+    return rowData.name;
+  case TabPagerDesktopRowRole::Label:
+    return rowData.label;
+  case TabPagerDesktopRowRole::Number:
+    return rowData.number;
+  case TabPagerDesktopRowRole::Active:
+    return rowData.active;
+  }
+
+  return {};
+}
+
+QList<int>
+tabPagerDesktopChangedRoles(const TabPagerDesktopRowChange &rowChange) {
+  QList<int> roles;
+
+  for (const TabPagerDesktopRowRoleDefinition &definition :
+       tabPagerDesktopRowRoleDefinitions()) {
+    if (tabPagerDesktopRowDataForRole(rowChange.previousRow, definition.role) !=
+        tabPagerDesktopRowDataForRole(rowChange.nextRow, definition.role)) {
+      roles.append(definition.role);
+    }
+  }
+
+  return roles;
+}
 
 TabPagerDesktopSnapshotChange TabPagerDesktopSnapshotChange::unchanged() {
   return {};

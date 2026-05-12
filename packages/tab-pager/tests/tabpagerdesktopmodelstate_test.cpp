@@ -9,6 +9,9 @@ class TabPagerDesktopModelStateTest : public QObject {
   Q_OBJECT
 
 private Q_SLOTS:
+  void exposesDesktopRowRoleDefinitions();
+  void readsDesktopRowDataByRole();
+  void detectsChangedDesktopRowRoles();
   void tracksDesktopModelStateIndex();
   void derivesDesktopModelStateRows();
   void plansNoChangeForSameDesktopModelSnapshot();
@@ -18,6 +21,87 @@ private Q_SLOTS:
   void plansCurrentDesktopRowUpdates();
   void plansDesktopDataRowUpdates();
 };
+
+void TabPagerDesktopModelStateTest::exposesDesktopRowRoleDefinitions() {
+  QList<int> roles;
+  QList<QByteArray> names;
+
+  for (const TabPagerDesktopRowRoleDefinition &definition :
+       tabPagerDesktopRowRoleDefinitions()) {
+    roles.append(definition.role);
+    names.append(definition.name);
+  }
+
+  QCOMPARE(roles, (QList<int>{
+                      static_cast<int>(TabPagerDesktopRowRole::DesktopId),
+                      static_cast<int>(TabPagerDesktopRowRole::Name),
+                      static_cast<int>(TabPagerDesktopRowRole::Label),
+                      static_cast<int>(TabPagerDesktopRowRole::Number),
+                      static_cast<int>(TabPagerDesktopRowRole::Active),
+                  }));
+  QCOMPARE(names, (QList<QByteArray>{
+                      "desktopId",
+                      "name",
+                      "label",
+                      "number",
+                      "active",
+                  }));
+}
+
+void TabPagerDesktopModelStateTest::readsDesktopRowDataByRole() {
+  const TabPagerDesktopRowData rowData{
+      .desktopId = QStringLiteral("a"),
+      .name = QStringLiteral("Desktop 1"),
+      .label = QStringLiteral("1"),
+      .number = 1,
+      .active = true,
+  };
+
+  QCOMPARE(tabPagerDesktopRowDataForRole(
+               rowData, static_cast<int>(TabPagerDesktopRowRole::DesktopId)),
+           QVariant(QStringLiteral("a")));
+  QCOMPARE(tabPagerDesktopRowDataForRole(
+               rowData, static_cast<int>(TabPagerDesktopRowRole::Name)),
+           QVariant(QStringLiteral("Desktop 1")));
+  QCOMPARE(tabPagerDesktopRowDataForRole(
+               rowData, static_cast<int>(TabPagerDesktopRowRole::Label)),
+           QVariant(QStringLiteral("1")));
+  QCOMPARE(tabPagerDesktopRowDataForRole(
+               rowData, static_cast<int>(TabPagerDesktopRowRole::Number)),
+           QVariant(1));
+  QCOMPARE(tabPagerDesktopRowDataForRole(
+               rowData, static_cast<int>(TabPagerDesktopRowRole::Active)),
+           QVariant(true));
+  QCOMPARE(tabPagerDesktopRowDataForRole(rowData, Qt::UserRole), QVariant());
+}
+
+void TabPagerDesktopModelStateTest::detectsChangedDesktopRowRoles() {
+  const TabPagerDesktopRowChange change{
+      .previousRow =
+          {
+              .desktopId = QStringLiteral("a"),
+              .name = QStringLiteral("Desktop 1"),
+              .label = QStringLiteral("1"),
+              .number = 1,
+              .active = false,
+          },
+      .nextRow =
+          {
+              .desktopId = QStringLiteral("a"),
+              .name = QStringLiteral("Work"),
+              .label = QStringLiteral("Work"),
+              .number = 1,
+              .active = true,
+          },
+  };
+
+  QCOMPARE(tabPagerDesktopChangedRoles(change),
+           (QList<int>{
+               static_cast<int>(TabPagerDesktopRowRole::Name),
+               static_cast<int>(TabPagerDesktopRowRole::Label),
+               static_cast<int>(TabPagerDesktopRowRole::Active),
+           }));
+}
 
 void TabPagerDesktopModelStateTest::tracksDesktopModelStateIndex() {
   const TabPagerDesktopModelState state =

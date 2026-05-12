@@ -7,79 +7,8 @@
 
 #include <QFontDatabase>
 
-#include <array>
 #include <cassert>
 #include <utility>
-
-namespace {
-struct RoleDefinition {
-  TabPagerBackend::Role role;
-  const char *name;
-  QVariant (*value)(const TabPagerDesktopRowData &rowData);
-};
-
-constexpr std::array<RoleDefinition, 5> roleDefinitions{{
-    {
-        .role = TabPagerBackend::DesktopIdRole,
-        .name = "desktopId",
-        .value = +[](const TabPagerDesktopRowData &rowData) -> QVariant {
-          return rowData.desktopId;
-        },
-    },
-    {
-        .role = TabPagerBackend::NameRole,
-        .name = "name",
-        .value = +[](const TabPagerDesktopRowData &rowData) -> QVariant {
-          return rowData.name;
-        },
-    },
-    {
-        .role = TabPagerBackend::LabelRole,
-        .name = "label",
-        .value = +[](const TabPagerDesktopRowData &rowData) -> QVariant {
-          return rowData.label;
-        },
-    },
-    {
-        .role = TabPagerBackend::NumberRole,
-        .name = "number",
-        .value = +[](const TabPagerDesktopRowData &rowData) -> QVariant {
-          return rowData.number;
-        },
-    },
-    {
-        .role = TabPagerBackend::ActiveRole,
-        .name = "active",
-        .value = +[](const TabPagerDesktopRowData &rowData) -> QVariant {
-          return rowData.active;
-        },
-    },
-}};
-
-[[nodiscard]] const RoleDefinition *roleDefinitionFor(int role) {
-  for (const RoleDefinition &definition : roleDefinitions) {
-    if (definition.role == role) {
-      return &definition;
-    }
-  }
-
-  return nullptr;
-}
-} // namespace
-
-QList<int>
-TabPagerBackend::changedRolesForRow(const TabPagerDesktopRowChange &rowChange) {
-  QList<int> roles;
-
-  for (const RoleDefinition &definition : roleDefinitions) {
-    if (definition.value(rowChange.previousRow) !=
-        definition.value(rowChange.nextRow)) {
-      roles.append(static_cast<int>(definition.role));
-    }
-  }
-
-  return roles;
-}
 
 TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
                                  QObject *parent)
@@ -103,20 +32,17 @@ QVariant TabPagerBackend::data(const QModelIndex &index, int role) const {
   }
 
   const TabPagerDesktopRowData rowData = m_state.rowData(index.row());
-  const RoleDefinition *definition = roleDefinitionFor(role);
-  if (definition == nullptr) {
-    return {};
-  }
-
-  return definition->value(rowData);
+  return tabPagerDesktopRowDataForRole(rowData, role);
 }
 
 QHash<int, QByteArray> TabPagerBackend::roleNames() const {
   QHash<int, QByteArray> names;
-  names.reserve(static_cast<qsizetype>(roleDefinitions.size()));
+  const std::span<const TabPagerDesktopRowRoleDefinition> definitions =
+      tabPagerDesktopRowRoleDefinitions();
+  names.reserve(static_cast<qsizetype>(definitions.size()));
 
-  for (const RoleDefinition &definition : roleDefinitions) {
-    names.insert(static_cast<int>(definition.role), definition.name);
+  for (const TabPagerDesktopRowRoleDefinition &definition : definitions) {
+    names.insert(definition.role, definition.name);
   }
 
   return names;
@@ -214,7 +140,7 @@ void TabPagerBackend::updateDesktopStateRows(
   m_state = std::move(nextState);
 
   for (const TabPagerDesktopRowChange &rowChange : rows) {
-    const QList<int> roles = changedRolesForRow(rowChange);
+    const QList<int> roles = tabPagerDesktopChangedRoles(rowChange);
     if (!roles.isEmpty()) {
       const QModelIndex changedIndex = index(static_cast<int>(rowChange.row));
       Q_EMIT dataChanged(changedIndex, changedIndex, roles);

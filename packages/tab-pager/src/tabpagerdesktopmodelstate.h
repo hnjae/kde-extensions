@@ -8,8 +8,23 @@
 #include <QList>
 #include <QString>
 #include <QVariant>
+#include <Qt>
 
 #include <cstdint>
+#include <span>
+
+enum class TabPagerDesktopRowRole : int {
+  DesktopId = Qt::UserRole + 1,
+  Name,
+  Label,
+  Number,
+  Active,
+};
+
+struct TabPagerDesktopRowRoleDefinition {
+  int role = 0;
+  const char *name = nullptr;
+};
 
 struct TabPagerDesktopRowData {
   QVariant desktopId;
@@ -24,6 +39,13 @@ struct TabPagerDesktopRowChange {
   TabPagerDesktopRowData previousRow;
   TabPagerDesktopRowData nextRow;
 };
+
+[[nodiscard]] std::span<const TabPagerDesktopRowRoleDefinition>
+tabPagerDesktopRowRoleDefinitions();
+[[nodiscard]] QVariant
+tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData, int role);
+[[nodiscard]] QList<int>
+tabPagerDesktopChangedRoles(const TabPagerDesktopRowChange &rowChange);
 
 class TabPagerDesktopSnapshotChange final {
 public:

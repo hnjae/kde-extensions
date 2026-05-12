@@ -10,7 +10,6 @@
 #include <QFont>
 #include <QVariant>
 
-#include <cstdint>
 #include <memory>
 
 class TabPagerBackend : public QAbstractListModel {
@@ -22,12 +21,12 @@ class TabPagerBackend : public QAbstractListModel {
   Q_PROPERTY(QFont labelFont READ labelFont CONSTANT)
 
 public:
-  enum Role : std::uint16_t {
-    DesktopIdRole = Qt::UserRole + 1,
-    NameRole,
-    LabelRole,
-    NumberRole,
-    ActiveRole,
+  enum Role : int {
+    DesktopIdRole = static_cast<int>(TabPagerDesktopRowRole::DesktopId),
+    NameRole = static_cast<int>(TabPagerDesktopRowRole::Name),
+    LabelRole = static_cast<int>(TabPagerDesktopRowRole::Label),
+    NumberRole = static_cast<int>(TabPagerDesktopRowRole::Number),
+    ActiveRole = static_cast<int>(TabPagerDesktopRowRole::Active),
   };
   Q_ENUM(Role)
 
@@ -60,8 +59,6 @@ private:
   void connectSource();
   void reloadDesktopSnapshot();
   void reloadNavigationWrappingAround();
-  [[nodiscard]] static QList<int>
-  changedRolesForRow(const TabPagerDesktopRowChange &rowChange);
   void applyDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
   void resetDesktopState(TabPagerDesktopModelState nextState);
   void updateDesktopStateRows(TabPagerDesktopModelState nextState,
