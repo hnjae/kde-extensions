@@ -17,6 +17,10 @@ Module {
         }
         Method { name: "activateNext" }
         Method { name: "activatePrevious" }
+        Method {
+            name: "activateByWheelDelta"
+            Parameter { name: "delta"; type: "int" }
+        }
         Property { name: "count"; type: "int"; isReadonly: true }
         Property { name: "currentIndex"; type: "int"; isReadonly: true }
         Property { name: "navigationWrappingAround"; type: "bool"; isReadonly: true }

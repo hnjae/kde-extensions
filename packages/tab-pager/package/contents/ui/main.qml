@@ -51,20 +51,9 @@ PlasmoidItem {
             anchors.fill: parent
             acceptedButtons: QtQuick.Qt.NoButton
 
-            property int wheelDelta: 0
-
             onWheel: wheel => {
                 const delta = (wheel.inverted ? -1 : 1) * (wheel.angleDelta.y || wheel.angleDelta.x);
-                wheelDelta += delta;
-
-                while (wheelDelta >= 120) {
-                    wheelDelta -= 120;
-                    backend.activatePrevious();
-                }
-                while (wheelDelta <= -120) {
-                    wheelDelta += 120;
-                    backend.activateNext();
-                }
+                backend.activateByWheelDelta(delta);
             }
         }
 

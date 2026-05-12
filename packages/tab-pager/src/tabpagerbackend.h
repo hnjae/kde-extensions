@@ -49,6 +49,7 @@ public:
   Q_INVOKABLE void activate(int index);
   Q_INVOKABLE void activateNext();
   Q_INVOKABLE void activatePrevious();
+  Q_INVOKABLE void activateByWheelDelta(int delta);
 
 Q_SIGNALS:
   void countChanged();
@@ -69,4 +70,5 @@ private:
   std::unique_ptr<TabPagerDesktopSource> m_source;
   TabPagerDesktopModelState m_state;
   bool m_navigationWrappingAround = false;
+  int m_pendingWheelDelta = 0;
 };

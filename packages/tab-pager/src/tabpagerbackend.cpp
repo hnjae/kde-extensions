@@ -72,6 +72,20 @@ void TabPagerBackend::activateNext() { activateOffset(1); }
 
 void TabPagerBackend::activatePrevious() { activateOffset(-1); }
 
+void TabPagerBackend::activateByWheelDelta(int delta) {
+  const TabPagerDesktopLogic::WheelDeltaResult result =
+      TabPagerDesktopLogic::consumeWheelDelta(m_pendingWheelDelta, delta);
+  m_pendingWheelDelta = result.remainingDelta;
+
+  for (int steps = result.steps; steps > 0; --steps) {
+    activatePrevious();
+  }
+
+  for (int steps = result.steps; steps < 0; ++steps) {
+    activateNext();
+  }
+}
+
 void TabPagerBackend::initializeSource() {
   assert(m_source != nullptr);
   connectSource();

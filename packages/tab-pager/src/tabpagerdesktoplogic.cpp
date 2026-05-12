@@ -4,6 +4,8 @@
 #include "tabpagerdesktoplogic.h"
 
 namespace {
+constexpr int wheelDeltaPerStep = 120;
+
 [[nodiscard]] int wrappedIndexForOffset(int currentIndex, int desktopCount,
                                         int offset) {
   const int wrappedOffset = offset % desktopCount;
@@ -48,5 +50,15 @@ int targetIndexForOffset(const NavigationTargetRequest &request) {
 
   return wrappedIndexForOffset(request.currentIndex, request.desktopCount,
                                request.offset);
+}
+
+WheelDeltaResult consumeWheelDelta(int pendingDelta, int delta) {
+  const long long accumulatedDelta =
+      static_cast<long long>(pendingDelta) + delta;
+
+  return WheelDeltaResult{
+      .remainingDelta = static_cast<int>(accumulatedDelta % wheelDeltaPerStep),
+      .steps = static_cast<int>(accumulatedDelta / wheelDeltaPerStep),
+  };
 }
 } // namespace TabPagerDesktopLogic

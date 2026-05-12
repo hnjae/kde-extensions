@@ -16,6 +16,10 @@ using TabPagerTest::desktopId;
 using TabPagerTest::namedDesktop;
 using TabPagerTest::unnamedDesktop;
 
+constexpr int wheelStepDelta = 120;
+constexpr int halfWheelStepDelta = wheelStepDelta / 2;
+constexpr int almostHalfWheelStepDelta = halfWheelStepDelta - 1;
+
 class FakeDesktopSource final : public TabPagerDesktopSource {
   Q_OBJECT
 
@@ -112,6 +116,7 @@ private Q_SLOTS:
   void stopsAtEdgesWithoutWrapping();
   void activatesNextAndPreviousWithoutWrapping();
   void activatesNextAndPreviousWithWrapping();
+  void activatesFromAccumulatedWheelDelta();
 };
 
 void TabPagerBackendTest::exposesModelState() {
@@ -390,6 +395,25 @@ void TabPagerBackendTest::activatesNextAndPreviousWithWrapping() {
   fixture.backend.activateNext();
   fixture.source->setCurrentDesktop(desktopId("a"));
   fixture.backend.activatePrevious();
+
+  const QList<QVariant> expected = {desktopId("a"), desktopId("c")};
+  QCOMPARE(fixture.source->activatedDesktops(), expected);
+}
+
+void TabPagerBackendTest::activatesFromAccumulatedWheelDelta() {
+  BackendFixture fixture(
+      {
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+          defaultDesktop("c", 3),
+      },
+      desktopId("b"), false);
+
+  fixture.backend.activateByWheelDelta(halfWheelStepDelta);
+  fixture.backend.activateByWheelDelta(almostHalfWheelStepDelta);
+  fixture.backend.activateByWheelDelta(1);
+  fixture.source->setCurrentDesktop(desktopId("b"));
+  fixture.backend.activateByWheelDelta(-wheelStepDelta);
 
   const QList<QVariant> expected = {desktopId("a"), desktopId("c")};
   QCOMPARE(fixture.source->activatedDesktops(), expected);

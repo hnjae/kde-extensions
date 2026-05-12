@@ -13,6 +13,8 @@ private Q_SLOTS:
   void formatsDesktopLabel();
   void resolvesNavigationTarget_data();
   void resolvesNavigationTarget();
+  void consumesWheelDelta_data();
+  void consumesWheelDelta();
 };
 
 void TabPagerDesktopLogicTest::formatsDesktopLabel_data() {
@@ -87,6 +89,47 @@ void TabPagerDesktopLogicTest::resolvesNavigationTarget() {
                    .wrappingAround = wrappingAround,
                }),
            expected);
+}
+
+void TabPagerDesktopLogicTest::consumesWheelDelta_data() {
+  constexpr int wheelStepDelta = 120;
+  constexpr int nearlyOneWheelStepDelta = wheelStepDelta - 1;
+  constexpr int extraWheelDelta = 10;
+  constexpr int multipleWheelStepDelta = (wheelStepDelta * 2) + extraWheelDelta;
+  constexpr int halfWheelStepDelta = wheelStepDelta / 2;
+  constexpr int quarterWheelStepDelta = halfWheelStepDelta / 2;
+
+  QTest::addColumn<int>("pendingDelta");
+  QTest::addColumn<int>("delta");
+  QTest::addColumn<int>("expectedRemainingDelta");
+  QTest::addColumn<int>("expectedSteps");
+
+  QTest::newRow("keeps positive remainder")
+      << 0 << nearlyOneWheelStepDelta << nearlyOneWheelStepDelta << 0;
+  QTest::newRow("completes positive step")
+      << nearlyOneWheelStepDelta << 1 << 0 << 1;
+  QTest::newRow("completes negative step")
+      << -nearlyOneWheelStepDelta << -1 << 0 << -1;
+  QTest::newRow("consumes multiple positive steps")
+      << 0 << multipleWheelStepDelta << extraWheelDelta << 2;
+  QTest::newRow("consumes multiple negative steps")
+      << 0 << -multipleWheelStepDelta << -extraWheelDelta << -2;
+  QTest::newRow("combines opposite directions")
+      << halfWheelStepDelta << -quarterWheelStepDelta << quarterWheelStepDelta
+      << 0;
+}
+
+void TabPagerDesktopLogicTest::consumesWheelDelta() {
+  QFETCH(int, pendingDelta);
+  QFETCH(int, delta);
+  QFETCH(int, expectedRemainingDelta);
+  QFETCH(int, expectedSteps);
+
+  const TabPagerDesktopLogic::WheelDeltaResult result =
+      TabPagerDesktopLogic::consumeWheelDelta(pendingDelta, delta);
+
+  QCOMPARE(result.remainingDelta, expectedRemainingDelta);
+  QCOMPARE(result.steps, expectedSteps);
 }
 
 QTEST_MAIN(TabPagerDesktopLogicTest)
