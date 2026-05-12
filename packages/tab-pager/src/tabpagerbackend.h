@@ -59,16 +59,27 @@ Q_SIGNALS:
   void navigationWrappingAroundChanged();
 
 private:
+  struct DesktopSnapshot {
+    QList<TabPagerDesktop> desktops;
+    QVariant currentDesktop;
+  };
+
   void initializeSource();
   void connectSource();
   void reloadDesktops();
   void reloadCurrentDesktop();
   void reloadNavigationWrappingAround();
-  void resetDesktops(const QList<TabPagerDesktop> &desktops,
-                     const QVariant &currentDesktop);
-  void updateDesktopRows(const QList<TabPagerDesktop> &desktops,
-                         const QVariant &currentDesktop);
-  void setCurrentDesktop(const QVariant &currentDesktop);
+  [[nodiscard]] DesktopSnapshot currentDesktopSnapshot() const;
+  [[nodiscard]] DesktopSnapshot sourceDesktopSnapshot() const;
+  static bool sameDesktopSnapshot(const DesktopSnapshot &left,
+                                  const DesktopSnapshot &right);
+  static QList<int>
+  changedRolesForDesktop(qsizetype row, const DesktopSnapshot &previousSnapshot,
+                         const DesktopSnapshot &nextSnapshot);
+  void applyDesktopSnapshot(const DesktopSnapshot &snapshot);
+  void resetDesktopSnapshot(const DesktopSnapshot &snapshot);
+  void updateDesktopSnapshotRows(const DesktopSnapshot &previousSnapshot,
+                                 const DesktopSnapshot &nextSnapshot);
   void activateOffset(int offset);
   [[nodiscard]] int indexOfDesktop(const QVariant &desktopId) const;
 

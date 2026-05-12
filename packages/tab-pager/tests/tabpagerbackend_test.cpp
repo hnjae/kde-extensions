@@ -296,11 +296,18 @@ void TabPagerBackendTest::tracksCurrentDesktop() {
   });
   QSignalSpy currentSpy(&fixture.backend,
                         &TabPagerBackend::currentIndexChanged);
+  QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
 
   fixture.source.setCurrentDesktop(QStringLiteral("b"));
 
   QCOMPARE(fixture.backend.currentIndex(), 1);
   QCOMPARE(currentSpy.count(), 1);
+  QCOMPARE(dataSpy.count(), 1);
+  const QList<QVariant> arguments = dataSpy.takeFirst();
+  QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(0)).row(), 1);
+  QCOMPARE(qvariant_cast<QModelIndex>(arguments.at(1)).row(), 1);
+  const QList<int> roles = qvariant_cast<QList<int>>(arguments.at(2));
+  QCOMPARE(roles, QList<int>{TabPagerBackend::ActiveRole});
   QCOMPARE(fixture.backend.data(fixture.backend.index(1),
                                 TabPagerBackend::ActiveRole),
            QVariant(true));
