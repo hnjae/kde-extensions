@@ -28,26 +28,29 @@ QList<int>
 TabPagerBackend::changedRolesForDesktop(qsizetype row,
                                         const DesktopSnapshot &previousSnapshot,
                                         const DesktopSnapshot &nextSnapshot) {
-  const TabPagerDesktop &previousDesktop = previousSnapshot.desktops.at(row);
-  const TabPagerDesktop &nextDesktop = nextSnapshot.desktops.at(row);
+  const DesktopRowData previousRow = desktopRowData(
+      row, previousSnapshot.desktops.at(row), previousSnapshot.currentDesktop);
+  const DesktopRowData nextRow = desktopRowData(
+      row, nextSnapshot.desktops.at(row), nextSnapshot.currentDesktop);
   QList<int> roles;
 
-  if (previousDesktop.id != nextDesktop.id) {
+  if (previousRow.desktopId != nextRow.desktopId) {
     roles.append(TabPagerBackend::DesktopIdRole);
   }
 
-  if (previousDesktop.name != nextDesktop.name) {
+  if (previousRow.name != nextRow.name) {
     roles.append(TabPagerBackend::NameRole);
   }
 
-  const int number = static_cast<int>(row + 1);
-  if (TabPagerDesktopLogic::labelForDesktop(number, previousDesktop.name) !=
-      TabPagerDesktopLogic::labelForDesktop(number, nextDesktop.name)) {
+  if (previousRow.label != nextRow.label) {
     roles.append(TabPagerBackend::LabelRole);
   }
 
-  if ((previousDesktop.id == previousSnapshot.currentDesktop) !=
-      (nextDesktop.id == nextSnapshot.currentDesktop)) {
+  if (previousRow.number != nextRow.number) {
+    roles.append(TabPagerBackend::NumberRole);
+  }
+
+  if (previousRow.active != nextRow.active) {
     roles.append(TabPagerBackend::ActiveRole);
   }
 
@@ -58,6 +61,19 @@ bool TabPagerBackend::sameDesktopSnapshot(const DesktopSnapshot &left,
                                           const DesktopSnapshot &right) {
   return left.desktops == right.desktops &&
          left.currentDesktop == right.currentDesktop;
+}
+
+TabPagerBackend::DesktopRowData
+TabPagerBackend::desktopRowData(qsizetype row, const TabPagerDesktop &desktop,
+                                const QVariant &currentDesktop) {
+  const int number = static_cast<int>(row + 1);
+  return DesktopRowData{
+      .desktopId = desktop.id,
+      .name = desktop.name,
+      .label = TabPagerDesktopLogic::labelForDesktop(number, desktop.name),
+      .number = number,
+      .active = desktop.id == currentDesktop,
+  };
 }
 
 TabPagerBackend::TabPagerBackend(TabPagerDesktopSource *source, QObject *parent)
@@ -89,18 +105,19 @@ QVariant TabPagerBackend::data(const QModelIndex &index, int role) const {
 
   const int row = index.row();
   const TabPagerDesktop &desktop = m_desktops.at(row);
+  const DesktopRowData rowData = desktopRowData(row, desktop, m_currentDesktop);
 
   switch (role) {
   case DesktopIdRole:
-    return desktop.id;
+    return rowData.desktopId;
   case NameRole:
-    return desktop.name;
+    return rowData.name;
   case LabelRole:
-    return TabPagerDesktopLogic::labelForDesktop(row + 1, desktop.name);
+    return rowData.label;
   case NumberRole:
-    return row + 1;
+    return rowData.number;
   case ActiveRole:
-    return desktop.id == m_currentDesktop;
+    return rowData.active;
   default:
     return {};
   }

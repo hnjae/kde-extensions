@@ -64,6 +64,14 @@ private:
     QVariant currentDesktop;
   };
 
+  struct DesktopRowData {
+    QVariant desktopId;
+    QString name;
+    QString label;
+    int number = 0;
+    bool active = false;
+  };
+
   void initializeSource();
   void connectSource();
   void reloadDesktops();
@@ -76,6 +84,9 @@ private:
   static QList<int>
   changedRolesForDesktop(qsizetype row, const DesktopSnapshot &previousSnapshot,
                          const DesktopSnapshot &nextSnapshot);
+  [[nodiscard]] static DesktopRowData
+  desktopRowData(qsizetype row, const TabPagerDesktop &desktop,
+                 const QVariant &currentDesktop);
   void applyDesktopSnapshot(const DesktopSnapshot &snapshot);
   void resetDesktopSnapshot(const DesktopSnapshot &snapshot);
   void updateDesktopSnapshotRows(const DesktopSnapshot &previousSnapshot,
