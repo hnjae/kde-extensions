@@ -17,7 +17,7 @@ rowDataForDesktop(qsizetype row, const TabPagerDesktop &desktop,
       .name = desktop.name,
       .label = TabPagerDesktopLogic::labelForDesktop(number, desktop.name),
       .number = number,
-      .active = tabPagerDesktopIdsEqual(desktop.id, currentDesktop),
+      .active = desktop.id.matches(currentDesktop),
   };
 }
 
@@ -110,7 +110,7 @@ TabPagerDesktopModelState TabPagerDesktopModelState::fromSnapshot(
   for (qsizetype sourceRow = 0; sourceRow < snapshot.desktops.size();
        ++sourceRow) {
     const TabPagerDesktop &desktop = snapshot.desktops.at(sourceRow);
-    if (!tabPagerDesktopIdIsValid(desktop.id)) {
+    if (!desktop.id.isValid()) {
       continue;
     }
 

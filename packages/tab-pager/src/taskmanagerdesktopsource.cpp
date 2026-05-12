@@ -31,14 +31,14 @@ TabPagerDesktopSnapshot TaskManagerDesktopSource::desktopSnapshot() const {
 
   for (qsizetype index = 0; index < ids.size(); ++index) {
     desktops.append(TabPagerDesktop{
-        .id = ids.at(index),
+        .id = TabPagerDesktopId::fromVariant(ids.at(index)),
         .name = names.value(index),
     });
   }
 
   return TabPagerDesktopSnapshot{
       .desktops = desktops,
-      .currentDesktop = m_info.currentDesktop(),
+      .currentDesktop = TabPagerDesktopId::fromVariant(m_info.currentDesktop()),
   };
 }
 
@@ -48,7 +48,7 @@ bool TaskManagerDesktopSource::navigationWrappingAround() const {
 
 void TaskManagerDesktopSource::activateDesktop(
     const TabPagerDesktopId &desktopId) {
-  if (tabPagerDesktopIdIsValid(desktopId)) {
-    m_info.requestActivate(desktopId);
+  if (desktopId.isValid()) {
+    m_info.requestActivate(desktopId.toVariant());
   }
 }

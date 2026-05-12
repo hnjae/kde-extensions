@@ -3,12 +3,35 @@
 
 #include "tabpagerdesktopid.h"
 
-bool tabPagerDesktopIdIsValid(const TabPagerDesktopId &desktopId) {
-  return desktopId.isValid();
+#include <QDebug>
+
+#include <utility>
+
+TabPagerDesktopId::TabPagerDesktopId(QVariant value)
+    : m_value(std::move(value)) {}
+
+TabPagerDesktopId TabPagerDesktopId::fromVariant(QVariant value) {
+  return TabPagerDesktopId(std::move(value));
 }
 
-bool tabPagerDesktopIdsEqual(const TabPagerDesktopId &left,
-                             const TabPagerDesktopId &right) {
-  return tabPagerDesktopIdIsValid(left) && tabPagerDesktopIdIsValid(right) &&
-         left == right;
+QVariant TabPagerDesktopId::toVariant() const { return m_value; }
+
+bool TabPagerDesktopId::isValid() const { return m_value.isValid(); }
+
+bool TabPagerDesktopId::matches(const TabPagerDesktopId &other) const {
+  return isValid() && other.isValid() && m_value == other.m_value;
+}
+
+bool operator==(const TabPagerDesktopId &left, const TabPagerDesktopId &right) {
+  return left.m_value == right.m_value;
+}
+
+bool operator!=(const TabPagerDesktopId &left, const TabPagerDesktopId &right) {
+  return !(left == right);
+}
+
+QDebug operator<<(QDebug debug, const TabPagerDesktopId &desktopId) {
+  QDebugStateSaver saver(debug);
+  debug.nospace() << "TabPagerDesktopId(" << desktopId.toVariant() << ")";
+  return debug;
 }

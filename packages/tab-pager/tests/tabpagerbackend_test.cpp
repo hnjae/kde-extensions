@@ -76,7 +76,7 @@ void TabPagerBackendTest::exposesModelData() {
 
   const QModelIndex first = backend.index(0);
   QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::DesktopId)),
-           desktopId("a"));
+           desktopId("a").toVariant());
   QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::Name)),
            QVariant(QStringLiteral("Desktop 1")));
   QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::Label)),

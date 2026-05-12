@@ -12,7 +12,7 @@
 
 namespace TabPagerTest {
 [[nodiscard]] inline TabPagerDesktopId desktopId(const char *id) {
-  return QString::fromLatin1(id);
+  return TabPagerDesktopId::fromVariant(QString::fromLatin1(id));
 }
 
 [[nodiscard]] inline TabPagerDesktopId invalidDesktopId() { return {}; }

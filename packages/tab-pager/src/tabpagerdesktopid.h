@@ -5,8 +5,27 @@
 
 #include <QVariant>
 
-using TabPagerDesktopId = QVariant;
+class QDebug;
 
-[[nodiscard]] bool tabPagerDesktopIdIsValid(const TabPagerDesktopId &desktopId);
-[[nodiscard]] bool tabPagerDesktopIdsEqual(const TabPagerDesktopId &left,
-                                           const TabPagerDesktopId &right);
+class TabPagerDesktopId final {
+public:
+  TabPagerDesktopId() = default;
+
+  [[nodiscard]] static TabPagerDesktopId fromVariant(QVariant value);
+
+  [[nodiscard]] QVariant toVariant() const;
+  [[nodiscard]] bool isValid() const;
+  [[nodiscard]] bool matches(const TabPagerDesktopId &other) const;
+
+  friend bool operator==(const TabPagerDesktopId &left,
+                         const TabPagerDesktopId &right);
+  friend bool operator!=(const TabPagerDesktopId &left,
+                         const TabPagerDesktopId &right);
+
+private:
+  explicit TabPagerDesktopId(QVariant value);
+
+  QVariant m_value;
+};
+
+QDebug operator<<(QDebug debug, const TabPagerDesktopId &desktopId);

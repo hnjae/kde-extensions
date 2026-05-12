@@ -80,7 +80,7 @@ void TabPagerDesktopModelStateTest::readsDesktopRowDataByRole() {
 
   QCOMPARE(tabPagerDesktopRowDataForRole(
                rowData, role(TabPagerDesktopRowRole::DesktopId)),
-           desktopId("a"));
+           desktopId("a").toVariant());
   QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
                                          role(TabPagerDesktopRowRole::Name)),
            QVariant(QStringLiteral("Desktop 1")));
@@ -153,7 +153,8 @@ void TabPagerDesktopModelStateTest::tracksDesktopModelStateIndex() {
   QCOMPARE(state.currentIndex(), 1);
   QCOMPARE(state.desktopIdForIndex(-1).has_value(), false);
   QCOMPARE(state.desktopIdForIndex(3).has_value(), false);
-  QCOMPARE(state.desktopIdForIndex(1).value_or(QVariant()), desktopId("b"));
+  QCOMPARE(state.desktopIdForIndex(1).value_or(TabPagerDesktopId{}),
+           desktopId("b"));
 }
 
 void TabPagerDesktopModelStateTest::filtersInvalidDesktopIds() {
@@ -166,7 +167,8 @@ void TabPagerDesktopModelStateTest::filtersInvalidDesktopIds() {
 
   QCOMPARE(state.count(), 1);
   QCOMPARE(state.currentIndex(), 0);
-  QCOMPARE(state.desktopIdForIndex(0).value_or(QVariant()), desktopId("b"));
+  QCOMPARE(state.desktopIdForIndex(0).value_or(TabPagerDesktopId{}),
+           desktopId("b"));
 
   const TabPagerDesktopRowData row = state.rowData(0);
   QCOMPARE(row.number, 2);

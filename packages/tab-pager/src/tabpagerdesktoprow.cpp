@@ -5,6 +5,7 @@
 
 #include <array>
 #include <span>
+#include <type_traits>
 
 namespace {
 using TabPagerDesktopRowRoleDataReader =
@@ -22,7 +23,13 @@ struct TabPagerDesktopRowRoleDefinition {
 
 template <auto Field>
 [[nodiscard]] QVariant readRowField(const TabPagerDesktopRowData &rowData) {
-  return rowData.*Field;
+  const auto &field = rowData.*Field;
+  if constexpr (std::is_same_v<std::remove_cvref_t<decltype(field)>,
+                               TabPagerDesktopId>) {
+    return field.toVariant();
+  } else {
+    return field;
+  }
 }
 
 template <auto Field>
