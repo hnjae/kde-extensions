@@ -28,7 +28,7 @@ rowRoleDefinition(TabPagerDesktopRowRole role, const char *name) {
   };
 }
 
-constexpr std::array<TabPagerDesktopRowRoleDefinition, 5> rowRoleDefinitions{{
+constexpr auto rowRoleDefinitions = std::to_array({
     rowRoleDefinition<&TabPagerDesktopRowData::desktopId>(
         TabPagerDesktopRowRole::DesktopId, "desktopId"),
     rowRoleDefinition<&TabPagerDesktopRowData::name>(
@@ -39,7 +39,7 @@ constexpr std::array<TabPagerDesktopRowRoleDefinition, 5> rowRoleDefinitions{{
         TabPagerDesktopRowRole::Number, "number"),
     rowRoleDefinition<&TabPagerDesktopRowData::active>(
         TabPagerDesktopRowRole::Active, "active"),
-}};
+});
 } // namespace
 
 std::span<const TabPagerDesktopRowRoleDefinition>

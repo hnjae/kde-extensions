@@ -19,6 +19,7 @@ QtQuick.Item {
     property int verticalPadding: 0
 
     readonly property string desktopState: desktopMouseArea.containsMouse ? "hover" : root.active ? "active" : "normal"
+    readonly property var framePrefixes: ["hover", "active", "normal"]
 
     signal activated(int desktopIndex)
 
@@ -35,22 +36,17 @@ QtQuick.Item {
         prefix: "normal"
     }
 
-    PagerFrame {
-        desktopState: root.desktopState
-        framePrefix: "hover"
-        z: 2
-    }
+    QtQuick.Repeater {
+        model: root.framePrefixes
 
-    PagerFrame {
-        desktopState: root.desktopState
-        framePrefix: "active"
-        z: 3
-    }
+        delegate: PagerFrame {
+            required property int index
+            required property string modelData
 
-    PagerFrame {
-        desktopState: root.desktopState
-        framePrefix: "normal"
-        z: 4
+            desktopState: root.desktopState
+            framePrefix: modelData
+            z: index + 2
+        }
     }
 
     PlasmaComponents.Label {
