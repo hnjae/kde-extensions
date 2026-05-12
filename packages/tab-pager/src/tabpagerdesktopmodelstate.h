@@ -10,10 +10,21 @@
 #include <QVariant>
 
 #include <cstdint>
+#include <variant>
 
 struct TabPagerDesktopRowUpdate {
   qsizetype row = -1;
   QList<int> roles;
+};
+
+struct TabPagerDesktopModelResetChange {
+  bool countChanged = false;
+  bool currentIndexChanged = false;
+};
+
+struct TabPagerDesktopModelRowsChange {
+  bool currentIndexChanged = false;
+  QList<TabPagerDesktopRowUpdate> rows;
 };
 
 class TabPagerDesktopModelChange final {
@@ -32,17 +43,17 @@ public:
 
   [[nodiscard]] bool isEmpty() const;
   [[nodiscard]] ModelUpdate modelUpdate() const;
-  [[nodiscard]] bool countChanged() const;
-  [[nodiscard]] bool currentIndexChanged() const;
-  [[nodiscard]] const QList<TabPagerDesktopRowUpdate> &rowUpdates() const;
+  [[nodiscard]] const TabPagerDesktopModelResetChange &resetChange() const;
+  [[nodiscard]] const TabPagerDesktopModelRowsChange &rowsChange() const;
 
 private:
+  using ChangeData =
+      std::variant<std::monostate, TabPagerDesktopModelResetChange,
+                   TabPagerDesktopModelRowsChange>;
+
   TabPagerDesktopModelChange() = default;
 
-  ModelUpdate m_modelUpdate = ModelUpdate::None;
-  bool m_countChanged = false;
-  bool m_currentIndexChanged = false;
-  QList<TabPagerDesktopRowUpdate> m_rowUpdates;
+  ChangeData m_data;
 };
 
 class TabPagerDesktopModelState final {

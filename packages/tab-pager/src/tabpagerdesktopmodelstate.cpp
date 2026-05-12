@@ -5,6 +5,7 @@
 
 #include "tabpagerdesktoplogic.h"
 
+#include <cassert>
 #include <optional>
 #include <utility>
 
@@ -52,7 +53,7 @@ rowUpdatesForStableIdentity(const QList<TabPagerDesktopRowData> &previousRows,
 } // namespace
 
 bool TabPagerDesktopModelChange::isEmpty() const {
-  return m_modelUpdate == ModelUpdate::None;
+  return std::holds_alternative<std::monostate>(m_data);
 }
 
 TabPagerDesktopModelChange TabPagerDesktopModelChange::unchanged() {
@@ -62,9 +63,10 @@ TabPagerDesktopModelChange TabPagerDesktopModelChange::unchanged() {
 TabPagerDesktopModelChange
 TabPagerDesktopModelChange::reset(bool countChanged, bool currentIndexChanged) {
   TabPagerDesktopModelChange change;
-  change.m_modelUpdate = ModelUpdate::Reset;
-  change.m_countChanged = countChanged;
-  change.m_currentIndexChanged = currentIndexChanged;
+  change.m_data = TabPagerDesktopModelResetChange{
+      .countChanged = countChanged,
+      .currentIndexChanged = currentIndexChanged,
+  };
   return change;
 }
 
@@ -72,26 +74,36 @@ TabPagerDesktopModelChange
 TabPagerDesktopModelChange::rowsChanged(bool currentIndexChanged,
                                         QList<TabPagerDesktopRowUpdate> rows) {
   TabPagerDesktopModelChange change;
-  change.m_modelUpdate = ModelUpdate::RowsChanged;
-  change.m_currentIndexChanged = currentIndexChanged;
-  change.m_rowUpdates = std::move(rows);
+  change.m_data = TabPagerDesktopModelRowsChange{
+      .currentIndexChanged = currentIndexChanged,
+      .rows = std::move(rows),
+  };
   return change;
 }
 
 TabPagerDesktopModelChange::ModelUpdate
 TabPagerDesktopModelChange::modelUpdate() const {
-  return m_modelUpdate;
+  if (std::holds_alternative<TabPagerDesktopModelResetChange>(m_data)) {
+    return ModelUpdate::Reset;
+  }
+
+  if (std::holds_alternative<TabPagerDesktopModelRowsChange>(m_data)) {
+    return ModelUpdate::RowsChanged;
+  }
+
+  return ModelUpdate::None;
 }
 
-bool TabPagerDesktopModelChange::countChanged() const { return m_countChanged; }
-
-bool TabPagerDesktopModelChange::currentIndexChanged() const {
-  return m_currentIndexChanged;
+const TabPagerDesktopModelResetChange &
+TabPagerDesktopModelChange::resetChange() const {
+  assert(std::holds_alternative<TabPagerDesktopModelResetChange>(m_data));
+  return std::get<TabPagerDesktopModelResetChange>(m_data);
 }
 
-const QList<TabPagerDesktopRowUpdate> &
-TabPagerDesktopModelChange::rowUpdates() const {
-  return m_rowUpdates;
+const TabPagerDesktopModelRowsChange &
+TabPagerDesktopModelChange::rowsChange() const {
+  assert(std::holds_alternative<TabPagerDesktopModelRowsChange>(m_data));
+  return std::get<TabPagerDesktopModelRowsChange>(m_data);
 }
 
 TabPagerDesktopModelState TabPagerDesktopModelState::fromSnapshot(
