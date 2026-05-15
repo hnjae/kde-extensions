@@ -41,6 +41,132 @@
       : basename;
   }
 
+  function workspaceWindows(): KWinWindow[] {
+    if (typeof workspace.windowList === "function") {
+      return workspace.windowList();
+    }
+
+    if (Array.isArray(workspace.windows)) {
+      return workspace.windows;
+    }
+
+    if (Array.isArray(workspace.stackingOrder)) {
+      return workspace.stackingOrder;
+    }
+
+    return [];
+  }
+
+  function desktopIdentity(desktop: KWinDesktop | undefined): string {
+    if (desktop === undefined) {
+      return "";
+    }
+
+    return desktop.id ?? desktop.name ?? "";
+  }
+
+  function desktopsMatch(
+    desktop: KWinDesktop,
+    currentDesktop: KWinDesktop,
+  ): boolean {
+    if (desktop === currentDesktop) {
+      return true;
+    }
+
+    const desktopId = desktopIdentity(desktop);
+
+    return desktopId !== "" && desktopId === desktopIdentity(currentDesktop);
+  }
+
+  function isOnCurrentDesktop(window: KWinWindow): boolean {
+    if (window.onAllDesktops === true) {
+      return true;
+    }
+
+    const desktops = window.desktops ?? [];
+
+    if (desktops.length === 0) {
+      return true;
+    }
+
+    const currentDesktop = workspace.currentDesktop;
+
+    return (
+      currentDesktop !== undefined &&
+      desktops.some((desktop) => desktopsMatch(desktop, currentDesktop))
+    );
+  }
+
+  function isOnCurrentActivity(window: KWinWindow): boolean {
+    const activities = window.activities ?? [];
+
+    if (activities.length === 0) {
+      return true;
+    }
+
+    const currentActivity = workspace.currentActivity;
+
+    return (
+      currentActivity !== undefined && activities.indexOf(currentActivity) >= 0
+    );
+  }
+
+  function isSupportedWindow(window: KWinWindow): boolean {
+    return (
+      window.managed === true &&
+      window.deleted !== true &&
+      window.hidden !== true &&
+      window.inputMethod !== true &&
+      window.wantsInput === true &&
+      (window.normalWindow === true || window.dialog === true)
+    );
+  }
+
+  function windowMatchesBinding(window: KWinWindow, binding: Binding): boolean {
+    return (
+      isSupportedWindow(window) &&
+      isOnCurrentDesktop(window) &&
+      isOnCurrentActivity(window) &&
+      normalizeDesktopEntryId(window.desktopFileName ?? "") ===
+        binding.normalizedDesktopEntryId
+    );
+  }
+
+  function matchingWindows(binding: Binding): KWinWindow[] {
+    return workspaceWindows().filter((window) =>
+      windowMatchesBinding(window, binding),
+    );
+  }
+
+  function stackingRank(window: KWinWindow, fallbackRank: number): number {
+    const stackingOrder = workspace.stackingOrder;
+
+    if (!Array.isArray(stackingOrder)) {
+      return fallbackRank;
+    }
+
+    const rank = stackingOrder.indexOf(window);
+
+    return rank >= 0 ? rank : fallbackRank - stackingOrder.length;
+  }
+
+  function frontmostWindow(windows: KWinWindow[]): KWinWindow | null {
+    let selectedWindow: KWinWindow | null = null;
+    let selectedRank = Number.NEGATIVE_INFINITY;
+
+    for (let index = 0; index < windows.length; index += 1) {
+      const window = windows[index];
+      const rank = stackingRank(window, index);
+
+      if (rank > selectedRank) {
+        selectedWindow = window;
+        selectedRank = rank;
+      }
+    }
+
+    return selectedWindow;
+  }
+
   function readBinding(slot: number): Binding | null {
     const name = slotName(slot);
 
@@ -68,7 +194,16 @@
   }
 
   function handleBinding(binding: Binding): void {
-    void binding;
+    const visibleWindow = frontmostWindow(
+      matchingWindows(binding).filter((window) => window.minimized !== true),
+    );
+
+    if (visibleWindow === null) {
+      return;
+    }
+
+    workspace.raiseWindow(visibleWindow);
+    workspace.activeWindow = visibleWindow;
   }
 
   const usedShortcuts: Record<string, string> = {};

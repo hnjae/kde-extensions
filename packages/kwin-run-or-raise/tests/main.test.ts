@@ -13,9 +13,44 @@ type RegisteredShortcut = {
   text: string;
 };
 
+type TestDesktop = {
+  id: string;
+};
+
+type TestWindow = {
+  activities?: string[];
+  deleted?: boolean;
+  desktopFileName?: string;
+  desktops?: TestDesktop[];
+  dialog?: boolean;
+  hidden?: boolean;
+  inputMethod?: boolean;
+  managed?: boolean;
+  minimized?: boolean;
+  normalWindow?: boolean;
+  onAllDesktops?: boolean;
+  wantsInput?: boolean;
+};
+
+type ScriptOptions = {
+  activeWindow?: TestWindow | null;
+  config?: Record<string, unknown>;
+  currentActivity?: string;
+  currentDesktop?: TestDesktop;
+  stackingOrder?: TestWindow[];
+  windows?: TestWindow[];
+};
+
 type ScriptHarness = {
   prints: string[];
   registeredShortcuts: RegisteredShortcut[];
+  raisedWindows: TestWindow[];
+  workspace: {
+    activeWindow: TestWindow | null;
+    currentActivity: string;
+    currentDesktop: TestDesktop;
+    stackingOrder: TestWindow[];
+  };
 };
 
 const mainScriptUrl = new URL(
@@ -23,12 +58,38 @@ const mainScriptUrl = new URL(
   import.meta.url,
 );
 
-async function runScript(
-  config: Record<string, unknown>,
-): Promise<ScriptHarness> {
+function appWindow(overrides: Partial<TestWindow> = {}): TestWindow {
+  return {
+    activities: [],
+    desktopFileName: "firefox",
+    desktops: [],
+    managed: true,
+    normalWindow: true,
+    wantsInput: true,
+    ...overrides,
+  };
+}
+
+async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
   const script = await readFile(mainScriptUrl, "utf8");
+  const config = options.config ?? {};
+  const windows = options.windows ?? [];
+  const currentDesktop = options.currentDesktop ?? { id: "desktop-1" };
   const registeredShortcuts: RegisteredShortcut[] = [];
   const prints: string[] = [];
+  const raisedWindows: TestWindow[] = [];
+  const workspace = {
+    activeWindow: options.activeWindow ?? null,
+    currentActivity: options.currentActivity ?? "activity-1",
+    currentDesktop,
+    stackingOrder: options.stackingOrder ?? windows,
+    raiseWindow(window: TestWindow): void {
+      raisedWindows.push(window);
+    },
+    windowList(): TestWindow[] {
+      return windows;
+    },
+  };
 
   vm.runInNewContext(script, {
     print(message: string): void {
@@ -47,24 +108,23 @@ async function runScript(
     ): void {
       registeredShortcuts.push({ actionName, callback, keySequence, text });
     },
-    workspace: {
-      activeWindow: null,
-      raiseWindow(): void {},
-    },
+    workspace,
   });
 
-  return { prints, registeredShortcuts };
+  return { prints, registeredShortcuts, raisedWindows, workspace };
 }
 
 test("registers enabled bindings with desktop entry ids", async () => {
   const harness = await runScript({
-    Binding01DesktopEntryId: "firefox.desktop",
-    Binding01Enabled: true,
-    Binding01Name: "Firefox",
-    Binding01Shortcut: "Meta+W",
-    Binding02DesktopEntryId: "org.kde.konsole",
-    Binding02Enabled: false,
-    Binding02Shortcut: "Meta+Return",
+    config: {
+      Binding01DesktopEntryId: "firefox.desktop",
+      Binding01Enabled: true,
+      Binding01Name: "Firefox",
+      Binding01Shortcut: "Meta+W",
+      Binding02DesktopEntryId: "org.kde.konsole",
+      Binding02Enabled: false,
+      Binding02Shortcut: "Meta+Return",
+    },
   });
 
   assert.deepEqual(
@@ -85,12 +145,14 @@ test("registers enabled bindings with desktop entry ids", async () => {
 
 test("skips later bindings with duplicate default shortcuts", async () => {
   const harness = await runScript({
-    Binding01DesktopEntryId: "firefox.desktop",
-    Binding01Enabled: true,
-    Binding01Shortcut: "Meta+W",
-    Binding02DesktopEntryId: "org.kde.konsole.desktop",
-    Binding02Enabled: true,
-    Binding02Shortcut: "meta+w",
+    config: {
+      Binding01DesktopEntryId: "firefox.desktop",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+      Binding02DesktopEntryId: "org.kde.konsole.desktop",
+      Binding02Enabled: true,
+      Binding02Shortcut: "meta+w",
+    },
   });
 
   assert.deepEqual(
@@ -100,4 +162,65 @@ test("skips later bindings with duplicate default shortcuts", async () => {
   assert.deepEqual(harness.prints, [
     'Run or Raise: skipping Binding02 because shortcut "meta+w" is already used by Binding01.',
   ]);
+});
+
+test("raises and focuses the frontmost visible matching window", async () => {
+  const backWindow = appWindow();
+  const frontWindow = appWindow({ desktopFileName: "firefox.desktop" });
+  const otherWindow = appWindow({ desktopFileName: "org.kde.konsole" });
+  const harness = await runScript({
+    config: {
+      Binding01DesktopEntryId: "/usr/share/applications/firefox.desktop",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+    },
+    stackingOrder: [backWindow, otherWindow, frontWindow],
+    windows: [frontWindow, backWindow, otherWindow],
+  });
+
+  harness.registeredShortcuts[0].callback();
+
+  assert.deepEqual(harness.raisedWindows, [frontWindow]);
+  assert.equal(harness.workspace.activeWindow, frontWindow);
+});
+
+test("ignores matching windows outside the current desktop and activity", async () => {
+  const currentDesktop = { id: "desktop-1" };
+  const otherDesktop = { id: "desktop-2" };
+  const desktopWindow = appWindow({ desktops: [otherDesktop] });
+  const activityWindow = appWindow({ activities: ["other-activity"] });
+  const harness = await runScript({
+    config: {
+      Binding01DesktopEntryId: "firefox",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+    },
+    currentActivity: "activity-1",
+    currentDesktop,
+    windows: [desktopWindow, activityWindow],
+  });
+
+  harness.registeredShortcuts[0].callback();
+
+  assert.deepEqual(harness.raisedWindows, []);
+  assert.equal(harness.workspace.activeWindow, null);
+});
+
+test("ignores non user-facing matching windows", async () => {
+  const hiddenWindow = appWindow({ hidden: true });
+  const inputMethodWindow = appWindow({ inputMethod: true });
+  const unmanagedDialog = appWindow({ dialog: true, managed: false });
+  const harness = await runScript({
+    config: {
+      Binding01DesktopEntryId: "firefox",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+    },
+    windows: [hiddenWindow, inputMethodWindow, unmanagedDialog],
+  });
+
+  harness.registeredShortcuts[0].callback();
+
+  assert.deepEqual(harness.raisedWindows, []);
+  assert.equal(harness.workspace.activeWindow, null);
 });
