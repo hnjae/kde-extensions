@@ -15,6 +15,7 @@
             root = sourceRoot;
             fileset = lib.fileset.unions [
               ../../.biome.json
+              ../../README.md
               ../../package-lock.json
               ../../package.json
               ../../scripts
@@ -53,7 +54,7 @@
           };
 
           meta = {
-            description = "A KWin script scaffold for run-or-raise global shortcuts";
+            description = "A KWin script for run-or-raise global shortcuts";
             homepage = "https://github.com/hnjae/kde-plasma-extensions";
             license = lib.licenses.agpl3Plus;
             platforms = lib.platforms.linux;

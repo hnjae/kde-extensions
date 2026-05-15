@@ -52,6 +52,28 @@ try {
       "main.js",
     ),
   );
+  await access(
+    path.join(
+      dataHome,
+      "kwin",
+      "scripts",
+      pluginId,
+      "contents",
+      "config",
+      "main.xml",
+    ),
+  );
+  await access(
+    path.join(
+      dataHome,
+      "kwin",
+      "scripts",
+      pluginId,
+      "contents",
+      "ui",
+      "config.ui",
+    ),
+  );
 } finally {
   await rm(tempDir, { force: true, recursive: true });
 }
