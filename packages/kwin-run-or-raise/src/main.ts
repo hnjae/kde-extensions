@@ -3,6 +3,8 @@
 
 (() => {
   const bindingCount = 16;
+  const mruWindows: KWinWindow[] = [];
+  const cycleStates: Record<string, CycleState | undefined> = {};
 
   type Binding = {
     actionName: string;
@@ -11,6 +13,11 @@
     normalizedDesktopEntryId: string;
     shortcut: string;
     slotName: string;
+  };
+
+  type CycleState = {
+    candidates: KWinWindow[];
+    index: number;
   };
 
   function readBooleanConfig(key: string): boolean {
@@ -138,6 +145,79 @@
     );
   }
 
+  function removeFromMru(window: KWinWindow): void {
+    const index = mruWindows.indexOf(window);
+
+    if (index >= 0) {
+      mruWindows.splice(index, 1);
+    }
+  }
+
+  function rememberWindow(window: KWinWindow | null): void {
+    if (window === null) {
+      return;
+    }
+
+    removeFromMru(window);
+    mruWindows.unshift(window);
+
+    if (mruWindows.length > 100) {
+      mruWindows.pop();
+    }
+  }
+
+  function forgetWindow(window: KWinWindow): void {
+    removeFromMru(window);
+
+    for (const actionName in cycleStates) {
+      const state = cycleStates[actionName];
+
+      if (state !== undefined && state.candidates.indexOf(window) >= 0) {
+        cycleStates[actionName] = undefined;
+      }
+    }
+  }
+
+  function containsWindow(windows: KWinWindow[], window: KWinWindow): boolean {
+    return windows.indexOf(window) >= 0;
+  }
+
+  function orderedByMru(candidates: KWinWindow[]): KWinWindow[] {
+    const orderedWindows: KWinWindow[] = [];
+    const activeWindow = workspace.activeWindow;
+
+    if (activeWindow !== null && containsWindow(candidates, activeWindow)) {
+      orderedWindows.push(activeWindow);
+    }
+
+    for (const window of mruWindows) {
+      if (
+        containsWindow(candidates, window) &&
+        !containsWindow(orderedWindows, window)
+      ) {
+        orderedWindows.push(window);
+      }
+    }
+
+    for (const window of candidates) {
+      if (!containsWindow(orderedWindows, window)) {
+        orderedWindows.push(window);
+      }
+    }
+
+    return orderedWindows;
+  }
+
+  function sameWindowSet(
+    leftWindows: KWinWindow[],
+    rightWindows: KWinWindow[],
+  ): boolean {
+    return (
+      leftWindows.length === rightWindows.length &&
+      leftWindows.every((window) => containsWindow(rightWindows, window))
+    );
+  }
+
   function stackingRank(window: KWinWindow, fallbackRank: number): number {
     const stackingOrder = workspace.stackingOrder;
 
@@ -167,6 +247,59 @@
     return selectedWindow;
   }
 
+  function activateWindow(window: KWinWindow): void {
+    if (window.minimized === true) {
+      window.minimized = false;
+    }
+
+    workspace.raiseWindow(window);
+    workspace.activeWindow = window;
+    rememberWindow(window);
+  }
+
+  function cycleFocusedWindow(
+    binding: Binding,
+    candidates: KWinWindow[],
+  ): boolean {
+    const activeWindow = workspace.activeWindow;
+
+    if (activeWindow === null || !containsWindow(candidates, activeWindow)) {
+      return false;
+    }
+
+    if (candidates.length <= 1) {
+      cycleStates[binding.actionName] = undefined;
+      return true;
+    }
+
+    const existingState = cycleStates[binding.actionName];
+    const orderedWindows =
+      existingState !== undefined &&
+      sameWindowSet(existingState.candidates, candidates)
+        ? existingState.candidates
+        : orderedByMru(candidates);
+    const activeIndex =
+      existingState !== undefined &&
+      orderedWindows[existingState.index] === activeWindow
+        ? existingState.index
+        : orderedWindows.indexOf(activeWindow);
+    const nextIndex = (activeIndex + 1) % orderedWindows.length;
+    const nextWindow = orderedWindows[nextIndex];
+
+    cycleStates[binding.actionName] = {
+      candidates: orderedWindows,
+      index: nextIndex,
+    };
+
+    activateWindow(nextWindow);
+
+    return true;
+  }
+
+  function mostRecentlyUsedWindow(windows: KWinWindow[]): KWinWindow {
+    return orderedByMru(windows)[0];
+  }
+
   function readBinding(slot: number): Binding | null {
     const name = slotName(slot);
 
@@ -194,16 +327,42 @@
   }
 
   function handleBinding(binding: Binding): void {
-    const visibleWindow = frontmostWindow(
-      matchingWindows(binding).filter((window) => window.minimized !== true),
-    );
+    const candidates = matchingWindows(binding);
 
-    if (visibleWindow === null) {
+    if (cycleFocusedWindow(binding, candidates)) {
       return;
     }
 
-    workspace.raiseWindow(visibleWindow);
-    workspace.activeWindow = visibleWindow;
+    cycleStates[binding.actionName] = undefined;
+
+    const visibleWindow = frontmostWindow(
+      candidates.filter((window) => window.minimized !== true),
+    );
+
+    if (visibleWindow !== null) {
+      activateWindow(visibleWindow);
+      return;
+    }
+
+    const minimizedWindows = candidates.filter(
+      (window) => window.minimized === true,
+    );
+
+    if (minimizedWindows.length > 0) {
+      activateWindow(mostRecentlyUsedWindow(minimizedWindows));
+    }
+  }
+
+  if (workspace.windowActivated !== undefined) {
+    workspace.windowActivated.connect((window) => {
+      rememberWindow(window);
+    });
+  }
+
+  if (workspace.windowRemoved !== undefined) {
+    workspace.windowRemoved.connect((window) => {
+      forgetWindow(window);
+    });
   }
 
   const usedShortcuts: Record<string, string> = {};

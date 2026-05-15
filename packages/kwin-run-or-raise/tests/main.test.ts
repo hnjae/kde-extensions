@@ -42,6 +42,7 @@ type ScriptOptions = {
 };
 
 type ScriptHarness = {
+  notifyActivated: (window: TestWindow | null) => void;
   prints: string[];
   registeredShortcuts: RegisteredShortcut[];
   raisedWindows: TestWindow[];
@@ -75,6 +76,7 @@ async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
   const config = options.config ?? {};
   const windows = options.windows ?? [];
   const currentDesktop = options.currentDesktop ?? { id: "desktop-1" };
+  const activationCallbacks: Array<(window: TestWindow | null) => void> = [];
   const registeredShortcuts: RegisteredShortcut[] = [];
   const prints: string[] = [];
   const raisedWindows: TestWindow[] = [];
@@ -88,6 +90,11 @@ async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
     },
     windowList(): TestWindow[] {
       return windows;
+    },
+    windowActivated: {
+      connect(callback: (window: TestWindow | null) => void): void {
+        activationCallbacks.push(callback);
+      },
     },
   };
 
@@ -111,7 +118,17 @@ async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
     workspace,
   });
 
-  return { prints, registeredShortcuts, raisedWindows, workspace };
+  return {
+    notifyActivated(window: TestWindow | null): void {
+      for (const callback of activationCallbacks) {
+        callback(window);
+      }
+    },
+    prints,
+    registeredShortcuts,
+    raisedWindows,
+    workspace,
+  };
 }
 
 test("registers enabled bindings with desktop entry ids", async () => {
@@ -223,4 +240,72 @@ test("ignores non user-facing matching windows", async () => {
 
   assert.deepEqual(harness.raisedWindows, []);
   assert.equal(harness.workspace.activeWindow, null);
+});
+
+test("restores and focuses the most recently used minimized match", async () => {
+  const olderWindow = appWindow({ minimized: true });
+  const newerWindow = appWindow({ minimized: true });
+  const harness = await runScript({
+    config: {
+      Binding01DesktopEntryId: "firefox",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+    },
+    windows: [olderWindow, newerWindow],
+  });
+
+  harness.notifyActivated(olderWindow);
+  harness.notifyActivated(newerWindow);
+  harness.registeredShortcuts[0].callback();
+
+  assert.deepEqual(harness.raisedWindows, [newerWindow]);
+  assert.equal(newerWindow.minimized, false);
+  assert.equal(harness.workspace.activeWindow, newerWindow);
+});
+
+test("cycles active matching windows with a stable snapshot", async () => {
+  const firstWindow = appWindow();
+  const secondWindow = appWindow();
+  const thirdWindow = appWindow();
+  const harness = await runScript({
+    activeWindow: firstWindow,
+    config: {
+      Binding01DesktopEntryId: "firefox",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+    },
+    windows: [firstWindow, secondWindow, thirdWindow],
+  });
+
+  harness.notifyActivated(thirdWindow);
+  harness.notifyActivated(secondWindow);
+  harness.notifyActivated(firstWindow);
+  harness.registeredShortcuts[0].callback();
+  harness.registeredShortcuts[0].callback();
+  harness.registeredShortcuts[0].callback();
+
+  assert.deepEqual(harness.raisedWindows, [
+    secondWindow,
+    thirdWindow,
+    firstWindow,
+  ]);
+  assert.equal(harness.workspace.activeWindow, firstWindow);
+});
+
+test("does nothing when the active matching window is the only candidate", async () => {
+  const onlyWindow = appWindow();
+  const harness = await runScript({
+    activeWindow: onlyWindow,
+    config: {
+      Binding01DesktopEntryId: "firefox",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+    },
+    windows: [onlyWindow],
+  });
+
+  harness.registeredShortcuts[0].callback();
+
+  assert.deepEqual(harness.raisedWindows, []);
+  assert.equal(harness.workspace.activeWindow, onlyWindow);
 });
