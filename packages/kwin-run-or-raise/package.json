@@ -1,0 +1,20 @@
+{
+  "name": "kwin-run-or-raise",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "build": "tsc --project tsconfig.json && node scripts/build-package.mjs",
+    "check": "npm run typecheck && npm run lint && npm run build && npm test && npm run check:kpackage",
+    "check:kpackage": "npm run build && node scripts/check-kpackage.mjs",
+    "clean": "rm -rf build build-tests dist",
+    "lint": "biome ci .biome.json package-lock.json package.json scripts src tests tsconfig.json",
+    "test": "npm run build && tsc --project tests/tsconfig.json && node --test build-tests/*.test.js",
+    "typecheck": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project tests/tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
