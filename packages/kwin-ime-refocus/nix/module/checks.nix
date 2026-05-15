@@ -18,6 +18,7 @@
           src = package.source;
 
           nativeBuildInputs = [
+            pkgs.biome
             pkgs.kdePackages.kpackage
             pkgs.kdePackages.kwin
           ];

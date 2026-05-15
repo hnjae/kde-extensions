@@ -7,6 +7,7 @@
       {
         devShells.kwin-ime-refocus = pkgs.mkShellNoCC {
           packages = config.plasmaExtensions.devShell.commonPackages ++ [
+            pkgs.biome
             pkgs.kdePackages.kpackage
             pkgs.kdePackages.kwin
             pkgs.nodejs

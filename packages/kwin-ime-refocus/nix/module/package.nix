@@ -14,6 +14,7 @@
           source = lib.fileset.toSource {
             root = sourceRoot;
             fileset = lib.fileset.unions [
+              ../../.biome.json
               ../../package-lock.json
               ../../package.json
               ../../scripts
