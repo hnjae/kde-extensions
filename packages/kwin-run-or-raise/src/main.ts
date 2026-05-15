@@ -300,6 +300,34 @@
     return orderedByMru(windows)[0];
   }
 
+  function describeError(error: unknown): string {
+    if (typeof error === "object" && error !== null && "message" in error) {
+      return String((error as { message: unknown }).message);
+    }
+
+    return String(error);
+  }
+
+  function launchBinding(binding: Binding): void {
+    try {
+      callDBus(
+        "org.kde.klauncher",
+        "/KLauncher",
+        "org.kde.KLauncher",
+        "start_service_by_desktop_name",
+        binding.desktopEntryId,
+        [],
+        [],
+        "",
+        false,
+      );
+    } catch (error) {
+      print(
+        `Run or Raise: failed to launch ${binding.desktopEntryId}: ${describeError(error)}`,
+      );
+    }
+  }
+
   function readBinding(slot: number): Binding | null {
     const name = slotName(slot);
 
@@ -350,7 +378,10 @@
 
     if (minimizedWindows.length > 0) {
       activateWindow(mostRecentlyUsedWindow(minimizedWindows));
+      return;
     }
+
+    launchBinding(binding);
   }
 
   if (workspace.windowActivated !== undefined) {

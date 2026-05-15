@@ -37,11 +37,13 @@ type ScriptOptions = {
   config?: Record<string, unknown>;
   currentActivity?: string;
   currentDesktop?: TestDesktop;
+  dbusError?: unknown;
   stackingOrder?: TestWindow[];
   windows?: TestWindow[];
 };
 
 type ScriptHarness = {
+  dbusCalls: unknown[][];
   notifyActivated: (window: TestWindow | null) => void;
   prints: string[];
   registeredShortcuts: RegisteredShortcut[];
@@ -77,6 +79,7 @@ async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
   const windows = options.windows ?? [];
   const currentDesktop = options.currentDesktop ?? { id: "desktop-1" };
   const activationCallbacks: Array<(window: TestWindow | null) => void> = [];
+  const dbusCalls: unknown[][] = [];
   const registeredShortcuts: RegisteredShortcut[] = [];
   const prints: string[] = [];
   const raisedWindows: TestWindow[] = [];
@@ -99,6 +102,17 @@ async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
   };
 
   vm.runInNewContext(script, {
+    callDBus(...args: unknown[]): void {
+      if (options.dbusError !== undefined) {
+        throw options.dbusError;
+      }
+
+      dbusCalls.push(
+        args.map((argument) =>
+          Array.isArray(argument) ? [...argument] : argument,
+        ),
+      );
+    },
     print(message: string): void {
       prints.push(message);
     },
@@ -119,6 +133,7 @@ async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
   });
 
   return {
+    dbusCalls,
     notifyActivated(window: TestWindow | null): void {
       for (const callback of activationCallbacks) {
         callback(window);
@@ -219,6 +234,19 @@ test("ignores matching windows outside the current desktop and activity", async 
 
   harness.registeredShortcuts[0].callback();
 
+  assert.deepEqual(harness.dbusCalls, [
+    [
+      "org.kde.klauncher",
+      "/KLauncher",
+      "org.kde.KLauncher",
+      "start_service_by_desktop_name",
+      "firefox",
+      [],
+      [],
+      "",
+      false,
+    ],
+  ]);
   assert.deepEqual(harness.raisedWindows, []);
   assert.equal(harness.workspace.activeWindow, null);
 });
@@ -238,6 +266,19 @@ test("ignores non user-facing matching windows", async () => {
 
   harness.registeredShortcuts[0].callback();
 
+  assert.deepEqual(harness.dbusCalls, [
+    [
+      "org.kde.klauncher",
+      "/KLauncher",
+      "org.kde.KLauncher",
+      "start_service_by_desktop_name",
+      "firefox",
+      [],
+      [],
+      "",
+      false,
+    ],
+  ]);
   assert.deepEqual(harness.raisedWindows, []);
   assert.equal(harness.workspace.activeWindow, null);
 });
@@ -308,4 +349,49 @@ test("does nothing when the active matching window is the only candidate", async
 
   assert.deepEqual(harness.raisedWindows, []);
   assert.equal(harness.workspace.activeWindow, onlyWindow);
+});
+
+test("launches through klauncher when no matching window exists", async () => {
+  const harness = await runScript({
+    config: {
+      Binding01DesktopEntryId: "firefox.desktop",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+    },
+  });
+
+  harness.registeredShortcuts[0].callback();
+
+  assert.deepEqual(harness.dbusCalls, [
+    [
+      "org.kde.klauncher",
+      "/KLauncher",
+      "org.kde.KLauncher",
+      "start_service_by_desktop_name",
+      "firefox.desktop",
+      [],
+      [],
+      "",
+      false,
+    ],
+  ]);
+  assert.deepEqual(harness.raisedWindows, []);
+});
+
+test("prints DBus launch failures without throwing", async () => {
+  const harness = await runScript({
+    config: {
+      Binding01DesktopEntryId: "firefox.desktop",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+    },
+    dbusError: new Error("service unavailable"),
+  });
+
+  assert.doesNotThrow(() => {
+    harness.registeredShortcuts[0].callback();
+  });
+  assert.deepEqual(harness.prints, [
+    "Run or Raise: failed to launch firefox.desktop: service unavailable",
+  ]);
 });
