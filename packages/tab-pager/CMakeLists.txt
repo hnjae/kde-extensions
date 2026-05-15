@@ -7,7 +7,7 @@ project(tab-pager VERSION 0.1.0 LANGUAGES C CXX)
 
 set(QML_MODULE_URI "io.github.hnjae.plasma.tabpager")
 set(QML_MODULE_DIR "io/github/hnjae/plasma/tabpager")
-set(PLASMOID_ID "io.github.hnjae.plasma.tabpager")
+set(PLASMOID_ID "io.github.hnjae.tab-pager")
 
 find_package(ECM 6.0 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})

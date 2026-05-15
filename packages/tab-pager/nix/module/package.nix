@@ -7,7 +7,7 @@
       packages.tab-pager =
         let
           clangToolchain = pkgs.llvmPackages.clang;
-          pluginId = "io.github.hnjae.plasma.tabpager";
+          pluginId = "io.github.hnjae.tab-pager";
           version = "0.1.0";
 
           sourceRoot = ../../.;
