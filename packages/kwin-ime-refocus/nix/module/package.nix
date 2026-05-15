@@ -53,7 +53,7 @@
           };
 
           meta = {
-            description = "A KWin script scaffold for refocusing windows after IME interactions";
+            description = "A KWin script for manually refocusing windows to recover IME input";
             homepage = "https://github.com/hnjae/kde-plasma-extensions";
             license = lib.licenses.agpl3Plus;
             platforms = lib.platforms.linux;

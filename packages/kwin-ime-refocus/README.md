@@ -7,3 +7,11 @@ Its purpose is to provide a manual workaround for cases where IME input stops wo
 When the user triggers the configured shortcut, the script remembers the currently active window, briefly clears focus, and then restores focus to the original window. This lets the user try to recover IME input immediately without manually switching away from the current window and back again.
 
 This program does not permanently fix the underlying KDE Plasma or Wayland text input issue. It only provides an on-demand recovery action until the upstream issue is fixed.
+
+## Usage
+
+Install and enable the KWin script in KDE Plasma. Then open System Settings, go to Shortcuts, find the `IME Refocus` action, and assign the recovery shortcut you want to use.
+
+The action is intentionally unbound by default. If no shortcut is configured, keyboard input will not trigger recovery.
+
+Recovery only targets the window that was active when the shortcut was pressed. It does not switch virtual desktops, choose a fallback window, send text input, or change IME, keyboard layout, application, or window geometry settings.

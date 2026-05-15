@@ -22,7 +22,8 @@ const metadata = {
       },
     ],
     Category: "Window Management",
-    Description: "Scaffold KWin script package for IME refocus behavior.",
+    Description:
+      "Manually refocuses the active window to help recover IME input.",
     Icon: "preferences-system-windows",
     Id: "io.github.hnjae.kwin-ime-refocus",
     License: "AGPL-3.0-or-later",
