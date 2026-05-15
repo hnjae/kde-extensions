@@ -24,7 +24,7 @@ const metadata = {
     Category: "Window Management",
     Description: "Scaffold KWin script package for IME refocus behavior.",
     Icon: "preferences-system-windows",
-    Id: "io.github.hnjae.kwin.ime-refocus",
+    Id: "io.github.hnjae.kwin-ime-refocus",
     License: "AGPL-3.0-or-later",
     Name: "IME Refocus",
     Version: "0.1.0",

@@ -17,7 +17,7 @@ test("build output has KWin script package structure", async () => {
   assert.equal(metadata["X-Plasma-MainScript"], "code/main.js");
 
   const plugin = metadata.KPlugin as Record<string, unknown>;
-  assert.equal(plugin.Id, "io.github.hnjae.kwin.ime-refocus");
+  assert.equal(plugin.Id, "io.github.hnjae.kwin-ime-refocus");
   assert.equal(plugin.Version, "0.1.0");
   assert.equal(plugin.License, "AGPL-3.0-or-later");
 });

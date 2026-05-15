@@ -7,7 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const pluginId = "io.github.hnjae.kwin.ime-refocus";
+const pluginId = "io.github.hnjae.kwin-ime-refocus";
 const packageDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",

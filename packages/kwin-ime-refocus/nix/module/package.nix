@@ -6,7 +6,7 @@
     {
       packages.kwin-ime-refocus =
         let
-          pluginId = "io.github.hnjae.kwin.ime-refocus";
+          pluginId = "io.github.hnjae.kwin-ime-refocus";
           version = "0.1.0";
           npmDepsHash = "sha256-m6GN5TrsVLSiGkcn8gjHTofaH3ApVMTUjVLSDZAaWE0=";
 
