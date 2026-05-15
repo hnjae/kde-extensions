@@ -3,8 +3,8 @@
 KWin Run or Raise lets the user assign global shortcuts to applications.
 
 When the user presses a configured shortcut, KWin Run or Raise brings the
-matching application to the front, cycles to another matching window, or asks KDE
-to launch the application.
+matching application to the front, cycles to another matching window, or
+launches the application through KDE's application launcher.
 
 ## Example
 
@@ -23,7 +23,7 @@ When `Meta+W` is pressed:
    current Activity, the most recently used Firefox window is restored, raised,
    and focused.
 5. If no Firefox window exists in the current virtual desktop and current
-   Activity, KDE is asked to launch Firefox.
+   Activity, Firefox is launched through KDE's application launcher.
 6. Firefox windows on other virtual desktops or other Activities are ignored.
 
 ## Bindings
@@ -36,7 +36,7 @@ The same application may have more than one binding.
 
 Different applications may use different shortcuts.
 
-Pressing a binding never asks KDE to launch the application when a matching
+Pressing a binding never launches the application through KDE when a matching
 window is already present in the current virtual desktop and current Activity.
 
 ## Matching Windows
@@ -55,6 +55,10 @@ desktop.
 
 A window shown on all Activities is considered to be in the current Activity.
 
+In this specification, a visible window is a non-minimized window that KWin
+treats as present in the current virtual desktop and current Activity. A visible
+window may still be covered by other windows on the screen.
+
 When focused-window cycling does not apply, if several visible matching windows
 exist in the current virtual desktop and current Activity, the frontmost matching
 window is chosen.
@@ -65,9 +69,13 @@ and current Activity, the most recently used matching window is chosen.
 
 ## Cycling Focused Windows
 
-When the focused window already belongs to the application assigned to the
+When the focused window is a matching window for the application assigned to the
 pressed shortcut, the shortcut cycles through matching windows in the current
 virtual desktop and current Activity.
+
+If the focused window belongs to the application but is ignored by the matching
+rules, focused-window cycling does not apply; the shortcut continues with the
+normal matching rules for non-ignored windows instead.
 
 Cycling candidates include both visible and minimized matching windows.
 
@@ -98,13 +106,12 @@ No window is moved from another Activity to the current Activity.
 ## Launching An Application
 
 When no matching window is found in the current virtual desktop and current
-Activity, KDE is asked to launch the assigned application in the same way it
-would be launched from KDE's application launcher.
+Activity, KDE handles it the same way it handles launching the assigned
+application from KDE's application launcher.
 
-This launch request does not guarantee that a new window will appear. A
-single-instance application may reuse an existing process or window, and the
-application or the user's KDE settings may choose where the resulting window
-appears.
+This does not guarantee that a new window will appear. A single-instance
+application may reuse an existing process or window, and the application or the
+user's KDE settings may choose where the resulting window appears.
 
 ## Out Of Scope
 
