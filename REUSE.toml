@@ -19,6 +19,8 @@ path = [
   "**/flake.lock",
   "**/justfile",
   "**/metadata.json",
+  "**/package-lock.json",
+  "**/package.json",
   "**/statix.toml",
   "**/tsconfig.json",
   "cog.toml",

@@ -13,3 +13,6 @@ result-*
 # Local development builds:
 /packages/*/.*-install/
 /packages/*/build/
+/packages/*/build-tests/
+/packages/*/dist/
+/packages/*/node_modules/

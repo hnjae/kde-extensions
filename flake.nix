@@ -23,6 +23,7 @@
 
         ./nix/modules/devshell.nix
         ./nix/modules/treefmt.nix
+        ./packages/kwin-ime-refocus/flake-module.nix
         ./packages/tab-pager/flake-module.nix
       ];
 
