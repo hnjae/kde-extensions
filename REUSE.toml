@@ -6,6 +6,7 @@ path = [
   "**/.biome.json",
   "**/.clang-tidy",
   "**/.editorconfig",
+  "**/.envrc",
   "**/.gitignore",
   "**/.gitlint",
   "**/.rumdl.toml",
