@@ -28,6 +28,11 @@
 
           installPhase = ''
             runHook preInstall
+
+            packageRoot="${package}/share/kwin/scripts/${package.pluginId}"
+            test -f "$packageRoot/metadata.json"
+            test -f "$packageRoot/contents/code/main.js"
+
             touch "$out"
             runHook postInstall
           '';
