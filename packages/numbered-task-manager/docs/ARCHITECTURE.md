@@ -9,11 +9,14 @@ in `SPEC.md`.
   discovery or activation from scratch.
 - Use the Plasma Workspace `org.kde.taskmanager` QML module for task data and
   task actions.
-- Use KDE's task manager private backend only where it is needed for normal task
-  manager behavior such as launcher context actions, drag handling, and opening
-  files with a task.
-- Treat private KDE QML APIs as the main maintenance risk and keep the copied or
-  adapted surface as small as practical.
+- Keep the implementation on public QML APIs where possible. Context menu
+  actions should call `TasksModel.request*` methods directly.
+- Implement drag reordering with a widget-owned task MIME type and the public
+  `TasksModel.move()` API for launcher-backed rows. Keep manually reordered
+  unpinned windows in widget state.
+- Do not claim support for upstream task-manager private backend behavior, such
+  as file-open drops onto task delegates, unless that backend integration is
+  actually added.
 
 ## Model Policy
 
