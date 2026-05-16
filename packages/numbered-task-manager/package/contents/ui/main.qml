@@ -7,11 +7,11 @@ import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
 import org.kde.taskmanager as TaskManager
 import org.kde.plasma.plasmoid
+import "TaskHelpers.js" as TaskHelpers
 
 PlasmoidItem {
     id: root
 
-    readonly property string nullActivityId: "00000000-0000-0000-0000-000000000000"
     readonly property string taskDragMimeType: "application/x-numbered-task-manager-row"
     property var normalTaskEntries: []
     property var normalTaskEntryMap: ({})
@@ -45,39 +45,32 @@ PlasmoidItem {
             return;
         }
 
-        tasksModel.requestActivate(normalTaskEntries[targetIndex].modelIndex);
+        const targetTask = normalTaskEntries[targetIndex];
+        if (!targetTask || !hasValidModelIndex(targetTask.modelIndex)) {
+            return;
+        }
+
+        tasksModel.requestActivate(targetTask.modelIndex);
     }
 
     function activateTaskEntry(task) {
-        if (!task || task.sourceIndex === undefined || task.sourceIndex < 0) {
+        if (!task || task.sourceIndex === undefined || task.sourceIndex < 0 || !hasValidModelIndex(task.modelIndex)) {
             return;
         }
 
         tasksModel.requestActivate(task.modelIndex);
     }
 
-    function normalizedLauncherList(value) {
-        if (!value) {
-            return [];
-        }
+    function hasValidModelIndex(modelIndex) {
+        return Boolean(modelIndex) && (modelIndex.valid === undefined || modelIndex.valid);
+    }
 
-        return Array.from(value).filter(launcher => launcher && launcher.length > 0);
+    function normalizedLauncherList(value) {
+        return TaskHelpers.normalizedLauncherList(value);
     }
 
     function launcherListsEqual(left, right) {
-        const leftList = normalizedLauncherList(left);
-        const rightList = normalizedLauncherList(right);
-        if (leftList.length !== rightList.length) {
-            return false;
-        }
-
-        for (let i = 0; i < leftList.length; ++i) {
-            if (leftList[i] !== rightList[i]) {
-                return false;
-            }
-        }
-
-        return true;
+        return TaskHelpers.launcherListsEqual(left, right);
     }
 
     function persistLaunchers(launchers) {
@@ -181,34 +174,7 @@ PlasmoidItem {
     }
 
     function stringListContains(list, value) {
-        const needle = String(value);
-        const values = Array.from(list || []);
-        for (let i = 0; i < values.length; ++i) {
-            if (String(values[i]) === needle) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    function serializedLauncherActivities(serializedLauncher) {
-        const launcher = String(serializedLauncher || "");
-        if (!launcher.startsWith("[")) {
-            return [];
-        }
-
-        const separator = launcher.indexOf("]\n");
-        if (separator === -1) {
-            return [];
-        }
-
-        const activityText = launcher.slice(1, separator);
-        if (!activityText) {
-            return [];
-        }
-
-        return activityText.split(",").filter(activityId => activityId.length > 0);
+        return TaskHelpers.stringListContains(list, value);
     }
 
     function serializedLauncherVisibleInCurrentActivity(serializedLauncher, launcherRevisionToken) {
@@ -221,17 +187,7 @@ PlasmoidItem {
             return false;
         }
 
-        const currentActivity = String(activityInfo.currentActivity || "");
-        if (!currentActivity) {
-            return true;
-        }
-
-        const launcherActivities = serializedLauncherActivities(serializedLauncher);
-        if (launcherActivities.length === 0 || stringListContains(launcherActivities, nullActivityId)) {
-            return true;
-        }
-
-        return stringListContains(launcherActivities, currentActivity);
+        return TaskHelpers.serializedLauncherVisibleInActivity(serializedLauncher, activityInfo.currentActivity);
     }
 
     function visibleLauncherPosition(launcherUrl, launcherRevisionToken) {
@@ -325,23 +281,7 @@ PlasmoidItem {
     }
 
     function isInCurrentActivity(activities) {
-        const currentActivity = String(activityInfo.currentActivity || "");
-        if (!currentActivity) {
-            return true;
-        }
-
-        const activityList = Array.from(activities || []);
-        if (activityList.length === 0) {
-            return true;
-        }
-
-        for (let i = 0; i < activityList.length; ++i) {
-            if (String(activityList[i]) === currentActivity) {
-                return true;
-            }
-        }
-
-        return false;
+        return TaskHelpers.isInCurrentActivity(activities, activityInfo.currentActivity);
     }
 
     function qualifiesNormalTask(isWindow, isLauncher, isStartup, desktops, isOnAllDesktops, activities) {
@@ -425,22 +365,56 @@ PlasmoidItem {
         return "row:" + row.toString() + ":" + launcherUrl + ":" + title;
     }
 
-    function publishRemoteAttention(previousKey, key, qualifies, task) {
+    function publishRemoteAttention(previousKey, key, qualifies, task, becameQualified) {
+        let entries = Object.assign({}, remoteAttentionEntryMap);
+        let order = Array.from(remoteAttentionOrder || []);
+
         if (previousKey && previousKey !== key) {
-            removeRemoteAttention(previousKey);
+            if (entries[previousKey]) {
+                delete entries[previousKey];
+                if (qualifies) {
+                    entries[key] = task;
+                    const nextOrder = [];
+                    let inserted = false;
+                    for (let i = 0; i < order.length; ++i) {
+                        const existingKey = order[i];
+                        if (existingKey === previousKey) {
+                            nextOrder.push(key);
+                            inserted = true;
+                        } else if (existingKey !== key) {
+                            nextOrder.push(existingKey);
+                        }
+                    }
+                    if (!inserted) {
+                        nextOrder.push(key);
+                    }
+                    order = nextOrder;
+                } else {
+                    order = order.filter(existingKey => existingKey !== previousKey);
+                }
+            }
         }
 
         if (!qualifies) {
-            removeRemoteAttention(key);
+            if (entries[key]) {
+                delete entries[key];
+            }
+            remoteAttentionEntryMap = entries;
+            remoteAttentionOrder = order.filter(existingKey => existingKey !== key);
+            recomputeRemoteAttention();
             return "";
         }
 
-        const entries = Object.assign({}, remoteAttentionEntryMap);
         if (!entries[key]) {
-            remoteAttentionOrder = remoteAttentionOrder.filter(existingKey => existingKey !== key).concat([key]);
+            order = order.filter(existingKey => existingKey !== key).concat([key]);
         }
         entries[key] = task;
+        if (becameQualified) {
+            order = order.filter(existingKey => existingKey !== key).concat([key]);
+        }
+
         remoteAttentionEntryMap = entries;
+        remoteAttentionOrder = order;
         recomputeRemoteAttention();
         return key;
     }
@@ -474,7 +448,7 @@ PlasmoidItem {
     }
 
     function activateRemoteAttention() {
-        if (!remoteAttentionTarget) {
+        if (!remoteAttentionTarget || !hasValidModelIndex(remoteAttentionTarget.modelIndex)) {
             return;
         }
 
@@ -573,7 +547,7 @@ PlasmoidItem {
                     isWindow: model.IsWindow || false,
                     launcherBacked,
                     launcherUrl,
-                    modelIndex: tasksModel.makeModelIndex(index),
+                    modelIndex: tasksModel.makePersistentModelIndex(index),
                     sourceIndex: index,
                     title,
                     virtualDesktops: Array.from(model.VirtualDesktops || [])
@@ -616,13 +590,15 @@ PlasmoidItem {
             required property int index
 
             property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
+            property bool hasSyncedAttention: false
             property string publishedKey: ""
+            property bool previousQualifies: false
             property string taskKey: root.remoteAttentionKey(model.WinIdList || [], launcherUrl, title, index)
             property string title: model.display || model.AppName || ""
             property var taskInfo: ({
                     iconSource: model.decoration || "dialog-warning",
                     index,
-                    modelIndex: attentionTasksModel.makeModelIndex(index),
+                    modelIndex: attentionTasksModel.makePersistentModelIndex(index),
                     title
                 })
             property bool qualifies: model.IsWindow && model.IsDemandingAttention && root.isInCurrentActivity(model.Activities || []) && root.isRemoteVirtualDesktop(model.VirtualDesktops || [], model.IsOnAllVirtualDesktops || false)
@@ -632,7 +608,10 @@ PlasmoidItem {
             width: 0
 
             function syncAttention() {
-                publishedKey = root.publishRemoteAttention(publishedKey, taskKey, qualifies, taskInfo);
+                const becameQualified = hasSyncedAttention && !previousQualifies && qualifies;
+                publishedKey = root.publishRemoteAttention(publishedKey, taskKey, qualifies, taskInfo, becameQualified);
+                previousQualifies = qualifies;
+                hasSyncedAttention = true;
             }
 
             QtQuick.Component.onCompleted: syncAttention()
@@ -745,6 +724,7 @@ PlasmoidItem {
 
             onLauncherActivitiesChanged: {
                 root.launcherRevision += 1;
+                root.persistLaunchers(tasksModel.launcherList);
             }
         }
     }

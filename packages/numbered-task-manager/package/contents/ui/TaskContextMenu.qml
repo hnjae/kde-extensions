@@ -6,12 +6,13 @@ pragma ComponentBehavior: Bound
 import QtQuick as QtQuick
 import QtQuick.Controls as QtQuickControls
 import org.kde.taskmanager as TaskManager
+import "TaskHelpers.js" as TaskHelpers
 
 QtQuickControls.Menu {
     id: root
 
     readonly property string nullActivityId: "00000000-0000-0000-0000-000000000000"
-    readonly property bool hasTask: Boolean(taskModel && task.modelIndex)
+    readonly property bool hasTask: Boolean(taskModel) && hasValidModelIndex(task.modelIndex)
     readonly property bool hasWindowTask: hasTask && task.isWindow
     readonly property var desktopEntries: {
         const ids = Array.from(virtualDesktopInfo.desktopIds || []);
@@ -65,15 +66,11 @@ QtQuickControls.Menu {
     }
 
     function stringListContains(list, value) {
-        const needle = String(value);
-        const values = Array.from(list || []);
-        for (let i = 0; i < values.length; ++i) {
-            if (String(values[i]) === needle) {
-                return true;
-            }
-        }
+        return TaskHelpers.stringListContains(list, value);
+    }
 
-        return false;
+    function hasValidModelIndex(modelIndex) {
+        return Boolean(modelIndex) && (modelIndex.valid === undefined || modelIndex.valid);
     }
 
     function desktopId(desktop) {
@@ -105,7 +102,7 @@ QtQuickControls.Menu {
     }
 
     function taskOnAllActivities() {
-        return Array.from(task.activities || []).length === 0;
+        return TaskHelpers.activitiesAreAll(task.activities || []);
     }
 
     function taskOnActivity(activityId) {
@@ -118,7 +115,7 @@ QtQuickControls.Menu {
         }
 
         const activities = Array.from(task.activities || []).map(activity => String(activity));
-        if (activities.length === 0) {
+        if (TaskHelpers.activitiesAreAll(activities)) {
             taskModel.requestActivities(task.modelIndex, [activityId]);
             return;
         }
@@ -148,21 +145,46 @@ QtQuickControls.Menu {
         return launcherPinnedToAllActivities() || stringListContains(launcherActivityList, activityId);
     }
 
+    function launcherPosition() {
+        if (!taskModel || !task.launcherUrl) {
+            return -1;
+        }
+
+        return taskModel.launcherPosition(task.launcherUrl);
+    }
+
+    function applyLauncherActivities(activities) {
+        const position = launcherPosition();
+        const nextLaunchers = TaskHelpers.launcherListWithActivitiesAt(taskModel.launcherList, position, activities);
+        if (!nextLaunchers) {
+            return false;
+        }
+
+        launcherActivityList = TaskHelpers.effectiveSerializedLauncherActivities(nextLaunchers[position]);
+        if (TaskHelpers.launcherListsEqual(nextLaunchers, taskModel.launcherList)) {
+            return false;
+        }
+
+        taskModel.launcherList = nextLaunchers;
+        root.launcherActivitiesChanged();
+        return true;
+    }
+
     function setLauncherAllActivities() {
         if (!taskModel || !task.launcherUrl) {
             return;
         }
 
-        let changed = false;
         if (launcherPinnedToAllActivities()) {
-            changed = taskModel.requestRemoveLauncherFromActivity(task.launcherUrl, nullActivityId);
-        } else {
-            changed = taskModel.requestAddLauncherToActivity(task.launcherUrl, nullActivityId);
+            const currentActivity = String(activityInfo.currentActivity || "");
+            if (currentActivity) {
+                applyLauncherActivities([currentActivity]);
+            }
+            refreshLauncherActivities();
+            return;
         }
 
-        if (changed) {
-            root.launcherActivitiesChanged();
-        }
+        applyLauncherActivities([nullActivityId]);
         refreshLauncherActivities();
     }
 
@@ -171,18 +193,18 @@ QtQuickControls.Menu {
             return;
         }
 
-        let changed = false;
         if (launcherPinnedToAllActivities()) {
-            changed = taskModel.requestRemoveLauncherFromActivity(task.launcherUrl, nullActivityId);
-            changed = taskModel.requestAddLauncherToActivity(task.launcherUrl, activityId) || changed;
+            applyLauncherActivities([activityId]);
         } else if (stringListContains(launcherActivityList, activityId)) {
-            changed = taskModel.requestRemoveLauncherFromActivity(task.launcherUrl, activityId);
+            const nextActivities = Array.from(launcherActivityList || []).filter(activity => String(activity) !== String(activityId));
+            if (nextActivities.length === 0) {
+                const currentActivity = String(activityInfo.currentActivity || "");
+                applyLauncherActivities(currentActivity ? [currentActivity] : launcherActivityList);
+            } else {
+                applyLauncherActivities(nextActivities);
+            }
         } else {
-            changed = taskModel.requestAddLauncherToActivity(task.launcherUrl, activityId);
-        }
-
-        if (changed) {
-            root.launcherActivitiesChanged();
+            applyLauncherActivities(Array.from(launcherActivityList || []).concat([activityId]));
         }
         refreshLauncherActivities();
     }
@@ -219,7 +241,7 @@ QtQuickControls.Menu {
 
         enabled: root.taskModel && root.task.launcherUrl
         title: "Launcher Activities"
-        visible: root.task.hasAnyLauncher && root.task.launcherUrl && root.activityEntries.length > 1
+        visible: root.task.hasLauncher && root.task.launcherUrl && root.activityEntries.length > 1
 
         QtQuickControls.MenuItem {
             checkable: true

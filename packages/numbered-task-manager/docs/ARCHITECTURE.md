@@ -34,6 +34,12 @@ in `SPEC.md`.
 - Keep the normal visible model filtered to the current virtual desktop and the
   activity scope used by KDE's task manager, but do not filter it to the current
   screen.
+- Treat an empty activity list and KDE's null activity UUID as the same
+  all-activities state in launcher, normal task, and remote-attention filters.
+- Rewrite a launcher's serialized activity prefix in place when changing
+  launcher activity scope. Do not remove and re-add the launcher, because that
+  can disturb pinned order or delete the launcher when the resulting activity
+  set would otherwise be empty.
 - Number only rows 0 through 8 in the visible model; these correspond to
   user-facing slots 1 through 9.
 - Keep demanding-attention tasks from other virtual desktops out of the normal
@@ -62,8 +68,12 @@ in `SPEC.md`.
 - Do not render a `0` badge on the far-right item. Number badges are only for
   slots 1 through 9.
 - When multiple remote attention tasks exist, target the window that most
-  recently entered the demanding-attention state and display the number of
-  pending remote attention tasks.
+  recently entered the demanding-attention state observed by this widget and
+  display the number of pending remote attention tasks.
+- KDE's task model does not expose historical attention-entry timestamps for
+  windows already demanding attention before the widget observes them. Those
+  startup entries therefore use task model publication order until a later
+  observed `false -> true` attention transition moves a task to the target end.
 
 ## Visual Policy
 
@@ -122,4 +132,5 @@ in `SPEC.md`.
   demanding-attention window when the remote-attention item is the final item in
   the visible item order.
 - Verify multiple remote attention tasks show a count and target the window that
-  most recently entered the demanding-attention state.
+  most recently entered the demanding-attention state after the widget observes
+  the transition.

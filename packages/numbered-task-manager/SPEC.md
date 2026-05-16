@@ -29,7 +29,8 @@ item order with `Meta+0`.
   text prefix before the icon and title instead.
 - The normal task list shows tasks from the current virtual desktop.
 - The widget is not limited to the current screen.
-- Activity filtering follows KDE's task manager behavior.
+- Activity filtering follows KDE's task manager behavior. Empty activity lists
+  and KDE's null activity UUID both mean "all activities".
 - Horizontal panels are the supported v1 target. Vertical panels may work, but
   they are best-effort in v1.
 
@@ -37,6 +38,8 @@ item order with `Meta+0`.
 
 - A new widget starts with no pinned applications.
 - Users can pin and unpin applications from the task context menu.
+- Launcher activity menu changes only affect where a pinned launcher appears.
+  They do not unpin or delete the launcher.
 - Pinned applications form a continuous pinned area at the start of the normal
   task list.
 - Users can reorder pinned applications by dragging them within the pinned area.
@@ -91,7 +94,9 @@ item order with `Meta+0`.
 - Activating the attention item switches to the task's virtual desktop and
   raises the window.
 - If multiple remote attention tasks exist, the attention item shows a count and
-  targets the window that most recently entered the demanding-attention state.
+  targets the window most recently observed entering the demanding-attention
+  state. Windows already demanding attention when the widget starts fall back to
+  task model order until a later attention transition is observed.
 - Remote attention is not limited to the current screen. Its activity scope
   follows KDE's task manager behavior.
 
