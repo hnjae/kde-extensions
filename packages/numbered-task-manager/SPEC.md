@@ -1,24 +1,57 @@
+# Numbered Task Manager Specification
 
-목적: 프로그램의 주된 목적은, task-manager 에 아이콘과 표기해서, Meta+1-9 로 정확히 특정 윈도우를 바로 선택할수 위함임.
+Numbered Task Manager is an icons-and-text Plasma task manager for users who
+select windows with `Meta+1` through `Meta+9`.
 
-이때 숫자는, 좌하단 (즉 아이콘에) 에 겹쳐서 표기했으면 좋겠음. KDE 가 Fixed width 로 설정한 폰트를 사용할 것. 만일 KDE 에서 overlay 식으로 숫자를 표기하는게 어렵거나, 시인성이 어렵다면
+## Goals
 
-```text
-[number][icon][title of window]
-```
+- Each visible slot from 1 through 9 has a stable number that matches the
+  corresponding `Meta+number` shortcut.
+- Pinned applications keep their positions, so the same shortcut keeps targeting
+  the same slot as windows open and close.
+- Each window is shown as its own task item. Windows are not grouped together.
 
-식으로 표기해도 좋음.
+## Task List Behavior
 
-디자인: icons-and-text task manager 와 유사
+- The widget looks and behaves like an icons-and-text task manager.
+- The first nine visible task slots are numbered `1` through `9`.
+- Tasks after slot 9 remain visible but are not numbered.
+- The default number style is a badge over the lower-left corner of the task
+  icon.
+- Number badges use KDE's configured fixed-width font.
+- If the task icon is too small for a readable badge, the number is shown as a
+  text prefix before the icon and title instead.
+- The widget shows tasks from the current virtual desktop, current screen, and
+  current activity.
+- Horizontal panels are the supported v1 target. Vertical panels may work, but
+  they are best-effort in v1.
 
-특징: `Meta+1-9` 키로 실행하는 애플리케이션이 변하는걸 원치 않음. Pin 된 아이콘은 항상 그 자리에 고정. (즉 icons-and text task manager 은 pin 된 아이콘을 실행하면, 그 자리에서 벗어나서 최우측에 새 윈도우를 만들지만, 그렇게 작동하지 않음.)
+## Pinned Applications
 
-```text
-[New tab - Brave][konsole icon][Foo - Dolphin]
-```
+- A new widget starts with no pinned applications.
+- Users can pin and unpin applications from the task context menu.
+- Users can reorder task slots by dragging them.
+- A pinned application appears as a launcher icon when it has no matching
+  window.
+- Activating a pinned launcher opens the application in that pinned slot instead
+  of creating a new task at the far right.
+- If a pinned application has multiple windows, one matching window occupies the
+  pinned slot and the extra windows appear after the pinned area.
+- When the window in a pinned slot closes, another window from the same
+  application refills that slot if one exists. Otherwise, the slot returns to the
+  pinned launcher.
 
-식으로 윈도우 사이에 아이콘이 pin 되어 고정되는 느낌임.
+## Activation Behavior
 
-----
+- `Meta+1` through `Meta+9` activate the task in the matching numbered slot.
+- Activating a launcher starts the application.
+- Activating a window raises that window.
+- The shortcut target is based on the visible task slot, not on the most
+  recently opened or most recently active application.
 
-특징 2: 윈도우를 겹치는걸 허용하지 않음.
+## Out Of Scope For v1
+
+- A settings UI.
+- Migration from KDE's existing task manager launcher list.
+- Grouped application tasks.
+- Exact feature parity with KDE's default task manager settings.
