@@ -119,7 +119,13 @@ PlasmoidItem {
             return moveManualTask(sourceEntry.entryKey, targetEntry.entryKey);
         }
 
-        if (tasksModel.move(sourceIndex, targetIndex)) {
+        const sourceMoveIndex = sourceEntry.moveIndex === undefined ? sourceEntry.sourceIndex : sourceEntry.moveIndex;
+        const targetMoveIndex = targetEntry.moveIndex === undefined ? targetEntry.sourceIndex : targetEntry.moveIndex;
+        if (sourceMoveIndex < 0 || targetMoveIndex < 0) {
+            return false;
+        }
+
+        if (tasksModel.move(sourceMoveIndex, targetMoveIndex)) {
             tasksModel.syncLaunchers();
             persistLaunchers(tasksModel.launcherList);
             return true;
@@ -160,7 +166,8 @@ PlasmoidItem {
     function normalTaskEntryForSourceIndex(sourceIndex) {
         const entries = normalTaskEntries || [];
         for (let i = 0; i < entries.length; ++i) {
-            if (entries[i].sourceIndex === sourceIndex) {
+            const entryIndex = entries[i].moveIndex === undefined ? entries[i].sourceIndex : entries[i].moveIndex;
+            if (entryIndex === sourceIndex) {
                 return entries[i];
             }
         }
@@ -220,15 +227,6 @@ PlasmoidItem {
         }
 
         return -1;
-    }
-
-    function isLauncherBackedRow(isLauncher, launcherUrl, sourceIndex, launcherRevisionToken) {
-        if (isLauncher) {
-            return true;
-        }
-
-        const position = visibleLauncherPosition(launcherUrl, launcherRevisionToken);
-        return position !== -1 && sourceIndex === position;
     }
 
     function desktopId(desktop) {
@@ -319,14 +317,91 @@ PlasmoidItem {
         recomputeNormalTaskEntries();
     }
 
+    function normalTaskSourceOrder(left, right) {
+        const leftIndex = left && left.sourceIndex !== undefined ? left.sourceIndex : -1;
+        const rightIndex = right && right.sourceIndex !== undefined ? right.sourceIndex : -1;
+        return leftIndex - rightIndex;
+    }
+
+    function normalTaskLauncherPosition(entry) {
+        if (!entry || !entry.launcherUrl) {
+            return -1;
+        }
+
+        if (entry.launcherPosition !== undefined) {
+            return entry.launcherPosition;
+        }
+
+        return visibleLauncherPosition(entry.launcherUrl);
+    }
+
+    function copyNormalTaskEntry(entry, launcherBacked, moveIndex) {
+        const task = Object.assign({}, entry);
+        task.launcherBacked = launcherBacked;
+        task.moveIndex = moveIndex === undefined ? task.sourceIndex : moveIndex;
+        return task;
+    }
+
     function recomputeNormalTaskEntries() {
         const entries = Object.keys(normalTaskEntryMap).map(key => normalTaskEntryMap[key]);
-        const pinnedEntries = entries.filter(entry => entry.launcherBacked);
-        const unpinnedEntries = entries.filter(entry => !entry.launcherBacked);
+        const launcherEntries = [];
+        const taskEntries = [];
         const unpinnedByKey = {};
 
-        pinnedEntries.sort((left, right) => left.sourceIndex - right.sourceIndex);
-        unpinnedEntries.sort((left, right) => left.sourceIndex - right.sourceIndex);
+        for (let i = 0; i < entries.length; ++i) {
+            const entry = entries[i];
+            if (entry.isLauncher) {
+                if (normalTaskLauncherPosition(entry) !== -1) {
+                    launcherEntries.push(entry);
+                }
+            } else {
+                taskEntries.push(entry);
+            }
+        }
+
+        launcherEntries.sort((left, right) => {
+            const positionDifference = normalTaskLauncherPosition(left) - normalTaskLauncherPosition(right);
+            return positionDifference !== 0 ? positionDifference : normalTaskSourceOrder(left, right);
+        });
+        taskEntries.sort(normalTaskSourceOrder);
+
+        const pinnedEntries = [];
+        const consumedKeys = {};
+        for (let i = 0; i < launcherEntries.length; ++i) {
+            const launcherEntry = launcherEntries[i];
+            const launcherPosition = normalTaskLauncherPosition(launcherEntry);
+            let representativeEntry = null;
+
+            for (let j = 0; j < taskEntries.length; ++j) {
+                const taskEntry = taskEntries[j];
+                if (consumedKeys[taskEntry.entryKey]) {
+                    continue;
+                }
+
+                if (taskEntry.launcherUrl === launcherEntry.launcherUrl && normalTaskLauncherPosition(taskEntry) === launcherPosition) {
+                    representativeEntry = taskEntry;
+                    break;
+                }
+            }
+
+            consumedKeys[launcherEntry.entryKey] = true;
+            if (representativeEntry) {
+                consumedKeys[representativeEntry.entryKey] = true;
+            }
+
+            const pinnedEntry = copyNormalTaskEntry(representativeEntry || launcherEntry, true, launcherEntry.sourceIndex);
+            pinnedEntry.launcherPosition = launcherPosition;
+            pinnedEntry.pinnedLauncherUrl = launcherEntry.launcherUrl;
+            pinnedEntries.push(pinnedEntry);
+        }
+
+        const unpinnedEntries = [];
+        for (let i = 0; i < taskEntries.length; ++i) {
+            const entry = taskEntries[i];
+            if (!consumedKeys[entry.entryKey]) {
+                unpinnedEntries.push(copyNormalTaskEntry(entry, false, entry.sourceIndex));
+            }
+        }
 
         for (let i = 0; i < unpinnedEntries.length; ++i) {
             unpinnedByKey[unpinnedEntries[i].entryKey] = unpinnedEntries[i];
@@ -475,7 +550,7 @@ PlasmoidItem {
         filterByScreen: false
         filterByVirtualDesktop: true
         groupMode: TaskManager.TasksModel.GroupDisabled
-        hideActivatedLaunchers: true
+        hideActivatedLaunchers: false
         launchInPlace: true
         launcherList: Plasmoid.configuration.launchers || []
         separateLaunchers: true
@@ -510,8 +585,8 @@ PlasmoidItem {
             required property int index
 
             property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
-            property bool launcherPinned: root.visibleLauncherPosition(launcherUrl, root.launcherRevision) !== -1
-            property bool launcherBacked: root.isLauncherBackedRow(model.IsLauncher || false, launcherUrl, index, root.launcherRevision)
+            property int launcherPosition: root.visibleLauncherPosition(launcherUrl, root.launcherRevision)
+            property bool launcherPinned: launcherPosition !== -1
             property string publishedKey: ""
             property string title: model.display || model.AppName || ""
             property var taskInfo: ({
@@ -545,9 +620,11 @@ PlasmoidItem {
                     isStartup: model.IsStartup || false,
                     isVirtualDesktopsChangeable: model.IsVirtualDesktopsChangeable || false,
                     isWindow: model.IsWindow || false,
-                    launcherBacked,
+                    launcherBacked: false,
+                    launcherPosition,
                     launcherUrl,
                     modelIndex: tasksModel.makePersistentModelIndex(index),
+                    moveIndex: index,
                     sourceIndex: index,
                     title,
                     virtualDesktops: Array.from(model.VirtualDesktops || [])
@@ -576,8 +653,8 @@ PlasmoidItem {
                 root.removeNormalTask(publishedKey);
             }
             onIndexChanged: syncTask()
-            onLauncherBackedChanged: syncTask()
             onLauncherPinnedChanged: syncTask()
+            onLauncherPositionChanged: syncTask()
             onQualifiesChanged: syncTask()
             onTaskInfoChanged: syncTask()
         }
@@ -661,7 +738,7 @@ PlasmoidItem {
                     readonly property var entry: modelData || ({})
 
                     height: taskList.height
-                    taskIndex: entry.sourceIndex ?? -1
+                    taskIndex: entry.moveIndex ?? entry.sourceIndex ?? -1
                     modelIndex: entry.modelIndex
                     slotNumber: index < 9 ? index + 1 : 0
                     title: entry.title || ""

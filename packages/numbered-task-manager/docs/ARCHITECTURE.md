@@ -27,8 +27,12 @@ in `SPEC.md`.
 - Disable application grouping so each window has a separate task item.
 - Keep pinned launchers and their in-place windows as a contiguous prefix of the
   normal visible model.
-- Enable launch-in-place behavior so a matching window occupies its pinned
-  launcher slot.
+- Keep activated launcher rows in the source `TasksModel`, then hide or replace
+  them only while composing the widget-visible model. This prevents remote
+  demanding-attention windows from consuming pinned launcher slots before the
+  widget can separate them into the remote-attention path.
+- Enable launch-in-place ordering so a matching current-desktop window is a
+  candidate for its pinned launcher slot.
 - Append unpinned windows and extra windows from pinned applications after the
   pinned prefix.
 - Do not replace or move an existing pinned-slot window when an additional
