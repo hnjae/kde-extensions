@@ -6,6 +6,8 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   bundledScriptFileNames,
+  createPackageDefinition,
+  createPackageLayout,
   loadPackageLayout,
 } from "../scripts/package-layout.mjs";
 
@@ -15,6 +17,98 @@ async function readJson(url: URL): Promise<Record<string, unknown>> {
 
 const layout = await loadPackageLayout();
 const packageRoot = layout.distRootUrl;
+
+test("package definition validates manifests and derives generated metadata", () => {
+  const packageJson = {
+    license: "AGPL-3.0-or-later",
+    name: "example-package",
+    version: "1.2.3",
+  };
+  const kpackageJson = {
+    KPackageStructure: "KWin/Script",
+    KPlugin: {
+      Description: "Example",
+      Id: "example.plugin",
+      Name: "Example Plugin",
+    },
+  };
+
+  const definition = createPackageDefinition(packageJson, kpackageJson);
+
+  assert.equal(definition.packageName, "example-package");
+  assert.equal(definition.pluginId, "example.plugin");
+  assert.deepEqual(definition.metadata, {
+    ...kpackageJson,
+    KPlugin: {
+      ...kpackageJson.KPlugin,
+      License: "AGPL-3.0-or-later",
+      Version: "1.2.3",
+    },
+  });
+});
+
+test("package definition rejects incomplete manifest fields", () => {
+  assert.throws(
+    () =>
+      createPackageDefinition(
+        { license: "AGPL-3.0-or-later", name: "", version: "1.2.3" },
+        { KPlugin: { Id: "example.plugin" } },
+      ),
+    /package\.json name must be a non-empty string/,
+  );
+  assert.throws(
+    () =>
+      createPackageDefinition(
+        {
+          license: "AGPL-3.0-or-later",
+          name: "example-package",
+          version: "1.2.3",
+        },
+        {},
+      ),
+    /KPlugin must be an object/,
+  );
+  assert.throws(
+    () =>
+      createPackageDefinition(
+        {
+          license: "AGPL-3.0-or-later",
+          name: "example-package",
+          version: "1.2.3",
+        },
+        { KPlugin: { Id: "" } },
+      ),
+    /KPlugin\.Id must be a non-empty string/,
+  );
+});
+
+test("package layout derives all generated paths from the package definition", () => {
+  const definition = createPackageDefinition(
+    {
+      license: "AGPL-3.0-or-later",
+      name: "example-package",
+      version: "1.2.3",
+    },
+    { KPlugin: { Id: "example.plugin" } },
+  );
+
+  const syntheticLayout = createPackageLayout("/repo/example", definition);
+
+  assert.equal(syntheticLayout.packageDir, "/repo/example");
+  assert.equal(syntheticLayout.distRoot, "/repo/example/dist/example-package");
+  assert.equal(
+    syntheticLayout.distMainScriptPath,
+    "/repo/example/dist/example-package/contents/code/main.js",
+  );
+  assert.equal(
+    syntheticLayout.distMetadataPath,
+    "/repo/example/dist/example-package/metadata.json",
+  );
+  assert.deepEqual(syntheticLayout.bundledScriptPaths, [
+    "/repo/example/build/src/refocus.js",
+    "/repo/example/build/src/main.js",
+  ]);
+});
 
 test("build output has KWin script package structure", async () => {
   const metadata = await readJson(new URL("metadata.json", packageRoot));

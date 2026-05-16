@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 export const bundledScriptFileNames = Object.freeze(["refocus.js", "main.js"]);
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const packageDir = path.resolve(scriptDir, "..");
+export const defaultPackageDir = path.resolve(scriptDir, "..");
 
 async function readJsonFile(filePath) {
   return JSON.parse(await readFile(filePath, "utf8"));
@@ -22,14 +22,36 @@ function requiredString(value, fieldName) {
   return value;
 }
 
+function requiredObject(value, fieldName) {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new TypeError(`${fieldName} must be an object`);
+  }
+
+  return value;
+}
+
 export function createPackageMetadata(packageJson, kpackageJson) {
+  const kplugin = requiredObject(kpackageJson.KPlugin, "KPlugin");
+
   return {
     ...kpackageJson,
     KPlugin: {
-      ...kpackageJson.KPlugin,
+      ...kplugin,
       License: requiredString(packageJson.license, "package.json license"),
       Version: requiredString(packageJson.version, "package.json version"),
     },
+  };
+}
+
+export function createPackageDefinition(packageJson, kpackageJson) {
+  const kplugin = requiredObject(kpackageJson.KPlugin, "KPlugin");
+
+  return {
+    kpackageJson,
+    metadata: createPackageMetadata(packageJson, kpackageJson),
+    packageJson,
+    packageName: requiredString(packageJson.name, "package.json name"),
+    pluginId: requiredString(kplugin.Id, "KPlugin.Id"),
   };
 }
 
@@ -43,15 +65,11 @@ export function getInstalledPackagePaths(dataHome, pluginId) {
   };
 }
 
-export async function loadPackageLayout() {
+export function createPackageLayout(packageDir, definition) {
   const packageJsonPath = path.join(packageDir, "package.json");
   const kpackageJsonPath = path.join(packageDir, "kpackage.json");
-  const packageJson = await readJsonFile(packageJsonPath);
-  const kpackageJson = await readJsonFile(kpackageJsonPath);
-  const packageName = requiredString(packageJson.name, "package.json name");
-  const pluginId = requiredString(kpackageJson.KPlugin?.Id, "KPlugin.Id");
   const buildScriptDir = path.join(packageDir, "build", "src");
-  const distRoot = path.join(packageDir, "dist", packageName);
+  const distRoot = path.join(packageDir, "dist", definition.packageName);
   const distCodeDir = path.join(distRoot, "contents", "code");
 
   return {
@@ -64,13 +82,26 @@ export async function loadPackageLayout() {
     distMetadataPath: path.join(distRoot, "metadata.json"),
     distRoot,
     distRootUrl: pathToFileURL(`${distRoot}${path.sep}`),
-    kpackageJson,
     kpackageJsonPath,
-    metadata: createPackageMetadata(packageJson, kpackageJson),
     packageDir,
-    packageJson,
     packageJsonPath,
-    packageName,
-    pluginId,
+    ...definition,
   };
+}
+
+export async function loadPackageDefinition(packageDir = defaultPackageDir) {
+  const packageJsonPath = path.join(packageDir, "package.json");
+  const kpackageJsonPath = path.join(packageDir, "kpackage.json");
+
+  return createPackageDefinition(
+    await readJsonFile(packageJsonPath),
+    await readJsonFile(kpackageJsonPath),
+  );
+}
+
+export async function loadPackageLayout(packageDir = defaultPackageDir) {
+  return createPackageLayout(
+    packageDir,
+    await loadPackageDefinition(packageDir),
+  );
 }
