@@ -33,7 +33,7 @@ const metadata = {
   },
   "X-Plasma-API": "javascript",
   "X-Plasma-MainScript": "code/main.js",
-  "X-KDE-ConfigModule": "kcm_kwin4_genericscripted",
+  "X-KDE-ConfigModule": "kwin/effects/configs/kcm_kwin4_genericscripted",
 };
 
 await rm(distRoot, { force: true, recursive: true });

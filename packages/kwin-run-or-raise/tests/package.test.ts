@@ -15,7 +15,10 @@ test("build output has KWin script package structure", async () => {
   assert.equal(metadata.KPackageStructure, "KWin/Script");
   assert.equal(metadata["X-Plasma-API"], "javascript");
   assert.equal(metadata["X-Plasma-MainScript"], "code/main.js");
-  assert.equal(metadata["X-KDE-ConfigModule"], "kcm_kwin4_genericscripted");
+  assert.equal(
+    metadata["X-KDE-ConfigModule"],
+    "kwin/effects/configs/kcm_kwin4_genericscripted",
+  );
 
   const plugin = metadata.KPlugin as Record<string, unknown>;
   assert.equal(plugin.Id, "io.github.hnjae.kwin-run-or-raise");
