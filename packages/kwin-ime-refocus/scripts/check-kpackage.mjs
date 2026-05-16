@@ -2,25 +2,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { spawnSync } from "node:child_process";
-import { access, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { access, mkdir, mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import {
+  getInstalledPackagePaths,
+  loadPackageLayout,
+} from "./package-layout.mjs";
 
-const packageDir = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
-);
-const packageJson = JSON.parse(
-  await readFile(path.join(packageDir, "package.json"), "utf8"),
-);
-const kpackageJson = JSON.parse(
-  await readFile(path.join(packageDir, "kpackage.json"), "utf8"),
-);
-const pluginId = kpackageJson.KPlugin.Id;
-const distRoot = path.join(packageDir, "dist", packageJson.name);
+const layout = await loadPackageLayout();
 const tempDir = await mkdtemp(
-  path.join(os.tmpdir(), `${packageJson.name}-kpackage-`),
+  path.join(os.tmpdir(), `${layout.packageName}-kpackage-`),
 );
 const dataHome = path.join(tempDir, "share");
 
@@ -29,7 +21,7 @@ try {
 
   const result = spawnSync(
     "kpackagetool6",
-    ["--type=KWin/Script", "--install", distRoot],
+    ["--type=KWin/Script", "--install", layout.distRoot],
     {
       env: {
         ...process.env,
@@ -44,20 +36,10 @@ try {
     process.exit(result.status ?? 1);
   }
 
-  await access(
-    path.join(dataHome, "kwin", "scripts", pluginId, "metadata.json"),
-  );
-  await access(
-    path.join(
-      dataHome,
-      "kwin",
-      "scripts",
-      pluginId,
-      "contents",
-      "code",
-      "main.js",
-    ),
-  );
+  const installedPaths = getInstalledPackagePaths(dataHome, layout.pluginId);
+
+  await access(installedPaths.metadataPath);
+  await access(installedPaths.mainScriptPath);
 } finally {
   await rm(tempDir, { force: true, recursive: true });
 }

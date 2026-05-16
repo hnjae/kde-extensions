@@ -4,33 +4,38 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import {
+  bundledScriptFileNames,
+  loadPackageLayout,
+} from "../scripts/package-layout.mjs";
 
 async function readJson(url: URL): Promise<Record<string, unknown>> {
   return JSON.parse(await readFile(url, "utf8")) as Record<string, unknown>;
 }
 
-const packageJson = await readJson(new URL("../package.json", import.meta.url));
-const packageRoot = new URL(`../dist/${packageJson.name}/`, import.meta.url);
+const layout = await loadPackageLayout();
+const packageRoot = layout.distRootUrl;
 
 test("build output has KWin script package structure", async () => {
   const metadata = await readJson(new URL("metadata.json", packageRoot));
-  const kpackageJson = await readJson(
-    new URL("../kpackage.json", import.meta.url),
-  );
 
-  assert.equal(metadata.KPackageStructure, kpackageJson.KPackageStructure);
-  assert.equal(metadata["X-Plasma-API"], kpackageJson["X-Plasma-API"]);
+  assert.deepEqual(metadata, layout.metadata);
+  assert.equal(
+    metadata.KPackageStructure,
+    layout.kpackageJson.KPackageStructure,
+  );
+  assert.equal(metadata["X-Plasma-API"], layout.kpackageJson["X-Plasma-API"]);
   assert.equal(
     metadata["X-Plasma-MainScript"],
-    kpackageJson["X-Plasma-MainScript"],
+    layout.kpackageJson["X-Plasma-MainScript"],
   );
 
   const plugin = metadata.KPlugin as Record<string, unknown>;
-  const sourcePlugin = kpackageJson.KPlugin as Record<string, unknown>;
+  const sourcePlugin = layout.kpackageJson.KPlugin as Record<string, unknown>;
 
   assert.equal(plugin.Id, sourcePlugin.Id);
-  assert.equal(plugin.Version, packageJson.version);
-  assert.equal(plugin.License, packageJson.license);
+  assert.equal(plugin.Version, layout.packageJson.version);
+  assert.equal(plugin.License, layout.packageJson.license);
 });
 
 test("main script registers an unbound IME recovery shortcut", async () => {
@@ -46,18 +51,26 @@ test("main script registers an unbound IME recovery shortcut", async () => {
   assert.doesNotMatch(mainScript, /export\s+\{\};/);
 });
 
-test("main script packages refocus policy before shortcut registration", async () => {
+test("main script packages configured source scripts in order", async () => {
   const mainScript = await readFile(
     new URL("contents/code/main.js", packageRoot),
     "utf8",
   );
+  const sourceScripts = await Promise.all(
+    layout.bundledScriptPaths.map((scriptPath) => readFile(scriptPath, "utf8")),
+  );
 
-  const policyIndex = mainScript.indexOf("var KWinImeRefocus;");
-  const shortcutIndex = mainScript.indexOf("registerShortcut(");
+  assert.deepEqual(bundledScriptFileNames, ["refocus.js", "main.js"]);
 
-  assert.notEqual(policyIndex, -1);
-  assert.notEqual(shortcutIndex, -1);
-  assert.ok(policyIndex < shortcutIndex);
+  let cursor = 0;
+
+  for (const sourceScript of sourceScripts) {
+    const scriptIndex = mainScript.indexOf(sourceScript, cursor);
+
+    assert.notEqual(scriptIndex, -1);
+    assert.ok(scriptIndex >= cursor);
+    cursor = scriptIndex + sourceScript.length;
+  }
 });
 
 test("main script delegates the shortcut callback to refocus policy", async () => {

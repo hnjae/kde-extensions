@@ -35,3 +35,16 @@ declare module "node:vm" {
     contextifiedObject: object,
   ): unknown;
 }
+
+declare module "*.mjs" {
+  interface PackageLayout {
+    readonly bundledScriptPaths: readonly string[];
+    readonly distRootUrl: URL;
+    readonly kpackageJson: Record<string, unknown>;
+    readonly metadata: Record<string, unknown>;
+    readonly packageJson: Record<string, unknown>;
+  }
+
+  export const bundledScriptFileNames: readonly string[];
+  export function loadPackageLayout(): Promise<PackageLayout>;
+}
