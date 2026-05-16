@@ -19,12 +19,15 @@ in `SPEC.md`.
 
 - Use manual task ordering so user drag order can define shortcut positions.
 - Disable application grouping so each window has a separate task item.
-- Keep launchers and windows in one mixed task list, allowing pinned launchers to
-  be interleaved with windows.
+- Keep pinned launchers and their in-place windows as a contiguous prefix of the
+  normal visible model.
 - Enable launch-in-place behavior so a matching window occupies its pinned
   launcher slot.
 - Append unpinned windows and extra windows from pinned applications after the
-  pinned slots.
+  pinned prefix.
+- Do not replace or move an existing pinned-slot window when an additional
+  matching window appears. The additional matching window should append after the
+  pinned prefix.
 - Number only rows 0 through 8 in the visible model; these correspond to
   user-facing slots 1 through 9.
 - Keep demanding-attention tasks from other virtual desktops out of the normal
@@ -41,6 +44,8 @@ in `SPEC.md`.
   that are hidden only because they are on another virtual desktop.
 - Expose remote attention as one task-like item with a `0` badge instead of
   inserting those windows into the normal task order.
+- Render the remote-attention item at the far right of the widget, outside the
+  normal numbered rows.
 - `Meta+0` is a dedicated remote-attention shortcut. It is not slot 10 and must
   not affect row numbering or pinned launcher positions.
 - When multiple remote attention tasks exist, keep a deterministic most-recent
@@ -75,15 +80,17 @@ in `SPEC.md`.
   visible slots.
 - Verify pinned launcher activation opens in place and does not append the first
   matching window to the far right.
-- Verify extra same-application windows append after the pinned area and are not
-  grouped.
+- Verify opening an extra same-application window keeps the existing pinned-slot
+  window in place, appends the new window after the pinned prefix, and does not
+  group the windows.
 - Verify closing a pinned-slot window refills from another same-application
   window, or returns to the launcher when none remains.
 - Verify tasks after slot 9 are visible and unnumbered.
 - Verify small icon or panel cases switch to prefix numbering instead of showing
   unreadable badges.
 - Verify a window demanding attention on another virtual desktop appears through
-  the `0` attention item without changing `Meta+1` through `Meta+9` targets.
+  the far-right `0` attention item without changing `Meta+1` through `Meta+9`
+  targets or moving existing slots.
 - Verify `Meta+0` switches to the remote task's virtual desktop and raises the
   demanding-attention window.
 - Verify multiple remote attention tasks show a count and keep a deterministic

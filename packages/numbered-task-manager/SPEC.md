@@ -24,7 +24,8 @@ select windows with `Meta+1` through `Meta+9`.
 - If the task icon is too small for a readable badge, the number is shown as a
   text prefix before the icon and title instead.
 - The widget shows tasks from the current virtual desktop, current screen, and
-  current activity.
+  current activity, except for the separate remote attention item described
+  below.
 - Horizontal panels are the supported v1 target. Vertical panels may work, but
   they are best-effort in v1.
 
@@ -32,13 +33,17 @@ select windows with `Meta+1` through `Meta+9`.
 
 - A new widget starts with no pinned applications.
 - Users can pin and unpin applications from the task context menu.
-- Users can reorder task slots by dragging them.
+- Pinned applications form a continuous pinned area at the start of the normal
+  task list.
+- Users can reorder pinned applications by dragging them within the pinned area.
+- Unpinned windows appear after the pinned area.
 - A pinned application appears as a launcher icon when it has no matching
   window.
 - Activating a pinned launcher opens the application in that pinned slot instead
-  of creating a new task at the far right.
-- If a pinned application has multiple windows, one matching window occupies the
-  pinned slot and the extra windows appear after the pinned area.
+  of creating the first matching window at the far right.
+- If a pinned application already has a window in its pinned slot, opening
+  another window from the same application keeps the existing pinned-slot window
+  in place and adds the new window after the pinned area.
 - When the window in a pinned slot closes, another window from the same
   application refills that slot if one exists. Otherwise, the slot returns to the
   pinned launcher.
@@ -46,24 +51,28 @@ select windows with `Meta+1` through `Meta+9`.
 ## Activation Behavior
 
 - `Meta+1` through `Meta+9` activate the task in the matching numbered slot.
-- `Meta+0` activates the current remote attention task when one exists.
+- `Meta+0` activates the remote attention item when one exists. It never
+  activates the tenth task, and it does nothing when no remote attention item
+  exists.
 - Activating a launcher starts the application.
-- Activating a window raises that window.
+- Activating a window focuses and raises that window, restoring it if minimized.
 - The shortcut target is based on the visible task slot, not on the most
   recently opened or most recently active application.
 
 ## Remote Attention Behavior
 
-- Remote attention means a task manager window task on another virtual desktop
-  that reports KDE's demanding-attention state.
+- Remote attention means a window on another virtual desktop that asks for
+  attention.
 - Remote attention tasks do not enter the normal `1` through `9` task slot
   order and do not change existing slot numbers.
 - When at least one remote attention task exists, the widget shows one distinct
-  attention item with a `0` badge.
+  attention item with a `0` badge at the far right of the widget.
+- The attention item is separate from the normal task slots and does not move
+  existing slots.
 - Activating the attention item, including with `Meta+0`, switches to the
   task's virtual desktop and raises the window.
 - If multiple remote attention tasks exist, the attention item shows a count and
-  targets the most recently observed remote attention task.
+  targets the window that most recently started asking for attention.
 - Remote attention handling is limited to tasks that otherwise match the
   widget's current screen and current activity scope.
 
