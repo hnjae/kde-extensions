@@ -31,18 +31,19 @@
           pkgs.qt6.qtdeclarative
           pkgs.stdenv.cc
         ];
-        localPreamble = ''
+        localProjectPreamble = ''
           set -euo pipefail
 
           repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
           if [ -d "$repo_root/packages/numbered-task-manager" ]; then
             cd "$repo_root/packages/numbered-task-manager"
           fi
+        '';
 
+        localBuildAndInstall = ''
           build_dir="''${NUMBERED_TASK_MANAGER_BUILD_DIR:-build}"
           install_prefix="''${NUMBERED_TASK_MANAGER_INSTALL_PREFIX:-$PWD/.numbered-task-manager-install}"
-        '';
-        localBuildAndInstall = ''
+
           cmake -S . -B "$build_dir" -G Ninja \
             -DCMAKE_INSTALL_PREFIX="$install_prefix"
           cmake --build "$build_dir"
@@ -53,7 +54,7 @@
           name: text:
           pkgs.writeShellApplication {
             inherit name runtimeInputs;
-            text = localPreamble + text;
+            text = localProjectPreamble + text;
           };
         qmllsWrapper = pkgs.writeShellApplication {
           name = "qmlls";
