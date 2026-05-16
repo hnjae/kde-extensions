@@ -30,6 +30,7 @@
           pkgs.kdePackages.libplasma
           pkgs.kdePackages.plasma-workspace
           pkgs.ninja
+          pkgs.nodejs
           pkgs.qt6.qtdeclarative
           pkgs.stdenv.cc
         ];
@@ -82,6 +83,12 @@
                     --max-warnings 0 \
                     --unqualified disable \
                     ${qmlImportFlags}
+            '')
+            (mkDevCommand "numbered-task-manager-test" ''
+              for test_file in tests/*.test.mjs
+              do
+                node "$test_file"
+              done
             '')
             (mkDevCommand "lint-qml" ''
               find package/contents/ui -name '*.qml' -print0 \

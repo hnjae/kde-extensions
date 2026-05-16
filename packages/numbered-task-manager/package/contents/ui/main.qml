@@ -8,6 +8,7 @@ import QtQuick.Layouts as QtQuickLayouts
 import org.kde.taskmanager as TaskManager
 import org.kde.plasma.plasmoid
 import "TaskHelpers.js" as TaskHelpers
+import "TaskModelLogic.js" as TaskModelLogic
 
 PlasmoidItem {
     id: root
@@ -123,16 +124,12 @@ PlasmoidItem {
     }
 
     function moveManualTask(sourceKey, targetKey) {
-        const order = normalTaskEntries.filter(entry => !entry.launcherBacked).map(entry => entry.entryKey);
-        const sourcePosition = order.indexOf(sourceKey);
-        const targetPosition = order.indexOf(targetKey);
-        if (sourcePosition === -1 || targetPosition === -1 || sourcePosition === targetPosition) {
+        const result = TaskModelLogic.moveManualTaskOrder(normalTaskEntries, sourceKey, targetKey);
+        if (!result.moved) {
             return false;
         }
 
-        order.splice(sourcePosition, 1);
-        order.splice(targetPosition, 0, sourceKey);
-        normalTaskManualOrder = order;
+        normalTaskManualOrder = result.order;
         recomputeNormalTaskEntries();
         return true;
     }
@@ -194,37 +191,11 @@ PlasmoidItem {
     }
 
     function canMoveTask(sourceIndex, targetIndex) {
-        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
-            return false;
-        }
-
-        const sourceEntry = normalTaskEntryForSourceIndex(sourceIndex);
-        const targetEntry = normalTaskEntryForSourceIndex(targetIndex);
-        if (!sourceEntry || !targetEntry) {
-            return false;
-        }
-
-        if (Boolean(sourceEntry.launcherBacked) !== Boolean(targetEntry.launcherBacked)) {
-            return false;
-        }
-
-        if (sourceEntry.launcherBacked) {
-            return canMovePinnedLauncher(sourceEntry, targetEntry);
-        }
-
-        return true;
+        return TaskModelLogic.canMoveTask(normalTaskEntries, sourceIndex, targetIndex, (sourceEntry, targetEntry) => canMovePinnedLauncher(sourceEntry, targetEntry));
     }
 
     function normalTaskEntryForSourceIndex(sourceIndex) {
-        const entries = normalTaskEntries || [];
-        for (let i = 0; i < entries.length; ++i) {
-            const entryIndex = entries[i].moveIndex === undefined ? entries[i].sourceIndex : entries[i].moveIndex;
-            if (entryIndex === sourceIndex) {
-                return entries[i];
-            }
-        }
-
-        return null;
+        return TaskModelLogic.normalTaskEntryForSourceIndex(normalTaskEntries, sourceIndex);
     }
 
     function createNormalTaskPublicationKey() {
@@ -282,52 +253,19 @@ PlasmoidItem {
     }
 
     function desktopId(desktop) {
-        if (!desktop) {
-            return "";
-        }
-
-        if (typeof desktop === "string") {
-            return desktop;
-        }
-
-        if (desktop.id) {
-            return String(desktop.id);
-        }
-
-        return String(desktop);
+        return TaskModelLogic.desktopId(desktop);
     }
 
     function desktopListContains(desktops, desktop) {
-        const currentDesktopId = desktopId(desktop);
-        if (!currentDesktopId) {
-            return false;
-        }
-
-        const desktopList = Array.from(desktops || []);
-        for (let i = 0; i < desktopList.length; ++i) {
-            if (desktopId(desktopList[i]) === currentDesktopId) {
-                return true;
-            }
-        }
-
-        return false;
+        return TaskModelLogic.desktopListContains(desktops, desktop);
     }
 
     function isOnCurrentVirtualDesktop(desktops, isOnAllDesktops) {
-        if (isOnAllDesktops) {
-            return true;
-        }
-
-        return desktopListContains(desktops, virtualDesktopInfo.currentDesktop);
+        return TaskModelLogic.isOnCurrentVirtualDesktop(desktops, isOnAllDesktops, virtualDesktopInfo.currentDesktop);
     }
 
     function isRemoteVirtualDesktop(desktops, isOnAllDesktops) {
-        if (isOnAllDesktops) {
-            return false;
-        }
-
-        const desktopList = Array.from(desktops || []);
-        return desktopList.length > 0 && !desktopListContains(desktopList, virtualDesktopInfo.currentDesktop);
+        return TaskModelLogic.isRemoteVirtualDesktop(desktops, isOnAllDesktops, virtualDesktopInfo.currentDesktop);
     }
 
     function isInCurrentActivity(activities) {
@@ -369,181 +307,22 @@ PlasmoidItem {
         recomputeNormalTaskEntries();
     }
 
-    function normalTaskSourceOrder(left, right) {
-        const leftIndex = left && left.sourceIndex !== undefined ? left.sourceIndex : -1;
-        const rightIndex = right && right.sourceIndex !== undefined ? right.sourceIndex : -1;
-        return leftIndex - rightIndex;
-    }
-
-    function normalTaskLauncherPosition(entry) {
-        if (!entry || !entry.launcherUrl) {
-            return -1;
-        }
-
-        if (entry.launcherPosition !== undefined) {
-            return entry.launcherPosition;
-        }
-
-        return visibleLauncherPosition(entry.launcherUrl);
-    }
-
-    function copyNormalTaskEntry(entry, launcherBacked, moveIndex) {
-        const task = Object.assign({}, entry);
-        task.launcherBacked = launcherBacked;
-        task.moveIndex = moveIndex === undefined ? task.sourceIndex : moveIndex;
-        return task;
-    }
-
     function recomputeNormalTaskEntries() {
-        const entries = Object.keys(normalTaskEntryMap).map(key => normalTaskEntryMap[key]);
-        const launcherEntries = [];
-        const taskEntries = [];
-        const unpinnedByKey = {};
-
-        for (let i = 0; i < entries.length; ++i) {
-            const entry = entries[i];
-            if (entry.isLauncher) {
-                if (normalTaskLauncherPosition(entry) !== -1) {
-                    launcherEntries.push(entry);
-                }
-            } else {
-                taskEntries.push(entry);
-            }
-        }
-
-        launcherEntries.sort((left, right) => {
-            const positionDifference = normalTaskLauncherPosition(left) - normalTaskLauncherPosition(right);
-            return positionDifference !== 0 ? positionDifference : normalTaskSourceOrder(left, right);
-        });
-        taskEntries.sort(normalTaskSourceOrder);
-
-        const pinnedEntries = [];
-        const consumedKeys = {};
-        for (let i = 0; i < launcherEntries.length; ++i) {
-            const launcherEntry = launcherEntries[i];
-            const launcherPosition = normalTaskLauncherPosition(launcherEntry);
-            let representativeEntry = null;
-
-            for (let j = 0; j < taskEntries.length; ++j) {
-                const taskEntry = taskEntries[j];
-                if (consumedKeys[taskEntry.entryKey]) {
-                    continue;
-                }
-
-                if (taskEntry.launcherUrl === launcherEntry.launcherUrl && normalTaskLauncherPosition(taskEntry) === launcherPosition) {
-                    representativeEntry = taskEntry;
-                    break;
-                }
-            }
-
-            consumedKeys[launcherEntry.entryKey] = true;
-            if (representativeEntry) {
-                consumedKeys[representativeEntry.entryKey] = true;
-            }
-
-            const pinnedEntry = copyNormalTaskEntry(representativeEntry || launcherEntry, true, launcherEntry.sourceIndex);
-            pinnedEntry.launcherPosition = launcherPosition;
-            pinnedEntry.pinnedLauncherUrl = launcherEntry.launcherUrl;
-            pinnedEntries.push(pinnedEntry);
-        }
-
-        const unpinnedEntries = [];
-        for (let i = 0; i < taskEntries.length; ++i) {
-            const entry = taskEntries[i];
-            if (!consumedKeys[entry.entryKey]) {
-                unpinnedEntries.push(copyNormalTaskEntry(entry, false, entry.sourceIndex));
-            }
-        }
-
-        for (let i = 0; i < unpinnedEntries.length; ++i) {
-            unpinnedByKey[unpinnedEntries[i].entryKey] = unpinnedEntries[i];
-        }
-
-        const orderedUnpinnedEntries = [];
-        const nextManualOrder = [];
-        const manualOrder = Array.from(normalTaskManualOrder || []);
-        for (let i = 0; i < manualOrder.length; ++i) {
-            const key = manualOrder[i];
-            if (unpinnedByKey[key]) {
-                orderedUnpinnedEntries.push(unpinnedByKey[key]);
-                nextManualOrder.push(key);
-                delete unpinnedByKey[key];
-            }
-        }
-
-        for (let i = 0; i < unpinnedEntries.length; ++i) {
-            const entry = unpinnedEntries[i];
-            if (unpinnedByKey[entry.entryKey]) {
-                orderedUnpinnedEntries.push(entry);
-                nextManualOrder.push(entry.entryKey);
-            }
-        }
-
-        normalTaskManualOrder = nextManualOrder;
-        normalTaskEntries = pinnedEntries.concat(orderedUnpinnedEntries);
+        const result = TaskModelLogic.composeNormalTaskEntries(normalTaskEntryMap, normalTaskManualOrder, launcherUrl => visibleLauncherPosition(launcherUrl));
+        normalTaskManualOrder = result.manualOrder;
+        normalTaskEntries = result.entries;
     }
 
     function remoteAttentionKey(winIds, launcherUrl, title, row) {
-        const windowIds = Array.from(winIds || []);
-        if (windowIds.length > 0) {
-            return "window:" + windowIds.join(",");
-        }
-
-        return "row:" + row.toString() + ":" + launcherUrl + ":" + title;
+        return TaskModelLogic.remoteAttentionKey(winIds, launcherUrl, title, row);
     }
 
     function publishRemoteAttention(previousKey, key, qualifies, task, becameQualified) {
-        let entries = Object.assign({}, remoteAttentionEntryMap);
-        let order = Array.from(remoteAttentionOrder || []);
-
-        if (previousKey && previousKey !== key) {
-            if (entries[previousKey]) {
-                delete entries[previousKey];
-                if (qualifies) {
-                    entries[key] = task;
-                    const nextOrder = [];
-                    let inserted = false;
-                    for (let i = 0; i < order.length; ++i) {
-                        const existingKey = order[i];
-                        if (existingKey === previousKey) {
-                            nextOrder.push(key);
-                            inserted = true;
-                        } else if (existingKey !== key) {
-                            nextOrder.push(existingKey);
-                        }
-                    }
-                    if (!inserted) {
-                        nextOrder.push(key);
-                    }
-                    order = nextOrder;
-                } else {
-                    order = order.filter(existingKey => existingKey !== previousKey);
-                }
-            }
-        }
-
-        if (!qualifies) {
-            if (entries[key]) {
-                delete entries[key];
-            }
-            remoteAttentionEntryMap = entries;
-            remoteAttentionOrder = order.filter(existingKey => existingKey !== key);
-            recomputeRemoteAttention();
-            return "";
-        }
-
-        if (!entries[key]) {
-            order = order.filter(existingKey => existingKey !== key).concat([key]);
-        }
-        entries[key] = task;
-        if (becameQualified) {
-            order = order.filter(existingKey => existingKey !== key).concat([key]);
-        }
-
-        remoteAttentionEntryMap = entries;
-        remoteAttentionOrder = order;
-        recomputeRemoteAttention();
-        return key;
+        const result = TaskModelLogic.publishRemoteAttention(remoteAttentionEntryMap, remoteAttentionOrder, previousKey, key, qualifies, task, becameQualified);
+        remoteAttentionEntryMap = result.entryMap;
+        remoteAttentionOrder = result.order;
+        applyRemoteAttentionSnapshot(result.snapshot);
+        return result.publishedKey;
     }
 
     function removeRemoteAttention(key) {
@@ -551,27 +330,20 @@ PlasmoidItem {
             return;
         }
 
-        const entries = Object.assign({}, remoteAttentionEntryMap);
-        delete entries[key];
-        remoteAttentionEntryMap = entries;
-        remoteAttentionOrder = remoteAttentionOrder.filter(existingKey => existingKey !== key);
-        recomputeRemoteAttention();
+        const result = TaskModelLogic.removeRemoteAttention(remoteAttentionEntryMap, remoteAttentionOrder, key);
+        remoteAttentionEntryMap = result.entryMap;
+        remoteAttentionOrder = result.order;
+        applyRemoteAttentionSnapshot(result.snapshot);
     }
 
     function recomputeRemoteAttention() {
-        const entries = [];
-        remoteAttentionTarget = null;
+        applyRemoteAttentionSnapshot(TaskModelLogic.remoteAttentionSnapshot(remoteAttentionEntryMap, remoteAttentionOrder));
+    }
 
-        for (let i = 0; i < remoteAttentionOrder.length; ++i) {
-            const key = remoteAttentionOrder[i];
-            if (remoteAttentionEntryMap[key]) {
-                entries.push(remoteAttentionEntryMap[key]);
-            }
-        }
-
-        remoteAttentionEntries = entries;
-        remoteAttentionCount = entries.length;
-        remoteAttentionTarget = entries.length > 0 ? entries[entries.length - 1] : null;
+    function applyRemoteAttentionSnapshot(snapshot) {
+        remoteAttentionEntries = snapshot.entries;
+        remoteAttentionCount = snapshot.count;
+        remoteAttentionTarget = snapshot.target;
     }
 
     function activateRemoteAttention() {

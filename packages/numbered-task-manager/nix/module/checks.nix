@@ -35,6 +35,7 @@
             pkgs.kdePackages.libplasma
             pkgs.kdePackages.plasma-workspace
             pkgs.ninja
+            pkgs.nodejs
             pkgs.qt6.qtdeclarative
             pkgs.reuse
           ];
@@ -65,6 +66,7 @@
               contents/ui/AttentionItem.qml
               contents/ui/TaskContextMenu.qml
               contents/ui/TaskHelpers.js
+              contents/ui/TaskModelLogic.js
               contents/ui/NumberBadge.qml
               contents/config/main.xml
             "
@@ -75,6 +77,11 @@
 
             test -f "$installed_license_dir/AGPL-3.0-or-later.txt"
             test -f "$installed_license_dir/CC0-1.0.txt"
+
+            for test_file in tests/*.test.mjs
+            do
+              node "$test_file"
+            done
 
             find package/contents/ui -name '*.qml' -print0 \
               | sort -z \

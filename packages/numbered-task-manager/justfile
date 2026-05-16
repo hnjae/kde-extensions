@@ -22,6 +22,10 @@ build:
 check:
     nix build "{{ check_prefix }}numbered-task-manager-check" --no-link --print-out-paths
 
+[group('test')]
+test:
+    nix develop "{{ dev_shell }}" -c numbered-task-manager-test
+
 [group('lint')]
 lint:
     nix develop "{{ dev_shell }}" -c numbered-task-manager-lint

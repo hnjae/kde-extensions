@@ -26,6 +26,7 @@ system, bind it to `Meta+0` in Plasma's shortcut settings.
 ## Development checks
 
 ```sh
+just test
 just lint-qml
 just check
 just build

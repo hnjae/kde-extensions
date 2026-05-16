@@ -19,6 +19,7 @@
               ../../REUSE.toml
               ../../metainfo
               ../../package
+              ../../tests
             ];
           };
         in
