@@ -51,10 +51,12 @@ in `SPEC.md`.
   windows into the normal task order.
 - Render the remote-attention item at the far right of the widget, outside the
   normal numbered rows.
-- `Meta+0` activates the far-right visible item. It is based on the widget edge,
-  not on a numbered model row, and must not affect row numbering or pinned
-  launcher positions. When the remote-attention item exists, it is the far-right
-  item and therefore the `Meta+0` target.
+- `Meta+0` activates the final item in the composed visible item order. It is
+  based on model order, not on pixel clipping or a numbered model row, and must
+  not affect row numbering or pinned launcher positions.
+- When the remote-attention item exists, it is the `Meta+0` target because it is
+  appended as the final item in the composed visible item order. Do not give
+  remote attention a separate shortcut priority.
 - Do not render a `0` badge on the far-right item. Number badges are only for
   slots 1 through 9.
 - When multiple remote attention tasks exist, keep a deterministic most-recent
@@ -100,14 +102,17 @@ in `SPEC.md`.
   window, or returns to the launcher when none remains.
 - Verify the normal task list is not limited to the current screen.
 - Verify tasks after slot 9 are visible and unnumbered.
-- Verify `Meta+0` activates the rightmost visible item when no remote attention
-  item is shown, without rendering a `0` badge on that item.
+- Verify `Meta+0` activates the final item in the visible item order when no
+  remote attention item is shown, without rendering a `0` badge on that item.
+- Verify that if the `Meta+0` target is also one of slots 1 through 9, both
+  shortcuts activate the same item.
 - Verify small icon or panel cases switch to prefix numbering instead of showing
   unreadable badges.
 - Verify a window demanding attention on another virtual desktop appears through
   the far-right attention item without changing `Meta+1` through `Meta+9`
   targets, moving existing slots, or showing a `0` badge.
 - Verify `Meta+0` switches to the remote task's virtual desktop and raises the
-  demanding-attention window when the remote-attention item is visible.
+  demanding-attention window when the remote-attention item is the final item in
+  the visible item order.
 - Verify multiple remote attention tasks show a count and keep a deterministic
   remote-attention target.
