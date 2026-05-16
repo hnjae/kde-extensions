@@ -4,7 +4,7 @@
   perSystem =
     { lib, pkgs, ... }:
     {
-      packages.tabpager =
+      packages.tab-pager =
         let
           clangToolchain = pkgs.llvmPackages.clang;
           pluginId = "io.github.hnjae.tabpager";
@@ -23,7 +23,7 @@
           };
         in
         pkgs.kdePackages.mkKdeDerivation {
-          pname = "tabpager";
+          pname = "tab-pager";
           inherit version source;
           src = source;
 
