@@ -5,6 +5,8 @@
 
 #include "tabpagerdesktoplogic.h"
 
+#include <utility>
+
 namespace {
 [[nodiscard]] TabPagerDesktopRowData
 rowDataForDesktop(qsizetype row, const TabPagerDesktop &desktop,
@@ -42,6 +44,18 @@ TabPagerDesktopModelState TabPagerDesktopModelState::fromSnapshot(
   }
 
   return state;
+}
+
+TabPagerDesktopModelState::Update TabPagerDesktopModelState::updateForSnapshot(
+    const TabPagerDesktopSnapshot &snapshot) const {
+  TabPagerDesktopModelState nextState =
+      TabPagerDesktopModelState::fromSnapshot(snapshot);
+  const TabPagerDesktopModelChange change = changeForState(nextState);
+
+  return TabPagerDesktopModelState::Update{
+      .nextState = std::move(nextState),
+      .change = change,
+  };
 }
 
 int TabPagerDesktopModelState::count() const {

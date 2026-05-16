@@ -12,18 +12,28 @@
 
 class TabPagerDesktopModelState final {
 public:
+  struct Update;
+
   [[nodiscard]] static TabPagerDesktopModelState
   fromSnapshot(const TabPagerDesktopSnapshot &snapshot);
 
+  [[nodiscard]] Update
+  updateForSnapshot(const TabPagerDesktopSnapshot &snapshot) const;
   [[nodiscard]] int count() const;
   [[nodiscard]] int currentIndex() const;
   [[nodiscard]] std::optional<TabPagerDesktopId>
   desktopIdForIndex(int index) const;
   [[nodiscard]] TabPagerDesktopRowData rowData(qsizetype row) const;
+
+private:
   [[nodiscard]] TabPagerDesktopModelChange
   changeForState(const TabPagerDesktopModelState &nextState) const;
 
-private:
   QList<TabPagerDesktopRowData> m_rows;
   int m_currentIndex = -1;
+};
+
+struct TabPagerDesktopModelState::Update {
+  TabPagerDesktopModelState nextState;
+  TabPagerDesktopModelChange change;
 };

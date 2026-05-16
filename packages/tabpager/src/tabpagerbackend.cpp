@@ -102,18 +102,18 @@ void TabPagerBackend::reloadNavigationWrappingAround() {
 
 void TabPagerBackend::applyDesktopSnapshot(
     const TabPagerDesktopSnapshot &snapshot) {
-  TabPagerDesktopModelState nextState =
-      TabPagerDesktopModelState::fromSnapshot(snapshot);
-  const TabPagerDesktopModelChange change = m_state.changeForState(nextState);
+  TabPagerDesktopModelState::Update update =
+      m_state.updateForSnapshot(snapshot);
+  const TabPagerDesktopModelChange &change = update.change;
 
   switch (change.type) {
   case TabPagerDesktopModelChange::Type::Unchanged:
     return;
   case TabPagerDesktopModelChange::Type::Reset:
-    resetDesktopState(std::move(nextState));
+    resetDesktopState(std::move(update.nextState));
     break;
   case TabPagerDesktopModelChange::Type::RowsChanged:
-    updateDesktopStateRows(std::move(nextState), change.rows);
+    updateDesktopStateRows(std::move(update.nextState), change.rows);
     break;
   }
 

@@ -6,6 +6,8 @@
 
 #include <QTest>
 
+#include <utility>
+
 namespace {
 using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
@@ -34,6 +36,14 @@ void expectRowsChanged(const TabPagerDesktopModelChange &change,
   QCOMPARE(change.currentIndexChanged, currentIndexChanged);
   QCOMPARE(change.rows.size(), rowUpdateCount);
 }
+
+[[nodiscard]] TabPagerDesktopModelState::Update
+updateForDesktopState(const TabPagerDesktopModelState &state,
+                      QList<TabPagerDesktop> desktops,
+                      TabPagerDesktopId currentDesktop = {}) {
+  return state.updateForSnapshot(
+      desktopSnapshot(std::move(desktops), std::move(currentDesktop)));
+}
 } // namespace
 
 class TabPagerDesktopModelStateTest : public QObject {
@@ -47,6 +57,7 @@ private Q_SLOTS:
   void tracksDesktopModelStateIndex();
   void filtersInvalidDesktopIds();
   void derivesDesktopModelStateRows();
+  void plansDesktopModelUpdateState();
   void plansNoChangeForSameDesktopModelSnapshot();
   void plansNoChangeForUnmatchedCurrentDesktopChange();
   void plansDesktopModelResetWhenCountChanges();
@@ -124,10 +135,10 @@ void TabPagerDesktopModelStateTest::detectsDesktopRowChangedRoles() {
 void TabPagerDesktopModelStateTest::plansChangedDesktopRowRoles() {
   const TabPagerDesktopModelState state =
       desktopModelState({defaultDesktop("a", 1)});
-  const TabPagerDesktopModelState nextState =
-      desktopModelState({namedDesktop("a", "Work")}, desktopId("a"));
 
-  const TabPagerDesktopModelChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change =
+      updateForDesktopState(state, {namedDesktop("a", "Work")}, desktopId("a"))
+          .change;
 
   expectRowsChanged(change, true, 1);
   const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
@@ -196,6 +207,19 @@ void TabPagerDesktopModelStateTest::derivesDesktopModelStateRows() {
   QCOMPARE(secondRow.active, true);
 }
 
+void TabPagerDesktopModelStateTest::plansDesktopModelUpdateState() {
+  const TabPagerDesktopModelState state;
+
+  const TabPagerDesktopModelState::Update update = updateForDesktopState(
+      state, {defaultDesktop("a", 1), namedDesktop("b", "Work")},
+      desktopId("b"));
+
+  QCOMPARE(update.nextState.count(), 2);
+  QCOMPARE(update.nextState.currentIndex(), 1);
+  QCOMPARE(update.nextState.rowData(1).label, QStringLiteral("Work"));
+  expectReset(update.change, true, true);
+}
+
 void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelSnapshot() {
   const TabPagerDesktopSnapshot snapshot =
       desktopSnapshot({defaultDesktop("a", 1)}, desktopId("a"));
@@ -203,7 +227,7 @@ void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelSnapshot() {
       TabPagerDesktopModelState::fromSnapshot(snapshot);
 
   const TabPagerDesktopModelChange change =
-      state.changeForState(TabPagerDesktopModelState::fromSnapshot(snapshot));
+      state.updateForSnapshot(snapshot).change;
 
   expectUnchanged(change);
 }
@@ -215,10 +239,9 @@ void TabPagerDesktopModelStateTest::
   };
   const TabPagerDesktopModelState state =
       desktopModelState(desktops, desktopId("missing-a"));
-  const TabPagerDesktopModelState nextState =
-      desktopModelState(desktops, desktopId("missing-b"));
 
-  const TabPagerDesktopModelChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change =
+      updateForDesktopState(state, desktops, desktopId("missing-b")).change;
 
   expectUnchanged(change);
 }
@@ -227,9 +250,11 @@ void TabPagerDesktopModelStateTest::plansDesktopModelResetWhenCountChanges() {
   const TabPagerDesktopModelState state =
       desktopModelState({defaultDesktop("a", 1)}, desktopId("a"));
 
-  const TabPagerDesktopModelState nextState = desktopModelState(
-      {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("b"));
-  const TabPagerDesktopModelChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change =
+      updateForDesktopState(state,
+                            {defaultDesktop("a", 1), defaultDesktop("b", 2)},
+                            desktopId("b"))
+          .change;
 
   expectReset(change, true, true);
 }
@@ -239,9 +264,11 @@ void TabPagerDesktopModelStateTest::
   const TabPagerDesktopModelState state = desktopModelState(
       {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelState nextState = desktopModelState(
-      {defaultDesktop("b", 1), defaultDesktop("a", 2)}, desktopId("a"));
-  const TabPagerDesktopModelChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change =
+      updateForDesktopState(state,
+                            {defaultDesktop("b", 1), defaultDesktop("a", 2)},
+                            desktopId("a"))
+          .change;
 
   expectReset(change, false, true);
 }
@@ -250,9 +277,11 @@ void TabPagerDesktopModelStateTest::plansCurrentDesktopRowUpdates() {
   const TabPagerDesktopModelState state = desktopModelState(
       {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelState nextState = desktopModelState(
-      {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("b"));
-  const TabPagerDesktopModelChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change =
+      updateForDesktopState(state,
+                            {defaultDesktop("a", 1), defaultDesktop("b", 2)},
+                            desktopId("b"))
+          .change;
 
   expectRowsChanged(change, true, 1);
 
@@ -267,9 +296,11 @@ void TabPagerDesktopModelStateTest::plansDesktopDataRowUpdates() {
   const TabPagerDesktopModelState state = desktopModelState(
       {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelState nextState = desktopModelState(
-      {defaultDesktop("a", 1), namedDesktop("b", "Chat")}, desktopId("a"));
-  const TabPagerDesktopModelChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change =
+      updateForDesktopState(state,
+                            {defaultDesktop("a", 1), namedDesktop("b", "Chat")},
+                            desktopId("a"))
+          .change;
 
   expectRowsChanged(change, false, 1);
 
@@ -286,9 +317,11 @@ void TabPagerDesktopModelStateTest::groupsAdjacentDesktopDataRowUpdates() {
   const TabPagerDesktopModelState state = desktopModelState(
       {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelState nextState = desktopModelState(
-      {namedDesktop("a", "Mail"), namedDesktop("b", "Chat")}, desktopId("a"));
-  const TabPagerDesktopModelChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change =
+      updateForDesktopState(
+          state, {namedDesktop("a", "Mail"), namedDesktop("b", "Chat")},
+          desktopId("a"))
+          .change;
 
   expectRowsChanged(change, false, 1);
 
@@ -306,9 +339,11 @@ void TabPagerDesktopModelStateTest::
   const TabPagerDesktopModelState state =
       desktopModelState({defaultDesktop("a", 1), defaultDesktop("b", 2)});
 
-  const TabPagerDesktopModelState nextState = desktopModelState(
-      {namedDesktop("a", "Mail"), defaultDesktop("b", 2)}, desktopId("b"));
-  const TabPagerDesktopModelChange change = state.changeForState(nextState);
+  const TabPagerDesktopModelChange change =
+      updateForDesktopState(state,
+                            {namedDesktop("a", "Mail"), defaultDesktop("b", 2)},
+                            desktopId("b"))
+          .change;
 
   expectRowsChanged(change, true, 2);
 
