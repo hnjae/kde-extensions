@@ -43,10 +43,9 @@ QFont TabPagerDesktopModel::labelFont() const {
   return QFontDatabase::systemFont(QFontDatabase::FixedFont);
 }
 
-void TabPagerDesktopModel::setDesktopSnapshot(
-    const TabPagerDesktopSnapshot &snapshot) {
+void TabPagerDesktopModel::setDesktopRows(QList<TabPagerDesktopRowData> rows) {
   TabPagerDesktopModelTransition transition =
-      m_state.transitionToSnapshot(snapshot);
+      m_state.transitionToRows(std::move(rows));
   const bool shouldEmitCountChanged = transition.countChanged;
   const bool shouldEmitCurrentIndexChanged = transition.currentIndexChanged;
 

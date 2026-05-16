@@ -11,26 +11,43 @@ namespace {
 using TabPagerTest::DataChangedEmission;
 using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
-using TabPagerTest::desktopSnapshot;
+using TabPagerTest::desktopRows;
 using TabPagerTest::namedDesktop;
 using TabPagerTest::role;
 using TabPagerTest::takeDataChangedEmission;
+
+void expectNoStructuralSignals(const QSignalSpy &countSpy,
+                               const QSignalSpy &currentSpy,
+                               const QSignalSpy &resetSpy) {
+  QCOMPARE(countSpy.count(), 0);
+  QCOMPARE(currentSpy.count(), 0);
+  QCOMPARE(resetSpy.count(), 0);
+}
+
+void expectDataChangedEmission(QSignalSpy &dataSpy, int firstRow, int lastRow,
+                               const QList<int> &roles) {
+  QCOMPARE(dataSpy.count(), 1);
+  const DataChangedEmission emission = takeDataChangedEmission(dataSpy);
+  QCOMPARE(emission.firstRow, firstRow);
+  QCOMPARE(emission.lastRow, lastRow);
+  QCOMPARE(emission.roles, roles);
+}
 } // namespace
 
 class TabPagerDesktopModelTest : public QObject {
   Q_OBJECT
 
 private Q_SLOTS:
-  void exposesDesktopSnapshotAsListModel();
+  void exposesDesktopRowsAsListModel();
   void resetsWhenDesktopIdentityChanges();
   void updatesRowsWithoutReset();
   void emitsCurrentIndexChangeForActiveDesktopUpdates();
 };
 
-void TabPagerDesktopModelTest::exposesDesktopSnapshotAsListModel() {
+void TabPagerDesktopModelTest::exposesDesktopRowsAsListModel() {
   TabPagerDesktopModel model;
 
-  model.setDesktopSnapshot(desktopSnapshot(
+  model.setDesktopRows(desktopRows(
       {
           defaultDesktop("a", 1),
           namedDesktop("b", "Work"),
@@ -50,13 +67,13 @@ void TabPagerDesktopModelTest::exposesDesktopSnapshotAsListModel() {
 
 void TabPagerDesktopModelTest::resetsWhenDesktopIdentityChanges() {
   TabPagerDesktopModel model;
-  model.setDesktopSnapshot(desktopSnapshot(
+  model.setDesktopRows(desktopRows(
       {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a")));
   QSignalSpy countSpy(&model, &TabPagerDesktopModel::countChanged);
   QSignalSpy currentSpy(&model, &TabPagerDesktopModel::currentIndexChanged);
   QSignalSpy resetSpy(&model, &QAbstractItemModel::modelReset);
 
-  model.setDesktopSnapshot(desktopSnapshot(
+  model.setDesktopRows(desktopRows(
       {defaultDesktop("b", 1), defaultDesktop("a", 2)}, desktopId("a")));
 
   QCOMPARE(model.count(), 2);
@@ -68,29 +85,24 @@ void TabPagerDesktopModelTest::resetsWhenDesktopIdentityChanges() {
 
 void TabPagerDesktopModelTest::updatesRowsWithoutReset() {
   TabPagerDesktopModel model;
-  model.setDesktopSnapshot(desktopSnapshot(
+  model.setDesktopRows(desktopRows(
       {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a")));
   QSignalSpy countSpy(&model, &TabPagerDesktopModel::countChanged);
   QSignalSpy currentSpy(&model, &TabPagerDesktopModel::currentIndexChanged);
   QSignalSpy resetSpy(&model, &QAbstractItemModel::modelReset);
   QSignalSpy dataSpy(&model, &QAbstractItemModel::dataChanged);
 
-  model.setDesktopSnapshot(desktopSnapshot(
+  model.setDesktopRows(desktopRows(
       {defaultDesktop("a", 1), namedDesktop("b", "Chat")}, desktopId("a")));
 
   QCOMPARE(model.count(), 2);
   QCOMPARE(model.currentIndex(), 0);
-  QCOMPARE(countSpy.count(), 0);
-  QCOMPARE(currentSpy.count(), 0);
-  QCOMPARE(resetSpy.count(), 0);
-  QCOMPARE(dataSpy.count(), 1);
-  const DataChangedEmission emission = takeDataChangedEmission(dataSpy);
-  QCOMPARE(emission.firstRow, 1);
-  QCOMPARE(emission.lastRow, 1);
-  QCOMPARE(emission.roles, (QList<int>{
-                               role(TabPagerDesktopRowRole::Name),
-                               role(TabPagerDesktopRowRole::Label),
-                           }));
+  expectNoStructuralSignals(countSpy, currentSpy, resetSpy);
+  expectDataChangedEmission(dataSpy, 1, 1,
+                            QList<int>{
+                                role(TabPagerDesktopRowRole::Name),
+                                role(TabPagerDesktopRowRole::Label),
+                            });
 }
 
 void TabPagerDesktopModelTest::
@@ -100,11 +112,11 @@ void TabPagerDesktopModelTest::
       defaultDesktop("a", 1),
       defaultDesktop("b", 2),
   };
-  model.setDesktopSnapshot(desktopSnapshot(desktops, desktopId("a")));
+  model.setDesktopRows(desktopRows(desktops, desktopId("a")));
   QSignalSpy currentSpy(&model, &TabPagerDesktopModel::currentIndexChanged);
   QSignalSpy dataSpy(&model, &QAbstractItemModel::dataChanged);
 
-  model.setDesktopSnapshot(desktopSnapshot(desktops, desktopId("b")));
+  model.setDesktopRows(desktopRows(desktops, desktopId("b")));
 
   QCOMPARE(model.currentIndex(), 1);
   QCOMPARE(currentSpy.count(), 1);
