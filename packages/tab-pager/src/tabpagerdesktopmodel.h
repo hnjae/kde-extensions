@@ -31,7 +31,7 @@ public:
   [[nodiscard]] int currentIndex() const;
   [[nodiscard]] QFont labelFont() const;
 
-  void setDesktopSnapshot(TabPagerDesktopSnapshot snapshot);
+  void setDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
 
 Q_SIGNALS:
   void countChanged();

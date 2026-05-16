@@ -9,6 +9,7 @@
 #include <QModelIndex>
 #include <QSignalSpy>
 #include <QString>
+#include <QTest>
 #include <QVariant>
 
 #include <utility>
@@ -67,6 +68,17 @@ desktopModelState(QList<TabPagerDesktop> desktops,
 
 [[nodiscard]] inline int role(TabPagerDesktopRowRole role) {
   return static_cast<int>(role);
+}
+
+inline void compareDesktopRow(const TabPagerDesktopRowData &rowData,
+                              const TabPagerDesktopId &desktopId,
+                              const QString &name, const QString &label,
+                              int number, bool active) {
+  QCOMPARE(rowData.desktopId, desktopId);
+  QCOMPARE(rowData.name, name);
+  QCOMPARE(rowData.label, label);
+  QCOMPARE(rowData.number, number);
+  QCOMPARE(rowData.active, active);
 }
 
 struct DataChangedEmission {

@@ -7,6 +7,7 @@
 #include <QTest>
 
 namespace {
+using TabPagerTest::compareDesktopRow;
 using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
 using TabPagerTest::desktopSnapshot;
@@ -34,16 +35,10 @@ void TabPagerDesktopRowsTest::projectsSnapshotToRows() {
 
   QCOMPARE(rows.count(), 3);
   QCOMPARE(rows.currentIndex(), 1);
-  QCOMPARE(rows.rowData(0).desktopId, desktopId("a"));
-  QCOMPARE(rows.rowData(0).name, QStringLiteral("Desktop 1"));
-  QCOMPARE(rows.rowData(0).label, QStringLiteral("1"));
-  QCOMPARE(rows.rowData(0).number, 1);
-  QCOMPARE(rows.rowData(0).active, false);
-  QCOMPARE(rows.rowData(1).desktopId, desktopId("b"));
-  QCOMPARE(rows.rowData(1).name, QStringLiteral("Work"));
-  QCOMPARE(rows.rowData(1).label, QStringLiteral("Work"));
-  QCOMPARE(rows.rowData(1).number, 2);
-  QCOMPARE(rows.rowData(1).active, true);
+  compareDesktopRow(rows.rowData(0), desktopId("a"),
+                    QStringLiteral("Desktop 1"), QStringLiteral("1"), 1, false);
+  compareDesktopRow(rows.rowData(1), desktopId("b"), QStringLiteral("Work"),
+                    QStringLiteral("Work"), 2, true);
   QCOMPARE(rows.rowData(2).label, QStringLiteral("3"));
 }
 
@@ -55,11 +50,8 @@ void TabPagerDesktopRowsTest::filtersInvalidDesktopIdsFromRows() {
 
   QCOMPARE(rows.count(), 1);
   QCOMPARE(rows.currentIndex(), 0);
-  QCOMPARE(rows.rowData(0).desktopId, desktopId("b"));
-  QCOMPARE(rows.rowData(0).name, QStringLiteral("Desktop 2"));
-  QCOMPARE(rows.rowData(0).label, QStringLiteral("2"));
-  QCOMPARE(rows.rowData(0).number, 2);
-  QCOMPARE(rows.rowData(0).active, true);
+  compareDesktopRow(rows.rowData(0), desktopId("b"),
+                    QStringLiteral("Desktop 2"), QStringLiteral("2"), 2, true);
   QCOMPARE(rows.desktopIdForIndex(-1).has_value(), false);
   QCOMPARE(rows.desktopIdForIndex(1).has_value(), false);
   QCOMPARE(rows.desktopIdForIndex(0).value_or(TabPagerDesktopId{}),
