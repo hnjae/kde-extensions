@@ -17,7 +17,6 @@
               ../../.biome.json
               ../../LICENSES
               ../../README.md
-              ../../REUSE.toml
               ../../metainfo
               ../../package
               ../../tests

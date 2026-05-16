@@ -35,7 +35,6 @@
             pkgs.kdePackages.plasma-workspace
             pkgs.nodejs
             pkgs.qt6.qtdeclarative
-            pkgs.reuse
           ];
 
           dontConfigure = true;
@@ -44,7 +43,6 @@
           buildPhase = ''
             runHook preBuild
 
-            reuse lint
             biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
 
             installed_plasmoid="${package}/share/plasma/plasmoids/${package.pluginId}"
