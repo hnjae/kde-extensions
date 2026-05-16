@@ -17,7 +17,8 @@ in `SPEC.md`.
 
 ## Model Policy
 
-- Use manual task ordering so user drag order can define shortcut positions.
+- Use manual task ordering so user drag order can define shortcut positions
+  within the pinned prefix and within the unpinned suffix.
 - Disable application grouping so each window has a separate task item.
 - Keep pinned launchers and their in-place windows as a contiguous prefix of the
   normal visible model.
@@ -28,6 +29,9 @@ in `SPEC.md`.
 - Do not replace or move an existing pinned-slot window when an additional
   matching window appears. The additional matching window should append after the
   pinned prefix.
+- Keep the normal visible model filtered to the current virtual desktop and the
+  activity scope used by KDE's task manager, but do not filter it to the current
+  screen.
 - Number only rows 0 through 8 in the visible model; these correspond to
   user-facing slots 1 through 9.
 - Keep demanding-attention tasks from other virtual desktops out of the normal
@@ -37,19 +41,25 @@ in `SPEC.md`.
 
 - Treat remote notifications as task-manager attention state, specifically
   `AbstractTasksModel::IsDemandingAttention`.
-- The normal visible model should keep filtering to the current virtual
-  desktop, current screen, and current activity. Do not let demanding-attention
-  tasks bypass that model's virtual desktop filter.
+- The normal visible model should keep filtering to the current virtual desktop
+  and the activity scope used by KDE's task manager. Do not let
+  demanding-attention tasks bypass that model's virtual desktop filter.
 - Use a separate remote-attention path to find demanding-attention window tasks
-  that are hidden only because they are on another virtual desktop.
-- Expose remote attention as one task-like item with a `0` badge instead of
-  inserting those windows into the normal task order.
+  that are hidden only because they are on another virtual desktop. Include
+  tasks from any screen.
+- Expose remote attention as one task-like item instead of inserting those
+  windows into the normal task order.
 - Render the remote-attention item at the far right of the widget, outside the
   normal numbered rows.
-- `Meta+0` is a dedicated remote-attention shortcut. It is not slot 10 and must
-  not affect row numbering or pinned launcher positions.
+- `Meta+0` activates the far-right visible item. It is based on the widget edge,
+  not on a numbered model row, and must not affect row numbering or pinned
+  launcher positions. When the remote-attention item exists, it is the far-right
+  item and therefore the `Meta+0` target.
+- Do not render a `0` badge on the far-right item. Number badges are only for
+  slots 1 through 9.
 - When multiple remote attention tasks exist, keep a deterministic most-recent
-  target for `Meta+0` and display the number of pending remote attention tasks.
+  target for the remote-attention item and display the number of pending remote
+  attention tasks.
 
 ## Visual Policy
 
@@ -60,6 +70,7 @@ in `SPEC.md`.
   below that threshold.
 - Prefix fallback should keep the same slot number and activation behavior as
   badge mode.
+- Do not render a `0` number badge for `Meta+0`.
 
 ## Packaging And Dependencies
 
@@ -83,15 +94,20 @@ in `SPEC.md`.
 - Verify opening an extra same-application window keeps the existing pinned-slot
   window in place, appends the new window after the pinned prefix, and does not
   group the windows.
+- Verify pinned items can be reordered within the pinned prefix and unpinned
+  items can be reordered within the unpinned suffix.
 - Verify closing a pinned-slot window refills from another same-application
   window, or returns to the launcher when none remains.
+- Verify the normal task list is not limited to the current screen.
 - Verify tasks after slot 9 are visible and unnumbered.
+- Verify `Meta+0` activates the rightmost visible item when no remote attention
+  item is shown, without rendering a `0` badge on that item.
 - Verify small icon or panel cases switch to prefix numbering instead of showing
   unreadable badges.
 - Verify a window demanding attention on another virtual desktop appears through
-  the far-right `0` attention item without changing `Meta+1` through `Meta+9`
-  targets or moving existing slots.
+  the far-right attention item without changing `Meta+1` through `Meta+9`
+  targets, moving existing slots, or showing a `0` badge.
 - Verify `Meta+0` switches to the remote task's virtual desktop and raises the
-  demanding-attention window.
+  demanding-attention window when the remote-attention item is visible.
 - Verify multiple remote attention tasks show a count and keep a deterministic
-  `Meta+0` target.
+  remote-attention target.

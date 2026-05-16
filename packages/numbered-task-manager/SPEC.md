@@ -1,12 +1,15 @@
 # Numbered Task Manager Specification
 
 Numbered Task Manager is an icons-and-text Plasma task manager for users who
-select windows with `Meta+1` through `Meta+9`.
+select windows with `Meta+1` through `Meta+9` and the rightmost visible item
+with `Meta+0`.
 
 ## Goals
 
 - Each visible slot from 1 through 9 has a stable number that matches the
   corresponding `Meta+number` shortcut.
+- The rightmost visible item is reachable with `Meta+0` without showing a `0`
+  number badge.
 - Pinned applications keep their positions, so the same shortcut keeps targeting
   the same slot as windows open and close.
 - Each window is shown as its own task item. Windows are not grouped together.
@@ -15,17 +18,18 @@ select windows with `Meta+1` through `Meta+9`.
 
 ## Task List Behavior
 
-- The widget looks and behaves like an icons-and-text task manager.
-- The first nine visible task slots are numbered `1` through `9`.
-- Tasks after slot 9 remain visible but are not numbered.
+- The widget uses an icons-and-text task item layout and follows KDE task
+  manager interaction patterns unless this spec says otherwise.
+- The first nine normal visible task slots are numbered `1` through `9`.
+- Normal tasks after slot 9 remain visible but are not numbered.
 - The default number style is a badge over the lower-left corner of the task
   icon.
 - Number badges use KDE's configured fixed-width font.
 - If the task icon is too small for a readable badge, the number is shown as a
   text prefix before the icon and title instead.
-- The widget shows tasks from the current virtual desktop, current screen, and
-  current activity, except for the separate remote attention item described
-  below.
+- The normal task list shows tasks from the current virtual desktop.
+- The widget is not limited to the current screen.
+- Activity filtering follows KDE's task manager behavior.
 - Horizontal panels are the supported v1 target. Vertical panels may work, but
   they are best-effort in v1.
 
@@ -36,9 +40,10 @@ select windows with `Meta+1` through `Meta+9`.
 - Pinned applications form a continuous pinned area at the start of the normal
   task list.
 - Users can reorder pinned applications by dragging them within the pinned area.
-- Unpinned windows appear after the pinned area.
-- A pinned application appears as a launcher icon when it has no matching
-  window.
+- Unpinned windows appear after the pinned area and can be reordered by dragging
+  them within the unpinned area.
+- A pinned application appears as a launcher icon when it has no matching window
+  in the normal task list.
 - Activating a pinned launcher opens the application in that pinned slot instead
   of creating the first matching window at the far right.
 - If a pinned application already has a window in its pinned slot, opening
@@ -51,13 +56,13 @@ select windows with `Meta+1` through `Meta+9`.
 ## Activation Behavior
 
 - `Meta+1` through `Meta+9` activate the task in the matching numbered slot.
-- `Meta+0` activates the remote attention item when one exists. It never
-  activates the tenth task, and it does nothing when no remote attention item
-  exists.
+- `Meta+0` activates the rightmost visible item. It is based on the right edge
+  of the widget, not on a numbered slot, and it does nothing when there is no
+  visible item.
 - Activating a launcher starts the application.
 - Activating a window focuses and raises that window, restoring it if minimized.
-- The shortcut target is based on the visible task slot, not on the most
-  recently opened or most recently active application.
+- `Meta+1` through `Meta+9` targets are based on visible task slots, not on the
+  most recently opened or most recently active application.
 
 ## Remote Attention Behavior
 
@@ -66,15 +71,16 @@ select windows with `Meta+1` through `Meta+9`.
 - Remote attention tasks do not enter the normal `1` through `9` task slot
   order and do not change existing slot numbers.
 - When at least one remote attention task exists, the widget shows one distinct
-  attention item with a `0` badge at the far right of the widget.
+  attention item at the far right of the widget.
+- The attention item does not show a `0` number badge.
 - The attention item is separate from the normal task slots and does not move
   existing slots.
-- Activating the attention item, including with `Meta+0`, switches to the
-  task's virtual desktop and raises the window.
+- Activating the attention item switches to the task's virtual desktop and
+  raises the window.
 - If multiple remote attention tasks exist, the attention item shows a count and
   targets the window that most recently started asking for attention.
-- Remote attention handling is limited to tasks that otherwise match the
-  widget's current screen and current activity scope.
+- Remote attention is not limited to the current screen. Its activity scope
+  follows KDE's task manager behavior.
 
 ## Out Of Scope For v1
 
