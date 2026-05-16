@@ -18,6 +18,10 @@ _:
 build:
     nix build "{{ root }}#numbered-task-manager" --no-link --print-out-paths
 
+[group('build')]
+build-kpackage:
+    nix develop "{{ dev_shell }}" -c build-kpackage
+
 [group('ci')]
 check:
     nix build "{{ check_prefix }}numbered-task-manager-check" --no-link --print-out-paths

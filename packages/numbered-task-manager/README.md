@@ -30,6 +30,7 @@ just test
 just lint-qml
 just check
 just build
+just build-kpackage
 ```
 
 Manual Plasma verification is still required for shortcut delivery,

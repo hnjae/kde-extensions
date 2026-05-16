@@ -6,14 +6,14 @@
     {
       packages.numbered-task-manager =
         let
-          pluginId = "io.github.hnjae.numberedtaskmanager";
-          version = "0.1.0";
+          metadataJson = builtins.fromJSON (builtins.readFile ../../package/metadata.json);
+          pluginId = metadataJson.KPlugin.Id;
+          version = metadataJson.KPlugin.Version;
 
           sourceRoot = ../../.;
           source = lib.fileset.toSource {
             root = sourceRoot;
             fileset = lib.fileset.unions [
-              ../../CMakeLists.txt
               ../../LICENSES
               ../../README.md
               ../../REUSE.toml
@@ -23,19 +23,29 @@
             ];
           };
         in
-        pkgs.kdePackages.mkKdeDerivation {
+        pkgs.stdenvNoCC.mkDerivation {
           pname = "numbered-task-manager";
-          inherit version source;
+          inherit version;
           src = source;
 
-          extraNativeBuildInputs = [
-            pkgs.kdePackages.extra-cmake-modules
-            pkgs.kdePackages.plasma-workspace
-          ];
+          dontConfigure = true;
+          dontBuild = true;
 
-          extraCmakeFlags = [
-            "-DECM_DIR=${pkgs.kdePackages.extra-cmake-modules}/share/ECM/cmake"
-          ];
+          installPhase = ''
+            runHook preInstall
+
+            install -d "$out/share/plasma/plasmoids/${pluginId}"
+            cp -R --no-preserve=mode package/. "$out/share/plasma/plasmoids/${pluginId}/"
+
+            install -D -m 0644 \
+              metainfo/${pluginId}.metainfo.xml \
+              "$out/share/metainfo/${pluginId}.metainfo.xml"
+
+            install -d "$out/share/licenses/numbered-task-manager"
+            install -m 0644 LICENSES/*.txt "$out/share/licenses/numbered-task-manager/"
+
+            runHook postInstall
+          '';
 
           passthru = {
             inherit

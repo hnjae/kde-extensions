@@ -22,19 +22,16 @@
         qmlImportFlags = lib.concatMapStringsSep " " (path: "-I ${lib.escapeShellArg path}") qmlImportPaths;
       in
       {
-        checks.numbered-task-manager-check = pkgs.stdenv.mkDerivation {
+        checks.numbered-task-manager-check = pkgs.stdenvNoCC.mkDerivation {
           pname = "numbered-task-manager-check";
           inherit (package) version source;
           src = package.source;
 
           nativeBuildInputs = [
             pkgs.appstream
-            pkgs.cmake
-            pkgs.kdePackages.extra-cmake-modules
             pkgs.kdePackages.kpackage
             pkgs.kdePackages.libplasma
             pkgs.kdePackages.plasma-workspace
-            pkgs.ninja
             pkgs.nodejs
             pkgs.qt6.qtdeclarative
             pkgs.reuse
@@ -48,17 +45,9 @@
 
             reuse lint
 
-            build_dir=build
-            install_prefix="$TMPDIR/install"
-
-            cmake -S . -B "$build_dir" -G Ninja \
-              -DCMAKE_INSTALL_PREFIX="$install_prefix"
-            cmake --build "$build_dir"
-            cmake --install "$build_dir"
-
-            installed_plasmoid="$install_prefix/share/plasma/plasmoids/${package.pluginId}"
-            installed_metainfo="$install_prefix/share/metainfo/${package.pluginId}.metainfo.xml"
-            installed_license_dir="$install_prefix/share/licenses/numbered-task-manager"
+            installed_plasmoid="${package}/share/plasma/plasmoids/${package.pluginId}"
+            installed_metainfo="${package}/share/metainfo/${package.pluginId}.metainfo.xml"
+            installed_license_dir="${package}/share/licenses/numbered-task-manager"
             required_plasmoid_files="
               metadata.json
               contents/ui/main.qml
