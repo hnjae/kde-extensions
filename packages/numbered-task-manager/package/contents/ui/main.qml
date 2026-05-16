@@ -47,6 +47,14 @@ PlasmoidItem {
         tasksModel.requestActivate(normalTaskEntries[targetIndex].modelIndex);
     }
 
+    function activateTaskEntry(task) {
+        if (!task || task.sourceIndex === undefined || task.sourceIndex < 0) {
+            return;
+        }
+
+        tasksModel.requestActivate(task.modelIndex);
+    }
+
     function normalizedLauncherList(value) {
         if (!value) {
             return [];
@@ -610,7 +618,7 @@ PlasmoidItem {
                     canDropTask: (sourceIndex, targetIndex) => root.canMoveTask(sourceIndex, targetIndex)
 
                     onActivated: {
-                        root.activateTaskAtIndex(index);
+                        root.activateTaskEntry(entry);
                     }
 
                     onContextMenuRequested: task => {
