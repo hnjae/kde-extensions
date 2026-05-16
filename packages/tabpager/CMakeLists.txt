@@ -102,6 +102,7 @@ if(BUILD_TESTING)
     endfunction()
 
     add_tabpager_test(tabpagerdesktoplogic tests/tabpagerdesktoplogic_test.cpp)
+    add_tabpager_test(tabpagerdesktoprow tests/tabpagerdesktoprow_test.cpp)
     add_tabpager_test(tabpagerdesktopmodelstate tests/tabpagerdesktopmodelstate_test.cpp)
     add_tabpager_test(tabpagerdesktopnavigator tests/tabpagerdesktopnavigator_test.cpp)
     add_tabpager_test(tabpagerbackend tests/tabpagerbackend_test.cpp

@@ -3,6 +3,8 @@
 
 #include "tabpagerdesktoprow.h"
 
+#include "tabpagerdesktoplogic.h"
+
 #include <array>
 #include <span>
 #include <type_traits>
@@ -66,6 +68,19 @@ constexpr auto rowRoleDefinitions = std::to_array({
 tabPagerDesktopRowRoleDefinitions() {
   return rowRoleDefinitions;
 }
+
+[[nodiscard]] TabPagerDesktopRowData
+rowDataForDesktop(qsizetype row, const TabPagerDesktop &desktop,
+                  const TabPagerDesktopId &currentDesktop) {
+  const int number = static_cast<int>(row + 1);
+  return TabPagerDesktopRowData{
+      .desktopId = desktop.id,
+      .name = desktop.name,
+      .label = TabPagerDesktopLogic::labelForDesktop(number, desktop.name),
+      .number = number,
+      .active = desktop.id.matches(currentDesktop),
+  };
+}
 } // namespace
 
 QHash<int, QByteArray> tabPagerDesktopRowRoleNames() {
@@ -106,4 +121,22 @@ tabPagerDesktopRowChangedRoles(const TabPagerDesktopRowData &previousRow,
   }
 
   return roles;
+}
+
+QList<TabPagerDesktopRowData>
+tabPagerDesktopRowsForSnapshot(const TabPagerDesktopSnapshot &snapshot) {
+  QList<TabPagerDesktopRowData> rows;
+  rows.reserve(snapshot.desktops.size());
+
+  for (qsizetype sourceRow = 0; sourceRow < snapshot.desktops.size();
+       ++sourceRow) {
+    const TabPagerDesktop &desktop = snapshot.desktops.at(sourceRow);
+    if (!desktop.id.isValid()) {
+      continue;
+    }
+
+    rows.append(rowDataForDesktop(sourceRow, desktop, snapshot.currentDesktop));
+  }
+
+  return rows;
 }

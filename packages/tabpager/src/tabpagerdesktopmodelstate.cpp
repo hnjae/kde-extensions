@@ -3,8 +3,6 @@
 
 #include "tabpagerdesktopmodelstate.h"
 
-#include "tabpagerdesktoplogic.h"
-
 #include <utility>
 
 namespace {
@@ -64,48 +62,30 @@ rowUpdatesForChangedRoles(const QList<TabPagerDesktopRowData> &previousRows,
   return rowUpdates;
 }
 
-[[nodiscard]] TabPagerDesktopRowData
-rowDataForDesktop(qsizetype row, const TabPagerDesktop &desktop,
-                  const TabPagerDesktopId &currentDesktop) {
-  const int number = static_cast<int>(row + 1);
-  return TabPagerDesktopRowData{
-      .desktopId = desktop.id,
-      .name = desktop.name,
-      .label = TabPagerDesktopLogic::labelForDesktop(number, desktop.name),
-      .number = number,
-      .active = desktop.id.matches(currentDesktop),
-  };
+[[nodiscard]] int
+currentIndexForRows(const QList<TabPagerDesktopRowData> &rows) {
+  for (qsizetype row = 0; row < rows.size(); ++row) {
+    if (rows.at(row).active) {
+      return static_cast<int>(row);
+    }
+  }
+
+  return -1;
 }
 } // namespace
 
-TabPagerDesktopModelState TabPagerDesktopModelState::fromSnapshot(
-    const TabPagerDesktopSnapshot &snapshot) {
+TabPagerDesktopModelState
+TabPagerDesktopModelState::fromRows(QList<TabPagerDesktopRowData> rows) {
   TabPagerDesktopModelState state;
-  state.m_rows.reserve(snapshot.desktops.size());
-
-  for (qsizetype sourceRow = 0; sourceRow < snapshot.desktops.size();
-       ++sourceRow) {
-    const TabPagerDesktop &desktop = snapshot.desktops.at(sourceRow);
-    if (!desktop.id.isValid()) {
-      continue;
-    }
-
-    const TabPagerDesktopRowData rowData =
-        rowDataForDesktop(sourceRow, desktop, snapshot.currentDesktop);
-    if (rowData.active && state.m_currentIndex < 0) {
-      state.m_currentIndex = static_cast<int>(state.m_rows.size());
-    }
-
-    state.m_rows.append(rowData);
-  }
-
+  state.m_currentIndex = currentIndexForRows(rows);
+  state.m_rows = std::move(rows);
   return state;
 }
 
-TabPagerDesktopModelTransition TabPagerDesktopModelState::transitionForSnapshot(
-    const TabPagerDesktopSnapshot &snapshot) const {
+TabPagerDesktopModelTransition TabPagerDesktopModelState::transitionToRows(
+    QList<TabPagerDesktopRowData> rows) const {
   TabPagerDesktopModelState nextState =
-      TabPagerDesktopModelState::fromSnapshot(snapshot);
+      TabPagerDesktopModelState::fromRows(std::move(rows));
 
   return transitionTo(std::move(nextState));
 }

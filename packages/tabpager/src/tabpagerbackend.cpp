@@ -103,7 +103,7 @@ void TabPagerBackend::reloadNavigationWrappingAround() {
 void TabPagerBackend::applyDesktopSnapshot(
     const TabPagerDesktopSnapshot &snapshot) {
   TabPagerDesktopModelTransition transition =
-      m_state.transitionForSnapshot(snapshot);
+      m_state.transitionToRows(tabPagerDesktopRowsForSnapshot(snapshot));
   const bool shouldEmitCountChanged = transition.countChanged;
   const bool shouldEmitCurrentIndexChanged = transition.currentIndexChanged;
 
