@@ -3,8 +3,8 @@
 
 #pragma once
 
+#include "tabpagerdesktop.h"
 #include "tabpagerdesktopmodelstate.h"
-#include "tabpagerdesktopsource.h"
 
 #include <QString>
 

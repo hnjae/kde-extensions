@@ -3,21 +3,9 @@
 
 #pragma once
 
-#include "tabpagerdesktopid.h"
+#include "tabpagerdesktop.h"
 
-#include <QList>
 #include <QObject>
-#include <QString>
-
-struct TabPagerDesktop {
-  TabPagerDesktopId id;
-  QString name;
-};
-
-struct TabPagerDesktopSnapshot {
-  QList<TabPagerDesktop> desktops;
-  TabPagerDesktopId currentDesktop;
-};
 
 class TabPagerDesktopSource : public QObject {
   Q_OBJECT
