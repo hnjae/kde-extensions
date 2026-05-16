@@ -6,71 +6,199 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 <kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 https://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
-  <kcfgfile name=""/>
-  <group name="">
-    <entry name="Binding01Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding01Name" type="String"><default></default></entry>
-    <entry name="Binding01DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding01Shortcut" type="String"><default></default></entry>
-    <entry name="Binding02Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding02Name" type="String"><default></default></entry>
-    <entry name="Binding02DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding02Shortcut" type="String"><default></default></entry>
-    <entry name="Binding03Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding03Name" type="String"><default></default></entry>
-    <entry name="Binding03DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding03Shortcut" type="String"><default></default></entry>
-    <entry name="Binding04Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding04Name" type="String"><default></default></entry>
-    <entry name="Binding04DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding04Shortcut" type="String"><default></default></entry>
-    <entry name="Binding05Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding05Name" type="String"><default></default></entry>
-    <entry name="Binding05DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding05Shortcut" type="String"><default></default></entry>
-    <entry name="Binding06Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding06Name" type="String"><default></default></entry>
-    <entry name="Binding06DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding06Shortcut" type="String"><default></default></entry>
-    <entry name="Binding07Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding07Name" type="String"><default></default></entry>
-    <entry name="Binding07DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding07Shortcut" type="String"><default></default></entry>
-    <entry name="Binding08Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding08Name" type="String"><default></default></entry>
-    <entry name="Binding08DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding08Shortcut" type="String"><default></default></entry>
-    <entry name="Binding09Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding09Name" type="String"><default></default></entry>
-    <entry name="Binding09DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding09Shortcut" type="String"><default></default></entry>
-    <entry name="Binding10Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding10Name" type="String"><default></default></entry>
-    <entry name="Binding10DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding10Shortcut" type="String"><default></default></entry>
-    <entry name="Binding11Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding11Name" type="String"><default></default></entry>
-    <entry name="Binding11DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding11Shortcut" type="String"><default></default></entry>
-    <entry name="Binding12Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding12Name" type="String"><default></default></entry>
-    <entry name="Binding12DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding12Shortcut" type="String"><default></default></entry>
-    <entry name="Binding13Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding13Name" type="String"><default></default></entry>
-    <entry name="Binding13DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding13Shortcut" type="String"><default></default></entry>
-    <entry name="Binding14Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding14Name" type="String"><default></default></entry>
-    <entry name="Binding14DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding14Shortcut" type="String"><default></default></entry>
-    <entry name="Binding15Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding15Name" type="String"><default></default></entry>
-    <entry name="Binding15DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding15Shortcut" type="String"><default></default></entry>
-    <entry name="Binding16Enabled" type="Bool"><default>false</default></entry>
-    <entry name="Binding16Name" type="String"><default></default></entry>
-    <entry name="Binding16DesktopEntryId" type="String"><default></default></entry>
-    <entry name="Binding16Shortcut" type="String"><default></default></entry>
-  </group>
+    <kcfgfile name=""/>
+    <group name="">
+        <entry name="Binding01Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding01Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding01DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding01Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding02Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding02Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding02DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding02Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding03Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding03Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding03DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding03Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding04Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding04Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding04DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding04Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding05Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding05Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding05DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding05Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding06Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding06Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding06DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding06Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding07Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding07Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding07DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding07Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding08Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding08Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding08DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding08Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding09Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding09Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding09DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding09Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding10Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding10Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding10DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding10Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding11Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding11Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding11DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding11Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding12Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding12Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding12DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding12Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding13Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding13Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding13DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding13Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding14Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding14Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding14DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding14Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding15Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding15Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding15DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding15Shortcut" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding16Enabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="Binding16Name" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding16DesktopEntryId" type="String">
+            <default></default>
+        </entry>
+        <entry name="Binding16Shortcut" type="String">
+            <default></default>
+        </entry>
+    </group>
 </kcfg>

@@ -98,6 +98,27 @@ in
       { config, pkgs, ... }:
       let
         cfg = config.plasmaExtensions.treefmt;
+        xmlformatConfig = pkgs.writeText "xmlformat.conf" ''
+          *DEFAULT
+            format = block
+            entry-break = 1
+            element-break = 1
+            exit-break = 1
+            subindent = 4
+            normalize = no
+            wrap-type = sentence
+            wrap-length = 0
+
+          *DOCUMENT
+            format = block
+            entry-break = 0
+            element-break = 1
+            exit-break = 1
+            subindent = 0
+            normalize = no
+            wrap-type = sentence
+            wrap-length = 0
+        '';
 
         prefixGlob =
           root: pattern:
@@ -201,6 +222,28 @@ in
           settings.formatter =
             globalOverrideExcludes
             // {
+              xmlformat = {
+                command = lib.getExe (
+                  pkgs.writeShellScriptBin "treefmt-xmlformat" ''
+                    set -euo pipefail
+
+                    temp=$(mktemp)
+                    trap 'rm "$temp"' EXIT
+
+                    for file in "$@"; do
+                      ${lib.getExe pkgs.xmlformat} --config-file "${xmlformatConfig}" "$file" > "$temp"
+                      if ! cmp -s "$file" "$temp"; then
+                        cp "$temp" "$file"
+                      fi
+                    done
+                  ''
+                );
+                includes = [
+                  "*.xml"
+                  "*.ui"
+                ];
+              };
+
               shell-fmt = {
                 command = lib.getExe (
                   pkgs.writeShellScriptBin "treefmt-shell-fmt" ''
