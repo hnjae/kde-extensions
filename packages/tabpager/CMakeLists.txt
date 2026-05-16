@@ -58,6 +58,8 @@ target_link_libraries(tabpagermodel PUBLIC
 add_library(tabpagerplasma STATIC
     src/tabpagerqmlbackend.cpp
     src/tabpagerqmlbackend.h
+    src/tabpagervirtualdesktopinfo.cpp
+    src/tabpagervirtualdesktopinfo.h
     src/taskmanagerdesktopsource.cpp
     src/taskmanagerdesktopsource.h
 )
@@ -110,6 +112,12 @@ if(BUILD_TESTING)
     add_tabpager_test(tabpagerdesktopnavigator tests/tabpagerdesktopnavigator_test.cpp)
     add_tabpager_test(tabpagerbackend tests/tabpagerbackend_test.cpp
         tests/tabpagerbackendtesthelpers.h
+    )
+    add_tabpager_test(taskmanagerdesktopsource
+        tests/taskmanagerdesktopsource_test.cpp
+    )
+    target_link_libraries(taskmanagerdesktopsource_test PRIVATE
+        tabpagerplasma
     )
 endif()
 
