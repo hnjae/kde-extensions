@@ -1,0 +1,17 @@
+{
+  "KPackageStructure": "KWin/Script",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "KIM Hyunjae"
+      }
+    ],
+    "Category": "Window Management",
+    "Description": "Manually refocuses the active window to help recover IME input.",
+    "Icon": "preferences-system-windows",
+    "Id": "io.github.hnjae.kwin-ime-refocus",
+    "Name": "IME Refocus"
+  },
+  "X-Plasma-API": "javascript",
+  "X-Plasma-MainScript": "code/main.js"
+}

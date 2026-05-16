@@ -20,12 +20,12 @@ just build-kpackage
 nix develop 'path:../..#kwin-ime-refocus' -c build-kpackage
 ```
 
-The archive is written to `dist/kwin-ime-refocus-0.1.0.kwinscript`.
+The archive is written to `dist/<package-name>-<version>.kwinscript`.
 
 Install it from KDE System Settings with Window Management > KWin Scripts > Install from File, or install it from the command line:
 
 ```sh
-kpackagetool6 --type=KWin/Script --install dist/kwin-ime-refocus-0.1.0.kwinscript
+kpackagetool6 --type=KWin/Script --install dist/<package-name>-<version>.kwinscript
 ```
 
 ## Usage

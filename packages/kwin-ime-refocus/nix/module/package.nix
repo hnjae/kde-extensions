@@ -6,14 +6,17 @@
     {
       packages.kwin-ime-refocus =
         let
-          pluginId = "io.github.hnjae.kwin-ime-refocus";
-          version = "0.1.0";
+          packageJson = builtins.fromJSON (builtins.readFile ../../package.json);
+          kpackageJson = builtins.fromJSON (builtins.readFile ../../kpackage.json);
+          pluginId = kpackageJson.KPlugin.Id;
+          version = packageJson.version;
 
           sourceRoot = ../../.;
           source = lib.fileset.toSource {
             root = sourceRoot;
             fileset = lib.fileset.unions [
               ../../.biome.json
+              ../../kpackage.json
               ../../package.json
               ../../scripts
               ../../src
@@ -23,7 +26,7 @@
           };
         in
         pkgs.stdenvNoCC.mkDerivation {
-          pname = "kwin-ime-refocus";
+          pname = packageJson.name;
           inherit version;
           src = source;
 
@@ -47,7 +50,7 @@
             runHook preInstall
 
             install -d "$out/share/kwin/scripts/${pluginId}"
-            cp -R dist/kwin-ime-refocus/. "$out/share/kwin/scripts/${pluginId}/"
+            cp -R dist/${packageJson.name}/. "$out/share/kwin/scripts/${pluginId}/"
 
             runHook postInstall
           '';
@@ -58,6 +61,7 @@
               source
               version
               ;
+            packageName = packageJson.name;
           };
 
           meta = {

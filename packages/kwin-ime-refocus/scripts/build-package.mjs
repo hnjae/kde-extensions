@@ -10,28 +10,22 @@ const packageDir = path.resolve(
   "..",
 );
 const buildScriptDir = path.join(packageDir, "build", "src");
-const distRoot = path.join(packageDir, "dist", "kwin-ime-refocus");
+const packageJson = JSON.parse(
+  await readFile(path.join(packageDir, "package.json"), "utf8"),
+);
+const kpackageJson = JSON.parse(
+  await readFile(path.join(packageDir, "kpackage.json"), "utf8"),
+);
+const distRoot = path.join(packageDir, "dist", packageJson.name);
 const distCodeDir = path.join(distRoot, "contents", "code");
 
 const metadata = {
-  KPackageStructure: "KWin/Script",
+  ...kpackageJson,
   KPlugin: {
-    Authors: [
-      {
-        Name: "KIM Hyunjae",
-      },
-    ],
-    Category: "Window Management",
-    Description:
-      "Manually refocuses the active window to help recover IME input.",
-    Icon: "preferences-system-windows",
-    Id: "io.github.hnjae.kwin-ime-refocus",
-    License: "AGPL-3.0-or-later",
-    Name: "IME Refocus",
-    Version: "0.1.0",
+    ...kpackageJson.KPlugin,
+    License: packageJson.license,
+    Version: packageJson.version,
   },
-  "X-Plasma-API": "javascript",
-  "X-Plasma-MainScript": "code/main.js",
 };
 
 await rm(distRoot, { force: true, recursive: true });

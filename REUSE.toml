@@ -19,6 +19,7 @@ path = [
   "**/SPEC.md",
   "**/flake.lock",
   "**/justfile",
+  "**/kpackage.json",
   "**/metadata.json",
   "**/package-lock.json",
   "**/package.json",

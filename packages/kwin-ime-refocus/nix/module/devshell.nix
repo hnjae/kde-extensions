@@ -42,10 +42,11 @@
             }
 
             plugin_id=${lib.escapeShellArg package.pluginId}
+            package_name=${lib.escapeShellArg package.packageName}
             version=${lib.escapeShellArg package.version}
             repo_root=$(find_checkout_root)
             package_root="$repo_root/packages/kwin-ime-refocus"
-            archive_name="kwin-ime-refocus-$version.kwinscript"
+            archive_name="$package_name-$version.kwinscript"
             archive_path="$package_root/dist/$archive_name"
 
             if [[ ! -f "$package_root/package.json" ]]; then

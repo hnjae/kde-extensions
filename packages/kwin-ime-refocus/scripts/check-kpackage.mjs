@@ -2,19 +2,25 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { spawnSync } from "node:child_process";
-import { access, mkdir, mkdtemp, rm } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const pluginId = "io.github.hnjae.kwin-ime-refocus";
 const packageDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
 );
-const distRoot = path.join(packageDir, "dist", "kwin-ime-refocus");
+const packageJson = JSON.parse(
+  await readFile(path.join(packageDir, "package.json"), "utf8"),
+);
+const kpackageJson = JSON.parse(
+  await readFile(path.join(packageDir, "kpackage.json"), "utf8"),
+);
+const pluginId = kpackageJson.KPlugin.Id;
+const distRoot = path.join(packageDir, "dist", packageJson.name);
 const tempDir = await mkdtemp(
-  path.join(os.tmpdir(), "kwin-ime-refocus-kpackage-"),
+  path.join(os.tmpdir(), `${packageJson.name}-kpackage-`),
 );
 const dataHome = path.join(tempDir, "share");
 

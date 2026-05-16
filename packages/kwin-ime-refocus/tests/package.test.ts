@@ -5,21 +5,32 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const packageRoot = new URL("../dist/kwin-ime-refocus/", import.meta.url);
+async function readJson(url: URL): Promise<Record<string, unknown>> {
+  return JSON.parse(await readFile(url, "utf8")) as Record<string, unknown>;
+}
+
+const packageJson = await readJson(new URL("../package.json", import.meta.url));
+const packageRoot = new URL(`../dist/${packageJson.name}/`, import.meta.url);
 
 test("build output has KWin script package structure", async () => {
-  const metadata = JSON.parse(
-    await readFile(new URL("metadata.json", packageRoot), "utf8"),
-  ) as Record<string, unknown>;
+  const metadata = await readJson(new URL("metadata.json", packageRoot));
+  const kpackageJson = await readJson(
+    new URL("../kpackage.json", import.meta.url),
+  );
 
-  assert.equal(metadata.KPackageStructure, "KWin/Script");
-  assert.equal(metadata["X-Plasma-API"], "javascript");
-  assert.equal(metadata["X-Plasma-MainScript"], "code/main.js");
+  assert.equal(metadata.KPackageStructure, kpackageJson.KPackageStructure);
+  assert.equal(metadata["X-Plasma-API"], kpackageJson["X-Plasma-API"]);
+  assert.equal(
+    metadata["X-Plasma-MainScript"],
+    kpackageJson["X-Plasma-MainScript"],
+  );
 
   const plugin = metadata.KPlugin as Record<string, unknown>;
-  assert.equal(plugin.Id, "io.github.hnjae.kwin-ime-refocus");
-  assert.equal(plugin.Version, "0.1.0");
-  assert.equal(plugin.License, "AGPL-3.0-or-later");
+  const sourcePlugin = kpackageJson.KPlugin as Record<string, unknown>;
+
+  assert.equal(plugin.Id, sourcePlugin.Id);
+  assert.equal(plugin.Version, packageJson.version);
+  assert.equal(plugin.License, packageJson.license);
 });
 
 test("main script registers an unbound IME recovery shortcut", async () => {
