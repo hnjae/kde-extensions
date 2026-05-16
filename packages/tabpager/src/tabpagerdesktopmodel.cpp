@@ -57,7 +57,8 @@ void TabPagerDesktopModel::setDesktopSnapshot(
     resetDesktopState(std::move(transition.nextState));
     break;
   case TabPagerDesktopModelTransition::Type::RowsChanged:
-    updateDesktopStateRows(std::move(transition.nextState), transition.rows);
+    updateDesktopStateRows(std::move(transition.nextState),
+                           transition.rowChanges);
     break;
   }
 
@@ -84,10 +85,10 @@ void TabPagerDesktopModel::resetDesktopState(
 
 void TabPagerDesktopModel::updateDesktopStateRows(
     TabPagerDesktopModelState nextState,
-    const QList<TabPagerDesktopModelRowUpdate> &rows) {
+    const QList<TabPagerDesktopRowsChange> &rows) {
   m_state = std::move(nextState);
 
-  for (const TabPagerDesktopModelRowUpdate &rowUpdate : rows) {
+  for (const TabPagerDesktopRowsChange &rowUpdate : rows) {
     const QModelIndex firstChangedIndex =
         index(static_cast<int>(rowUpdate.firstRow));
     const QModelIndex lastChangedIndex =

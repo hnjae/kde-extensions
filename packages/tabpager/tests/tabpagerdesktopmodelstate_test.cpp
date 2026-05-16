@@ -33,7 +33,7 @@ void expectRowsChanged(const TabPagerDesktopModelTransition &transition,
                        bool currentIndexChanged, qsizetype rowUpdateCount) {
   QCOMPARE(transition.type, TabPagerDesktopModelTransition::Type::RowsChanged);
   QCOMPARE(transition.currentIndexChanged, currentIndexChanged);
-  QCOMPARE(transition.rows.size(), rowUpdateCount);
+  QCOMPARE(transition.rowChanges.size(), rowUpdateCount);
 }
 
 [[nodiscard]] TabPagerDesktopModelTransition
@@ -106,7 +106,7 @@ void TabPagerDesktopModelStateTest::plansChangedDesktopRowRoles() {
       state, {namedDesktop("a", "Work")}, desktopId("a"));
 
   expectRowsChanged(transition, true, 1);
-  const QList<TabPagerDesktopModelRowUpdate> &rowUpdates = transition.rows;
+  const QList<TabPagerDesktopRowsChange> &rowUpdates = transition.rowChanges;
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 0);
   QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
@@ -201,7 +201,7 @@ void TabPagerDesktopModelStateTest::plansCurrentDesktopRowUpdates() {
 
   expectRowsChanged(transition, true, 1);
 
-  const QList<TabPagerDesktopModelRowUpdate> &rowUpdates = transition.rows;
+  const QList<TabPagerDesktopRowsChange> &rowUpdates = transition.rowChanges;
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 1);
   QCOMPARE(rowUpdates.at(0).roles,
@@ -218,7 +218,7 @@ void TabPagerDesktopModelStateTest::plansDesktopDataRowUpdates() {
 
   expectRowsChanged(transition, false, 1);
 
-  const QList<TabPagerDesktopModelRowUpdate> &rowUpdates = transition.rows;
+  const QList<TabPagerDesktopRowsChange> &rowUpdates = transition.rowChanges;
   QCOMPARE(rowUpdates.at(0).firstRow, 1);
   QCOMPARE(rowUpdates.at(0).lastRow, 1);
   QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
@@ -237,7 +237,7 @@ void TabPagerDesktopModelStateTest::groupsAdjacentDesktopDataRowUpdates() {
 
   expectRowsChanged(transition, false, 1);
 
-  const QList<TabPagerDesktopModelRowUpdate> &rowUpdates = transition.rows;
+  const QList<TabPagerDesktopRowsChange> &rowUpdates = transition.rowChanges;
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 1);
   QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
@@ -257,7 +257,7 @@ void TabPagerDesktopModelStateTest::
 
   expectRowsChanged(transition, true, 2);
 
-  const QList<TabPagerDesktopModelRowUpdate> &rowUpdates = transition.rows;
+  const QList<TabPagerDesktopRowsChange> &rowUpdates = transition.rowChanges;
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 0);
   QCOMPARE(rowUpdates.at(0).roles, (QList<int>{

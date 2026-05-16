@@ -4,28 +4,22 @@
 #pragma once
 
 #include "tabpagerdesktop.h"
-#include "tabpagerdesktoprow.h"
+#include "tabpagerdesktoprows.h"
 
 #include <QList>
 
 #include <cstdint>
 #include <optional>
 
-struct TabPagerDesktopModelRowUpdate {
-  qsizetype firstRow = -1;
-  qsizetype lastRow = -1;
-  QList<int> roles;
-};
-
 struct TabPagerDesktopModelTransition;
 
 class TabPagerDesktopModelState final {
 public:
   [[nodiscard]] static TabPagerDesktopModelState
-  fromSnapshot(TabPagerDesktopSnapshot snapshot);
+  fromSnapshot(const TabPagerDesktopSnapshot &snapshot);
 
   [[nodiscard]] TabPagerDesktopModelTransition
-  transitionToSnapshot(TabPagerDesktopSnapshot snapshot) const;
+  transitionToSnapshot(const TabPagerDesktopSnapshot &snapshot) const;
   [[nodiscard]] int count() const;
   [[nodiscard]] int currentIndex() const;
   [[nodiscard]] std::optional<TabPagerDesktopId>
@@ -36,8 +30,7 @@ private:
   [[nodiscard]] TabPagerDesktopModelTransition
   transitionTo(TabPagerDesktopModelState nextState) const;
 
-  QList<TabPagerDesktopRowData> m_rows;
-  int m_currentIndex = -1;
+  TabPagerDesktopRows m_rows;
 };
 
 struct TabPagerDesktopModelTransition {
@@ -51,5 +44,5 @@ struct TabPagerDesktopModelTransition {
   Type type = Type::Unchanged;
   bool countChanged = false;
   bool currentIndexChanged = false;
-  QList<TabPagerDesktopModelRowUpdate> rows;
+  QList<TabPagerDesktopRowsChange> rowChanges;
 };

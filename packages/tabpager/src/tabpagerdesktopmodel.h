@@ -44,7 +44,7 @@ protected:
 private:
   void resetDesktopState(TabPagerDesktopModelState nextState);
   void updateDesktopStateRows(TabPagerDesktopModelState nextState,
-                              const QList<TabPagerDesktopModelRowUpdate> &rows);
+                              const QList<TabPagerDesktopRowsChange> &rows);
 
   TabPagerDesktopModelState m_state;
 };
