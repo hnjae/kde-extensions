@@ -2,22 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 (() => {
-  function readBooleanConfig(key: string): boolean {
-    const value = readConfig(key, false);
-
-    return value === true || value === "true" || value === "1" || value === 1;
-  }
-
-  function readStringConfig(key: string): string {
-    const value = readConfig(key, "");
-
-    if (value === null || value === undefined) {
-      return "";
-    }
-
-    return String(value).trim();
-  }
-
   function describeError(error: unknown): string {
     if (typeof error === "object" && error !== null && "message" in error) {
       return String((error as { message: unknown }).message);
@@ -88,70 +72,6 @@
     };
   }
 
-  function readBinding(slot: number): RunOrRaise.Binding | null {
-    const name = RunOrRaise.slotName(slot);
-
-    if (!readBooleanConfig(`${name}Enabled`)) {
-      return null;
-    }
-
-    const desktopEntryId = readStringConfig(`${name}DesktopEntryId`);
-    const normalizedDesktopEntryId =
-      RunOrRaise.normalizeDesktopEntryId(desktopEntryId);
-
-    if (normalizedDesktopEntryId === "") {
-      return null;
-    }
-
-    const configuredName = readStringConfig(`${name}Name`);
-
-    return {
-      actionName: `RunOrRaise${name}`,
-      desktopEntryId,
-      displayName: configuredName === "" ? desktopEntryId : configuredName,
-      normalizedDesktopEntryId,
-      shortcut: readStringConfig(`${name}Shortcut`),
-      slotName: name,
-    };
-  }
-
-  function registerBindings(
-    runtime: RunOrRaise.Runtime,
-    controller: RunOrRaise.Controller,
-  ): void {
-    const usedShortcuts: Record<string, string> = {};
-
-    for (let slot = 1; slot <= RunOrRaise.bindingCount; slot += 1) {
-      const binding = readBinding(slot);
-
-      if (binding === null) {
-        continue;
-      }
-
-      const shortcutKey = binding.shortcut.toLocaleLowerCase();
-
-      if (shortcutKey !== "" && usedShortcuts[shortcutKey] !== undefined) {
-        runtime.log(
-          `Run or Raise: skipping ${binding.slotName} because shortcut "${binding.shortcut}" is already used by ${usedShortcuts[shortcutKey]}.`,
-        );
-        continue;
-      }
-
-      if (shortcutKey !== "") {
-        usedShortcuts[shortcutKey] = binding.slotName;
-      }
-
-      registerShortcut(
-        binding.actionName,
-        `Run or raise ${binding.displayName}`,
-        binding.shortcut,
-        () => {
-          controller.handleBinding(binding);
-        },
-      );
-    }
-  }
-
   const runtime = createKWinRuntime();
   const controller = RunOrRaise.createController(runtime);
 
@@ -167,5 +87,10 @@
     });
   }
 
-  registerBindings(runtime, controller);
+  RunOrRaise.registerBindings(
+    runtime,
+    controller,
+    RunOrRaise.readBindings(readConfig),
+    registerShortcut,
+  );
 })();
