@@ -7,12 +7,13 @@ import QtQuick as QtQuick
 import QtQuick.Controls as QtQuickControls
 import org.kde.taskmanager as TaskManager
 import "TaskHelpers.js" as TaskHelpers
+import "TaskModelLogic.js" as TaskModelLogic
 
 QtQuickControls.Menu {
     id: root
 
     readonly property string nullActivityId: "00000000-0000-0000-0000-000000000000"
-    readonly property bool hasTask: Boolean(taskModel) && hasValidModelIndex(task.modelIndex)
+    readonly property bool hasTask: Boolean(taskModel) && TaskModelLogic.hasValidModelIndex(task.modelIndex)
     readonly property bool hasWindowTask: hasTask && task.isWindow
     readonly property var desktopEntries: {
         const ids = Array.from(virtualDesktopInfo.desktopIds || []);
@@ -67,38 +68,6 @@ QtQuickControls.Menu {
 
     function stringListContains(list, value) {
         return TaskHelpers.stringListContains(list, value);
-    }
-
-    function hasValidModelIndex(modelIndex) {
-        return Boolean(modelIndex) && (modelIndex.valid === undefined || modelIndex.valid);
-    }
-
-    function desktopId(desktop) {
-        if (!desktop) {
-            return "";
-        }
-
-        if (typeof desktop === "string") {
-            return desktop;
-        }
-
-        if (desktop.id) {
-            return String(desktop.id);
-        }
-
-        return String(desktop);
-    }
-
-    function desktopListContains(desktops, desktop) {
-        const needle = desktopId(desktop);
-        const values = Array.from(desktops || []);
-        for (let i = 0; i < values.length; ++i) {
-            if (desktopId(values[i]) === needle) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     function taskOnAllActivities() {
@@ -398,7 +367,7 @@ QtQuickControls.Menu {
                 required property var modelData
 
                 checkable: true
-                checked: root.task.isOnAllVirtualDesktops || root.desktopListContains(root.task.virtualDesktops || [], modelData.id)
+                checked: root.task.isOnAllVirtualDesktops || TaskModelLogic.desktopListContains(root.task.virtualDesktops || [], modelData.id)
                 text: modelData.name
 
                 onTriggered: {

@@ -52,6 +52,147 @@ function isRemoteVirtualDesktop(desktops, isOnAllDesktops, currentDesktop) {
   );
 }
 
+function hasValidModelIndex(modelIndex) {
+  return (
+    Boolean(modelIndex) && (modelIndex.valid === undefined || modelIndex.valid)
+  );
+}
+
+function boolValue(value) {
+  return Boolean(value);
+}
+
+function stringValue(value) {
+  return String(value || "");
+}
+
+function numberValue(value, fallback) {
+  if (value === undefined || value === null) {
+    return fallback;
+  }
+
+  const numericValue = Number(value);
+  return isNaN(numericValue) ? fallback : numericValue;
+}
+
+function taskTitle(display, appName) {
+  return stringValue(display || appName);
+}
+
+function taskIconSource(decoration, fallback) {
+  return decoration || fallback;
+}
+
+function createNormalTaskEntry(roles) {
+  const taskRoles = roles || {};
+  const index = numberValue(taskRoles.index, -1);
+  const launcherPinned = boolValue(taskRoles.launcherPinned);
+  const isLauncher = boolValue(taskRoles.isLauncher);
+  const hasLauncher = boolValue(taskRoles.hasLauncher);
+
+  return {
+    activities: Array.from(taskRoles.activities || []),
+    active: boolValue(taskRoles.active),
+    canLaunchNewInstance: boolValue(
+      taskRoles.canLaunchNewInstance || isLauncher,
+    ),
+    canSetNoBorder: boolValue(taskRoles.canSetNoBorder),
+    closable: boolValue(taskRoles.closable),
+    demandingAttention: boolValue(taskRoles.demandingAttention),
+    fullScreenable: boolValue(taskRoles.fullScreenable),
+    hasAnyLauncher: hasLauncher || isLauncher || launcherPinned,
+    hasLauncher: isLauncher || launcherPinned,
+    hasNoBorder: boolValue(taskRoles.hasNoBorder),
+    iconSource: taskIconSource(
+      taskRoles.iconSource,
+      "application-x-executable",
+    ),
+    index,
+    entryKey: stringValue(taskRoles.entryKey),
+    isExcludedFromCapture: boolValue(taskRoles.isExcludedFromCapture),
+    isFullScreen: boolValue(taskRoles.isFullScreen),
+    isKeepAbove: boolValue(taskRoles.isKeepAbove),
+    isKeepBelow: boolValue(taskRoles.isKeepBelow),
+    isLauncher,
+    isMaximizable: boolValue(taskRoles.isMaximizable),
+    isMaximized: boolValue(taskRoles.isMaximized),
+    isMinimizable: boolValue(taskRoles.isMinimizable),
+    isMinimized: boolValue(taskRoles.isMinimized),
+    isMovable: boolValue(taskRoles.isMovable),
+    isOnAllVirtualDesktops: boolValue(taskRoles.isOnAllVirtualDesktops),
+    isResizable: boolValue(taskRoles.isResizable),
+    isShadeable: boolValue(taskRoles.isShadeable),
+    isShaded: boolValue(taskRoles.isShaded),
+    isStartup: boolValue(taskRoles.isStartup),
+    isVirtualDesktopsChangeable: boolValue(
+      taskRoles.isVirtualDesktopsChangeable,
+    ),
+    isWindow: boolValue(taskRoles.isWindow),
+    launcherBacked: false,
+    launcherPosition: numberValue(taskRoles.launcherPosition, -1),
+    launcherUrl: stringValue(taskRoles.launcherUrl),
+    modelIndex: taskRoles.modelIndex,
+    moveIndex: index,
+    sourceIndex: index,
+    title: taskTitle(taskRoles.display, taskRoles.appName),
+    virtualDesktops: Array.from(taskRoles.virtualDesktops || []),
+  };
+}
+
+function createRemoteAttentionEntry(roles) {
+  const taskRoles = roles || {};
+  const index = numberValue(taskRoles.index, -1);
+
+  return {
+    activities: Array.from(taskRoles.activities || []),
+    demandingAttention: boolValue(taskRoles.demandingAttention),
+    iconSource: taskIconSource(taskRoles.iconSource, "dialog-warning"),
+    index,
+    isOnAllVirtualDesktops: boolValue(taskRoles.isOnAllVirtualDesktops),
+    isWindow: boolValue(taskRoles.isWindow),
+    launcherUrl: stringValue(taskRoles.launcherUrl),
+    modelIndex: taskRoles.modelIndex,
+    title: taskTitle(taskRoles.display, taskRoles.appName),
+    virtualDesktops: Array.from(taskRoles.virtualDesktops || []),
+    winIds: Array.from(taskRoles.winIds || []),
+  };
+}
+
+function qualifiesNormalTask(task, isInCurrentActivity, currentDesktop) {
+  const entry = task || {};
+  if (
+    typeof isInCurrentActivity === "function" &&
+    !isInCurrentActivity(entry.activities || [])
+  ) {
+    return false;
+  }
+
+  if (entry.isWindow) {
+    return isOnCurrentVirtualDesktop(
+      entry.virtualDesktops || [],
+      entry.isOnAllVirtualDesktops,
+      currentDesktop,
+    );
+  }
+
+  return Boolean(entry.isLauncher || entry.isStartup);
+}
+
+function qualifiesRemoteAttention(task, isInCurrentActivity, currentDesktop) {
+  const entry = task || {};
+  return (
+    Boolean(entry.isWindow) &&
+    Boolean(entry.demandingAttention) &&
+    (typeof isInCurrentActivity !== "function" ||
+      isInCurrentActivity(entry.activities || [])) &&
+    isRemoteVirtualDesktop(
+      entry.virtualDesktops || [],
+      entry.isOnAllVirtualDesktops,
+      currentDesktop,
+    )
+  );
+}
+
 function normalTaskSourceOrder(left, right) {
   const leftIndex =
     left && left.sourceIndex !== undefined ? left.sourceIndex : -1;

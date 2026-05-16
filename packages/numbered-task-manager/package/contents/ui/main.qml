@@ -47,7 +47,7 @@ PlasmoidItem {
         }
 
         const targetTask = normalTaskEntries[targetIndex];
-        if (!targetTask || !hasValidModelIndex(targetTask.modelIndex)) {
+        if (!targetTask || !TaskModelLogic.hasValidModelIndex(targetTask.modelIndex)) {
             return;
         }
 
@@ -55,15 +55,11 @@ PlasmoidItem {
     }
 
     function activateTaskEntry(task) {
-        if (!task || task.sourceIndex === undefined || task.sourceIndex < 0 || !hasValidModelIndex(task.modelIndex)) {
+        if (!task || task.sourceIndex === undefined || task.sourceIndex < 0 || !TaskModelLogic.hasValidModelIndex(task.modelIndex)) {
             return;
         }
 
         tasksModel.requestActivate(task.modelIndex);
-    }
-
-    function hasValidModelIndex(modelIndex) {
-        return Boolean(modelIndex) && (modelIndex.valid === undefined || modelIndex.valid);
     }
 
     function normalizedLauncherList(value) {
@@ -178,36 +174,8 @@ PlasmoidItem {
         return TaskHelpers.visibleLauncherPosition(tasksModel.launcherList, launcherUrl, activityInfo.currentActivity, url => tasksModel.launcherPosition(url));
     }
 
-    function desktopId(desktop) {
-        return TaskModelLogic.desktopId(desktop);
-    }
-
-    function desktopListContains(desktops, desktop) {
-        return TaskModelLogic.desktopListContains(desktops, desktop);
-    }
-
-    function isOnCurrentVirtualDesktop(desktops, isOnAllDesktops) {
-        return TaskModelLogic.isOnCurrentVirtualDesktop(desktops, isOnAllDesktops, virtualDesktopInfo.currentDesktop);
-    }
-
-    function isRemoteVirtualDesktop(desktops, isOnAllDesktops) {
-        return TaskModelLogic.isRemoteVirtualDesktop(desktops, isOnAllDesktops, virtualDesktopInfo.currentDesktop);
-    }
-
     function isInCurrentActivity(activities) {
         return TaskHelpers.isInCurrentActivity(activities, activityInfo.currentActivity);
-    }
-
-    function qualifiesNormalTask(isWindow, isLauncher, isStartup, desktops, isOnAllDesktops, activities) {
-        if (!isInCurrentActivity(activities)) {
-            return false;
-        }
-
-        if (isWindow) {
-            return isOnCurrentVirtualDesktop(desktops, isOnAllDesktops);
-        }
-
-        return isLauncher || isStartup;
     }
 
     function publishNormalTask(key, qualifies, task) {
@@ -273,7 +241,7 @@ PlasmoidItem {
     }
 
     function activateRemoteAttention() {
-        if (!remoteAttentionTarget || !hasValidModelIndex(remoteAttentionTarget.modelIndex)) {
+        if (!remoteAttentionTarget || !TaskModelLogic.hasValidModelIndex(remoteAttentionTarget.modelIndex)) {
             return;
         }
 
@@ -338,48 +306,45 @@ PlasmoidItem {
             property int launcherPosition: root.visibleLauncherPosition(launcherUrl, root.launcherRevision)
             property bool launcherPinned: launcherPosition !== -1
             property string publishedKey: ""
-            property string title: model.display || model.AppName || ""
-            property var taskInfo: ({
-                    activities: Array.from(model.Activities || []),
-                    active: model.IsActive || false,
-                    canLaunchNewInstance: model.CanLaunchNewInstance || model.IsLauncher || false,
-                    canSetNoBorder: model.CanSetNoBorder || false,
-                    closable: model.IsClosable || false,
-                    demandingAttention: model.IsDemandingAttention || false,
-                    fullScreenable: model.IsFullScreenable || false,
-                    hasAnyLauncher: model.HasLauncher || model.IsLauncher || launcherPinned,
-                    hasLauncher: model.IsLauncher || launcherPinned,
-                    hasNoBorder: model.HasNoBorder || false,
-                    iconSource: model.decoration || "application-x-executable",
-                    index,
-                    entryKey: publishedKey,
-                    isExcludedFromCapture: model.IsExcludedFromCapture || false,
-                    isFullScreen: model.IsFullScreen || false,
-                    isKeepAbove: model.IsKeepAbove || false,
-                    isKeepBelow: model.IsKeepBelow || false,
-                    isLauncher: model.IsLauncher || false,
-                    isMaximizable: model.IsMaximizable || false,
-                    isMaximized: model.IsMaximized || false,
-                    isMinimizable: model.IsMinimizable || false,
-                    isMinimized: model.IsMinimized || false,
-                    isMovable: model.IsMovable || false,
-                    isOnAllVirtualDesktops: model.IsOnAllVirtualDesktops || false,
-                    isResizable: model.IsResizable || false,
-                    isShadeable: model.IsShadeable || false,
-                    isShaded: model.IsShaded || false,
-                    isStartup: model.IsStartup || false,
-                    isVirtualDesktopsChangeable: model.IsVirtualDesktopsChangeable || false,
-                    isWindow: model.IsWindow || false,
-                    launcherBacked: false,
-                    launcherPosition,
-                    launcherUrl,
-                    modelIndex: tasksModel.makePersistentModelIndex(index),
-                    moveIndex: index,
-                    sourceIndex: index,
-                    title,
-                    virtualDesktops: Array.from(model.VirtualDesktops || [])
-                })
-            property bool qualifies: root.qualifiesNormalTask(model.IsWindow || false, model.IsLauncher || false, model.IsStartup || false, model.VirtualDesktops || [], model.IsOnAllVirtualDesktops || false, model.Activities || [])
+            property var taskInfo: TaskModelLogic.createNormalTaskEntry({
+                activities: model.Activities,
+                active: model.IsActive,
+                appName: model.AppName,
+                canLaunchNewInstance: model.CanLaunchNewInstance,
+                canSetNoBorder: model.CanSetNoBorder,
+                closable: model.IsClosable,
+                demandingAttention: model.IsDemandingAttention,
+                display: model.display,
+                entryKey: publishedKey,
+                fullScreenable: model.IsFullScreenable,
+                hasLauncher: model.HasLauncher,
+                hasNoBorder: model.HasNoBorder,
+                iconSource: model.decoration,
+                index,
+                isExcludedFromCapture: model.IsExcludedFromCapture,
+                isFullScreen: model.IsFullScreen,
+                isKeepAbove: model.IsKeepAbove,
+                isKeepBelow: model.IsKeepBelow,
+                isLauncher: model.IsLauncher,
+                isMaximizable: model.IsMaximizable,
+                isMaximized: model.IsMaximized,
+                isMinimizable: model.IsMinimizable,
+                isMinimized: model.IsMinimized,
+                isMovable: model.IsMovable,
+                isOnAllVirtualDesktops: model.IsOnAllVirtualDesktops,
+                isResizable: model.IsResizable,
+                isShadeable: model.IsShadeable,
+                isShaded: model.IsShaded,
+                isStartup: model.IsStartup,
+                isVirtualDesktopsChangeable: model.IsVirtualDesktopsChangeable,
+                isWindow: model.IsWindow,
+                launcherPinned,
+                launcherPosition,
+                launcherUrl,
+                modelIndex: tasksModel.makePersistentModelIndex(index),
+                virtualDesktops: model.VirtualDesktops
+            })
+            property bool qualifies: TaskModelLogic.qualifiesNormalTask(taskInfo, activities => root.isInCurrentActivity(activities), virtualDesktopInfo.currentDesktop)
 
             height: 0
             visible: false
@@ -420,15 +385,22 @@ PlasmoidItem {
             property bool hasSyncedAttention: false
             property string publishedKey: ""
             property bool previousQualifies: false
-            property string taskKey: root.remoteAttentionKey(model.WinIdList || [], launcherUrl, title, index)
-            property string title: model.display || model.AppName || ""
-            property var taskInfo: ({
-                    iconSource: model.decoration || "dialog-warning",
-                    index,
-                    modelIndex: attentionTasksModel.makePersistentModelIndex(index),
-                    title
-                })
-            property bool qualifies: model.IsWindow && model.IsDemandingAttention && root.isInCurrentActivity(model.Activities || []) && root.isRemoteVirtualDesktop(model.VirtualDesktops || [], model.IsOnAllVirtualDesktops || false)
+            property var taskInfo: TaskModelLogic.createRemoteAttentionEntry({
+                activities: model.Activities,
+                appName: model.AppName,
+                demandingAttention: model.IsDemandingAttention,
+                display: model.display,
+                iconSource: model.decoration,
+                index,
+                isOnAllVirtualDesktops: model.IsOnAllVirtualDesktops,
+                isWindow: model.IsWindow,
+                launcherUrl,
+                modelIndex: attentionTasksModel.makePersistentModelIndex(index),
+                virtualDesktops: model.VirtualDesktops,
+                winIds: model.WinIdList
+            })
+            property string taskKey: root.remoteAttentionKey(taskInfo.winIds, taskInfo.launcherUrl, taskInfo.title, index)
+            property bool qualifies: TaskModelLogic.qualifiesRemoteAttention(taskInfo, activities => root.isInCurrentActivity(activities), virtualDesktopInfo.currentDesktop)
 
             height: 0
             visible: false

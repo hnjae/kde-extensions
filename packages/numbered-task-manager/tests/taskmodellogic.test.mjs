@@ -10,13 +10,18 @@ const logic = loadQmlJsModule(
   [
     "canMoveTask",
     "composeNormalTaskEntries",
+    "createNormalTaskEntry",
+    "createRemoteAttentionEntry",
     "desktopId",
     "desktopListContains",
+    "hasValidModelIndex",
     "isOnCurrentVirtualDesktop",
     "isRemoteVirtualDesktop",
     "moveManualTaskOrder",
     "normalTaskEntryForSourceIndex",
     "publishRemoteAttention",
+    "qualifiesNormalTask",
+    "qualifiesRemoteAttention",
     "remoteAttentionKey",
     "remoteAttentionSnapshot",
     "removeRemoteAttention",
@@ -51,6 +56,131 @@ assert.equal(
 );
 assert.equal(
   logic.isRemoteVirtualDesktop(["desktop-b"], true, "desktop-a"),
+  false,
+);
+assert.equal(logic.hasValidModelIndex(null), false);
+assert.equal(logic.hasValidModelIndex({ valid: false }), false);
+assert.equal(logic.hasValidModelIndex({ valid: true }), true);
+assert.equal(logic.hasValidModelIndex({}), true);
+
+const modelIndex = { valid: true };
+const normalTask = logic.createNormalTaskEntry({
+  activities: ["work"],
+  active: 1,
+  appName: "Fallback App",
+  canLaunchNewInstance: false,
+  hasLauncher: false,
+  iconSource: "app-icon",
+  index: 7,
+  isLauncher: true,
+  isMinimized: true,
+  launcherPinned: true,
+  launcherPosition: 2,
+  launcherUrl: "app.desktop",
+  modelIndex,
+  virtualDesktops: ["desktop-a"],
+});
+assert.deepEqual(plain(normalTask.activities), ["work"]);
+assert.equal(normalTask.active, true);
+assert.equal(normalTask.canLaunchNewInstance, true);
+assert.equal(normalTask.hasAnyLauncher, true);
+assert.equal(normalTask.hasLauncher, true);
+assert.equal(normalTask.iconSource, "app-icon");
+assert.equal(normalTask.index, 7);
+assert.equal(normalTask.isLauncher, true);
+assert.equal(normalTask.isMinimized, true);
+assert.equal(normalTask.launcherBacked, false);
+assert.equal(normalTask.launcherPosition, 2);
+assert.equal(normalTask.launcherUrl, "app.desktop");
+assert.equal(normalTask.modelIndex, modelIndex);
+assert.equal(normalTask.moveIndex, 7);
+assert.equal(normalTask.sourceIndex, 7);
+assert.equal(normalTask.title, "Fallback App");
+assert.deepEqual(plain(normalTask.virtualDesktops), ["desktop-a"]);
+
+assert.equal(
+  logic.qualifiesNormalTask(
+    normalTask,
+    (activities) => activities.includes("work"),
+    "desktop-b",
+  ),
+  true,
+);
+assert.equal(
+  logic.qualifiesNormalTask(
+    { ...normalTask, isLauncher: false, isWindow: true },
+    (activities) => activities.includes("work"),
+    "desktop-b",
+  ),
+  false,
+);
+assert.equal(
+  logic.qualifiesNormalTask(
+    {
+      ...normalTask,
+      isLauncher: false,
+      isOnAllVirtualDesktops: false,
+      isWindow: true,
+    },
+    (activities) => activities.includes("work"),
+    "desktop-a",
+  ),
+  true,
+);
+assert.equal(
+  logic.qualifiesNormalTask(
+    { ...normalTask, isLauncher: false, isStartup: true },
+    () => false,
+    "desktop-a",
+  ),
+  false,
+);
+
+const remoteTask = logic.createRemoteAttentionEntry({
+  activities: ["work"],
+  appName: "Remote App",
+  demandingAttention: true,
+  iconSource: "",
+  index: 3,
+  isOnAllVirtualDesktops: false,
+  isWindow: true,
+  launcherUrl: "remote.desktop",
+  modelIndex,
+  virtualDesktops: ["desktop-b"],
+  winIds: [42],
+});
+assert.deepEqual(plain(remoteTask.activities), ["work"]);
+assert.equal(remoteTask.demandingAttention, true);
+assert.equal(remoteTask.iconSource, "dialog-warning");
+assert.equal(remoteTask.index, 3);
+assert.equal(remoteTask.isWindow, true);
+assert.equal(remoteTask.launcherUrl, "remote.desktop");
+assert.equal(remoteTask.modelIndex, modelIndex);
+assert.equal(remoteTask.title, "Remote App");
+assert.deepEqual(plain(remoteTask.virtualDesktops), ["desktop-b"]);
+assert.deepEqual(plain(remoteTask.winIds), [42]);
+assert.equal(
+  logic.qualifiesRemoteAttention(
+    remoteTask,
+    (activities) => activities.includes("work"),
+    "desktop-a",
+  ),
+  true,
+);
+assert.equal(
+  logic.qualifiesRemoteAttention(
+    { ...remoteTask, demandingAttention: false },
+    (activities) => activities.includes("work"),
+    "desktop-a",
+  ),
+  false,
+);
+assert.equal(
+  logic.qualifiesRemoteAttention(
+    { ...remoteTask, virtualDesktops: ["desktop-a"] },
+    (activities) => activities.includes("work"),
+    "desktop-a",
+  ),
   false,
 );
 
