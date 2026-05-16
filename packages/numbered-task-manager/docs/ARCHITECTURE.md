@@ -19,6 +19,8 @@ in `SPEC.md`.
 
 - Use manual task ordering so user drag order can define shortcut positions
   within the pinned prefix and within the unpinned suffix.
+- Treat the pinned/unpinned boundary as fixed for drag reordering. Drops across
+  the boundary should be ignored and must not pin, unpin, or reorder the item.
 - Disable application grouping so each window has a separate task item.
 - Keep pinned launchers and their in-place windows as a contiguous prefix of the
   normal visible model.
@@ -35,18 +37,18 @@ in `SPEC.md`.
 - Number only rows 0 through 8 in the visible model; these correspond to
   user-facing slots 1 through 9.
 - Keep demanding-attention tasks from other virtual desktops out of the normal
-  numbered model so remote notifications cannot renumber slots 1 through 9.
+  numbered model so remote attention cannot renumber slots 1 through 9.
 
 ## Remote Attention Policy
 
-- Treat remote notifications as task-manager attention state, specifically
+- Treat remote attention as task-manager attention state, specifically
   `AbstractTasksModel::IsDemandingAttention`.
 - The normal visible model should keep filtering to the current virtual desktop
   and the activity scope used by KDE's task manager. Do not let
   demanding-attention tasks bypass that model's virtual desktop filter.
 - Use a separate remote-attention path to find demanding-attention window tasks
-  that are hidden only because they are on another virtual desktop. Include
-  tasks from any screen.
+  within KDE task manager's current activity scope that are hidden only because
+  they are on another virtual desktop. Include tasks from any screen.
 - Expose remote attention as one task-like item instead of inserting those
   windows into the normal task order.
 - Render the remote-attention item at the far right of the widget, outside the
@@ -59,9 +61,9 @@ in `SPEC.md`.
   remote attention a separate shortcut priority.
 - Do not render a `0` badge on the far-right item. Number badges are only for
   slots 1 through 9.
-- When multiple remote attention tasks exist, keep a deterministic most-recent
-  target for the remote-attention item and display the number of pending remote
-  attention tasks.
+- When multiple remote attention tasks exist, target the window that most
+  recently entered the demanding-attention state and display the number of
+  pending remote attention tasks.
 
 ## Visual Policy
 
@@ -98,8 +100,11 @@ in `SPEC.md`.
   group the windows.
 - Verify pinned items can be reordered within the pinned prefix and unpinned
   items can be reordered within the unpinned suffix.
-- Verify closing a pinned-slot window refills from another same-application
-  window, or returns to the launcher when none remains.
+- Verify cross-boundary drag drops are ignored and do not pin, unpin, or reorder
+  the item.
+- Verify closing a pinned-slot window refills from the first same-application
+  window in the unpinned area's current visible order, keeps remaining unpinned
+  windows in relative order, or returns to the launcher when none remains.
 - Verify the normal task list is not limited to the current screen.
 - Verify tasks after slot 9 are visible and unnumbered.
 - Verify `Meta+0` activates the final item in the visible item order when no
@@ -111,8 +116,10 @@ in `SPEC.md`.
 - Verify a window demanding attention on another virtual desktop appears through
   the far-right attention item without changing `Meta+1` through `Meta+9`
   targets, moving existing slots, or showing a `0` badge.
+- Verify remote attention is not limited to the current screen and follows KDE
+  task manager's activity scope.
 - Verify `Meta+0` switches to the remote task's virtual desktop and raises the
   demanding-attention window when the remote-attention item is the final item in
   the visible item order.
-- Verify multiple remote attention tasks show a count and keep a deterministic
-  remote-attention target.
+- Verify multiple remote attention tasks show a count and target the window that
+  most recently entered the demanding-attention state.

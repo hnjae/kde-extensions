@@ -42,6 +42,8 @@ item order with `Meta+0`.
 - Users can reorder pinned applications by dragging them within the pinned area.
 - Unpinned windows appear after the pinned area and can be reordered by dragging
   them within the unpinned area.
+- Dragging cannot move an item across the pinned/unpinned boundary. Drops across
+  the boundary are ignored and do not pin, unpin, or reorder the item.
 - A pinned application appears as a launcher icon when it has no matching window
   in the normal task list.
 - Activating a pinned launcher opens the application in that pinned slot instead
@@ -49,9 +51,10 @@ item order with `Meta+0`.
 - If a pinned application already has a window in its pinned slot, opening
   another window from the same application keeps the existing pinned-slot window
   in place and adds the new window after the pinned area.
-- When the window in a pinned slot closes, another window from the same
-  application refills that slot if one exists. Otherwise, the slot returns to the
-  pinned launcher.
+- When the window in a pinned slot closes, the first same-application window in
+  the unpinned area's current visible order refills that slot if one exists.
+  Otherwise, the slot returns to the pinned launcher. Remaining unpinned windows
+  keep their relative order.
 
 ## Activation Behavior
 
@@ -70,8 +73,8 @@ item order with `Meta+0`.
 
 ## Remote Attention Behavior
 
-- Remote attention means a window on another virtual desktop that asks for
-  attention.
+- Remote attention means a window within KDE task manager's current activity
+  scope, on another virtual desktop, that asks for attention.
 - Remote attention tasks do not enter the normal `1` through `9` task slot
   order and do not change existing slot numbers.
 - When at least one remote attention task exists, the widget shows one distinct
@@ -84,7 +87,7 @@ item order with `Meta+0`.
 - Activating the attention item switches to the task's virtual desktop and
   raises the window.
 - If multiple remote attention tasks exist, the attention item shows a count and
-  targets the window that most recently started asking for attention.
+  targets the window that most recently entered the demanding-attention state.
 - Remote attention is not limited to the current screen. Its activity scope
   follows KDE's task manager behavior.
 
