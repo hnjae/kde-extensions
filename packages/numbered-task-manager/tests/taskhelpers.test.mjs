@@ -11,6 +11,8 @@ const helpers = loadQmlJsModule(
     "activitiesAreAll",
     "effectiveSerializedLauncherActivities",
     "isInCurrentActivity",
+    "launcherActivitiesAfterAllToggle",
+    "launcherActivitiesAfterToggle",
     "launcherListWithActivitiesAt",
     "launcherListsEqual",
     "normalizedActivityList",
@@ -19,6 +21,7 @@ const helpers = loadQmlJsModule(
     "serializeLauncherWithActivities",
     "serializedLauncherVisibleInActivity",
     "stringListContains",
+    "taskActivitiesAfterToggle",
     "uniqueStringList",
   ],
 );
@@ -97,6 +100,22 @@ assert.equal(
   false,
 );
 
+assert.deepEqual(plain(helpers.taskActivitiesAfterToggle([], "work")), [
+  "work",
+]);
+assert.deepEqual(
+  plain(helpers.taskActivitiesAfterToggle([nullActivityId], "work")),
+  ["work"],
+);
+assert.deepEqual(
+  plain(helpers.taskActivitiesAfterToggle(["work", "chat"], "work")),
+  ["chat"],
+);
+assert.deepEqual(plain(helpers.taskActivitiesAfterToggle(["work"], "chat")), [
+  "work",
+  "chat",
+]);
+
 assert.equal(
   helpers.serializeLauncherWithActivities("[old]\napp.desktop", ["work"]),
   "[work]\napp.desktop",
@@ -118,4 +137,41 @@ assert.deepEqual(
 assert.equal(
   helpers.launcherListWithActivitiesAt(["one.desktop"], 2, ["work"]),
   null,
+);
+
+assert.deepEqual(
+  plain(helpers.launcherActivitiesAfterAllToggle([nullActivityId], "work")),
+  ["work"],
+);
+assert.equal(
+  helpers.launcherActivitiesAfterAllToggle([nullActivityId], ""),
+  null,
+);
+assert.deepEqual(
+  plain(helpers.launcherActivitiesAfterAllToggle(["work"], "work")),
+  [nullActivityId],
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherActivitiesAfterToggle([nullActivityId], "chat", "work"),
+  ),
+  ["chat"],
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherActivitiesAfterToggle(["work", "chat"], "work", "work"),
+  ),
+  ["chat"],
+);
+assert.deepEqual(
+  plain(helpers.launcherActivitiesAfterToggle(["work"], "work", "chat")),
+  ["chat"],
+);
+assert.deepEqual(
+  plain(helpers.launcherActivitiesAfterToggle(["work"], "work", "")),
+  ["work"],
+);
+assert.deepEqual(
+  plain(helpers.launcherActivitiesAfterToggle(["work"], "chat", "work")),
+  ["work", "chat"],
 );

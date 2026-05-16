@@ -126,6 +126,36 @@ function isInCurrentActivity(activities, currentActivity) {
   return stringListContains(activityList, current);
 }
 
+function taskActivitiesAfterToggle(activities, activityId) {
+  const activity = String(activityId || "");
+  if (!activity) {
+    return Array.from(activities || []);
+  }
+
+  const activityList = Array.from(activities || []).map((entry) =>
+    String(entry),
+  );
+  if (activitiesAreAll(activityList)) {
+    return [activity];
+  }
+
+  const nextActivities = [];
+  let found = false;
+  for (let i = 0; i < activityList.length; ++i) {
+    if (activityList[i] === activity) {
+      found = true;
+    } else {
+      nextActivities.push(activityList[i]);
+    }
+  }
+
+  if (!found) {
+    nextActivities.push(activity);
+  }
+
+  return nextActivities;
+}
+
 function serializedLauncherVisibleInActivity(
   serializedLauncher,
   currentActivity,
@@ -144,6 +174,45 @@ function serializeLauncherWithActivities(serializedLauncher, activities) {
   }
 
   return "[" + activityList.join(",") + "]\n" + parsed.url;
+}
+
+function launcherActivitiesAfterAllToggle(launcherActivities, currentActivity) {
+  if (activitiesAreAll(launcherActivities)) {
+    const current = String(currentActivity || "");
+    return current ? [current] : null;
+  }
+
+  return [nullActivityId];
+}
+
+function launcherActivitiesAfterToggle(
+  launcherActivities,
+  activityId,
+  currentActivity,
+) {
+  const activity = String(activityId || "");
+  if (!activity) {
+    return Array.from(launcherActivities || []);
+  }
+
+  const activityList = Array.from(launcherActivities || []).map((entry) =>
+    String(entry),
+  );
+  if (activitiesAreAll(activityList)) {
+    return [activity];
+  }
+
+  if (stringListContains(activityList, activity)) {
+    const nextActivities = activityList.filter((entry) => entry !== activity);
+    if (nextActivities.length > 0) {
+      return nextActivities;
+    }
+
+    const current = String(currentActivity || "");
+    return current ? [current] : activityList;
+  }
+
+  return activityList.concat([activity]);
 }
 
 function launcherListWithActivitiesAt(launcherList, position, activities) {

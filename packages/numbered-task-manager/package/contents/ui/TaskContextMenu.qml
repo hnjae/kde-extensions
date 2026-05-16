@@ -114,27 +114,7 @@ QtQuickControls.Menu {
             return;
         }
 
-        const activities = Array.from(task.activities || []).map(activity => String(activity));
-        if (TaskHelpers.activitiesAreAll(activities)) {
-            taskModel.requestActivities(task.modelIndex, [activityId]);
-            return;
-        }
-
-        const nextActivities = [];
-        let found = false;
-        for (let i = 0; i < activities.length; ++i) {
-            if (activities[i] === String(activityId)) {
-                found = true;
-            } else {
-                nextActivities.push(activities[i]);
-            }
-        }
-
-        if (!found) {
-            nextActivities.push(activityId);
-        }
-
-        taskModel.requestActivities(task.modelIndex, nextActivities);
+        taskModel.requestActivities(task.modelIndex, TaskHelpers.taskActivitiesAfterToggle(task.activities || [], activityId));
     }
 
     function launcherPinnedToAllActivities() {
@@ -175,16 +155,10 @@ QtQuickControls.Menu {
             return;
         }
 
-        if (launcherPinnedToAllActivities()) {
-            const currentActivity = String(activityInfo.currentActivity || "");
-            if (currentActivity) {
-                applyLauncherActivities([currentActivity]);
-            }
-            refreshLauncherActivities();
-            return;
+        const nextActivities = TaskHelpers.launcherActivitiesAfterAllToggle(launcherActivityList, activityInfo.currentActivity);
+        if (nextActivities) {
+            applyLauncherActivities(nextActivities);
         }
-
-        applyLauncherActivities([nullActivityId]);
         refreshLauncherActivities();
     }
 
@@ -193,19 +167,7 @@ QtQuickControls.Menu {
             return;
         }
 
-        if (launcherPinnedToAllActivities()) {
-            applyLauncherActivities([activityId]);
-        } else if (stringListContains(launcherActivityList, activityId)) {
-            const nextActivities = Array.from(launcherActivityList || []).filter(activity => String(activity) !== String(activityId));
-            if (nextActivities.length === 0) {
-                const currentActivity = String(activityInfo.currentActivity || "");
-                applyLauncherActivities(currentActivity ? [currentActivity] : launcherActivityList);
-            } else {
-                applyLauncherActivities(nextActivities);
-            }
-        } else {
-            applyLauncherActivities(Array.from(launcherActivityList || []).concat([activityId]));
-        }
+        applyLauncherActivities(TaskHelpers.launcherActivitiesAfterToggle(launcherActivityList, activityId, activityInfo.currentActivity));
         refreshLauncherActivities();
     }
 
