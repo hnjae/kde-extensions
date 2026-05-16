@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { copyFile, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -16,7 +16,10 @@ const packageDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
 );
-const buildMain = path.join(packageDir, "build", "src", "main.js");
+const buildCodeFiles = [
+  path.join(packageDir, "build", "src", "core.js"),
+  path.join(packageDir, "build", "src", "main.js"),
+];
 const distRoot = path.join(packageDir, "dist", "kwin-run-or-raise");
 const distCodeDir = path.join(distRoot, "contents", "code");
 
@@ -180,7 +183,13 @@ function generateConfigUi() {
 
 await rm(distRoot, { force: true, recursive: true });
 await mkdir(distCodeDir, { recursive: true });
-await copyFile(buildMain, path.join(distCodeDir, "main.js"));
+const scriptParts = await Promise.all(
+  buildCodeFiles.map((file) => readFile(file, "utf8")),
+);
+await writeFile(
+  path.join(distCodeDir, "main.js"),
+  `${scriptParts.join("\n")}\n`,
+);
 await mkdir(path.join(distRoot, "contents", "config"), { recursive: true });
 await mkdir(path.join(distRoot, "contents", "ui"), { recursive: true });
 await writeFile(
