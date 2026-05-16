@@ -102,8 +102,8 @@ in `SPEC.md`.
   items can be reordered within the unpinned suffix.
 - Verify cross-boundary drag drops are ignored and do not pin, unpin, or reorder
   the item.
-- Verify closing a pinned-slot window refills from the first same-application
-  window in the unpinned area's current visible order, keeps remaining unpinned
+- Verify closing a pinned-slot window follows Plasma TasksModel
+  launcher/window matching for refill selection, keeps remaining unpinned
   windows in relative order, or returns to the launcher when none remains.
 - Verify the normal task list is not limited to the current screen.
 - Verify tasks after slot 9 are visible and unnumbered.
