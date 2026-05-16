@@ -104,3 +104,48 @@ test("canRefocusWindow accepts windows visible on the current desktop", async ()
     true,
   );
 });
+
+test("createRefocusTarget captures an eligible window and desktop", async () => {
+  const refocus = await loadRefocusApi();
+  const desktop = { id: "desktop-1" };
+  const window = createWindow(desktop);
+  const target = refocus.createRefocusTarget(window, desktop);
+
+  assert.notEqual(target, null);
+  assert.equal(target?.desktop, desktop);
+  assert.equal(target?.window, window);
+});
+
+test("createRefocusTarget rejects missing or ineligible focus state", async () => {
+  const refocus = await loadRefocusApi();
+  const desktop = { id: "desktop-1" };
+
+  assert.equal(refocus.createRefocusTarget(null, desktop), null);
+  assert.equal(refocus.createRefocusTarget(createWindow(desktop), null), null);
+  assert.equal(
+    refocus.createRefocusTarget(
+      createWindow(desktop, { hidden: true }),
+      desktop,
+    ),
+    null,
+  );
+});
+
+test("canRestoreRefocusTarget validates current desktop and target eligibility", async () => {
+  const refocus = await loadRefocusApi();
+  const desktop = { id: "desktop-1" };
+  const target = {
+    desktop,
+    window: createWindow(desktop),
+  };
+
+  assert.equal(refocus.canRestoreRefocusTarget(target, desktop), true);
+  assert.equal(
+    refocus.canRestoreRefocusTarget(target, { id: "desktop-2" }),
+    false,
+  );
+
+  target.window.minimized = true;
+
+  assert.equal(refocus.canRestoreRefocusTarget(target, desktop), false);
+});

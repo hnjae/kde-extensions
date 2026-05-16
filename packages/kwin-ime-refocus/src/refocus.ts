@@ -3,6 +3,11 @@
 
 // biome-ignore lint/correctness/noUnusedVariables: consumed by main.ts in the compiler bundle.
 namespace KWinImeRefocus {
+  export interface RefocusTarget {
+    readonly desktop: KWinVirtualDesktop;
+    readonly window: KWinWindow;
+  }
+
   export function isSameDesktop(
     left: KWinVirtualDesktop | null,
     right: KWinVirtualDesktop | null,
@@ -51,24 +56,41 @@ namespace KWinImeRefocus {
     );
   }
 
-  export function recoverImeFocus(workspace: KWinWorkspace): void {
-    const originalWindow = workspace.activeWindow;
-    const originalDesktop = workspace.currentDesktop;
+  export function createRefocusTarget(
+    window: KWinWindow | null,
+    desktop: KWinVirtualDesktop | null,
+  ): RefocusTarget | null {
+    if (!canRefocusWindow(window, desktop) || desktop === null) {
+      return null;
+    }
 
-    if (!canRefocusWindow(originalWindow, originalDesktop)) {
+    return { desktop, window };
+  }
+
+  export function canRestoreRefocusTarget(
+    target: RefocusTarget,
+    currentDesktop: KWinVirtualDesktop | null,
+  ): boolean {
+    return (
+      isSameDesktop(currentDesktop, target.desktop) &&
+      canRefocusWindow(target.window, target.desktop)
+    );
+  }
+
+  export function recoverImeFocus(workspace: KWinWorkspace): void {
+    const target = createRefocusTarget(
+      workspace.activeWindow,
+      workspace.currentDesktop,
+    );
+
+    if (target === null) {
       return;
     }
 
     workspace.activeWindow = null;
 
-    if (!isSameDesktop(workspace.currentDesktop, originalDesktop)) {
-      return;
+    if (canRestoreRefocusTarget(target, workspace.currentDesktop)) {
+      workspace.activeWindow = target.window;
     }
-
-    if (!canRefocusWindow(originalWindow, originalDesktop)) {
-      return;
-    }
-
-    workspace.activeWindow = originalWindow;
   }
 }

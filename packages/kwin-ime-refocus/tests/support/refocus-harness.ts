@@ -28,7 +28,20 @@ export interface WorkspaceFixture {
   readonly assignments: readonly (WindowFixture | null)[];
 }
 
+export interface RefocusTargetFixture {
+  readonly desktop: DesktopFixture;
+  readonly window: WindowFixture;
+}
+
 export interface RefocusApi {
+  createRefocusTarget(
+    window: WindowFixture | null,
+    desktop: DesktopFixture | null,
+  ): RefocusTargetFixture | null;
+  canRestoreRefocusTarget(
+    target: RefocusTargetFixture,
+    currentDesktop: DesktopFixture | null,
+  ): boolean;
   isSameDesktop(
     left: DesktopFixture | null,
     right: DesktopFixture | null,
