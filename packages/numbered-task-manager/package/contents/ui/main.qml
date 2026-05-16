@@ -21,6 +21,7 @@ PlasmoidItem {
     property var remoteAttentionEntryMap: ({})
     property var remoteAttentionOrder: []
     property var remoteAttentionTarget: null
+    property int launcherRevision: 0
     property bool updatingLauncherConfig: false
 
     Plasmoid.icon: "preferences-system-windows"
@@ -170,20 +171,25 @@ PlasmoidItem {
         return "normal:" + nextNormalTaskPublicationId.toString();
     }
 
-    function launcherPosition(launcherUrl) {
+    function launcherPosition(launcherUrl, launcherRevisionToken) {
+        const revision = launcherRevisionToken === undefined ? launcherRevision : launcherRevisionToken;
         if (!launcherUrl) {
+            return -1;
+        }
+
+        if (revision < 0) {
             return -1;
         }
 
         return tasksModel.launcherPosition(launcherUrl);
     }
 
-    function isLauncherBackedRow(isLauncher, launcherUrl, sourceIndex) {
+    function isLauncherBackedRow(isLauncher, launcherUrl, sourceIndex, launcherRevisionToken) {
         if (isLauncher) {
             return true;
         }
 
-        const position = launcherPosition(launcherUrl);
+        const position = launcherPosition(launcherUrl, launcherRevisionToken);
         return position !== -1 && sourceIndex === position;
     }
 
@@ -418,6 +424,7 @@ PlasmoidItem {
         virtualDesktop: virtualDesktopInfo.currentDesktop
 
         onLauncherListChanged: {
+            root.launcherRevision += 1;
             if (!root.updatingLauncherConfig) {
                 root.persistLaunchers(launcherList);
             }
@@ -443,8 +450,8 @@ PlasmoidItem {
             required property int index
 
             property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
-            property bool launcherPinned: root.launcherPosition(launcherUrl) !== -1
-            property bool launcherBacked: root.isLauncherBackedRow(model.IsLauncher || false, launcherUrl, index)
+            property bool launcherPinned: root.launcherPosition(launcherUrl, root.launcherRevision) !== -1
+            property bool launcherBacked: root.isLauncherBackedRow(model.IsLauncher || false, launcherUrl, index, root.launcherRevision)
             property string publishedKey: ""
             property string title: model.display || model.AppName || ""
             property var taskInfo: ({

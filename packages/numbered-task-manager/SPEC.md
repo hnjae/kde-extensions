@@ -51,10 +51,12 @@ item order with `Meta+0`.
 - If a pinned application already has a window in its pinned slot, opening
   another window from the same application keeps the existing pinned-slot window
   in place and adds the new window after the pinned area.
-- When the window in a pinned slot closes, the first same-application window in
-  the unpinned area's current visible order refills that slot if one exists.
-  Otherwise, the slot returns to the pinned launcher. Remaining unpinned windows
-  keep their relative order.
+- When the window in a pinned slot closes, Plasma's TasksModel launcher/window
+  matching decides whether another same-application window refills that slot or
+  the slot returns to the pinned launcher.
+- The widget preserves the relative visible order of remaining unpinned
+  windows, but refill selection is not guaranteed to follow manually reordered
+  unpinned order.
 
 ## Activation Behavior
 
