@@ -100,7 +100,6 @@
             pkgs.kdePackages.kpackage
             pkgs.kdePackages.kwin
             pkgs.nodejs
-            pkgs.pnpm
             pkgs.typescript
             pkgs.zip
           ];

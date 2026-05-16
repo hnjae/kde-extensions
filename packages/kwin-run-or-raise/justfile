@@ -5,31 +5,62 @@ set fallback
 set lazy
 set ignore-comments
 
-system := `nix eval --impure --expr builtins.currentSystem`
+system := `nix eval --raw --impure --expr builtins.currentSystem`
 
+package := "kwin-run-or-raise"
 root := "path:../.."
-check_prefix := root + "#checks." + system + "."
+dev_shell := root + "#" + package
+check_attr := root + "#checks." + system + "." + package + "-check"
 
 _:
     @just --list
 
 [group('build')]
 build:
-    nix build "{{ root }}#kwin-run-or-raise" --no-link --print-out-paths
-
-[group('build')]
-build-kpackage:
-    nix develop "{{ root }}#kwin-run-or-raise" -c build-kpackage
+    nix build "{{ dev_shell }}" --no-link --print-out-paths
 
 [group('ci')]
 check:
-    nix build "{{ check_prefix }}kwin-run-or-raise-check" --no-link --print-out-paths
+    nix build "{{ check_attr }}" --no-link --print-out-paths
+
+[group('build')]
+build-source:
+    nix develop "{{ dev_shell }}" -c tsc --project tsconfig.json
+    nix develop "{{ dev_shell }}" -c node scripts/build-package.mjs
+
+[group('build')]
+build-kpackage:
+    nix develop "{{ dev_shell }}" -c build-kpackage
+
+[group('build')]
+check-kpackage: build-source
+    nix develop "{{ dev_shell }}" -c node scripts/check-kpackage.mjs
+
+[group('cleanup')]
+clean:
+    rm -rf build build-tests dist
+
+[group('ci')]
+check-local:
+    nix develop "{{ dev_shell }}" -c tsc --noEmit --project tsconfig.json
+    nix develop "{{ dev_shell }}" -c tsc --noEmit --project tests/tsconfig.json
+    nix develop "{{ dev_shell }}" -c biome ci .biome.json package.json scripts src tests tsconfig.json
+    nix develop "{{ dev_shell }}" -c tsc --project tsconfig.json
+    nix develop "{{ dev_shell }}" -c node scripts/build-package.mjs
+    nix develop "{{ dev_shell }}" -c node scripts/check-kpackage.mjs
+    nix develop "{{ dev_shell }}" -c tsc --project tests/tsconfig.json
+    nix develop "{{ dev_shell }}" -c node --test build-tests/*.test.js
 
 [group('lint')]
-lint:
-    nix develop "{{ root }}#kwin-run-or-raise" -c pnpm run typecheck
-    nix develop "{{ root }}#kwin-run-or-raise" -c pnpm run lint
+lint: typecheck
+    nix develop "{{ dev_shell }}" -c biome ci .biome.json package.json scripts src tests tsconfig.json
+
+[group('lint')]
+typecheck:
+    nix develop "{{ dev_shell }}" -c tsc --noEmit --project tsconfig.json
+    nix develop "{{ dev_shell }}" -c tsc --noEmit --project tests/tsconfig.json
 
 [group('test')]
-test:
-    nix develop "{{ root }}#kwin-run-or-raise" -c pnpm run test
+test: build-source
+    nix develop "{{ dev_shell }}" -c tsc --project tests/tsconfig.json
+    nix develop "{{ dev_shell }}" -c node --test build-tests/*.test.js

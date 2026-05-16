@@ -3,14 +3,5 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "license": "AGPL-3.0-or-later",
-  "scripts": {
-    "build": "tsc --project tsconfig.json && node scripts/build-package.mjs",
-    "check": "pnpm run typecheck && pnpm run lint && pnpm run build && pnpm run test && pnpm run check:kpackage",
-    "check:kpackage": "pnpm run build && node scripts/check-kpackage.mjs",
-    "clean": "rm -rf build build-tests dist",
-    "lint": "biome ci .biome.json package.json scripts src tests tsconfig.json",
-    "test": "pnpm run build && tsc --project tests/tsconfig.json && node --test build-tests/*.test.js",
-    "typecheck": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project tests/tsconfig.json"
-  }
+  "license": "AGPL-3.0-or-later"
 }
