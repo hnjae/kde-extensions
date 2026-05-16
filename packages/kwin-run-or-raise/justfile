@@ -27,9 +27,9 @@ check:
 
 [group('lint')]
 lint:
-    nix develop "{{ root }}#kwin-run-or-raise" -c npm run typecheck
-    nix develop "{{ root }}#kwin-run-or-raise" -c npm run lint
+    nix develop "{{ root }}#kwin-run-or-raise" -c pnpm run typecheck
+    nix develop "{{ root }}#kwin-run-or-raise" -c pnpm run lint
 
 [group('test')]
 test:
-    nix develop "{{ root }}#kwin-run-or-raise" -c npm test
+    nix develop "{{ root }}#kwin-run-or-raise" -c pnpm run test

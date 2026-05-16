@@ -8,23 +8,36 @@
         package = config.packages.kwin-run-or-raise;
       in
       {
-        checks.kwin-run-or-raise-check = pkgs.buildNpmPackage {
+        checks.kwin-run-or-raise-check = pkgs.stdenvNoCC.mkDerivation {
           pname = "kwin-run-or-raise-check";
-          inherit (package)
-            npmDepsHash
-            source
-            version
-            ;
+          inherit (package) version;
           src = package.source;
 
           nativeBuildInputs = [
             pkgs.biome
             pkgs.kdePackages.kpackage
             pkgs.kdePackages.kwin
+            pkgs.nodejs
+            pkgs.typescript
           ];
 
-          npmBuildScript = "check";
+          dontConfigure = true;
           dontWrapQtApps = true;
+
+          buildPhase = ''
+            runHook preBuild
+
+            tsc --noEmit --project tsconfig.json
+            tsc --noEmit --project tests/tsconfig.json
+            biome ci .biome.json package.json scripts src tests tsconfig.json
+            tsc --project tsconfig.json
+            node scripts/build-package.mjs
+            node scripts/check-kpackage.mjs
+            tsc --project tests/tsconfig.json
+            node --test build-tests/*.test.js
+
+            runHook postBuild
+          '';
 
           installPhase = ''
             runHook preInstall

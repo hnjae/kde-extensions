@@ -8,7 +8,6 @@
         let
           pluginId = "io.github.hnjae.kwin-run-or-raise";
           version = "0.1.0";
-          npmDepsHash = "sha256-l2/K1KIp35iV5WiotsibsJwwp4l/v1NjidhQAgQ6ajk=";
 
           sourceRoot = ../../.;
           source = lib.fileset.toSource {
@@ -16,7 +15,6 @@
             fileset = lib.fileset.unions [
               ../../.biome.json
               ../../README.md
-              ../../package-lock.json
               ../../package.json
               ../../scripts
               ../../src
@@ -25,15 +23,26 @@
             ];
           };
         in
-        pkgs.buildNpmPackage {
+        pkgs.stdenvNoCC.mkDerivation {
           pname = "kwin-run-or-raise";
-          inherit
-            npmDepsHash
-            version
-            ;
+          inherit version;
           src = source;
 
-          npmBuildScript = "build";
+          nativeBuildInputs = [
+            pkgs.nodejs
+            pkgs.typescript
+          ];
+
+          dontConfigure = true;
+
+          buildPhase = ''
+            runHook preBuild
+
+            tsc --project tsconfig.json
+            node scripts/build-package.mjs
+
+            runHook postBuild
+          '';
 
           installPhase = ''
             runHook preInstall
@@ -46,7 +55,6 @@
 
           passthru = {
             inherit
-              npmDepsHash
               pluginId
               source
               version

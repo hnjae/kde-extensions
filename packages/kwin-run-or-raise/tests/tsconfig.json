@@ -4,8 +4,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "../build-tests",
-    "rootDir": ".",
-    "types": ["node"]
+    "rootDir": "."
   },
-  "include": ["**/*.test.ts"]
+  "include": ["**/*.test.ts", "node.d.ts"]
 }

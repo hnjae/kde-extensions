@@ -76,6 +76,7 @@ function appWindow(overrides: Partial<TestWindow> = {}): TestWindow {
 async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
   const script = await readFile(mainScriptUrl, "utf8");
   const config = options.config ?? {};
+  const configKeys = new Set(Object.keys(config));
   const windows = options.windows ?? [];
   const currentDesktop = options.currentDesktop ?? { id: "desktop-1" };
   const activationCallbacks: Array<(window: TestWindow | null) => void> = [];
@@ -117,9 +118,7 @@ async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
       prints.push(message);
     },
     readConfig(key: string, defaultValue: unknown): unknown {
-      return Object.prototype.hasOwnProperty.call(config, key)
-        ? config[key]
-        : defaultValue;
+      return configKeys.has(key) ? config[key] : defaultValue;
     },
     registerShortcut(
       actionName: string,
