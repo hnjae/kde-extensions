@@ -27,6 +27,24 @@ in `SPEC.md`.
   pinned slots.
 - Number only rows 0 through 8 in the visible model; these correspond to
   user-facing slots 1 through 9.
+- Keep demanding-attention tasks from other virtual desktops out of the normal
+  numbered model so remote notifications cannot renumber slots 1 through 9.
+
+## Remote Attention Policy
+
+- Treat remote notifications as task-manager attention state, specifically
+  `AbstractTasksModel::IsDemandingAttention`.
+- The normal visible model should keep filtering to the current virtual
+  desktop, current screen, and current activity. Do not let demanding-attention
+  tasks bypass that model's virtual desktop filter.
+- Use a separate remote-attention path to find demanding-attention window tasks
+  that are hidden only because they are on another virtual desktop.
+- Expose remote attention as one task-like item with a `0` badge instead of
+  inserting those windows into the normal task order.
+- `Meta+0` is a dedicated remote-attention shortcut. It is not slot 10 and must
+  not affect row numbering or pinned launcher positions.
+- When multiple remote attention tasks exist, keep a deterministic most-recent
+  target for `Meta+0` and display the number of pending remote attention tasks.
 
 ## Visual Policy
 
@@ -64,3 +82,9 @@ in `SPEC.md`.
 - Verify tasks after slot 9 are visible and unnumbered.
 - Verify small icon or panel cases switch to prefix numbering instead of showing
   unreadable badges.
+- Verify a window demanding attention on another virtual desktop appears through
+  the `0` attention item without changing `Meta+1` through `Meta+9` targets.
+- Verify `Meta+0` switches to the remote task's virtual desktop and raises the
+  demanding-attention window.
+- Verify multiple remote attention tasks show a count and keep a deterministic
+  `Meta+0` target.
