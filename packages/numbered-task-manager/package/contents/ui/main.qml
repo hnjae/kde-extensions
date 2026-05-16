@@ -119,19 +119,7 @@ PlasmoidItem {
             return moveManualTask(sourceEntry.entryKey, targetEntry.entryKey);
         }
 
-        const sourceMoveIndex = sourceEntry.moveIndex === undefined ? sourceEntry.sourceIndex : sourceEntry.moveIndex;
-        const targetMoveIndex = targetEntry.moveIndex === undefined ? targetEntry.sourceIndex : targetEntry.moveIndex;
-        if (sourceMoveIndex < 0 || targetMoveIndex < 0) {
-            return false;
-        }
-
-        if (tasksModel.move(sourceMoveIndex, targetMoveIndex)) {
-            tasksModel.syncLaunchers();
-            persistLaunchers(tasksModel.launcherList);
-            return true;
-        }
-
-        return false;
+        return movePinnedLauncher(sourceEntry, targetEntry);
     }
 
     function moveManualTask(sourceKey, targetKey) {
@@ -149,6 +137,62 @@ PlasmoidItem {
         return true;
     }
 
+    function movePinnedLauncher(sourceEntry, targetEntry) {
+        const sourcePosition = pinnedLauncherGlobalPosition(sourceEntry);
+        const targetPosition = pinnedLauncherGlobalPosition(targetEntry);
+        if (!canMovePinnedLauncherPositions(sourcePosition, targetPosition)) {
+            return false;
+        }
+
+        const launchers = normalizedLauncherList(tasksModel.launcherList);
+        if (sourcePosition >= launchers.length || targetPosition >= launchers.length) {
+            return false;
+        }
+
+        const nextLaunchers = launchers.slice();
+        const movedLaunchers = nextLaunchers.splice(sourcePosition, 1);
+        if (movedLaunchers.length !== 1) {
+            return false;
+        }
+
+        nextLaunchers.splice(targetPosition, 0, movedLaunchers[0]);
+        if (launcherListsEqual(launchers, nextLaunchers)) {
+            return false;
+        }
+
+        persistLaunchers(nextLaunchers);
+        return true;
+    }
+
+    function canMovePinnedLauncher(sourceEntry, targetEntry) {
+        return canMovePinnedLauncherPositions(pinnedLauncherGlobalPosition(sourceEntry), pinnedLauncherGlobalPosition(targetEntry));
+    }
+
+    function canMovePinnedLauncherPositions(sourcePosition, targetPosition) {
+        return sourcePosition >= 0 && targetPosition >= 0 && sourcePosition !== targetPosition;
+    }
+
+    function pinnedLauncherGlobalPosition(entry) {
+        const launcherUrl = entry ? String(entry.pinnedLauncherUrl || entry.launcherUrl || "") : "";
+        if (!launcherUrl) {
+            return -1;
+        }
+
+        const directPosition = tasksModel.launcherPosition(launcherUrl);
+        const launchers = normalizedLauncherList(tasksModel.launcherList);
+        if (directPosition >= 0 && directPosition < launchers.length) {
+            return directPosition;
+        }
+
+        for (let i = 0; i < launchers.length; ++i) {
+            if (TaskHelpers.parseSerializedLauncher(launchers[i]).url === launcherUrl) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     function canMoveTask(sourceIndex, targetIndex) {
         if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
             return false;
@@ -160,7 +204,15 @@ PlasmoidItem {
             return false;
         }
 
-        return Boolean(sourceEntry.launcherBacked) === Boolean(targetEntry.launcherBacked);
+        if (Boolean(sourceEntry.launcherBacked) !== Boolean(targetEntry.launcherBacked)) {
+            return false;
+        }
+
+        if (sourceEntry.launcherBacked) {
+            return canMovePinnedLauncher(sourceEntry, targetEntry);
+        }
+
+        return true;
     }
 
     function normalTaskEntryForSourceIndex(sourceIndex) {

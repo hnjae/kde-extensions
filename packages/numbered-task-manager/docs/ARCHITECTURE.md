@@ -11,9 +11,10 @@ in `SPEC.md`.
   task actions.
 - Keep the implementation on public QML APIs where possible. Context menu
   actions should call `TasksModel.request*` methods directly.
-- Implement drag reordering with a widget-owned task MIME type and the public
-  `TasksModel.move()` API for launcher-backed rows. Keep manually reordered
-  unpinned windows in widget state.
+- Implement drag reordering with a widget-owned task MIME type. Reorder pinned
+  rows by rewriting the persisted launcher list so launch-in-place window rows
+  cannot collide with `TasksModel.move()` launcher barriers. Keep manually
+  reordered unpinned windows in widget state.
 - Do not claim support for upstream task-manager private backend behavior, such
   as file-open drops onto task delegates, unless that backend integration is
   actually added.

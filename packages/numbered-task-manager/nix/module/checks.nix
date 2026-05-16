@@ -57,17 +57,24 @@
 
             installed_plasmoid="$install_prefix/share/plasma/plasmoids/${package.pluginId}"
             installed_metainfo="$install_prefix/share/metainfo/${package.pluginId}.metainfo.xml"
-            for file in \
-              metadata.json \
-              contents/ui/main.qml \
-              contents/ui/TaskItem.qml \
-              contents/ui/AttentionItem.qml \
-              contents/ui/TaskContextMenu.qml \
-              contents/ui/NumberBadge.qml \
+            installed_license_dir="$install_prefix/share/licenses/numbered-task-manager"
+            required_plasmoid_files="
+              metadata.json
+              contents/ui/main.qml
+              contents/ui/TaskItem.qml
+              contents/ui/AttentionItem.qml
+              contents/ui/TaskContextMenu.qml
+              contents/ui/TaskHelpers.js
+              contents/ui/NumberBadge.qml
               contents/config/main.xml
+            "
+            for file in $required_plasmoid_files
             do
               test -f "$installed_plasmoid/$file"
             done
+
+            test -f "$installed_license_dir/AGPL-3.0-or-later.txt"
+            test -f "$installed_license_dir/CC0-1.0.txt"
 
             find package/contents/ui -name '*.qml' -print0 \
               | sort -z \
@@ -102,8 +109,10 @@
               --packageroot "$TMPDIR/plasmoids" \
               --install "$installed_plasmoid"
 
-            test -f "$TMPDIR/plasmoids/${package.pluginId}/metadata.json"
-            test -f "$TMPDIR/plasmoids/${package.pluginId}/contents/ui/main.qml"
+            for file in $required_plasmoid_files
+            do
+              test -f "$TMPDIR/plasmoids/${package.pluginId}/$file"
+            done
             kpackagetool6 --hash "$TMPDIR/plasmoids/${package.pluginId}"
 
             runHook postBuild

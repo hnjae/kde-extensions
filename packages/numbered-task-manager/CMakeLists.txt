@@ -20,3 +20,8 @@ install(DIRECTORY package/
 install(FILES metainfo/${PLASMOID_ID}.metainfo.xml
     DESTINATION "${KDE_INSTALL_METAINFODIR}"
 )
+
+install(DIRECTORY LICENSES/
+    DESTINATION "${KDE_INSTALL_DATADIR}/licenses/${PROJECT_NAME}"
+    FILES_MATCHING PATTERN "*.txt"
+)
