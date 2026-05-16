@@ -8,6 +8,26 @@ When the user triggers the configured shortcut, the script remembers the current
 
 This program does not permanently fix the underlying KDE Plasma or Wayland text input issue. It only provides an on-demand recovery action until the upstream issue is fixed.
 
+## Build & Install
+
+Build the KWin KPackage archive from this package directory:
+
+```sh
+just build-kpackage
+
+# or
+
+nix develop 'path:../..#kwin-ime-refocus' -c build-kpackage
+```
+
+The archive is written to `dist/kwin-ime-refocus-0.1.0.kwinscript`.
+
+Install it from KDE System Settings with Window Management > KWin Scripts > Install from File, or install it from the command line:
+
+```sh
+kpackagetool6 --type=KWin/Script --install dist/kwin-ime-refocus-0.1.0.kwinscript
+```
+
 ## Usage
 
 Install and enable the KWin script in KDE Plasma:

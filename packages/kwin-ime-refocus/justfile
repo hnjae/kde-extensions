@@ -17,6 +17,10 @@ _:
 build:
     nix build "{{ root }}#kwin-ime-refocus" --no-link --print-out-paths
 
+[group('build')]
+build-kpackage:
+    nix develop "{{ root }}#kwin-ime-refocus" -c build-kpackage
+
 [group('ci')]
 check:
     nix build "{{ check_prefix }}kwin-ime-refocus-check" --no-link --print-out-paths
