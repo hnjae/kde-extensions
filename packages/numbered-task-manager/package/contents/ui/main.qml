@@ -14,6 +14,7 @@ PlasmoidItem {
     readonly property string taskDragMimeType: "application/x-numbered-task-manager-row"
     property var normalTaskEntries: []
     property var normalTaskEntryMap: ({})
+    property int nextNormalTaskPublicationId: 0
     property int remoteAttentionCount: 0
     property var remoteAttentionEntries: []
     property var remoteAttentionEntryMap: ({})
@@ -138,12 +139,26 @@ PlasmoidItem {
         return null;
     }
 
-    function isLauncherBacked(isLauncher, launcherUrl) {
+    function createNormalTaskPublicationKey() {
+        nextNormalTaskPublicationId += 1;
+        return "normal:" + nextNormalTaskPublicationId.toString();
+    }
+
+    function launcherPosition(launcherUrl) {
+        if (!launcherUrl) {
+            return -1;
+        }
+
+        return tasksModel.launcherPosition(launcherUrl);
+    }
+
+    function isLauncherBackedRow(isLauncher, launcherUrl, sourceIndex) {
         if (isLauncher) {
             return true;
         }
 
-        return launcherUrl && tasksModel.launcherPosition(launcherUrl) !== -1;
+        const position = launcherPosition(launcherUrl);
+        return position !== -1 && sourceIndex === position;
     }
 
     function desktopId(desktop) {
@@ -227,21 +242,16 @@ PlasmoidItem {
         return isLauncher || isStartup;
     }
 
-    function publishNormalTask(previousKey, key, qualifies, task) {
-        if (previousKey && previousKey !== key) {
-            removeNormalTask(previousKey);
-        }
-
+    function publishNormalTask(key, qualifies, task) {
         if (!qualifies) {
             removeNormalTask(key);
-            return "";
+            return;
         }
 
         const entries = Object.assign({}, normalTaskEntryMap);
         entries[key] = task;
         normalTaskEntryMap = entries;
         recomputeNormalTaskEntries();
-        return key;
     }
 
     function removeNormalTask(key) {
@@ -376,9 +386,9 @@ PlasmoidItem {
             required property int index
 
             property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
-            property bool launcherBacked: root.isLauncherBacked(model.IsLauncher || false, launcherUrl)
+            property bool launcherPinned: root.launcherPosition(launcherUrl) !== -1
+            property bool launcherBacked: root.isLauncherBackedRow(model.IsLauncher || false, launcherUrl, index)
             property string publishedKey: ""
-            property string taskKey: "row:" + index.toString()
             property string title: model.display || model.AppName || ""
             property var taskInfo: ({
                     activities: Array.from(model.Activities || []),
@@ -388,7 +398,7 @@ PlasmoidItem {
                     closable: model.IsClosable || false,
                     demandingAttention: model.IsDemandingAttention || false,
                     fullScreenable: model.IsFullScreenable || false,
-                    hasLauncher: launcherBacked,
+                    hasLauncher: model.HasLauncher || model.IsLauncher || launcherPinned,
                     hasNoBorder: model.HasNoBorder || false,
                     iconSource: model.decoration || "application-x-executable",
                     index,
@@ -423,18 +433,25 @@ PlasmoidItem {
             width: 0
 
             function syncTask() {
-                publishedKey = root.publishNormalTask(publishedKey, taskKey, qualifies, taskInfo);
+                if (!publishedKey) {
+                    return;
+                }
+
+                root.publishNormalTask(publishedKey, qualifies, taskInfo);
             }
 
-            QtQuick.Component.onCompleted: syncTask()
+            QtQuick.Component.onCompleted: {
+                publishedKey = root.createNormalTaskPublicationKey();
+                syncTask();
+            }
             QtQuick.Component.onDestruction: {
                 root.removeNormalTask(publishedKey);
             }
             onIndexChanged: syncTask()
             onLauncherBackedChanged: syncTask()
+            onLauncherPinnedChanged: syncTask()
             onQualifiesChanged: syncTask()
             onTaskInfoChanged: syncTask()
-            onTaskKeyChanged: syncTask()
         }
     }
 
@@ -522,7 +539,7 @@ PlasmoidItem {
                     demandingAttention: entry.demandingAttention || false
                     pinned: entry.launcherBacked || false
                     dragMimeType: root.taskDragMimeType
-                    hasLauncher: entry.launcherBacked || false
+                    hasLauncher: entry.hasLauncher || false
                     canDropTask: (sourceIndex, targetIndex) => root.canMoveTask(sourceIndex, targetIndex)
 
                     onActivated: {
