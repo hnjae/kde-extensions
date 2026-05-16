@@ -8,6 +8,7 @@ import QtQuick.Layouts as QtQuickLayouts
 import org.kde.taskmanager as TaskManager
 import org.kde.plasma.plasmoid
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
+import "TaskActivityLogic.js" as TaskActivityLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskHelpers.js" as TaskHelpers
 import "TaskModelLogic.js" as TaskModelLogic
@@ -181,7 +182,7 @@ PlasmoidItem {
     }
 
     function isInCurrentActivity(activities) {
-        return TaskHelpers.isInCurrentActivity(activities, activityInfo.currentActivity);
+        return TaskActivityLogic.isInCurrentActivity(activities, activityInfo.currentActivity);
     }
 
     function publishNormalTask(key, qualifies, task) {

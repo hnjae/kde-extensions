@@ -6,6 +6,7 @@ pragma ComponentBehavior: Bound
 import QtQuick as QtQuick
 import QtQuick.Controls as QtQuickControls
 import org.kde.taskmanager as TaskManager
+import "TaskActivityLogic.js" as TaskActivityLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskHelpers.js" as TaskHelpers
 
@@ -67,11 +68,11 @@ QtQuickControls.Menu {
     }
 
     function stringListContains(list, value) {
-        return TaskHelpers.stringListContains(list, value);
+        return TaskActivityLogic.stringListContains(list, value);
     }
 
     function taskOnAllActivities() {
-        return TaskHelpers.activitiesAreAll(task.activities || []);
+        return TaskActivityLogic.activitiesAreAll(task.activities || []);
     }
 
     function taskOnActivity(activityId) {
@@ -83,7 +84,7 @@ QtQuickControls.Menu {
             return;
         }
 
-        taskModel.requestActivities(task.modelIndex, TaskHelpers.taskActivitiesAfterToggle(task.activities || [], activityId));
+        taskModel.requestActivities(task.modelIndex, TaskActivityLogic.taskActivitiesAfterToggle(task.activities || [], activityId));
     }
 
     function launcherPinnedToAllActivities() {
