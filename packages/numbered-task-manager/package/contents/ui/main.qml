@@ -7,6 +7,7 @@ import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
 import org.kde.taskmanager as TaskManager
 import org.kde.plasma.plasmoid
+import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskHelpers.js" as TaskHelpers
 import "TaskModelLogic.js" as TaskModelLogic
 
@@ -214,11 +215,11 @@ PlasmoidItem {
     }
 
     function remoteAttentionKey(winIds, launcherUrl, title, row) {
-        return TaskModelLogic.remoteAttentionKey(winIds, launcherUrl, title, row);
+        return RemoteAttentionLogic.remoteAttentionKey(winIds, launcherUrl, title, row);
     }
 
     function publishRemoteAttention(previousKey, key, qualifies, task, becameQualified) {
-        const result = TaskModelLogic.publishRemoteAttention(remoteAttentionEntryMap, remoteAttentionOrder, previousKey, key, qualifies, task, becameQualified);
+        const result = RemoteAttentionLogic.publishRemoteAttention(remoteAttentionEntryMap, remoteAttentionOrder, previousKey, key, qualifies, task, becameQualified);
         remoteAttentionEntryMap = result.entryMap;
         remoteAttentionOrder = result.order;
         applyRemoteAttentionSnapshot(result.snapshot);
@@ -230,14 +231,14 @@ PlasmoidItem {
             return;
         }
 
-        const result = TaskModelLogic.removeRemoteAttention(remoteAttentionEntryMap, remoteAttentionOrder, key);
+        const result = RemoteAttentionLogic.removeRemoteAttention(remoteAttentionEntryMap, remoteAttentionOrder, key);
         remoteAttentionEntryMap = result.entryMap;
         remoteAttentionOrder = result.order;
         applyRemoteAttentionSnapshot(result.snapshot);
     }
 
     function recomputeRemoteAttention() {
-        applyRemoteAttentionSnapshot(TaskModelLogic.remoteAttentionSnapshot(remoteAttentionEntryMap, remoteAttentionOrder));
+        applyRemoteAttentionSnapshot(RemoteAttentionLogic.remoteAttentionSnapshot(remoteAttentionEntryMap, remoteAttentionOrder));
     }
 
     function applyRemoteAttentionSnapshot(snapshot) {
@@ -391,7 +392,7 @@ PlasmoidItem {
             property bool hasSyncedAttention: false
             property string publishedKey: ""
             property bool previousQualifies: false
-            property var taskInfo: TaskModelLogic.createRemoteAttentionEntry({
+            property var taskInfo: RemoteAttentionLogic.createRemoteAttentionEntry({
                 activities: model.Activities,
                 appName: model.AppName,
                 demandingAttention: model.IsDemandingAttention,
@@ -406,7 +407,7 @@ PlasmoidItem {
                 winIds: model.WinIdList
             })
             property string taskKey: root.remoteAttentionKey(taskInfo.winIds, taskInfo.launcherUrl, taskInfo.title, index)
-            property bool qualifies: TaskModelLogic.qualifiesRemoteAttention(taskInfo, activities => root.isInCurrentActivity(activities), virtualDesktopInfo.currentDesktop)
+            property bool qualifies: RemoteAttentionLogic.qualifiesRemoteAttention(taskInfo, activities => root.isInCurrentActivity(activities), virtualDesktopInfo.currentDesktop)
 
             height: 0
             visible: false

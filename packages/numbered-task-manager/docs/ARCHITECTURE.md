@@ -22,6 +22,9 @@ in `SPEC.md`.
   the task context menu may compute and request a replacement launcher list, but
   `main.qml` is responsible for applying it to `TasksModel` and persisting it to
   plasmoid configuration.
+- Keep remote-attention qualification, keying, and ordering in
+  `RemoteAttentionLogic.js` so the separate attention model remains testable
+  independently from normal task composition.
 - Do not claim support for upstream task-manager private backend behavior, such
   as file-open drops onto task delegates, unless that backend integration is
   actually added.
