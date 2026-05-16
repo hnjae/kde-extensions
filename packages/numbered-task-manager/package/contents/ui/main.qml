@@ -11,6 +11,9 @@ import org.kde.plasma.plasmoid
 PlasmoidItem {
     id: root
 
+    readonly property string taskDragMimeType: "application/x-numbered-task-manager-row"
+    property bool updatingLauncherConfig: false
+
     Plasmoid.icon: "preferences-system-windows"
     preferredRepresentation: root.fullRepresentation
     toolTipMainText: "Numbered Task Manager"
@@ -29,6 +32,79 @@ PlasmoidItem {
         tasksModel.requestActivate(tasksModel.makeModelIndex(targetIndex));
     }
 
+    function normalizedLauncherList(value) {
+        if (!value) {
+            return [];
+        }
+
+        return Array.from(value).filter(launcher => launcher && launcher.length > 0);
+    }
+
+    function launcherListsEqual(left, right) {
+        const leftList = normalizedLauncherList(left);
+        const rightList = normalizedLauncherList(right);
+        if (leftList.length !== rightList.length) {
+            return false;
+        }
+
+        for (let i = 0; i < leftList.length; ++i) {
+            if (leftList[i] !== rightList[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function persistLaunchers(launchers) {
+        const normalized = normalizedLauncherList(launchers);
+        if (launcherListsEqual(normalized, Plasmoid.configuration.launchers)) {
+            return;
+        }
+
+        updatingLauncherConfig = true;
+        Plasmoid.configuration.launchers = normalized;
+        updatingLauncherConfig = false;
+    }
+
+    function pinLauncher(launcherUrl) {
+        if (!launcherUrl) {
+            return;
+        }
+
+        if (tasksModel.requestAddLauncher(launcherUrl)) {
+            persistLaunchers(tasksModel.launcherList);
+        }
+    }
+
+    function unpinLauncher(launcherUrl) {
+        if (!launcherUrl) {
+            return;
+        }
+
+        if (tasksModel.requestRemoveLauncher(launcherUrl)) {
+            persistLaunchers(tasksModel.launcherList);
+        }
+    }
+
+    function moveTask(sourceIndex, targetIndex) {
+        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+            return;
+        }
+
+        const launcherCount = tasksModel.launcherCount;
+        const sourcePinned = sourceIndex < launcherCount;
+        const targetPinned = targetIndex < launcherCount;
+        if (sourcePinned !== targetPinned) {
+            return;
+        }
+
+        if (tasksModel.move(sourceIndex, targetIndex)) {
+            tasksModel.syncLaunchers();
+            persistLaunchers(tasksModel.launcherList);
+        }
+    }
+
     TaskManager.ActivityInfo {
         id: activityInfo
     }
@@ -45,8 +121,19 @@ PlasmoidItem {
         filterByScreen: false
         filterByVirtualDesktop: true
         groupMode: TaskManager.TasksModel.GroupDisabled
+        hideActivatedLaunchers: false
+        launchInPlace: true
+        launcherList: Plasmoid.configuration.launchers || []
+        separateLaunchers: true
         sortMode: TaskManager.TasksModel.SortManual
+        taskReorderingEnabled: true
         virtualDesktop: virtualDesktopInfo.currentDesktop
+
+        onLauncherListChanged: {
+            if (!root.updatingLauncherConfig) {
+                root.persistLaunchers(launcherList);
+            }
+        }
     }
 
     fullRepresentation: QtQuick.Item {
@@ -84,10 +171,47 @@ PlasmoidItem {
                 minimized: model.IsMinimized || false
                 launcher: model.IsLauncher || false
                 demandingAttention: model.IsDemandingAttention || false
+                pinned: index < tasksModel.launcherCount
+                dragMimeType: root.taskDragMimeType
+                hasLauncher: model.HasLauncher || model.IsLauncher || false
 
                 onActivated: taskIndex => {
                     root.activateTaskAtIndex(taskIndex);
                 }
+
+                onContextMenuRequested: task => {
+                    taskContextMenu.openForTask(task, this);
+                }
+
+                onTaskDropped: (sourceIndex, targetIndex) => {
+                    root.moveTask(sourceIndex, targetIndex);
+                }
+
+                taskData: ({
+                        canLaunchNewInstance: model.CanLaunchNewInstance || model.IsLauncher || false,
+                        closable: model.IsClosable || false,
+                        hasLauncher: model.HasLauncher || model.IsLauncher || false,
+                        index,
+                        isLauncher: model.IsLauncher || false,
+                        isWindow: model.IsWindow || false,
+                        launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || ""),
+                        modelIndex: tasksModel.makeModelIndex(index),
+                        title: model.display || model.AppName || ""
+                    })
+            }
+        }
+
+        TaskContextMenu {
+            id: taskContextMenu
+
+            taskModel: tasksModel
+
+            onPinRequested: launcherUrl => {
+                root.pinLauncher(launcherUrl);
+            }
+
+            onUnpinRequested: launcherUrl => {
+                root.unpinLauncher(launcherUrl);
             }
         }
     }
