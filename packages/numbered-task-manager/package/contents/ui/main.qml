@@ -14,6 +14,7 @@ PlasmoidItem {
     readonly property string taskDragMimeType: "application/x-numbered-task-manager-row"
     property var normalTaskEntries: []
     property var normalTaskEntryMap: ({})
+    property var normalTaskManualOrder: []
     property int nextNormalTaskPublicationId: 0
     property int remoteAttentionCount: 0
     property var remoteAttentionEntries: []
@@ -105,6 +106,16 @@ PlasmoidItem {
             return false;
         }
 
+        const sourceEntry = normalTaskEntryForSourceIndex(sourceIndex);
+        const targetEntry = normalTaskEntryForSourceIndex(targetIndex);
+        if (!sourceEntry || !targetEntry) {
+            return false;
+        }
+
+        if (!sourceEntry.launcherBacked) {
+            return moveManualTask(sourceEntry.entryKey, targetEntry.entryKey);
+        }
+
         if (tasksModel.move(sourceIndex, targetIndex)) {
             tasksModel.syncLaunchers();
             persistLaunchers(tasksModel.launcherList);
@@ -112,6 +123,21 @@ PlasmoidItem {
         }
 
         return false;
+    }
+
+    function moveManualTask(sourceKey, targetKey) {
+        const order = normalTaskEntries.filter(entry => !entry.launcherBacked).map(entry => entry.entryKey);
+        const sourcePosition = order.indexOf(sourceKey);
+        const targetPosition = order.indexOf(targetKey);
+        if (sourcePosition === -1 || targetPosition === -1 || sourcePosition === targetPosition) {
+            return false;
+        }
+
+        order.splice(sourcePosition, 1);
+        order.splice(targetPosition, 0, sourceKey);
+        normalTaskManualOrder = order;
+        recomputeNormalTaskEntries();
+        return true;
     }
 
     function canMoveTask(sourceIndex, targetIndex) {
@@ -267,8 +293,39 @@ PlasmoidItem {
 
     function recomputeNormalTaskEntries() {
         const entries = Object.keys(normalTaskEntryMap).map(key => normalTaskEntryMap[key]);
-        entries.sort((left, right) => left.sourceIndex - right.sourceIndex);
-        normalTaskEntries = entries;
+        const pinnedEntries = entries.filter(entry => entry.launcherBacked);
+        const unpinnedEntries = entries.filter(entry => !entry.launcherBacked);
+        const unpinnedByKey = {};
+
+        pinnedEntries.sort((left, right) => left.sourceIndex - right.sourceIndex);
+        unpinnedEntries.sort((left, right) => left.sourceIndex - right.sourceIndex);
+
+        for (let i = 0; i < unpinnedEntries.length; ++i) {
+            unpinnedByKey[unpinnedEntries[i].entryKey] = unpinnedEntries[i];
+        }
+
+        const orderedUnpinnedEntries = [];
+        const nextManualOrder = [];
+        const manualOrder = Array.from(normalTaskManualOrder || []);
+        for (let i = 0; i < manualOrder.length; ++i) {
+            const key = manualOrder[i];
+            if (unpinnedByKey[key]) {
+                orderedUnpinnedEntries.push(unpinnedByKey[key]);
+                nextManualOrder.push(key);
+                delete unpinnedByKey[key];
+            }
+        }
+
+        for (let i = 0; i < unpinnedEntries.length; ++i) {
+            const entry = unpinnedEntries[i];
+            if (unpinnedByKey[entry.entryKey]) {
+                orderedUnpinnedEntries.push(entry);
+                nextManualOrder.push(entry.entryKey);
+            }
+        }
+
+        normalTaskManualOrder = nextManualOrder;
+        normalTaskEntries = pinnedEntries.concat(orderedUnpinnedEntries);
     }
 
     function remoteAttentionKey(winIds, launcherUrl, title, row) {
@@ -402,6 +459,7 @@ PlasmoidItem {
                     hasNoBorder: model.HasNoBorder || false,
                     iconSource: model.decoration || "application-x-executable",
                     index,
+                    entryKey: publishedKey,
                     isExcludedFromCapture: model.IsExcludedFromCapture || false,
                     isFullScreen: model.IsFullScreen || false,
                     isKeepAbove: model.IsKeepAbove || false,
@@ -437,7 +495,9 @@ PlasmoidItem {
                     return;
                 }
 
-                root.publishNormalTask(publishedKey, qualifies, taskInfo);
+                const task = Object.assign({}, taskInfo);
+                task.entryKey = publishedKey;
+                root.publishNormalTask(publishedKey, qualifies, task);
             }
 
             QtQuick.Component.onCompleted: {

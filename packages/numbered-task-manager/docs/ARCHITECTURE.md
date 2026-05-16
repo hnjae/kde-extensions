@@ -78,7 +78,7 @@ in `SPEC.md`.
 
 ## Packaging And Dependencies
 
-- The package currently declares Plasma 6.5 as the minimum supported API version;
+- The package currently declares Plasma 6.6 as the minimum supported API version;
   keep that minimum unless an implementation detail requires raising it.
 - Nix build, check, and development shells must include the QML import path for
   Plasma Workspace so `org.kde.taskmanager` resolves during linting and local
