@@ -27,7 +27,13 @@ test("build output has KWin script package structure", async () => {
 });
 
 test("build output includes script configuration files", async () => {
-  await readFile(new URL("contents/config/main.xml", packageRoot), "utf8");
+  const mainConfig = await readFile(
+    new URL("contents/config/main.xml", packageRoot),
+    "utf8",
+  );
+
+  assert.match(mainConfig, /<group name="">/);
+
   await readFile(new URL("contents/ui/config.ui", packageRoot), "utf8");
 });
 
