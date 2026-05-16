@@ -13,6 +13,9 @@ const packageDir = path.resolve(
 const buildCoreFile = path.join(packageDir, "build", "src", "core.js");
 const buildCodeFiles = [
   buildCoreFile,
+  path.join(packageDir, "build", "src", "window-matching.js"),
+  path.join(packageDir, "build", "src", "action-planning.js"),
+  path.join(packageDir, "build", "src", "controller.js"),
   path.join(packageDir, "build", "src", "bindings.js"),
   path.join(packageDir, "build", "src", "runtime.js"),
   path.join(packageDir, "build", "src", "main.js"),

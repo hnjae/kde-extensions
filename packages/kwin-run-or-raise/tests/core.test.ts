@@ -74,12 +74,21 @@ type RunOrRaiseApi = {
   planBindingAction(input: BindingActionInput): BindingActionPlan;
 };
 
-const sourceUrl = new URL("../build/src/core.js", import.meta.url);
+const sourceUrls = [
+  new URL("../build/src/core.js", import.meta.url),
+  new URL("../build/src/window-matching.js", import.meta.url),
+  new URL("../build/src/action-planning.js", import.meta.url),
+];
 
 async function loadRunOrRaise(): Promise<RunOrRaiseApi> {
-  const source = await readFile(sourceUrl, "utf8");
+  const source = await Promise.all(
+    sourceUrls.map((url) => readFile(url, "utf8")),
+  );
 
-  return vm.runInNewContext(`${source}\nRunOrRaise;`, {}) as RunOrRaiseApi;
+  return vm.runInNewContext(
+    `${source.join("\n")}\nRunOrRaise;`,
+    {},
+  ) as RunOrRaiseApi;
 }
 
 function appWindow(overrides: Partial<TestWindow> = {}): TestWindow {

@@ -143,3 +143,16 @@ test("main script is generated without module syntax", async () => {
 
   assert.doesNotMatch(mainScript, /export\s+\{\};/);
 });
+
+test("main script includes all runtime namespace modules", async () => {
+  const mainScript = await readFile(
+    new URL("contents/code/main.js", packageRoot),
+    "utf8",
+  );
+
+  assert.match(mainScript, /candidateWindowsForBinding/);
+  assert.match(mainScript, /planBindingAction/);
+  assert.match(mainScript, /createController/);
+  assert.match(mainScript, /readBindings/);
+  assert.match(mainScript, /createKWinRuntime/);
+});
