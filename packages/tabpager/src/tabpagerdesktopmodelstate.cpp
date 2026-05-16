@@ -8,6 +8,62 @@
 #include <utility>
 
 namespace {
+[[nodiscard]] bool
+hasStableRowIdentity(const QList<TabPagerDesktopRowData> &previousRows,
+                     const QList<TabPagerDesktopRowData> &nextRows) {
+  if (previousRows.size() != nextRows.size()) {
+    return false;
+  }
+
+  for (qsizetype row = 0; row < nextRows.size(); ++row) {
+    if (previousRows.at(row).desktopId != nextRows.at(row).desktopId) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+[[nodiscard]] bool
+canExtendRowUpdate(const TabPagerDesktopModelRowUpdate &rowUpdate,
+                   qsizetype row, const QList<int> &roles) {
+  return rowUpdate.lastRow + 1 == row && rowUpdate.roles == roles;
+}
+
+void appendRowUpdate(QList<TabPagerDesktopModelRowUpdate> &rowUpdates,
+                     qsizetype row, QList<int> roles) {
+  if (roles.isEmpty()) {
+    return;
+  }
+
+  if (!rowUpdates.isEmpty() &&
+      canExtendRowUpdate(rowUpdates.last(), row, roles)) {
+    rowUpdates.last().lastRow = row;
+    return;
+  }
+
+  rowUpdates.append(TabPagerDesktopModelRowUpdate{
+      .firstRow = row,
+      .lastRow = row,
+      .roles = std::move(roles),
+  });
+}
+
+[[nodiscard]] QList<TabPagerDesktopModelRowUpdate>
+rowUpdatesForChangedRoles(const QList<TabPagerDesktopRowData> &previousRows,
+                          const QList<TabPagerDesktopRowData> &nextRows) {
+  QList<TabPagerDesktopModelRowUpdate> rowUpdates;
+
+  for (qsizetype row = 0; row < nextRows.size(); ++row) {
+    const TabPagerDesktopRowData &previousRow = previousRows.at(row);
+    const TabPagerDesktopRowData &nextRow = nextRows.at(row);
+    QList<int> roles = tabPagerDesktopRowChangedRoles(previousRow, nextRow);
+    appendRowUpdate(rowUpdates, row, std::move(roles));
+  }
+
+  return rowUpdates;
+}
+
 [[nodiscard]] TabPagerDesktopRowData
 rowDataForDesktop(qsizetype row, const TabPagerDesktop &desktop,
                   const TabPagerDesktopId &currentDesktop) {
@@ -46,16 +102,12 @@ TabPagerDesktopModelState TabPagerDesktopModelState::fromSnapshot(
   return state;
 }
 
-TabPagerDesktopModelState::Update TabPagerDesktopModelState::updateForSnapshot(
+TabPagerDesktopModelTransition TabPagerDesktopModelState::transitionForSnapshot(
     const TabPagerDesktopSnapshot &snapshot) const {
   TabPagerDesktopModelState nextState =
       TabPagerDesktopModelState::fromSnapshot(snapshot);
-  const TabPagerDesktopModelChange change = changeForState(nextState);
 
-  return TabPagerDesktopModelState::Update{
-      .nextState = std::move(nextState),
-      .change = change,
-  };
+  return transitionTo(std::move(nextState));
 }
 
 int TabPagerDesktopModelState::count() const {
@@ -78,8 +130,38 @@ TabPagerDesktopRowData TabPagerDesktopModelState::rowData(qsizetype row) const {
   return m_rows.at(row);
 }
 
-TabPagerDesktopModelChange TabPagerDesktopModelState::changeForState(
-    const TabPagerDesktopModelState &nextState) const {
-  return tabPagerDesktopModelChangeForRows(
-      m_rows, m_currentIndex, nextState.m_rows, nextState.m_currentIndex);
+TabPagerDesktopModelTransition TabPagerDesktopModelState::transitionTo(
+    TabPagerDesktopModelState nextState) const {
+  const bool countChanged = m_rows.size() != nextState.m_rows.size();
+  const bool currentIndexChanged = m_currentIndex != nextState.m_currentIndex;
+
+  if (!hasStableRowIdentity(m_rows, nextState.m_rows)) {
+    return TabPagerDesktopModelTransition{
+        .nextState = std::move(nextState),
+        .type = TabPagerDesktopModelTransition::Type::Reset,
+        .countChanged = countChanged,
+        .currentIndexChanged = currentIndexChanged,
+        .rows = {},
+    };
+  }
+
+  QList<TabPagerDesktopModelRowUpdate> rowUpdates =
+      rowUpdatesForChangedRoles(m_rows, nextState.m_rows);
+  if (!currentIndexChanged && rowUpdates.isEmpty()) {
+    return TabPagerDesktopModelTransition{
+        .nextState = std::move(nextState),
+        .type = TabPagerDesktopModelTransition::Type::Unchanged,
+        .countChanged = false,
+        .currentIndexChanged = false,
+        .rows = {},
+    };
+  }
+
+  return TabPagerDesktopModelTransition{
+      .nextState = std::move(nextState),
+      .type = TabPagerDesktopModelTransition::Type::RowsChanged,
+      .countChanged = false,
+      .currentIndexChanged = currentIndexChanged,
+      .rows = std::move(rowUpdates),
+  };
 }

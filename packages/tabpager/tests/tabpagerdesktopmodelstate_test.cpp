@@ -19,29 +19,29 @@ using TabPagerTest::namedDesktop;
 using TabPagerTest::role;
 using TabPagerTest::unnamedDesktop;
 
-void expectUnchanged(const TabPagerDesktopModelChange &change) {
-  QCOMPARE(change.type, TabPagerDesktopModelChange::Type::Unchanged);
+void expectUnchanged(const TabPagerDesktopModelTransition &transition) {
+  QCOMPARE(transition.type, TabPagerDesktopModelTransition::Type::Unchanged);
 }
 
-void expectReset(const TabPagerDesktopModelChange &change, bool countChanged,
-                 bool currentIndexChanged) {
-  QCOMPARE(change.type, TabPagerDesktopModelChange::Type::Reset);
-  QCOMPARE(change.countChanged, countChanged);
-  QCOMPARE(change.currentIndexChanged, currentIndexChanged);
+void expectReset(const TabPagerDesktopModelTransition &transition,
+                 bool countChanged, bool currentIndexChanged) {
+  QCOMPARE(transition.type, TabPagerDesktopModelTransition::Type::Reset);
+  QCOMPARE(transition.countChanged, countChanged);
+  QCOMPARE(transition.currentIndexChanged, currentIndexChanged);
 }
 
-void expectRowsChanged(const TabPagerDesktopModelChange &change,
+void expectRowsChanged(const TabPagerDesktopModelTransition &transition,
                        bool currentIndexChanged, qsizetype rowUpdateCount) {
-  QCOMPARE(change.type, TabPagerDesktopModelChange::Type::RowsChanged);
-  QCOMPARE(change.currentIndexChanged, currentIndexChanged);
-  QCOMPARE(change.rows.size(), rowUpdateCount);
+  QCOMPARE(transition.type, TabPagerDesktopModelTransition::Type::RowsChanged);
+  QCOMPARE(transition.currentIndexChanged, currentIndexChanged);
+  QCOMPARE(transition.rows.size(), rowUpdateCount);
 }
 
-[[nodiscard]] TabPagerDesktopModelState::Update
-updateForDesktopState(const TabPagerDesktopModelState &state,
-                      QList<TabPagerDesktop> desktops,
-                      TabPagerDesktopId currentDesktop = {}) {
-  return state.updateForSnapshot(
+[[nodiscard]] TabPagerDesktopModelTransition
+transitionForDesktopState(const TabPagerDesktopModelState &state,
+                          QList<TabPagerDesktop> desktops,
+                          TabPagerDesktopId currentDesktop = {}) {
+  return state.transitionForSnapshot(
       desktopSnapshot(std::move(desktops), std::move(currentDesktop)));
 }
 } // namespace
@@ -57,7 +57,7 @@ private Q_SLOTS:
   void tracksDesktopModelStateIndex();
   void filtersInvalidDesktopIds();
   void derivesDesktopModelStateRows();
-  void plansDesktopModelUpdateState();
+  void plansDesktopModelTransitionState();
   void plansNoChangeForSameDesktopModelSnapshot();
   void plansNoChangeForUnmatchedCurrentDesktopChange();
   void plansDesktopModelResetWhenCountChanges();
@@ -136,12 +136,11 @@ void TabPagerDesktopModelStateTest::plansChangedDesktopRowRoles() {
   const TabPagerDesktopModelState state =
       desktopModelState({defaultDesktop("a", 1)});
 
-  const TabPagerDesktopModelChange change =
-      updateForDesktopState(state, {namedDesktop("a", "Work")}, desktopId("a"))
-          .change;
+  const TabPagerDesktopModelTransition transition = transitionForDesktopState(
+      state, {namedDesktop("a", "Work")}, desktopId("a"));
 
-  expectRowsChanged(change, true, 1);
-  const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
+  expectRowsChanged(transition, true, 1);
+  const QList<TabPagerDesktopModelRowUpdate> &rowUpdates = transition.rows;
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 0);
   QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
@@ -207,17 +206,17 @@ void TabPagerDesktopModelStateTest::derivesDesktopModelStateRows() {
   QCOMPARE(secondRow.active, true);
 }
 
-void TabPagerDesktopModelStateTest::plansDesktopModelUpdateState() {
+void TabPagerDesktopModelStateTest::plansDesktopModelTransitionState() {
   const TabPagerDesktopModelState state;
 
-  const TabPagerDesktopModelState::Update update = updateForDesktopState(
+  const TabPagerDesktopModelTransition transition = transitionForDesktopState(
       state, {defaultDesktop("a", 1), namedDesktop("b", "Work")},
       desktopId("b"));
 
-  QCOMPARE(update.nextState.count(), 2);
-  QCOMPARE(update.nextState.currentIndex(), 1);
-  QCOMPARE(update.nextState.rowData(1).label, QStringLiteral("Work"));
-  expectReset(update.change, true, true);
+  QCOMPARE(transition.nextState.count(), 2);
+  QCOMPARE(transition.nextState.currentIndex(), 1);
+  QCOMPARE(transition.nextState.rowData(1).label, QStringLiteral("Work"));
+  expectReset(transition, true, true);
 }
 
 void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelSnapshot() {
@@ -226,10 +225,10 @@ void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelSnapshot() {
   const TabPagerDesktopModelState state =
       TabPagerDesktopModelState::fromSnapshot(snapshot);
 
-  const TabPagerDesktopModelChange change =
-      state.updateForSnapshot(snapshot).change;
+  const TabPagerDesktopModelTransition transition =
+      state.transitionForSnapshot(snapshot);
 
-  expectUnchanged(change);
+  expectUnchanged(transition);
 }
 
 void TabPagerDesktopModelStateTest::
@@ -240,23 +239,20 @@ void TabPagerDesktopModelStateTest::
   const TabPagerDesktopModelState state =
       desktopModelState(desktops, desktopId("missing-a"));
 
-  const TabPagerDesktopModelChange change =
-      updateForDesktopState(state, desktops, desktopId("missing-b")).change;
+  const TabPagerDesktopModelTransition transition =
+      transitionForDesktopState(state, desktops, desktopId("missing-b"));
 
-  expectUnchanged(change);
+  expectUnchanged(transition);
 }
 
 void TabPagerDesktopModelStateTest::plansDesktopModelResetWhenCountChanges() {
   const TabPagerDesktopModelState state =
       desktopModelState({defaultDesktop("a", 1)}, desktopId("a"));
 
-  const TabPagerDesktopModelChange change =
-      updateForDesktopState(state,
-                            {defaultDesktop("a", 1), defaultDesktop("b", 2)},
-                            desktopId("b"))
-          .change;
+  const TabPagerDesktopModelTransition transition = transitionForDesktopState(
+      state, {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("b"));
 
-  expectReset(change, true, true);
+  expectReset(transition, true, true);
 }
 
 void TabPagerDesktopModelStateTest::
@@ -264,28 +260,22 @@ void TabPagerDesktopModelStateTest::
   const TabPagerDesktopModelState state = desktopModelState(
       {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelChange change =
-      updateForDesktopState(state,
-                            {defaultDesktop("b", 1), defaultDesktop("a", 2)},
-                            desktopId("a"))
-          .change;
+  const TabPagerDesktopModelTransition transition = transitionForDesktopState(
+      state, {defaultDesktop("b", 1), defaultDesktop("a", 2)}, desktopId("a"));
 
-  expectReset(change, false, true);
+  expectReset(transition, false, true);
 }
 
 void TabPagerDesktopModelStateTest::plansCurrentDesktopRowUpdates() {
   const TabPagerDesktopModelState state = desktopModelState(
       {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelChange change =
-      updateForDesktopState(state,
-                            {defaultDesktop("a", 1), defaultDesktop("b", 2)},
-                            desktopId("b"))
-          .change;
+  const TabPagerDesktopModelTransition transition = transitionForDesktopState(
+      state, {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("b"));
 
-  expectRowsChanged(change, true, 1);
+  expectRowsChanged(transition, true, 1);
 
-  const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
+  const QList<TabPagerDesktopModelRowUpdate> &rowUpdates = transition.rows;
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 1);
   QCOMPARE(rowUpdates.at(0).roles,
@@ -296,15 +286,13 @@ void TabPagerDesktopModelStateTest::plansDesktopDataRowUpdates() {
   const TabPagerDesktopModelState state = desktopModelState(
       {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelChange change =
-      updateForDesktopState(state,
-                            {defaultDesktop("a", 1), namedDesktop("b", "Chat")},
-                            desktopId("a"))
-          .change;
+  const TabPagerDesktopModelTransition transition = transitionForDesktopState(
+      state, {defaultDesktop("a", 1), namedDesktop("b", "Chat")},
+      desktopId("a"));
 
-  expectRowsChanged(change, false, 1);
+  expectRowsChanged(transition, false, 1);
 
-  const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
+  const QList<TabPagerDesktopModelRowUpdate> &rowUpdates = transition.rows;
   QCOMPARE(rowUpdates.at(0).firstRow, 1);
   QCOMPARE(rowUpdates.at(0).lastRow, 1);
   QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
@@ -317,15 +305,13 @@ void TabPagerDesktopModelStateTest::groupsAdjacentDesktopDataRowUpdates() {
   const TabPagerDesktopModelState state = desktopModelState(
       {defaultDesktop("a", 1), defaultDesktop("b", 2)}, desktopId("a"));
 
-  const TabPagerDesktopModelChange change =
-      updateForDesktopState(
-          state, {namedDesktop("a", "Mail"), namedDesktop("b", "Chat")},
-          desktopId("a"))
-          .change;
+  const TabPagerDesktopModelTransition transition = transitionForDesktopState(
+      state, {namedDesktop("a", "Mail"), namedDesktop("b", "Chat")},
+      desktopId("a"));
 
-  expectRowsChanged(change, false, 1);
+  expectRowsChanged(transition, false, 1);
 
-  const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
+  const QList<TabPagerDesktopModelRowUpdate> &rowUpdates = transition.rows;
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 1);
   QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
@@ -339,15 +325,13 @@ void TabPagerDesktopModelStateTest::
   const TabPagerDesktopModelState state =
       desktopModelState({defaultDesktop("a", 1), defaultDesktop("b", 2)});
 
-  const TabPagerDesktopModelChange change =
-      updateForDesktopState(state,
-                            {namedDesktop("a", "Mail"), defaultDesktop("b", 2)},
-                            desktopId("b"))
-          .change;
+  const TabPagerDesktopModelTransition transition = transitionForDesktopState(
+      state, {namedDesktop("a", "Mail"), defaultDesktop("b", 2)},
+      desktopId("b"));
 
-  expectRowsChanged(change, true, 2);
+  expectRowsChanged(transition, true, 2);
 
-  const QList<TabPagerDesktopRowUpdate> &rowUpdates = change.rows;
+  const QList<TabPagerDesktopModelRowUpdate> &rowUpdates = transition.rows;
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 0);
   QCOMPARE(rowUpdates.at(0).roles, (QList<int>{

@@ -4,21 +4,28 @@
 #pragma once
 
 #include "tabpagerdesktop.h"
-#include "tabpagerdesktopmodelchange.h"
+#include "tabpagerdesktoprow.h"
 
 #include <QList>
 
+#include <cstdint>
 #include <optional>
+
+struct TabPagerDesktopModelRowUpdate {
+  qsizetype firstRow = -1;
+  qsizetype lastRow = -1;
+  QList<int> roles;
+};
+
+struct TabPagerDesktopModelTransition;
 
 class TabPagerDesktopModelState final {
 public:
-  struct Update;
-
   [[nodiscard]] static TabPagerDesktopModelState
   fromSnapshot(const TabPagerDesktopSnapshot &snapshot);
 
-  [[nodiscard]] Update
-  updateForSnapshot(const TabPagerDesktopSnapshot &snapshot) const;
+  [[nodiscard]] TabPagerDesktopModelTransition
+  transitionForSnapshot(const TabPagerDesktopSnapshot &snapshot) const;
   [[nodiscard]] int count() const;
   [[nodiscard]] int currentIndex() const;
   [[nodiscard]] std::optional<TabPagerDesktopId>
@@ -26,14 +33,23 @@ public:
   [[nodiscard]] TabPagerDesktopRowData rowData(qsizetype row) const;
 
 private:
-  [[nodiscard]] TabPagerDesktopModelChange
-  changeForState(const TabPagerDesktopModelState &nextState) const;
+  [[nodiscard]] TabPagerDesktopModelTransition
+  transitionTo(TabPagerDesktopModelState nextState) const;
 
   QList<TabPagerDesktopRowData> m_rows;
   int m_currentIndex = -1;
 };
 
-struct TabPagerDesktopModelState::Update {
+struct TabPagerDesktopModelTransition {
+  enum class Type : std::uint8_t {
+    Unchanged,
+    Reset,
+    RowsChanged,
+  };
+
   TabPagerDesktopModelState nextState;
-  TabPagerDesktopModelChange change;
+  Type type = Type::Unchanged;
+  bool countChanged = false;
+  bool currentIndexChanged = false;
+  QList<TabPagerDesktopModelRowUpdate> rows;
 };

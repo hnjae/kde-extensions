@@ -56,7 +56,7 @@ private:
   void applyDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
   void resetDesktopState(TabPagerDesktopModelState nextState);
   void updateDesktopStateRows(TabPagerDesktopModelState nextState,
-                              const QList<TabPagerDesktopRowUpdate> &rows);
+                              const QList<TabPagerDesktopModelRowUpdate> &rows);
   [[nodiscard]] TabPagerDesktopNavigationContext navigationContext() const;
   void activateNavigationTarget(std::optional<int> targetIndex);
   void activateOffset(int offset);

@@ -102,26 +102,27 @@ void TabPagerBackend::reloadNavigationWrappingAround() {
 
 void TabPagerBackend::applyDesktopSnapshot(
     const TabPagerDesktopSnapshot &snapshot) {
-  TabPagerDesktopModelState::Update update =
-      m_state.updateForSnapshot(snapshot);
-  const TabPagerDesktopModelChange &change = update.change;
+  TabPagerDesktopModelTransition transition =
+      m_state.transitionForSnapshot(snapshot);
+  const bool shouldEmitCountChanged = transition.countChanged;
+  const bool shouldEmitCurrentIndexChanged = transition.currentIndexChanged;
 
-  switch (change.type) {
-  case TabPagerDesktopModelChange::Type::Unchanged:
+  switch (transition.type) {
+  case TabPagerDesktopModelTransition::Type::Unchanged:
     return;
-  case TabPagerDesktopModelChange::Type::Reset:
-    resetDesktopState(std::move(update.nextState));
+  case TabPagerDesktopModelTransition::Type::Reset:
+    resetDesktopState(std::move(transition.nextState));
     break;
-  case TabPagerDesktopModelChange::Type::RowsChanged:
-    updateDesktopStateRows(std::move(update.nextState), change.rows);
+  case TabPagerDesktopModelTransition::Type::RowsChanged:
+    updateDesktopStateRows(std::move(transition.nextState), transition.rows);
     break;
   }
 
-  if (change.countChanged) {
+  if (shouldEmitCountChanged) {
     Q_EMIT countChanged();
   }
 
-  if (change.currentIndexChanged) {
+  if (shouldEmitCurrentIndexChanged) {
     Q_EMIT currentIndexChanged();
   }
 }
@@ -134,10 +135,10 @@ void TabPagerBackend::resetDesktopState(TabPagerDesktopModelState nextState) {
 
 void TabPagerBackend::updateDesktopStateRows(
     TabPagerDesktopModelState nextState,
-    const QList<TabPagerDesktopRowUpdate> &rows) {
+    const QList<TabPagerDesktopModelRowUpdate> &rows) {
   m_state = std::move(nextState);
 
-  for (const TabPagerDesktopRowUpdate &rowUpdate : rows) {
+  for (const TabPagerDesktopModelRowUpdate &rowUpdate : rows) {
     const QModelIndex firstChangedIndex =
         index(static_cast<int>(rowUpdate.firstRow));
     const QModelIndex lastChangedIndex =
