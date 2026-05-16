@@ -6,6 +6,11 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const packageRoot = new URL("../dist/kwin-run-or-raise/", import.meta.url);
+const bindingCount = 16;
+
+function matchingCount(input: string, pattern: RegExp): number {
+  return [...input.matchAll(pattern)].length;
+}
 
 test("build output has KWin script package structure", async () => {
   const metadata = JSON.parse(
@@ -31,10 +36,31 @@ test("build output includes script configuration files", async () => {
     new URL("contents/config/main.xml", packageRoot),
     "utf8",
   );
+  const configUi = await readFile(
+    new URL("contents/ui/config.ui", packageRoot),
+    "utf8",
+  );
 
   assert.match(mainConfig, /<group name="">/);
+  assert.equal(
+    matchingCount(mainConfig, /<entry name="Binding\d{2}Enabled"/g),
+    bindingCount,
+  );
+  assert.equal(
+    matchingCount(mainConfig, /<entry name="Binding\d{2}DesktopEntryId"/g),
+    bindingCount,
+  );
+  assert.match(mainConfig, /<entry name="Binding16Shortcut" type="String">/);
 
-  await readFile(new URL("contents/ui/config.ui", packageRoot), "utf8");
+  assert.equal(
+    matchingCount(configUi, /name="kcfg_Binding\d{2}Enabled"/g),
+    bindingCount,
+  );
+  assert.equal(
+    matchingCount(configUi, /name="kcfg_Binding\d{2}DesktopEntryId"/g),
+    bindingCount,
+  );
+  assert.match(configUi, /name="kcfg_Binding16Shortcut"/);
 });
 
 test("main script is generated without module syntax", async () => {
