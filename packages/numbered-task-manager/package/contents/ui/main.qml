@@ -135,59 +135,17 @@ PlasmoidItem {
     }
 
     function movePinnedLauncher(sourceEntry, targetEntry) {
-        const sourcePosition = pinnedLauncherGlobalPosition(sourceEntry);
-        const targetPosition = pinnedLauncherGlobalPosition(targetEntry);
-        if (!canMovePinnedLauncherPositions(sourcePosition, targetPosition)) {
+        const result = TaskHelpers.movePinnedLauncher(tasksModel.launcherList, sourceEntry, targetEntry, launcherUrl => tasksModel.launcherPosition(launcherUrl));
+        if (!result.moved) {
             return false;
         }
 
-        const launchers = normalizedLauncherList(tasksModel.launcherList);
-        if (sourcePosition >= launchers.length || targetPosition >= launchers.length) {
-            return false;
-        }
-
-        const nextLaunchers = launchers.slice();
-        const movedLaunchers = nextLaunchers.splice(sourcePosition, 1);
-        if (movedLaunchers.length !== 1) {
-            return false;
-        }
-
-        nextLaunchers.splice(targetPosition, 0, movedLaunchers[0]);
-        if (launcherListsEqual(launchers, nextLaunchers)) {
-            return false;
-        }
-
-        persistLaunchers(nextLaunchers);
+        persistLaunchers(result.launchers);
         return true;
     }
 
     function canMovePinnedLauncher(sourceEntry, targetEntry) {
-        return canMovePinnedLauncherPositions(pinnedLauncherGlobalPosition(sourceEntry), pinnedLauncherGlobalPosition(targetEntry));
-    }
-
-    function canMovePinnedLauncherPositions(sourcePosition, targetPosition) {
-        return sourcePosition >= 0 && targetPosition >= 0 && sourcePosition !== targetPosition;
-    }
-
-    function pinnedLauncherGlobalPosition(entry) {
-        const launcherUrl = entry ? String(entry.pinnedLauncherUrl || entry.launcherUrl || "") : "";
-        if (!launcherUrl) {
-            return -1;
-        }
-
-        const directPosition = tasksModel.launcherPosition(launcherUrl);
-        const launchers = normalizedLauncherList(tasksModel.launcherList);
-        if (directPosition >= 0 && directPosition < launchers.length) {
-            return directPosition;
-        }
-
-        for (let i = 0; i < launchers.length; ++i) {
-            if (TaskHelpers.parseSerializedLauncher(launchers[i]).url === launcherUrl) {
-                return i;
-            }
-        }
-
-        return -1;
+        return TaskHelpers.canMovePinnedLauncher(tasksModel.launcherList, sourceEntry, targetEntry, launcherUrl => tasksModel.launcherPosition(launcherUrl));
     }
 
     function canMoveTask(sourceIndex, targetIndex) {
@@ -207,19 +165,6 @@ PlasmoidItem {
         return TaskHelpers.stringListContains(list, value);
     }
 
-    function serializedLauncherVisibleInCurrentActivity(serializedLauncher, launcherRevisionToken) {
-        const revision = launcherRevisionToken === undefined ? launcherRevision : launcherRevisionToken;
-        if (!serializedLauncher) {
-            return false;
-        }
-
-        if (revision < 0) {
-            return false;
-        }
-
-        return TaskHelpers.serializedLauncherVisibleInActivity(serializedLauncher, activityInfo.currentActivity);
-    }
-
     function visibleLauncherPosition(launcherUrl, launcherRevisionToken) {
         const revision = launcherRevisionToken === undefined ? launcherRevision : launcherRevisionToken;
         if (!launcherUrl) {
@@ -230,26 +175,7 @@ PlasmoidItem {
             return -1;
         }
 
-        const launchers = normalizedLauncherList(tasksModel.launcherList);
-        const globalPosition = tasksModel.launcherPosition(launcherUrl);
-        if (globalPosition === -1) {
-            return -1;
-        }
-
-        let visiblePosition = 0;
-        for (let i = 0; i < launchers.length && i <= globalPosition; ++i) {
-            if (!serializedLauncherVisibleInCurrentActivity(launchers[i], revision)) {
-                continue;
-            }
-
-            if (i === globalPosition) {
-                return visiblePosition;
-            }
-
-            visiblePosition += 1;
-        }
-
-        return -1;
+        return TaskHelpers.visibleLauncherPosition(tasksModel.launcherList, launcherUrl, activityInfo.currentActivity, url => tasksModel.launcherPosition(url));
     }
 
     function desktopId(desktop) {

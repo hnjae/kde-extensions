@@ -15,6 +15,9 @@ in `SPEC.md`.
   rows by rewriting the persisted launcher list so launch-in-place window rows
   cannot collide with `TasksModel.move()` launcher barriers. Keep manually
   reordered unpinned windows in widget state.
+- Keep launcher-list transformations in shared JavaScript helpers so serialized
+  activity prefixes, visible launcher positions, and pinned launcher reordering
+  are exercised by unit tests instead of being spread across QML components.
 - Do not claim support for upstream task-manager private backend behavior, such
   as file-open drops onto task delegates, unless that backend integration is
   actually added.

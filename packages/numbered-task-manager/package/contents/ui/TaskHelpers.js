@@ -228,3 +228,141 @@ function launcherListWithActivitiesAt(launcherList, position, activities) {
   );
   return result;
 }
+
+function launcherPositionForUrl(launcherUrl, launcherPosition) {
+  const url = String(launcherUrl || "");
+  if (!url) {
+    return -1;
+  }
+
+  const position =
+    typeof launcherPosition === "function"
+      ? launcherPosition(url)
+      : launcherPosition;
+  if (position === undefined || position === null) {
+    return -1;
+  }
+
+  const numericPosition = Number(position);
+  return isNaN(numericPosition) ? -1 : numericPosition;
+}
+
+function visibleLauncherPosition(
+  launcherList,
+  launcherUrl,
+  currentActivity,
+  launcherPosition,
+) {
+  const launchers = normalizedLauncherList(launcherList);
+  const globalPosition = launcherPositionForUrl(launcherUrl, launcherPosition);
+  if (globalPosition < 0 || globalPosition >= launchers.length) {
+    return -1;
+  }
+
+  let visiblePosition = 0;
+  for (let i = 0; i < launchers.length && i <= globalPosition; ++i) {
+    if (!serializedLauncherVisibleInActivity(launchers[i], currentActivity)) {
+      continue;
+    }
+
+    if (i === globalPosition) {
+      return visiblePosition;
+    }
+
+    visiblePosition += 1;
+  }
+
+  return -1;
+}
+
+function pinnedLauncherGlobalPosition(launcherList, entry, launcherPosition) {
+  const launcherUrl = entry
+    ? String(entry.pinnedLauncherUrl || entry.launcherUrl || "")
+    : "";
+  if (!launcherUrl) {
+    return -1;
+  }
+
+  const launchers = normalizedLauncherList(launcherList);
+  const directPosition = launcherPositionForUrl(launcherUrl, launcherPosition);
+  if (directPosition >= 0 && directPosition < launchers.length) {
+    return directPosition;
+  }
+
+  for (let i = 0; i < launchers.length; ++i) {
+    if (parseSerializedLauncher(launchers[i]).url === launcherUrl) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+function canMovePinnedLauncher(
+  launcherList,
+  sourceEntry,
+  targetEntry,
+  launcherPosition,
+) {
+  const sourcePosition = pinnedLauncherGlobalPosition(
+    launcherList,
+    sourceEntry,
+    launcherPosition,
+  );
+  const targetPosition = pinnedLauncherGlobalPosition(
+    launcherList,
+    targetEntry,
+    launcherPosition,
+  );
+  return (
+    sourcePosition >= 0 &&
+    targetPosition >= 0 &&
+    sourcePosition !== targetPosition
+  );
+}
+
+function movePinnedLauncher(
+  launcherList,
+  sourceEntry,
+  targetEntry,
+  launcherPosition,
+) {
+  const launchers = normalizedLauncherList(launcherList);
+  const sourcePosition = pinnedLauncherGlobalPosition(
+    launchers,
+    sourceEntry,
+    launcherPosition,
+  );
+  const targetPosition = pinnedLauncherGlobalPosition(
+    launchers,
+    targetEntry,
+    launcherPosition,
+  );
+  if (
+    sourcePosition < 0 ||
+    targetPosition < 0 ||
+    sourcePosition === targetPosition ||
+    sourcePosition >= launchers.length ||
+    targetPosition >= launchers.length
+  ) {
+    return {
+      moved: false,
+      launchers,
+    };
+  }
+
+  const nextLaunchers = launchers.slice();
+  const movedLaunchers = nextLaunchers.splice(sourcePosition, 1);
+  if (movedLaunchers.length !== 1) {
+    return {
+      moved: false,
+      launchers,
+    };
+  }
+
+  nextLaunchers.splice(targetPosition, 0, movedLaunchers[0]);
+  return {
+    moved: !launcherListsEqual(launchers, nextLaunchers),
+    launchers: nextLaunchers,
+  };
+}

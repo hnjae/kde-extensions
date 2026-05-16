@@ -9,20 +9,24 @@ const helpers = loadQmlJsModule(
   new URL("../package/contents/ui/TaskHelpers.js", import.meta.url),
   [
     "activitiesAreAll",
+    "canMovePinnedLauncher",
     "effectiveSerializedLauncherActivities",
     "isInCurrentActivity",
     "launcherActivitiesAfterAllToggle",
     "launcherActivitiesAfterToggle",
     "launcherListWithActivitiesAt",
     "launcherListsEqual",
+    "movePinnedLauncher",
     "normalizedActivityList",
     "normalizedLauncherList",
     "parseSerializedLauncher",
+    "pinnedLauncherGlobalPosition",
     "serializeLauncherWithActivities",
     "serializedLauncherVisibleInActivity",
     "stringListContains",
     "taskActivitiesAfterToggle",
     "uniqueStringList",
+    "visibleLauncherPosition",
   ],
 );
 
@@ -174,4 +178,126 @@ assert.deepEqual(
 assert.deepEqual(
   plain(helpers.launcherActivitiesAfterToggle(["work"], "chat", "work")),
   ["work", "chat"],
+);
+
+const visibleLaunchers = [
+  "[work]\napp-a.desktop",
+  "[chat]\napp-b.desktop",
+  "app-c.desktop",
+];
+const launcherPosition = (launcherUrl) =>
+  ({
+    "app-a.desktop": 0,
+    "app-b.desktop": 1,
+    "app-c.desktop": 2,
+  })[launcherUrl] ?? -1;
+
+assert.equal(
+  helpers.visibleLauncherPosition(
+    visibleLaunchers,
+    "app-a.desktop",
+    "work",
+    launcherPosition,
+  ),
+  0,
+);
+assert.equal(
+  helpers.visibleLauncherPosition(
+    visibleLaunchers,
+    "app-b.desktop",
+    "work",
+    launcherPosition,
+  ),
+  -1,
+);
+assert.equal(
+  helpers.visibleLauncherPosition(
+    visibleLaunchers,
+    "app-c.desktop",
+    "work",
+    launcherPosition,
+  ),
+  1,
+);
+assert.equal(
+  helpers.visibleLauncherPosition(
+    visibleLaunchers,
+    "missing.desktop",
+    "work",
+    -1,
+  ),
+  -1,
+);
+
+const pinnedA = {
+  launcherUrl: "app-a.desktop",
+  pinnedLauncherUrl: "app-a.desktop",
+};
+const pinnedB = {
+  launcherUrl: "app-b.desktop",
+  pinnedLauncherUrl: "app-b.desktop",
+};
+const pinnedC = {
+  launcherUrl: "app-c.desktop",
+  pinnedLauncherUrl: "app-c.desktop",
+};
+
+assert.equal(
+  helpers.pinnedLauncherGlobalPosition(visibleLaunchers, pinnedB, () => -1),
+  1,
+);
+assert.equal(
+  helpers.pinnedLauncherGlobalPosition(visibleLaunchers, {}, launcherPosition),
+  -1,
+);
+assert.equal(
+  helpers.canMovePinnedLauncher(
+    visibleLaunchers,
+    pinnedA,
+    pinnedB,
+    launcherPosition,
+  ),
+  true,
+);
+assert.equal(
+  helpers.canMovePinnedLauncher(
+    visibleLaunchers,
+    pinnedA,
+    pinnedA,
+    launcherPosition,
+  ),
+  false,
+);
+
+assert.deepEqual(
+  plain(
+    helpers.movePinnedLauncher(
+      visibleLaunchers,
+      pinnedA,
+      pinnedC,
+      launcherPosition,
+    ),
+  ),
+  {
+    moved: true,
+    launchers: [
+      "[chat]\napp-b.desktop",
+      "app-c.desktop",
+      "[work]\napp-a.desktop",
+    ],
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.movePinnedLauncher(
+      visibleLaunchers,
+      pinnedA,
+      pinnedA,
+      launcherPosition,
+    ),
+  ),
+  {
+    moved: false,
+    launchers: visibleLaunchers,
+  },
 );
