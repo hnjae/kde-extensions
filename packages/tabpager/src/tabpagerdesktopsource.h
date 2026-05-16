@@ -7,6 +7,11 @@
 
 #include <QObject>
 
+struct TabPagerDesktopSourceState {
+  TabPagerDesktopSnapshot desktopSnapshot;
+  bool navigationWrappingAround = false;
+};
+
 class TabPagerDesktopSource : public QObject {
   Q_OBJECT
 
@@ -14,11 +19,9 @@ public:
   explicit TabPagerDesktopSource(QObject *parent = nullptr);
   ~TabPagerDesktopSource() override;
 
-  [[nodiscard]] virtual TabPagerDesktopSnapshot desktopSnapshot() const = 0;
-  [[nodiscard]] virtual bool navigationWrappingAround() const = 0;
+  [[nodiscard]] virtual TabPagerDesktopSourceState sourceState() const = 0;
   virtual void activateDesktop(const TabPagerDesktopId &desktopId) = 0;
 
 Q_SIGNALS:
-  void desktopSnapshotChanged();
-  void navigationWrappingAroundChanged();
+  void sourceStateChanged();
 };

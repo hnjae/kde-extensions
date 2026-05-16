@@ -14,8 +14,7 @@ public:
   explicit TaskManagerDesktopSource(QObject *parent = nullptr);
   ~TaskManagerDesktopSource() override;
 
-  [[nodiscard]] TabPagerDesktopSnapshot desktopSnapshot() const override;
-  [[nodiscard]] bool navigationWrappingAround() const override;
+  [[nodiscard]] TabPagerDesktopSourceState sourceState() const override;
   void activateDesktop(const TabPagerDesktopId &desktopId) override;
 
 private:

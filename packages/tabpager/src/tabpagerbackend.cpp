@@ -72,31 +72,31 @@ void TabPagerBackend::activateByWheelDelta(int delta) {
 void TabPagerBackend::initializeSource() {
   assert(m_source != nullptr);
   connectSource();
-  reloadDesktopSnapshot();
-  reloadNavigationWrappingAround();
+  reloadSourceState();
 }
 
 void TabPagerBackend::connectSource() {
-  connect(m_source.get(), &TabPagerDesktopSource::desktopSnapshotChanged, this,
-          &TabPagerBackend::reloadDesktopSnapshot);
-  connect(m_source.get(),
-          &TabPagerDesktopSource::navigationWrappingAroundChanged, this,
-          &TabPagerBackend::reloadNavigationWrappingAround);
+  connect(m_source.get(), &TabPagerDesktopSource::sourceStateChanged, this,
+          &TabPagerBackend::reloadSourceState);
 }
 
-void TabPagerBackend::reloadDesktopSnapshot() {
-  applyDesktopSnapshot(m_source->desktopSnapshot());
+void TabPagerBackend::reloadSourceState() {
+  applySourceState(m_source->sourceState());
 }
 
-void TabPagerBackend::reloadNavigationWrappingAround() {
-  const bool nextNavigationWrappingAround =
-      m_source->navigationWrappingAround();
+void TabPagerBackend::applySourceState(
+    const TabPagerDesktopSourceState &state) {
+  applyDesktopSnapshot(state.desktopSnapshot);
+  applyNavigationWrappingAround(state.navigationWrappingAround);
+}
 
-  if (m_navigator.navigationWrappingAround() == nextNavigationWrappingAround) {
+void TabPagerBackend::applyNavigationWrappingAround(
+    bool navigationWrappingAround) {
+  if (m_navigator.navigationWrappingAround() == navigationWrappingAround) {
     return;
   }
 
-  m_navigator.setNavigationWrappingAround(nextNavigationWrappingAround);
+  m_navigator.setNavigationWrappingAround(navigationWrappingAround);
   Q_EMIT navigationWrappingAroundChanged();
 }
 

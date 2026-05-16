@@ -38,6 +38,7 @@ private Q_SLOTS:
   void tracksCurrentDesktopFromDesktopReload();
   void tracksCurrentDesktop();
   void updatesNavigationWrapping();
+  void updatesDesktopAndNavigationStateTogether();
   void activatesDesktopByIndex();
   void ignoresActivationForInvalidDesktopId();
   void ignoresRelativeActivationWithoutCurrentDesktop();
@@ -254,6 +255,29 @@ void TabPagerBackendTest::updatesNavigationWrapping() {
   fixture.source->setNavigationWrappingAround(true);
 
   QCOMPARE(fixture.backend.navigationWrappingAround(), true);
+  QCOMPARE(wrappingSpy.count(), 1);
+}
+
+void TabPagerBackendTest::updatesDesktopAndNavigationStateTogether() {
+  BackendFixture fixture({defaultDesktop("a", 1)}, desktopId("a"), false);
+  QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
+  QSignalSpy currentSpy(&fixture.backend,
+                        &TabPagerBackend::currentIndexChanged);
+  QSignalSpy wrappingSpy(&fixture.backend,
+                         &TabPagerBackend::navigationWrappingAroundChanged);
+
+  fixture.source->setSourceState(
+      {
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+      },
+      desktopId("b"), true);
+
+  QCOMPARE(fixture.backend.count(), 2);
+  QCOMPARE(fixture.backend.currentIndex(), 1);
+  QCOMPARE(fixture.backend.navigationWrappingAround(), true);
+  QCOMPARE(countSpy.count(), 1);
+  QCOMPARE(currentSpy.count(), 1);
   QCOMPARE(wrappingSpy.count(), 1);
 }
 

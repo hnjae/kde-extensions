@@ -5,24 +5,26 @@
 
 #include <QStringList>
 
+#include <utility>
+
 TaskManagerDesktopSource::TaskManagerDesktopSource(QObject *parent)
     : TabPagerDesktopSource(parent) {
   connect(&m_info, &TaskManager::VirtualDesktopInfo::desktopIdsChanged, this,
-          &TabPagerDesktopSource::desktopSnapshotChanged);
+          &TabPagerDesktopSource::sourceStateChanged);
   connect(&m_info, &TaskManager::VirtualDesktopInfo::desktopNamesChanged, this,
-          &TabPagerDesktopSource::desktopSnapshotChanged);
+          &TabPagerDesktopSource::sourceStateChanged);
   connect(&m_info, &TaskManager::VirtualDesktopInfo::numberOfDesktopsChanged,
-          this, &TabPagerDesktopSource::desktopSnapshotChanged);
+          this, &TabPagerDesktopSource::sourceStateChanged);
   connect(&m_info, &TaskManager::VirtualDesktopInfo::currentDesktopChanged,
-          this, &TabPagerDesktopSource::desktopSnapshotChanged);
+          this, &TabPagerDesktopSource::sourceStateChanged);
   connect(&m_info,
           &TaskManager::VirtualDesktopInfo::navigationWrappingAroundChanged,
-          this, &TabPagerDesktopSource::navigationWrappingAroundChanged);
+          this, &TabPagerDesktopSource::sourceStateChanged);
 }
 
 TaskManagerDesktopSource::~TaskManagerDesktopSource() = default;
 
-TabPagerDesktopSnapshot TaskManagerDesktopSource::desktopSnapshot() const {
+TabPagerDesktopSourceState TaskManagerDesktopSource::sourceState() const {
   const QVariantList ids = m_info.desktopIds();
   const QStringList names = m_info.desktopNames();
 
@@ -36,14 +38,15 @@ TabPagerDesktopSnapshot TaskManagerDesktopSource::desktopSnapshot() const {
     });
   }
 
-  return TabPagerDesktopSnapshot{
-      .desktops = desktops,
-      .currentDesktop = TabPagerDesktopId::fromVariant(m_info.currentDesktop()),
+  return TabPagerDesktopSourceState{
+      .desktopSnapshot =
+          TabPagerDesktopSnapshot{
+              .desktops = std::move(desktops),
+              .currentDesktop =
+                  TabPagerDesktopId::fromVariant(m_info.currentDesktop()),
+          },
+      .navigationWrappingAround = m_info.navigationWrappingAround(),
   };
-}
-
-bool TaskManagerDesktopSource::navigationWrappingAround() const {
-  return m_info.navigationWrappingAround();
 }
 
 void TaskManagerDesktopSource::activateDesktop(

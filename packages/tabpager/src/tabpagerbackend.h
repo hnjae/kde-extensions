@@ -51,9 +51,10 @@ Q_SIGNALS:
 private:
   void initializeSource();
   void connectSource();
-  void reloadDesktopSnapshot();
-  void reloadNavigationWrappingAround();
+  void reloadSourceState();
+  void applySourceState(const TabPagerDesktopSourceState &state);
   void applyDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot);
+  void applyNavigationWrappingAround(bool navigationWrappingAround);
   void resetDesktopState(TabPagerDesktopModelState nextState);
   void updateDesktopStateRows(TabPagerDesktopModelState nextState,
                               const QList<TabPagerDesktopModelRowUpdate> &rows);

@@ -21,12 +21,12 @@ public:
       : m_desktops(desktops), m_currentDesktop(std::move(currentDesktop)),
         m_navigationWrappingAround(navigationWrappingAround) {}
 
-  [[nodiscard]] TabPagerDesktopSnapshot desktopSnapshot() const override {
-    return TabPagerTest::desktopSnapshot(m_desktops, m_currentDesktop);
-  }
-
-  [[nodiscard]] bool navigationWrappingAround() const override {
-    return m_navigationWrappingAround;
+  [[nodiscard]] TabPagerDesktopSourceState sourceState() const override {
+    return TabPagerDesktopSourceState{
+        .desktopSnapshot =
+            TabPagerTest::desktopSnapshot(m_desktops, m_currentDesktop),
+        .navigationWrappingAround = m_navigationWrappingAround,
+    };
   }
 
   void activateDesktop(const TabPagerDesktopId &desktopId) override {
@@ -35,24 +35,33 @@ public:
 
   void setDesktops(const QList<TabPagerDesktop> &desktops) {
     m_desktops = desktops;
-    Q_EMIT desktopSnapshotChanged();
+    Q_EMIT sourceStateChanged();
   }
 
   void setDesktopState(const QList<TabPagerDesktop> &desktops,
                        const TabPagerDesktopId &currentDesktop) {
     m_desktops = desktops;
     m_currentDesktop = currentDesktop;
-    Q_EMIT desktopSnapshotChanged();
+    Q_EMIT sourceStateChanged();
   }
 
   void setCurrentDesktop(const TabPagerDesktopId &desktopId) {
     m_currentDesktop = desktopId;
-    Q_EMIT desktopSnapshotChanged();
+    Q_EMIT sourceStateChanged();
   }
 
   void setNavigationWrappingAround(bool navigationWrappingAround) {
     m_navigationWrappingAround = navigationWrappingAround;
-    Q_EMIT navigationWrappingAroundChanged();
+    Q_EMIT sourceStateChanged();
+  }
+
+  void setSourceState(const QList<TabPagerDesktop> &desktops,
+                      const TabPagerDesktopId &currentDesktop,
+                      bool navigationWrappingAround) {
+    m_desktops = desktops;
+    m_currentDesktop = currentDesktop;
+    m_navigationWrappingAround = navigationWrappingAround;
+    Q_EMIT sourceStateChanged();
   }
 
   [[nodiscard]] QList<TabPagerDesktopId> activatedDesktops() const {
