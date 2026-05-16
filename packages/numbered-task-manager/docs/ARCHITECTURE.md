@@ -15,12 +15,15 @@ in `SPEC.md`.
   rows by rewriting the persisted launcher list so launch-in-place window rows
   cannot collide with `TasksModel.move()` launcher barriers. Keep manually
   reordered unpinned windows in widget state.
-- Keep launcher-list transformations in shared JavaScript helpers so serialized
+- Keep task activity scope decisions in `TaskActivityLogic.js` so current
+  activity matching and task activity toggles are shared by the task model and
+  context menu.
+- Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
-- Keep launcher-list mutation decisions in shared JavaScript helpers. QML code
-  may apply returned writes to Plasma objects, but normalization, equality
-  checks, and derived activity lists should stay in tested helper functions.
+- Keep launcher-list mutation decisions in `LauncherListLogic.js`. QML code may
+  apply returned writes to Plasma objects, but normalization, equality checks,
+  and derived launcher activity lists should stay in tested helper functions.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
   coercion, title/icon fallback, model-index validity, and virtual-desktop
   membership should not be duplicated between normal task composition, remote

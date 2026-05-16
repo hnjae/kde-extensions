@@ -8,7 +8,7 @@ import QtQuick.Controls as QtQuickControls
 import org.kde.taskmanager as TaskManager
 import "TaskActivityLogic.js" as TaskActivityLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
-import "TaskHelpers.js" as TaskHelpers
+import "LauncherListLogic.js" as LauncherListLogic
 
 QtQuickControls.Menu {
     id: root
@@ -105,7 +105,7 @@ QtQuickControls.Menu {
 
     function applyLauncherActivities(activities) {
         const position = launcherPosition();
-        const update = TaskHelpers.launcherActivityUpdate(taskModel.launcherList, position, activities);
+        const update = LauncherListLogic.launcherActivityUpdate(taskModel.launcherList, position, activities);
         if (!update) {
             return false;
         }
@@ -124,7 +124,7 @@ QtQuickControls.Menu {
             return;
         }
 
-        const nextActivities = TaskHelpers.launcherActivitiesAfterAllToggle(launcherActivityList, activityInfo.currentActivity);
+        const nextActivities = LauncherListLogic.launcherActivitiesAfterAllToggle(launcherActivityList, activityInfo.currentActivity);
         if (nextActivities) {
             applyLauncherActivities(nextActivities);
         }
@@ -136,7 +136,7 @@ QtQuickControls.Menu {
             return;
         }
 
-        applyLauncherActivities(TaskHelpers.launcherActivitiesAfterToggle(launcherActivityList, activityId, activityInfo.currentActivity));
+        applyLauncherActivities(LauncherListLogic.launcherActivitiesAfterToggle(launcherActivityList, activityId, activityInfo.currentActivity));
         refreshLauncherActivities();
     }
 

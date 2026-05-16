@@ -65,9 +65,10 @@
               contents/ui/TaskItem.qml
               contents/ui/AttentionItem.qml
               contents/ui/TaskContextMenu.qml
+              contents/ui/LauncherListLogic.js
+              contents/ui/TaskActivityLogic.js
               contents/ui/TaskEntryLogic.js
               contents/ui/RemoteAttentionLogic.js
-              contents/ui/TaskHelpers.js
               contents/ui/TaskModelLogic.js
               contents/ui/NumberBadge.qml
               contents/config/main.xml

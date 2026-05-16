@@ -10,7 +10,7 @@ import org.kde.plasma.plasmoid
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskActivityLogic.js" as TaskActivityLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
-import "TaskHelpers.js" as TaskHelpers
+import "LauncherListLogic.js" as LauncherListLogic
 import "TaskModelLogic.js" as TaskModelLogic
 
 PlasmoidItem {
@@ -66,7 +66,7 @@ PlasmoidItem {
     }
 
     function persistLaunchers(launchers) {
-        const update = TaskHelpers.launcherConfigUpdate(Plasmoid.configuration.launchers, launchers);
+        const update = LauncherListLogic.launcherConfigUpdate(Plasmoid.configuration.launchers, launchers);
         if (!update.changed) {
             return;
         }
@@ -77,7 +77,7 @@ PlasmoidItem {
     }
 
     function applyLauncherList(launchers) {
-        const update = TaskHelpers.launcherModelUpdate(tasksModel.launcherList, Plasmoid.configuration.launchers, launchers);
+        const update = LauncherListLogic.launcherModelUpdate(tasksModel.launcherList, Plasmoid.configuration.launchers, launchers);
         if (!update.changed) {
             return false;
         }
@@ -143,7 +143,7 @@ PlasmoidItem {
     }
 
     function movePinnedLauncher(sourceEntry, targetEntry) {
-        const result = TaskHelpers.movePinnedLauncher(tasksModel.launcherList, sourceEntry, targetEntry, launcherUrl => tasksModel.launcherPosition(launcherUrl));
+        const result = LauncherListLogic.movePinnedLauncher(tasksModel.launcherList, sourceEntry, targetEntry, launcherUrl => tasksModel.launcherPosition(launcherUrl));
         if (!result.moved) {
             return false;
         }
@@ -152,7 +152,7 @@ PlasmoidItem {
     }
 
     function canMovePinnedLauncher(sourceEntry, targetEntry) {
-        return TaskHelpers.canMovePinnedLauncher(tasksModel.launcherList, sourceEntry, targetEntry, launcherUrl => tasksModel.launcherPosition(launcherUrl));
+        return LauncherListLogic.canMovePinnedLauncher(tasksModel.launcherList, sourceEntry, targetEntry, launcherUrl => tasksModel.launcherPosition(launcherUrl));
     }
 
     function canMoveTask(sourceIndex, targetIndex) {
@@ -178,7 +178,7 @@ PlasmoidItem {
             return -1;
         }
 
-        return TaskHelpers.visibleLauncherPosition(tasksModel.launcherList, launcherUrl, activityInfo.currentActivity, url => tasksModel.launcherPosition(url));
+        return LauncherListLogic.visibleLauncherPosition(tasksModel.launcherList, launcherUrl, activityInfo.currentActivity, url => tasksModel.launcherPosition(url));
     }
 
     function isInCurrentActivity(activities) {

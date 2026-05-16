@@ -151,36 +151,6 @@ function isInCurrentActivity(activities, currentActivity) {
   return stringListContains(activityList, current);
 }
 
-function taskActivitiesAfterToggle(activities, activityId) {
-  const activity = String(activityId || "");
-  if (!activity) {
-    return Array.from(activities || []);
-  }
-
-  const activityList = Array.from(activities || []).map((entry) =>
-    String(entry),
-  );
-  if (activitiesAreAll(activityList)) {
-    return [activity];
-  }
-
-  const nextActivities = [];
-  let found = false;
-  for (let i = 0; i < activityList.length; ++i) {
-    if (activityList[i] === activity) {
-      found = true;
-    } else {
-      nextActivities.push(activityList[i]);
-    }
-  }
-
-  if (!found) {
-    nextActivities.push(activity);
-  }
-
-  return nextActivities;
-}
-
 function serializedLauncherVisibleInActivity(
   serializedLauncher,
   currentActivity,
