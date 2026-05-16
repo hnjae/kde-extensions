@@ -14,7 +14,10 @@
             root = sourceRoot;
             fileset = lib.fileset.unions [
               ../../CMakeLists.txt
+              ../../LICENSES
               ../../README.md
+              ../../REUSE.toml
+              ../../metainfo
               ../../package
             ];
           };

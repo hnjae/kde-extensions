@@ -16,3 +16,7 @@ include(KDECMakeSettings)
 install(DIRECTORY package/
     DESTINATION "${KDE_INSTALL_DATADIR}/plasma/plasmoids/${PLASMOID_ID}"
 )
+
+install(FILES metainfo/${PLASMOID_ID}.metainfo.xml
+    DESTINATION "${KDE_INSTALL_METAINFODIR}"
+)

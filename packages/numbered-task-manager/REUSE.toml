@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2026 KIM Hyunjae
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+version = 1
+SPDX-PackageName = "numbered-task-manager"
+
+[[annotations]]
+path = [
+  ".envrc",
+  "README.md",
+  "SPEC.md",
+  "docs/*.md",
+  "justfile",
+  "package/metadata.json",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 KIM Hyunjae"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

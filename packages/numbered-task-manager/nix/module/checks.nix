@@ -28,6 +28,7 @@
           src = package.source;
 
           nativeBuildInputs = [
+            pkgs.appstream
             pkgs.cmake
             pkgs.kdePackages.extra-cmake-modules
             pkgs.kdePackages.kpackage
@@ -35,6 +36,7 @@
             pkgs.kdePackages.plasma-workspace
             pkgs.ninja
             pkgs.qt6.qtdeclarative
+            pkgs.reuse
           ];
 
           dontConfigure = true;
@@ -42,6 +44,8 @@
 
           buildPhase = ''
             runHook preBuild
+
+            reuse lint
 
             build_dir=build
             install_prefix="$TMPDIR/install"
@@ -52,6 +56,7 @@
             cmake --install "$build_dir"
 
             installed_plasmoid="$install_prefix/share/plasma/plasmoids/${package.pluginId}"
+            installed_metainfo="$install_prefix/share/metainfo/${package.pluginId}.metainfo.xml"
             for file in \
               metadata.json \
               contents/ui/main.qml \
@@ -79,6 +84,14 @@
                   --max-warnings 0 \
                   --unqualified disable \
                   ${qmlImportFlags}
+
+            # KAboutLicense does not map AGPL identifiers, so the KPackage
+            # generator cannot export our project license. Ship explicit
+            # AppStream metadata and validate that installed artifact instead.
+            test -f "$installed_metainfo"
+            grep -q '<project_license>AGPL-3.0-or-later</project_license>' "$installed_metainfo"
+            grep -q '<metadata_license>CC0-1.0</metadata_license>' "$installed_metainfo"
+            appstreamcli validate --no-net "$installed_metainfo"
 
             export HOME="$TMPDIR/home"
             export QT_PLUGIN_PATH="${pkgs.kdePackages.libplasma}/lib/qt-6/plugins''${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"

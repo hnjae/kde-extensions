@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 KIM Hyunjae
+SPDX-License-Identifier: CC0-1.0
+-->
+<component type="addon">
+    <id>io.github.hnjae.numberedtaskmanager</id>
+    <extends>org.kde.plasma.desktop</extends>
+    <name>Numbered Task Manager</name>
+    <summary>A Plasma 6 task manager for keyboard-friendly window selection</summary>
+    <developer id="io.github.hnjae">
+        <name>KIM Hyunjae</name>
+    </developer>
+    <url type="homepage">https://github.com/hnjae/kde-plasma-extensions</url>
+    <project_license>AGPL-3.0-or-later</project_license>
+    <metadata_license>CC0-1.0</metadata_license>
+</component>
