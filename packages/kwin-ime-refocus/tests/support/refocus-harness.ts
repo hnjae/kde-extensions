@@ -46,10 +46,20 @@ export interface RefocusApi {
 
 export async function loadRefocusApi(): Promise<RefocusApi> {
   const refocusScript = await readFile(
-    new URL("../../build/src/refocus.js", import.meta.url),
+    new URL("../../build/src/main.js", import.meta.url),
     "utf8",
   );
-  const sandbox: { KWinImeRefocus?: RefocusApi } = {};
+  const sandbox: {
+    KWinImeRefocus?: RefocusApi;
+    registerShortcut: (
+      title: string,
+      text: string,
+      keySequence: string,
+      callback: () => void,
+    ) => boolean;
+  } = {
+    registerShortcut: () => true,
+  };
 
   createContext(sandbox);
   runInContext(refocusScript, sandbox);

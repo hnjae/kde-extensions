@@ -10,10 +10,6 @@ import {
   loadPackageLayout,
 } from "../scripts/package-layout.mjs";
 import { createPackageDefinition } from "../scripts/package-manifest.mjs";
-import {
-  bundledScriptFileNames,
-  createBundledScriptPaths,
-} from "../scripts/package-scripts.mjs";
 
 async function readJson(url: URL): Promise<Record<string, unknown>> {
   return JSON.parse(await readFile(url, "utf8")) as Record<string, unknown>;
@@ -22,12 +18,8 @@ async function readJson(url: URL): Promise<Record<string, unknown>> {
 const layout = await loadPackageLayout();
 const packageRoot = layout.distRootUrl;
 
-async function readBuiltMainScript(): Promise<string> {
+async function readPackagedMainScript(): Promise<string> {
   return readFile(layout.distMainScriptPath, "utf8");
-}
-
-function bundledScriptPaths(buildScriptDir: string): readonly string[] {
-  return createBundledScriptPaths(buildScriptDir);
 }
 
 test("package definition validates manifests and derives generated metadata", () => {
@@ -146,6 +138,10 @@ test("package layout derives all generated paths from the package definition", (
   );
 
   assert.equal(syntheticLayout.packageDir, "/repo/example");
+  assert.equal(
+    syntheticLayout.buildMainScriptPath,
+    "/repo/example/build/src/main.js",
+  );
   assert.equal(syntheticLayout.distRoot, "/repo/example/dist/example-package");
   assert.equal(
     syntheticLayout.distMainScriptPath,
@@ -155,10 +151,6 @@ test("package layout derives all generated paths from the package definition", (
     syntheticLayout.distMetadataPath,
     "/repo/example/dist/example-package/metadata.json",
   );
-  assert.deepEqual(bundledScriptPaths(syntheticLayout.buildScriptDir), [
-    "/repo/example/build/src/refocus.js",
-    "/repo/example/build/src/main.js",
-  ]);
   assert.equal(
     installedLayout.mainScriptPath,
     "/home/example/.local/share/kwin/scripts/example.plugin/contents/code/main.js",
@@ -221,7 +213,7 @@ test("build output has KWin script package structure", async () => {
 });
 
 test("main script registers an unbound IME recovery shortcut", async () => {
-  const mainScript = await readBuiltMainScript();
+  const mainScript = await readPackagedMainScript();
 
   assert.match(mainScript, /registerShortcut\(/);
   assert.match(mainScript, /"IME Refocus"/);
@@ -230,35 +222,23 @@ test("main script registers an unbound IME recovery shortcut", async () => {
   assert.doesNotMatch(mainScript, /export\s+\{\};/);
 });
 
-test("main script packages configured source scripts in order", async () => {
-  const mainScript = await readBuiltMainScript();
-  const sourceScripts = await Promise.all(
-    bundledScriptPaths(layout.buildScriptDir).map((scriptPath) =>
-      readFile(scriptPath, "utf8"),
-    ),
-  );
+test("main script is copied from the compiler runtime bundle", async () => {
+  const [compiledMainScript, packagedMainScript] = await Promise.all([
+    readFile(layout.buildMainScriptPath, "utf8"),
+    readPackagedMainScript(),
+  ]);
 
-  assert.deepEqual(bundledScriptFileNames, ["refocus.js", "main.js"]);
-
-  let cursor = 0;
-
-  for (const sourceScript of sourceScripts) {
-    const scriptIndex = mainScript.indexOf(sourceScript, cursor);
-
-    assert.notEqual(scriptIndex, -1);
-    assert.ok(scriptIndex >= cursor);
-    cursor = scriptIndex + sourceScript.length;
-  }
+  assert.equal(packagedMainScript, compiledMainScript);
 });
 
 test("main script delegates the shortcut callback to refocus policy", async () => {
-  const mainScript = await readBuiltMainScript();
+  const mainScript = await readPackagedMainScript();
 
   assert.match(mainScript, /KWinImeRefocus\.recoverImeFocus\(workspace\)/);
 });
 
 test("main script avoids recovery side-effect APIs", async () => {
-  const mainScript = await readBuiltMainScript();
+  const mainScript = await readPackagedMainScript();
 
   assert.doesNotMatch(mainScript, /callDBus/);
   assert.doesNotMatch(mainScript, /slotSwitch/);

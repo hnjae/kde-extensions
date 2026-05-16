@@ -41,7 +41,7 @@
           buildPhase = ''
             runHook preBuild
 
-            tsc --project tsconfig.json
+            tsc --project tsconfig.json --outFile build/src/main.js
             node scripts/build-package.mjs
 
             runHook postBuild

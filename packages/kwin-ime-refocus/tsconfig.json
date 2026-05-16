@@ -3,12 +3,10 @@
     "forceConsistentCasingInFileNames": true,
     "module": "none",
     "noEmitOnError": true,
-    "outDir": "build/src",
-    "rootDir": "src",
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2020",
     "types": []
   },
-  "include": ["src/**/*.ts"]
+  "files": ["src/kwin.d.ts", "src/refocus.ts", "src/main.ts"]
 }

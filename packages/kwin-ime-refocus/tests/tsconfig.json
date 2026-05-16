@@ -6,5 +6,6 @@
     "outDir": "../build-tests",
     "rootDir": "."
   },
+  "files": [],
   "include": ["**/*.test.ts", "node.d.ts"]
 }

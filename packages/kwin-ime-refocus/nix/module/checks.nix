@@ -30,7 +30,7 @@
             tsc --noEmit --project tsconfig.json
             tsc --noEmit --project tests/tsconfig.json
             biome ci .biome.json kpackage.json package.json scripts src tests tsconfig.json
-            tsc --project tsconfig.json
+            tsc --project tsconfig.json --outFile build/src/main.js
             node scripts/build-package.mjs
             node scripts/check-kpackage.mjs
             tsc --project tests/tsconfig.json

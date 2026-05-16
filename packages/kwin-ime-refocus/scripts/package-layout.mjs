@@ -31,9 +31,9 @@ export function createInstalledPackageLayout(dataHome, definition) {
 }
 
 export function createPackageLayout(packageDir, definition) {
+  const buildMainScriptPath = path.join(packageDir, "build", "src", "main.js");
   const packageJsonPath = path.join(packageDir, "package.json");
   const kpackageJsonPath = path.join(packageDir, "kpackage.json");
-  const buildScriptDir = path.join(packageDir, "build", "src");
   const distRoot = path.join(packageDir, "dist", definition.packageName);
   const distMainScriptPath = path.join(
     distRoot,
@@ -42,7 +42,7 @@ export function createPackageLayout(packageDir, definition) {
   );
 
   return {
-    buildScriptDir,
+    buildMainScriptPath,
     distMainScriptDir: path.dirname(distMainScriptPath),
     distMainScriptPath,
     distMetadataPath: path.join(distRoot, metadataFileName),

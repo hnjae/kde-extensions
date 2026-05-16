@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-// biome-ignore lint/correctness/noUnusedVariables: consumed by main.ts after script concatenation.
+// biome-ignore lint/correctness/noUnusedVariables: consumed by main.ts in the compiler bundle.
 namespace KWinImeRefocus {
   export function isSameDesktop(
     left: KWinVirtualDesktop | null,
