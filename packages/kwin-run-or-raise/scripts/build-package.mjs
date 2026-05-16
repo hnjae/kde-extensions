@@ -4,8 +4,8 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
-const bindingCount = 16;
 const bindingFields = [
   { name: "Enabled", type: "Bool", defaultValue: "false" },
   { name: "Name", type: "String", defaultValue: "" },
@@ -16,8 +16,9 @@ const packageDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
 );
+const buildCoreFile = path.join(packageDir, "build", "src", "core.js");
 const buildCodeFiles = [
-  path.join(packageDir, "build", "src", "core.js"),
+  buildCoreFile,
   path.join(packageDir, "build", "src", "bindings.js"),
   path.join(packageDir, "build", "src", "runtime.js"),
   path.join(packageDir, "build", "src", "main.js"),
@@ -46,10 +47,6 @@ const metadata = {
   "X-KDE-ConfigModule": "kwin/effects/configs/kcm_kwin4_genericscripted",
 };
 
-function slotName(slot) {
-  return `Binding${String(slot).padStart(2, "0")}`;
-}
-
 function generatedFileComment(indent = "") {
   const spdxPrefix = "SPDX";
 
@@ -60,12 +57,33 @@ function generatedFileComment(indent = "") {
   ].join("\n");
 }
 
-function configEntries() {
+function loadBindingSlots(coreSource) {
+  const bindingSlots = vm.runInNewContext(
+    `${coreSource}
+Array.from(
+  { length: RunOrRaise.bindingCount },
+  (_, index) => RunOrRaise.slotName(index + 1),
+);`,
+    {},
+  );
+
+  if (
+    !Array.isArray(bindingSlots) ||
+    bindingSlots.length === 0 ||
+    bindingSlots.some((slot) => typeof slot !== "string" || slot === "")
+  ) {
+    throw new Error(
+      "Failed to load binding slot schema from build/src/core.js",
+    );
+  }
+
+  return bindingSlots;
+}
+
+function configEntries(bindingSlots) {
   const entries = [];
 
-  for (let slot = 1; slot <= bindingCount; slot += 1) {
-    const name = slotName(slot);
-
+  for (const name of bindingSlots) {
     for (const field of bindingFields) {
       entries.push(
         [
@@ -80,7 +98,7 @@ function configEntries() {
   return entries.join("\n");
 }
 
-function generateMainConfig() {
+function generateMainConfig(bindingSlots) {
   return `${[
     '<?xml version="1.0" encoding="UTF-8"?>',
     "<!--",
@@ -91,7 +109,7 @@ function generateMainConfig() {
     '      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 https://www.kde.org/standards/kcfg/1.0/kcfg.xsd">',
     '    <kcfgfile name=""/>',
     '    <group name="">',
-    configEntries(),
+    configEntries(bindingSlots),
     "    </group>",
     "</kcfg>",
   ].join("\n")}\n`;
@@ -119,7 +137,7 @@ function widget(className, name) {
   return `                                <widget class="${className}" name="${name}"/>`;
 }
 
-function configUiRows() {
+function configUiRows(bindingSlots) {
   const rows = [
     uiCell(0, 0, label("enabledLabel", "Enabled")),
     uiCell(0, 1, label("slotLabel", "Slot")),
@@ -128,14 +146,14 @@ function configUiRows() {
     uiCell(0, 4, label("shortcutLabel", "Default Shortcut")),
   ];
 
-  for (let slot = 1; slot <= bindingCount; slot += 1) {
-    const name = slotName(slot);
-    const row = slot;
+  for (let index = 0; index < bindingSlots.length; index += 1) {
+    const name = bindingSlots[index];
+    const row = index + 1;
     const labelName = `${name.slice(0, 1).toLowerCase()}${name.slice(1)}Label`;
 
     rows.push(
       uiCell(row, 0, widget("QCheckBox", `kcfg_${name}Enabled`)),
-      uiCell(row, 1, label(labelName, String(slot))),
+      uiCell(row, 1, label(labelName, String(row))),
       uiCell(row, 2, widget("QLineEdit", `kcfg_${name}Name`)),
       uiCell(row, 3, widget("QLineEdit", `kcfg_${name}DesktopEntryId`)),
       uiCell(row, 4, widget("QLineEdit", `kcfg_${name}Shortcut`)),
@@ -145,7 +163,7 @@ function configUiRows() {
   return rows.join("\n");
 }
 
-function generateConfigUi() {
+function generateConfigUi(bindingSlots) {
   return `${[
     '<?xml version="1.0" encoding="UTF-8"?>',
     "<!--",
@@ -170,7 +188,7 @@ function generateConfigUi() {
     "                            </rect>",
     "                        </property>",
     '                        <layout class="QGridLayout" name="bindingsLayout">',
-    configUiRows(),
+    configUiRows(bindingSlots),
     "                        </layout>",
     "                    </widget>",
     "                </widget>",
@@ -188,6 +206,7 @@ await mkdir(distCodeDir, { recursive: true });
 const scriptParts = await Promise.all(
   buildCodeFiles.map((file) => readFile(file, "utf8")),
 );
+const bindingSlots = loadBindingSlots(scriptParts[0]);
 await writeFile(
   path.join(distCodeDir, "main.js"),
   `${scriptParts.join("\n")}\n`,
@@ -196,11 +215,11 @@ await mkdir(path.join(distRoot, "contents", "config"), { recursive: true });
 await mkdir(path.join(distRoot, "contents", "ui"), { recursive: true });
 await writeFile(
   path.join(distRoot, "contents", "config", "main.xml"),
-  generateMainConfig(),
+  generateMainConfig(bindingSlots),
 );
 await writeFile(
   path.join(distRoot, "contents", "ui", "config.ui"),
-  generateConfigUi(),
+  generateConfigUi(bindingSlots),
 );
 await writeFile(
   path.join(distRoot, "metadata.json"),
