@@ -1,101 +1,31 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-function desktopId(desktop) {
-  if (!desktop) {
-    return "";
-  }
+function createRemoteAttentionEntry(roles, taskEntryLogic) {
+  const taskRoles = roles || {};
 
-  if (typeof desktop === "string") {
-    return desktop;
-  }
-
-  if (desktop.id) {
-    return String(desktop.id);
-  }
-
-  return String(desktop);
-}
-
-function desktopListContains(desktops, desktop) {
-  const currentDesktopId = desktopId(desktop);
-  if (!currentDesktopId) {
-    return false;
-  }
-
-  const desktopList = Array.from(desktops || []);
-  for (let i = 0; i < desktopList.length; ++i) {
-    if (desktopId(desktopList[i]) === currentDesktopId) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function isRemoteVirtualDesktop(desktops, isOnAllDesktops, currentDesktop) {
-  if (isOnAllDesktops) {
-    return false;
-  }
-
-  const desktopList = Array.from(desktops || []);
-  return (
-    desktopList.length > 0 && !desktopListContains(desktopList, currentDesktop)
+  return Object.assign(
+    {},
+    taskEntryLogic.createBaseTaskEntry(taskRoles, "dialog-warning"),
+    {
+      winIds: Array.from(taskRoles.winIds || []),
+    },
   );
 }
 
-function boolValue(value) {
-  return Boolean(value);
-}
-
-function stringValue(value) {
-  return String(value || "");
-}
-
-function numberValue(value, fallback) {
-  if (value === undefined || value === null) {
-    return fallback;
-  }
-
-  const numericValue = Number(value);
-  return isNaN(numericValue) ? fallback : numericValue;
-}
-
-function taskTitle(display, appName) {
-  return stringValue(display || appName);
-}
-
-function taskIconSource(decoration, fallback) {
-  return decoration || fallback;
-}
-
-function createRemoteAttentionEntry(roles) {
-  const taskRoles = roles || {};
-  const index = numberValue(taskRoles.index, -1);
-
-  return {
-    activities: Array.from(taskRoles.activities || []),
-    demandingAttention: boolValue(taskRoles.demandingAttention),
-    iconSource: taskIconSource(taskRoles.iconSource, "dialog-warning"),
-    index,
-    isOnAllVirtualDesktops: boolValue(taskRoles.isOnAllVirtualDesktops),
-    isWindow: boolValue(taskRoles.isWindow),
-    launcherUrl: stringValue(taskRoles.launcherUrl),
-    modelIndex: taskRoles.modelIndex,
-    title: taskTitle(taskRoles.display, taskRoles.appName),
-    virtualDesktops: Array.from(taskRoles.virtualDesktops || []),
-    winIds: Array.from(taskRoles.winIds || []),
-  };
-}
-
-function qualifiesRemoteAttention(task, isInCurrentActivity, currentDesktop) {
+function qualifiesRemoteAttention(
+  task,
+  isInCurrentActivity,
+  currentDesktop,
+  taskEntryLogic,
+) {
   const entry = task || {};
   return (
     Boolean(entry.isWindow) &&
     Boolean(entry.demandingAttention) &&
     (typeof isInCurrentActivity !== "function" ||
       isInCurrentActivity(entry.activities || [])) &&
-    isRemoteVirtualDesktop(
+    taskEntryLogic.isRemoteVirtualDesktop(
       entry.virtualDesktops || [],
       entry.isOnAllVirtualDesktops,
       currentDesktop,

@@ -8,6 +8,7 @@ import QtQuick.Layouts as QtQuickLayouts
 import org.kde.taskmanager as TaskManager
 import org.kde.plasma.plasmoid
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
+import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskHelpers.js" as TaskHelpers
 import "TaskModelLogic.js" as TaskModelLogic
 
@@ -48,7 +49,7 @@ PlasmoidItem {
         }
 
         const targetTask = normalTaskEntries[targetIndex];
-        if (!targetTask || !TaskModelLogic.hasValidModelIndex(targetTask.modelIndex)) {
+        if (!targetTask || !TaskEntryLogic.hasValidModelIndex(targetTask.modelIndex)) {
             return;
         }
 
@@ -56,7 +57,7 @@ PlasmoidItem {
     }
 
     function activateTaskEntry(task) {
-        if (!task || task.sourceIndex === undefined || task.sourceIndex < 0 || !TaskModelLogic.hasValidModelIndex(task.modelIndex)) {
+        if (!task || task.sourceIndex === undefined || task.sourceIndex < 0 || !TaskEntryLogic.hasValidModelIndex(task.modelIndex)) {
             return;
         }
 
@@ -248,7 +249,7 @@ PlasmoidItem {
     }
 
     function activateRemoteAttention() {
-        if (!remoteAttentionTarget || !TaskModelLogic.hasValidModelIndex(remoteAttentionTarget.modelIndex)) {
+        if (!remoteAttentionTarget || !TaskEntryLogic.hasValidModelIndex(remoteAttentionTarget.modelIndex)) {
             return;
         }
 
@@ -350,8 +351,8 @@ PlasmoidItem {
                 launcherUrl,
                 modelIndex: tasksModel.makePersistentModelIndex(index),
                 virtualDesktops: model.VirtualDesktops
-            })
-            property bool qualifies: TaskModelLogic.qualifiesNormalTask(taskInfo, activities => root.isInCurrentActivity(activities), virtualDesktopInfo.currentDesktop)
+            }, TaskEntryLogic)
+            property bool qualifies: TaskModelLogic.qualifiesNormalTask(taskInfo, activities => root.isInCurrentActivity(activities), virtualDesktopInfo.currentDesktop, TaskEntryLogic)
 
             height: 0
             visible: false
@@ -405,9 +406,9 @@ PlasmoidItem {
                 modelIndex: attentionTasksModel.makePersistentModelIndex(index),
                 virtualDesktops: model.VirtualDesktops,
                 winIds: model.WinIdList
-            })
+            }, TaskEntryLogic)
             property string taskKey: root.remoteAttentionKey(taskInfo.winIds, taskInfo.launcherUrl, taskInfo.title, index)
-            property bool qualifies: RemoteAttentionLogic.qualifiesRemoteAttention(taskInfo, activities => root.isInCurrentActivity(activities), virtualDesktopInfo.currentDesktop)
+            property bool qualifies: RemoteAttentionLogic.qualifiesRemoteAttention(taskInfo, activities => root.isInCurrentActivity(activities), virtualDesktopInfo.currentDesktop, TaskEntryLogic)
 
             height: 0
             visible: false

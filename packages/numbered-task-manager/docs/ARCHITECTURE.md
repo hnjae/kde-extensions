@@ -18,6 +18,10 @@ in `SPEC.md`.
 - Keep launcher-list transformations in shared JavaScript helpers so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
+- Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
+  coercion, title/icon fallback, model-index validity, and virtual-desktop
+  membership should not be duplicated between normal task composition, remote
+  attention, and context menu code.
 - Keep launcher-list writes owned by the root widget. Child components such as
   the task context menu may compute and request a replacement launcher list, but
   `main.qml` is responsible for applying it to `TasksModel` and persisting it to

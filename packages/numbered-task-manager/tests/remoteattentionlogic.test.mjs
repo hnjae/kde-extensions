@@ -5,11 +5,14 @@ import assert from "node:assert/strict";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
+const taskEntryLogic = loadQmlJsModule(
+  new URL("../package/contents/ui/TaskEntryLogic.js", import.meta.url),
+  ["createBaseTaskEntry", "isRemoteVirtualDesktop"],
+);
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/RemoteAttentionLogic.js", import.meta.url),
   [
     "createRemoteAttentionEntry",
-    "isRemoteVirtualDesktop",
     "publishRemoteAttention",
     "qualifiesRemoteAttention",
     "remoteAttentionKey",
@@ -18,22 +21,18 @@ const logic = loadQmlJsModule(
   ],
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
-
-assert.equal(
-  logic.isRemoteVirtualDesktop(["desktop-b"], false, "desktop-a"),
-  true,
-);
-assert.equal(
-  logic.isRemoteVirtualDesktop(["desktop-a"], false, "desktop-a"),
-  false,
-);
-assert.equal(
-  logic.isRemoteVirtualDesktop(["desktop-b"], true, "desktop-a"),
-  false,
-);
+const createRemoteAttentionEntry = (roles) =>
+  logic.createRemoteAttentionEntry(roles, taskEntryLogic);
+const qualifiesRemoteAttention = (task, isInCurrentActivity, currentDesktop) =>
+  logic.qualifiesRemoteAttention(
+    task,
+    isInCurrentActivity,
+    currentDesktop,
+    taskEntryLogic,
+  );
 
 const modelIndex = { valid: true };
-const remoteTask = logic.createRemoteAttentionEntry({
+const remoteTask = createRemoteAttentionEntry({
   activities: ["work"],
   appName: "Remote App",
   demandingAttention: true,
@@ -57,7 +56,7 @@ assert.equal(remoteTask.title, "Remote App");
 assert.deepEqual(plain(remoteTask.virtualDesktops), ["desktop-b"]);
 assert.deepEqual(plain(remoteTask.winIds), [42]);
 assert.equal(
-  logic.qualifiesRemoteAttention(
+  qualifiesRemoteAttention(
     remoteTask,
     (activities) => activities.includes("work"),
     "desktop-a",
@@ -65,7 +64,7 @@ assert.equal(
   true,
 );
 assert.equal(
-  logic.qualifiesRemoteAttention(
+  qualifiesRemoteAttention(
     { ...remoteTask, demandingAttention: false },
     (activities) => activities.includes("work"),
     "desktop-a",
@@ -73,7 +72,7 @@ assert.equal(
   false,
 );
 assert.equal(
-  logic.qualifiesRemoteAttention(
+  qualifiesRemoteAttention(
     { ...remoteTask, virtualDesktops: ["desktop-a"] },
     (activities) => activities.includes("work"),
     "desktop-a",

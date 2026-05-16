@@ -6,14 +6,14 @@ pragma ComponentBehavior: Bound
 import QtQuick as QtQuick
 import QtQuick.Controls as QtQuickControls
 import org.kde.taskmanager as TaskManager
+import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskHelpers.js" as TaskHelpers
-import "TaskModelLogic.js" as TaskModelLogic
 
 QtQuickControls.Menu {
     id: root
 
     readonly property string nullActivityId: "00000000-0000-0000-0000-000000000000"
-    readonly property bool hasTask: Boolean(taskModel) && TaskModelLogic.hasValidModelIndex(task.modelIndex)
+    readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(task.modelIndex)
     readonly property bool hasWindowTask: hasTask && task.isWindow
     readonly property var desktopEntries: {
         const ids = Array.from(virtualDesktopInfo.desktopIds || []);
@@ -366,7 +366,7 @@ QtQuickControls.Menu {
                 required property var modelData
 
                 checkable: true
-                checked: root.task.isOnAllVirtualDesktops || TaskModelLogic.desktopListContains(root.task.virtualDesktops || [], modelData.id)
+                checked: root.task.isOnAllVirtualDesktops || TaskEntryLogic.desktopListContains(root.task.virtualDesktops || [], modelData.id)
                 text: modelData.name
 
                 onTriggered: {

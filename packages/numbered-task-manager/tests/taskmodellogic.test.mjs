@@ -5,47 +5,40 @@ import assert from "node:assert/strict";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
+const taskEntryLogic = loadQmlJsModule(
+  new URL("../package/contents/ui/TaskEntryLogic.js", import.meta.url),
+  [
+    "boolValue",
+    "createBaseTaskEntry",
+    "isOnCurrentVirtualDesktop",
+    "numberValue",
+    "stringValue",
+  ],
+);
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskModelLogic.js", import.meta.url),
   [
     "canMoveTask",
     "composeNormalTaskEntries",
     "createNormalTaskEntry",
-    "desktopId",
-    "desktopListContains",
-    "hasValidModelIndex",
-    "isOnCurrentVirtualDesktop",
     "moveManualTaskOrder",
     "normalTaskEntryForSourceIndex",
     "qualifiesNormalTask",
   ],
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
-
-assert.equal(logic.desktopId(null), "");
-assert.equal(logic.desktopId("desktop-a"), "desktop-a");
-assert.equal(logic.desktopId({ id: "desktop-b" }), "desktop-b");
-assert.equal(
-  logic.desktopListContains(["desktop-a"], { id: "desktop-a" }),
-  true,
-);
-assert.equal(logic.desktopListContains(["desktop-a"], "desktop-b"), false);
-assert.equal(logic.isOnCurrentVirtualDesktop([], true, "desktop-a"), true);
-assert.equal(
-  logic.isOnCurrentVirtualDesktop(["desktop-a"], false, "desktop-a"),
-  true,
-);
-assert.equal(
-  logic.isOnCurrentVirtualDesktop(["desktop-b"], false, "desktop-a"),
-  false,
-);
-assert.equal(logic.hasValidModelIndex(null), false);
-assert.equal(logic.hasValidModelIndex({ valid: false }), false);
-assert.equal(logic.hasValidModelIndex({ valid: true }), true);
-assert.equal(logic.hasValidModelIndex({}), true);
+const createNormalTaskEntry = (roles) =>
+  logic.createNormalTaskEntry(roles, taskEntryLogic);
+const qualifiesNormalTask = (task, isInCurrentActivity, currentDesktop) =>
+  logic.qualifiesNormalTask(
+    task,
+    isInCurrentActivity,
+    currentDesktop,
+    taskEntryLogic,
+  );
 
 const modelIndex = { valid: true };
-const normalTask = logic.createNormalTaskEntry({
+const normalTask = createNormalTaskEntry({
   activities: ["work"],
   active: 1,
   appName: "Fallback App",
@@ -80,7 +73,7 @@ assert.equal(normalTask.title, "Fallback App");
 assert.deepEqual(plain(normalTask.virtualDesktops), ["desktop-a"]);
 
 assert.equal(
-  logic.qualifiesNormalTask(
+  qualifiesNormalTask(
     normalTask,
     (activities) => activities.includes("work"),
     "desktop-b",
@@ -88,7 +81,7 @@ assert.equal(
   true,
 );
 assert.equal(
-  logic.qualifiesNormalTask(
+  qualifiesNormalTask(
     { ...normalTask, isLauncher: false, isWindow: true },
     (activities) => activities.includes("work"),
     "desktop-b",
@@ -96,7 +89,7 @@ assert.equal(
   false,
 );
 assert.equal(
-  logic.qualifiesNormalTask(
+  qualifiesNormalTask(
     {
       ...normalTask,
       isLauncher: false,
@@ -109,7 +102,7 @@ assert.equal(
   true,
 );
 assert.equal(
-  logic.qualifiesNormalTask(
+  qualifiesNormalTask(
     { ...normalTask, isLauncher: false, isStartup: true },
     () => false,
     "desktop-a",
