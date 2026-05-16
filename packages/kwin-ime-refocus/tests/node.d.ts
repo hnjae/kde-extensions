@@ -54,7 +54,7 @@ declare module "*.mjs" {
   }
 
   interface PackageLayout {
-    readonly bundledScriptPaths: readonly string[];
+    readonly buildScriptDir: string;
     readonly distMainScriptDir: string;
     readonly distMainScriptPath: string;
     readonly distMetadataPath: string;
@@ -67,6 +67,10 @@ declare module "*.mjs" {
   }
 
   export const bundledScriptFileNames: readonly string[];
+  export function createBundledScriptPaths(
+    buildScriptDir: string,
+    scriptFileNames?: readonly string[],
+  ): readonly string[];
   export function createInstalledPackageLayout(
     dataHome: string,
     definition: PackageDefinition,

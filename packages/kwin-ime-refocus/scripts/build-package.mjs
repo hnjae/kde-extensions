@@ -3,15 +3,17 @@
 
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { loadPackageLayout } from "./package-layout.mjs";
+import { createBundledScriptPaths } from "./package-scripts.mjs";
 
 const layout = await loadPackageLayout();
+const bundledScriptPaths = createBundledScriptPaths(layout.buildScriptDir);
 
 await rm(layout.distRoot, { force: true, recursive: true });
 await mkdir(layout.distMainScriptDir, { recursive: true });
 
 const mainScript = (
   await Promise.all(
-    layout.bundledScriptPaths.map((scriptPath) => readFile(scriptPath, "utf8")),
+    bundledScriptPaths.map((scriptPath) => readFile(scriptPath, "utf8")),
   )
 ).join("\n");
 

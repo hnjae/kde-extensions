@@ -5,12 +5,15 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
-  bundledScriptFileNames,
   createInstalledPackageLayout,
-  createPackageDefinition,
   createPackageLayout,
   loadPackageLayout,
 } from "../scripts/package-layout.mjs";
+import { createPackageDefinition } from "../scripts/package-manifest.mjs";
+import {
+  bundledScriptFileNames,
+  createBundledScriptPaths,
+} from "../scripts/package-scripts.mjs";
 
 async function readJson(url: URL): Promise<Record<string, unknown>> {
   return JSON.parse(await readFile(url, "utf8")) as Record<string, unknown>;
@@ -21,6 +24,10 @@ const packageRoot = layout.distRootUrl;
 
 async function readBuiltMainScript(): Promise<string> {
   return readFile(layout.distMainScriptPath, "utf8");
+}
+
+function bundledScriptPaths(buildScriptDir: string): readonly string[] {
+  return createBundledScriptPaths(buildScriptDir);
 }
 
 test("package definition validates manifests and derives generated metadata", () => {
@@ -148,7 +155,7 @@ test("package layout derives all generated paths from the package definition", (
     syntheticLayout.distMetadataPath,
     "/repo/example/dist/example-package/metadata.json",
   );
-  assert.deepEqual(syntheticLayout.bundledScriptPaths, [
+  assert.deepEqual(bundledScriptPaths(syntheticLayout.buildScriptDir), [
     "/repo/example/build/src/refocus.js",
     "/repo/example/build/src/main.js",
   ]);
@@ -226,7 +233,9 @@ test("main script registers an unbound IME recovery shortcut", async () => {
 test("main script packages configured source scripts in order", async () => {
   const mainScript = await readBuiltMainScript();
   const sourceScripts = await Promise.all(
-    layout.bundledScriptPaths.map((scriptPath) => readFile(scriptPath, "utf8")),
+    bundledScriptPaths(layout.buildScriptDir).map((scriptPath) =>
+      readFile(scriptPath, "utf8"),
+    ),
   );
 
   assert.deepEqual(bundledScriptFileNames, ["refocus.js", "main.js"]);
