@@ -3,11 +3,11 @@
 
 cmake_minimum_required(VERSION 3.25)
 
-project(tab-pager VERSION 0.1.0 LANGUAGES C CXX)
+project(tabpager VERSION 0.1.0 LANGUAGES C CXX)
 
-set(QML_MODULE_URI "io.github.hnjae.plasma.tabpager")
-set(QML_MODULE_DIR "io/github/hnjae/plasma/tabpager")
-set(PLASMOID_ID "io.github.hnjae.tab-pager")
+set(QML_MODULE_URI "io.github.hnjae.tabpager")
+set(QML_MODULE_DIR "io/github/hnjae/tabpager")
+set(PLASMOID_ID "io.github.hnjae.tabpager")
 
 find_package(ECM 6.0 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})

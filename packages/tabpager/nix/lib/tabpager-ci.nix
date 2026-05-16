@@ -113,8 +113,8 @@ let
 
     test -f "$TMPDIR/plasmoids/${package.pluginId}/metadata.json"
     test -f "$TMPDIR/plasmoids/${package.pluginId}/contents/ui/main.qml"
-    test -f "$install_prefix/lib/qt-6/qml/io/github/hnjae/plasma/tabpager/qmldir"
-    test -f "$install_prefix/lib/qt-6/qml/io/github/hnjae/plasma/tabpager/libtabpagerplugin.so"
+    test -f "$install_prefix/lib/qt-6/qml/io/github/hnjae/tabpager/qmldir"
+    test -f "$install_prefix/lib/qt-6/qml/io/github/hnjae/tabpager/libtabpagerplugin.so"
     kpackagetool6 --hash "$TMPDIR/plasmoids/${package.pluginId}"
   '';
 
@@ -122,12 +122,12 @@ let
     set -euo pipefail
 
     repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-    if [ -d "$repo_root/packages/tab-pager" ]; then
-      cd "$repo_root/packages/tab-pager"
+    if [ -d "$repo_root/packages/tabpager" ]; then
+      cd "$repo_root/packages/tabpager"
     fi
 
-    build_dir="''${TAB_PAGER_BUILD_DIR:-build}"
-    install_prefix="''${TAB_PAGER_INSTALL_PREFIX:-$PWD/.tab-pager-install}"
+    build_dir="''${TABPAGER_BUILD_DIR:-build}"
+    install_prefix="''${TABPAGER_INSTALL_PREFIX:-$PWD/.tabpager-install}"
     if [ -z "''${TMPDIR:-}" ]; then
       TMPDIR="$(mktemp -d)"
       export TMPDIR
@@ -201,21 +201,21 @@ let
   };
 
   devShellHook = ''
-    tab_pager_project_dir="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-    if [ -d "$tab_pager_project_dir/packages/tab-pager" ]; then
-      tab_pager_project_dir="$tab_pager_project_dir/packages/tab-pager"
+    tabpager_project_dir="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+    if [ -d "$tabpager_project_dir/packages/tabpager" ]; then
+      tabpager_project_dir="$tabpager_project_dir/packages/tabpager"
     fi
 
-    tab_pager_build_dir="''${TAB_PAGER_BUILD_DIR:-$tab_pager_project_dir/build}"
-    tab_pager_install_prefix="''${TAB_PAGER_INSTALL_PREFIX:-$tab_pager_project_dir/.tab-pager-install}"
+    tabpager_build_dir="''${TABPAGER_BUILD_DIR:-$tabpager_project_dir/build}"
+    tabpager_install_prefix="''${TABPAGER_INSTALL_PREFIX:-$tabpager_project_dir/.tabpager-install}"
 
-    export QML_IMPORT_PATH="$tab_pager_install_prefix/lib/qt-6/qml:${qmlImportPath}''${QML_IMPORT_PATH:+:$QML_IMPORT_PATH}"
+    export QML_IMPORT_PATH="$tabpager_install_prefix/lib/qt-6/qml:${qmlImportPath}''${QML_IMPORT_PATH:+:$QML_IMPORT_PATH}"
     export QML2_IMPORT_PATH="$QML_IMPORT_PATH"
     export QT_PLUGIN_PATH="${pkgs.kdePackages.libplasma}/lib/qt-6/plugins''${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
     export CC="${clangToolchain}/bin/clang"
     export CXX="${clangToolchain}/bin/clang++"
-    export TAB_PAGER_BUILD_DIR="$tab_pager_build_dir"
-    export TAB_PAGER_INSTALL_PREFIX="$tab_pager_install_prefix"
+    export TABPAGER_BUILD_DIR="$tabpager_build_dir"
+    export TABPAGER_INSTALL_PREFIX="$tabpager_install_prefix"
   '';
 in
 {
@@ -241,13 +241,13 @@ in
   ];
 
   devShellPackages = [
-    (mkDevCommand "tab-pager-configure" cmakeConfigure)
-    (mkDevCommand "tab-pager-test" ''
+    (mkDevCommand "tabpager-configure" cmakeConfigure)
+    (mkDevCommand "tabpager-test" ''
       ${cmakeConfigure}
       ${cmakeBuild}
       ${cmakeTest}
     '')
-    (mkDevCommand "tab-pager-lint" ''
+    (mkDevCommand "tabpager-lint" ''
       ${localBuildAndInstall}
       ${qmlLint}
       ${clangTidy}
@@ -265,7 +265,7 @@ in
       ${cmakeConfigure}
       ${clazy}
     '')
-    (mkDevCommand "tab-pager-ci-local" ''
+    (mkDevCommand "tabpager-ci-local" ''
       ${localBuildAndInstall}
       ${cmakeTest}
       ${qmlLint}

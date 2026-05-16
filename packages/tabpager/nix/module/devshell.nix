@@ -10,8 +10,8 @@
         ...
       }:
       let
-        package = config.packages.tab-pager;
-        ci = import ../lib/tab-pager-ci.nix {
+        package = config.packages.tabpager;
+        ci = import ../lib/tabpager-ci.nix {
           inherit
             lib
             package
@@ -20,7 +20,7 @@
         };
       in
       {
-        devShells.tab-pager = pkgs.mkShellNoCC {
+        devShells.tabpager = pkgs.mkShellNoCC {
           packages =
             ci.lspDevShellPackages ++ config.plasmaExtensions.devShell.commonPackages ++ ci.devShellPackages;
 

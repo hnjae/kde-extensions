@@ -1,0 +1,42 @@
+#!/usr/bin/env -S just --justfile
+
+set unstable
+set fallback
+set lazy
+set ignore-comments
+
+system := `nix eval --raw --impure --expr builtins.currentSystem`
+
+root := "path:../.."
+check_prefix := root + "#checks." + system + "."
+
+_:
+    @just --list
+
+[group('build')]
+build:
+    nix build "{{ root }}#tabpager" --no-link --print-out-paths
+
+[group('ci')]
+check:
+    nix build "{{ check_prefix }}tabpager-check" --no-link --print-out-paths
+
+[group('lint')]
+lint:
+    nix develop "{{ root }}#tabpager" -c tabpager-lint
+
+[group('lint')]
+lint-qml:
+    nix develop "{{ root }}#tabpager" -c lint-qml
+
+[group('lint')]
+lint-clang-tidy:
+    nix develop "{{ root }}#tabpager" -c lint-clang-tidy
+
+[group('lint')]
+lint-clazy:
+    nix develop "{{ root }}#tabpager" -c lint-clazy
+
+[group('test')]
+test:
+    nix develop "{{ root }}#tabpager" -c tabpager-test

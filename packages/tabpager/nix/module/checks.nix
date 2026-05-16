@@ -10,8 +10,8 @@
         ...
       }:
       let
-        package = config.packages.tab-pager;
-        ci = import ../lib/tab-pager-ci.nix {
+        package = config.packages.tabpager;
+        ci = import ../lib/tabpager-ci.nix {
           inherit
             lib
             package
@@ -21,8 +21,8 @@
       in
       {
         checks = {
-          tab-pager-check = pkgs.stdenv.mkDerivation {
-            pname = "tab-pager-check";
+          tabpager-check = pkgs.stdenv.mkDerivation {
+            pname = "tabpager-check";
             inherit (package) version source;
             src = package.source;
 

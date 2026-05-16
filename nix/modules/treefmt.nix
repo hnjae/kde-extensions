@@ -73,7 +73,7 @@ let
       root = lib.mkOption {
         type = types.str;
         description = "Repository-relative root path for this override.";
-        example = "packages/tab-pager";
+        example = "packages/tabpager";
       };
 
       formatters = lib.mkOption {
