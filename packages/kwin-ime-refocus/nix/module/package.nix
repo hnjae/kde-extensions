@@ -8,6 +8,7 @@
         let
           packageJson = builtins.fromJSON (builtins.readFile ../../package.json);
           kpackageJson = builtins.fromJSON (builtins.readFile ../../kpackage.json);
+          mainScriptRelativePath = kpackageJson."X-Plasma-MainScript";
           pluginId = kpackageJson.KPlugin.Id;
           version = packageJson.version;
 
@@ -57,6 +58,7 @@
 
           passthru = {
             inherit
+              mainScriptRelativePath
               pluginId
               source
               version

@@ -40,14 +40,22 @@ declare module "node:vm" {
 declare module "*.mjs" {
   interface PackageDefinition {
     readonly kpackageJson: Record<string, unknown>;
+    readonly mainScriptRelativePath: string;
     readonly metadata: Record<string, unknown>;
     readonly packageJson: Record<string, unknown>;
     readonly packageName: string;
     readonly pluginId: string;
   }
 
+  interface InstalledPackageLayout {
+    readonly installRoot: string;
+    readonly mainScriptPath: string;
+    readonly metadataPath: string;
+  }
+
   interface PackageLayout {
     readonly bundledScriptPaths: readonly string[];
+    readonly distMainScriptDir: string;
     readonly distMainScriptPath: string;
     readonly distMetadataPath: string;
     readonly distRoot: string;
@@ -59,6 +67,10 @@ declare module "*.mjs" {
   }
 
   export const bundledScriptFileNames: readonly string[];
+  export function createInstalledPackageLayout(
+    dataHome: string,
+    definition: PackageDefinition,
+  ): InstalledPackageLayout;
   export function createPackageDefinition(
     packageJson: Record<string, unknown>,
     kpackageJson: Record<string, unknown>,

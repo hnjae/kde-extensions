@@ -6,7 +6,7 @@ import { access, mkdir, mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {
-  getInstalledPackagePaths,
+  createInstalledPackageLayout,
   loadPackageLayout,
 } from "./package-layout.mjs";
 
@@ -36,7 +36,7 @@ try {
     process.exit(result.status ?? 1);
   }
 
-  const installedPaths = getInstalledPackagePaths(dataHome, layout.pluginId);
+  const installedPaths = createInstalledPackageLayout(dataHome, layout);
 
   await access(installedPaths.metadataPath);
   await access(installedPaths.mainScriptPath);

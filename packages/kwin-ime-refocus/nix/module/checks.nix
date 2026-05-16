@@ -44,7 +44,7 @@
 
             packageRoot="${package}/share/kwin/scripts/${package.pluginId}"
             test -f "$packageRoot/metadata.json"
-            test -f "$packageRoot/contents/code/main.js"
+            test -f "$packageRoot/contents/${package.mainScriptRelativePath}"
 
             touch "$out"
             runHook postInstall

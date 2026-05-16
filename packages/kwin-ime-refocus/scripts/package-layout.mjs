@@ -6,6 +6,8 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 export const bundledScriptFileNames = Object.freeze(["refocus.js", "main.js"]);
+const packageContentsDirName = "contents";
+const metadataFileName = "metadata.json";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 export const defaultPackageDir = path.resolve(scriptDir, "..");
@@ -20,6 +22,22 @@ function requiredString(value, fieldName) {
   }
 
   return value;
+}
+
+function requiredRelativePath(value, fieldName) {
+  const relativePath = requiredString(value, fieldName);
+  const segments = relativePath.split("/");
+
+  if (
+    path.posix.isAbsolute(relativePath) ||
+    segments.some(
+      (segment) => segment === "" || segment === "." || segment === "..",
+    )
+  ) {
+    throw new TypeError(`${fieldName} must be a relative package path`);
+  }
+
+  return relativePath;
 }
 
 function requiredObject(value, fieldName) {
@@ -45,23 +63,39 @@ export function createPackageMetadata(packageJson, kpackageJson) {
 
 export function createPackageDefinition(packageJson, kpackageJson) {
   const kplugin = requiredObject(kpackageJson.KPlugin, "KPlugin");
+  const packageName = requiredString(packageJson.name, "package.json name");
+  const pluginId = requiredString(kplugin.Id, "KPlugin.Id");
+  const mainScriptRelativePath = requiredRelativePath(
+    kpackageJson["X-Plasma-MainScript"],
+    "X-Plasma-MainScript",
+  );
 
   return {
     kpackageJson,
+    mainScriptRelativePath,
     metadata: createPackageMetadata(packageJson, kpackageJson),
     packageJson,
-    packageName: requiredString(packageJson.name, "package.json name"),
-    pluginId: requiredString(kplugin.Id, "KPlugin.Id"),
+    packageName,
+    pluginId,
   };
 }
 
-export function getInstalledPackagePaths(dataHome, pluginId) {
-  const installRoot = path.join(dataHome, "kwin", "scripts", pluginId);
+export function createInstalledPackageLayout(dataHome, definition) {
+  const installRoot = path.join(
+    dataHome,
+    "kwin",
+    "scripts",
+    definition.pluginId,
+  );
 
   return {
     installRoot,
-    mainScriptPath: path.join(installRoot, "contents", "code", "main.js"),
-    metadataPath: path.join(installRoot, "metadata.json"),
+    mainScriptPath: path.join(
+      installRoot,
+      packageContentsDirName,
+      definition.mainScriptRelativePath,
+    ),
+    metadataPath: path.join(installRoot, metadataFileName),
   };
 }
 
@@ -70,16 +104,20 @@ export function createPackageLayout(packageDir, definition) {
   const kpackageJsonPath = path.join(packageDir, "kpackage.json");
   const buildScriptDir = path.join(packageDir, "build", "src");
   const distRoot = path.join(packageDir, "dist", definition.packageName);
-  const distCodeDir = path.join(distRoot, "contents", "code");
+  const distMainScriptPath = path.join(
+    distRoot,
+    packageContentsDirName,
+    definition.mainScriptRelativePath,
+  );
 
   return {
     buildScriptDir,
     bundledScriptPaths: bundledScriptFileNames.map((fileName) =>
       path.join(buildScriptDir, fileName),
     ),
-    distCodeDir,
-    distMainScriptPath: path.join(distCodeDir, "main.js"),
-    distMetadataPath: path.join(distRoot, "metadata.json"),
+    distMainScriptDir: path.dirname(distMainScriptPath),
+    distMainScriptPath,
+    distMetadataPath: path.join(distRoot, metadataFileName),
     distRoot,
     distRootUrl: pathToFileURL(`${distRoot}${path.sep}`),
     kpackageJsonPath,

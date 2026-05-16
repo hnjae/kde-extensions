@@ -7,7 +7,7 @@ import { loadPackageLayout } from "./package-layout.mjs";
 const layout = await loadPackageLayout();
 
 await rm(layout.distRoot, { force: true, recursive: true });
-await mkdir(layout.distCodeDir, { recursive: true });
+await mkdir(layout.distMainScriptDir, { recursive: true });
 
 const mainScript = (
   await Promise.all(

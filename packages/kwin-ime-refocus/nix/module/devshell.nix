@@ -85,7 +85,7 @@
             HOME="$home_dir" XDG_DATA_HOME="$data_home" kpackagetool6 --type=KWin/Script --install "$archive_path"
 
             test -f "$data_home/kwin/scripts/$plugin_id/metadata.json"
-            test -f "$data_home/kwin/scripts/$plugin_id/contents/code/main.js"
+            test -f "$data_home/kwin/scripts/$plugin_id/contents/${package.mainScriptRelativePath}"
 
             printf 'Created %s\n' "$archive_path"
           '';

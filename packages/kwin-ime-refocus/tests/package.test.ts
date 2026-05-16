@@ -6,6 +6,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   bundledScriptFileNames,
+  createInstalledPackageLayout,
   createPackageDefinition,
   createPackageLayout,
   loadPackageLayout,
@@ -17,6 +18,10 @@ async function readJson(url: URL): Promise<Record<string, unknown>> {
 
 const layout = await loadPackageLayout();
 const packageRoot = layout.distRootUrl;
+
+async function readBuiltMainScript(): Promise<string> {
+  return readFile(layout.distMainScriptPath, "utf8");
+}
 
 test("package definition validates manifests and derives generated metadata", () => {
   const packageJson = {
@@ -31,10 +36,12 @@ test("package definition validates manifests and derives generated metadata", ()
       Id: "example.plugin",
       Name: "Example Plugin",
     },
+    "X-Plasma-MainScript": "code/main.js",
   };
 
   const definition = createPackageDefinition(packageJson, kpackageJson);
 
+  assert.equal(definition.mainScriptRelativePath, "code/main.js");
   assert.equal(definition.packageName, "example-package");
   assert.equal(definition.pluginId, "example.plugin");
   assert.deepEqual(definition.metadata, {
@@ -52,7 +59,10 @@ test("package definition rejects incomplete manifest fields", () => {
     () =>
       createPackageDefinition(
         { license: "AGPL-3.0-or-later", name: "", version: "1.2.3" },
-        { KPlugin: { Id: "example.plugin" } },
+        {
+          KPlugin: { Id: "example.plugin" },
+          "X-Plasma-MainScript": "code/main.js",
+        },
       ),
     /package\.json name must be a non-empty string/,
   );
@@ -76,7 +86,34 @@ test("package definition rejects incomplete manifest fields", () => {
           name: "example-package",
           version: "1.2.3",
         },
-        { KPlugin: { Id: "" } },
+        { KPlugin: { Id: "example.plugin" } },
+      ),
+    /X-Plasma-MainScript must be a non-empty string/,
+  );
+  assert.throws(
+    () =>
+      createPackageDefinition(
+        {
+          license: "AGPL-3.0-or-later",
+          name: "example-package",
+          version: "1.2.3",
+        },
+        {
+          KPlugin: { Id: "example.plugin" },
+          "X-Plasma-MainScript": "../main.js",
+        },
+      ),
+    /X-Plasma-MainScript must be a relative package path/,
+  );
+  assert.throws(
+    () =>
+      createPackageDefinition(
+        {
+          license: "AGPL-3.0-or-later",
+          name: "example-package",
+          version: "1.2.3",
+        },
+        { KPlugin: { Id: "" }, "X-Plasma-MainScript": "code/main.js" },
       ),
     /KPlugin\.Id must be a non-empty string/,
   );
@@ -89,10 +126,17 @@ test("package layout derives all generated paths from the package definition", (
       name: "example-package",
       version: "1.2.3",
     },
-    { KPlugin: { Id: "example.plugin" } },
+    {
+      KPlugin: { Id: "example.plugin" },
+      "X-Plasma-MainScript": "code/main.js",
+    },
   );
 
   const syntheticLayout = createPackageLayout("/repo/example", definition);
+  const installedLayout = createInstalledPackageLayout(
+    "/home/example/.local/share",
+    definition,
+  );
 
   assert.equal(syntheticLayout.packageDir, "/repo/example");
   assert.equal(syntheticLayout.distRoot, "/repo/example/dist/example-package");
@@ -108,6 +152,43 @@ test("package layout derives all generated paths from the package definition", (
     "/repo/example/build/src/refocus.js",
     "/repo/example/build/src/main.js",
   ]);
+  assert.equal(
+    installedLayout.mainScriptPath,
+    "/home/example/.local/share/kwin/scripts/example.plugin/contents/code/main.js",
+  );
+  assert.equal(
+    installedLayout.metadataPath,
+    "/home/example/.local/share/kwin/scripts/example.plugin/metadata.json",
+  );
+});
+
+test("package layout follows the manifest main script path", () => {
+  const definition = createPackageDefinition(
+    {
+      license: "AGPL-3.0-or-later",
+      name: "example-package",
+      version: "1.2.3",
+    },
+    {
+      KPlugin: { Id: "example.plugin" },
+      "X-Plasma-MainScript": "scripts/start.js",
+    },
+  );
+
+  const syntheticLayout = createPackageLayout("/repo/example", definition);
+  const installedLayout = createInstalledPackageLayout(
+    "/home/example/.local/share",
+    definition,
+  );
+
+  assert.equal(
+    syntheticLayout.distMainScriptPath,
+    "/repo/example/dist/example-package/contents/scripts/start.js",
+  );
+  assert.equal(
+    installedLayout.mainScriptPath,
+    "/home/example/.local/share/kwin/scripts/example.plugin/contents/scripts/start.js",
+  );
 });
 
 test("build output has KWin script package structure", async () => {
@@ -133,10 +214,7 @@ test("build output has KWin script package structure", async () => {
 });
 
 test("main script registers an unbound IME recovery shortcut", async () => {
-  const mainScript = await readFile(
-    new URL("contents/code/main.js", packageRoot),
-    "utf8",
-  );
+  const mainScript = await readBuiltMainScript();
 
   assert.match(mainScript, /registerShortcut\(/);
   assert.match(mainScript, /"IME Refocus"/);
@@ -146,10 +224,7 @@ test("main script registers an unbound IME recovery shortcut", async () => {
 });
 
 test("main script packages configured source scripts in order", async () => {
-  const mainScript = await readFile(
-    new URL("contents/code/main.js", packageRoot),
-    "utf8",
-  );
+  const mainScript = await readBuiltMainScript();
   const sourceScripts = await Promise.all(
     layout.bundledScriptPaths.map((scriptPath) => readFile(scriptPath, "utf8")),
   );
@@ -168,19 +243,13 @@ test("main script packages configured source scripts in order", async () => {
 });
 
 test("main script delegates the shortcut callback to refocus policy", async () => {
-  const mainScript = await readFile(
-    new URL("contents/code/main.js", packageRoot),
-    "utf8",
-  );
+  const mainScript = await readBuiltMainScript();
 
   assert.match(mainScript, /KWinImeRefocus\.recoverImeFocus\(workspace\)/);
 });
 
 test("main script avoids recovery side-effect APIs", async () => {
-  const mainScript = await readFile(
-    new URL("contents/code/main.js", packageRoot),
-    "utf8",
-  );
+  const mainScript = await readBuiltMainScript();
 
   assert.doesNotMatch(mainScript, /callDBus/);
   assert.doesNotMatch(mainScript, /slotSwitch/);
