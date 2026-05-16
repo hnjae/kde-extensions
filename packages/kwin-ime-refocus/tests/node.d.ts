@@ -9,6 +9,11 @@ declare module "node:assert/strict" {
     match(actual: string, expected: RegExp, message?: string): void;
     notEqual(actual: unknown, expected: unknown, message?: string): void;
     ok(value: unknown, message?: string): void;
+    rejects(
+      fn: () => Promise<unknown>,
+      expected?: RegExp | (new (...args: never[]) => Error),
+      message?: string,
+    ): Promise<void>;
     throws(fn: () => unknown, expected?: RegExp, message?: string): void;
   };
 
@@ -78,5 +83,17 @@ declare module "*.mjs" {
     packageDir: string,
     definition: PackageDefinition,
   ): PackageLayout;
+  export class KPackageInstallError extends Error {
+    readonly exitCode: number;
+    constructor(exitCode: number);
+  }
+  export function buildPackage(
+    layout: PackageLayout,
+    operations?: Record<string, unknown>,
+  ): Promise<void>;
+  export function checkKPackageInstall(
+    layout: PackageLayout,
+    operations?: Record<string, unknown>,
+  ): Promise<void>;
   export function loadPackageLayout(): Promise<PackageLayout>;
 }
