@@ -39,12 +39,14 @@ type ScriptOptions = {
   currentDesktop?: TestDesktop;
   dbusError?: unknown;
   stackingOrder?: TestWindow[];
+  windowSource?: "stackingOrder" | "windowList" | "windows";
   windows?: TestWindow[];
 };
 
 type ScriptHarness = {
   dbusCalls: unknown[][];
   notifyActivated: (window: TestWindow | null) => void;
+  notifyRemoved: (window: TestWindow) => void;
   prints: string[];
   registeredShortcuts: RegisteredShortcut[];
   raisedWindows: TestWindow[];
@@ -52,7 +54,16 @@ type ScriptHarness = {
     activeWindow: TestWindow | null;
     currentActivity: string;
     currentDesktop: TestDesktop;
+    raiseWindow(window: TestWindow): void;
     stackingOrder: TestWindow[];
+    windowActivated: {
+      connect(callback: (window: TestWindow | null) => void): void;
+    };
+    windowList?: () => TestWindow[];
+    windowRemoved: {
+      connect(callback: (window: TestWindow) => void): void;
+    };
+    windows?: TestWindow[];
   };
 };
 
@@ -80,11 +91,12 @@ async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
   const windows = options.windows ?? [];
   const currentDesktop = options.currentDesktop ?? { id: "desktop-1" };
   const activationCallbacks: Array<(window: TestWindow | null) => void> = [];
+  const removalCallbacks: Array<(window: TestWindow) => void> = [];
   const dbusCalls: unknown[][] = [];
   const registeredShortcuts: RegisteredShortcut[] = [];
   const prints: string[] = [];
   const raisedWindows: TestWindow[] = [];
-  const workspace = {
+  const workspace: ScriptHarness["workspace"] = {
     activeWindow: options.activeWindow ?? null,
     currentActivity: options.currentActivity ?? "activity-1",
     currentDesktop,
@@ -92,15 +104,24 @@ async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
     raiseWindow(window: TestWindow): void {
       raisedWindows.push(window);
     },
-    windowList(): TestWindow[] {
-      return windows;
-    },
     windowActivated: {
       connect(callback: (window: TestWindow | null) => void): void {
         activationCallbacks.push(callback);
       },
     },
+    windowRemoved: {
+      connect(callback: (window: TestWindow) => void): void {
+        removalCallbacks.push(callback);
+      },
+    },
   };
+  const windowSource = options.windowSource ?? "windowList";
+
+  if (windowSource === "windowList") {
+    workspace.windowList = (): TestWindow[] => windows;
+  } else if (windowSource === "windows") {
+    workspace.windows = windows;
+  }
 
   vm.runInNewContext(script, {
     callDBus(...args: unknown[]): void {
@@ -135,6 +156,11 @@ async function runScript(options: ScriptOptions = {}): Promise<ScriptHarness> {
     dbusCalls,
     notifyActivated(window: TestWindow | null): void {
       for (const callback of activationCallbacks) {
+        callback(window);
+      }
+    },
+    notifyRemoved(window: TestWindow): void {
+      for (const callback of removalCallbacks) {
         callback(window);
       }
     },
@@ -207,6 +233,42 @@ test("raises and focuses the frontmost visible matching window", async () => {
     },
     stackingOrder: [backWindow, otherWindow, frontWindow],
     windows: [frontWindow, backWindow, otherWindow],
+  });
+
+  harness.registeredShortcuts[0].callback();
+
+  assert.deepEqual(harness.raisedWindows, [frontWindow]);
+  assert.equal(harness.workspace.activeWindow, frontWindow);
+});
+
+test("reads windows from workspace.windows when windowList is unavailable", async () => {
+  const frontWindow = appWindow();
+  const harness = await runScript({
+    config: {
+      Binding01DesktopEntryId: "firefox",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+    },
+    windowSource: "windows",
+    windows: [frontWindow],
+  });
+
+  harness.registeredShortcuts[0].callback();
+
+  assert.deepEqual(harness.raisedWindows, [frontWindow]);
+  assert.equal(harness.workspace.activeWindow, frontWindow);
+});
+
+test("reads windows from stacking order when no window list is available", async () => {
+  const frontWindow = appWindow();
+  const harness = await runScript({
+    config: {
+      Binding01DesktopEntryId: "firefox",
+      Binding01Enabled: true,
+      Binding01Shortcut: "Meta+W",
+    },
+    stackingOrder: [frontWindow],
+    windowSource: "stackingOrder",
   });
 
   harness.registeredShortcuts[0].callback();
