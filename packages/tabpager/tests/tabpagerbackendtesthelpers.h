@@ -6,9 +6,6 @@
 #include "tabpagerbackend.h"
 #include "tabpagertesthelpers.h"
 
-#include <QSignalSpy>
-#include <QVariant>
-
 #include <memory>
 #include <utility>
 
@@ -96,19 +93,4 @@ private:
       : source(fakeSource.get()), backend(std::move(fakeSource)) {}
 };
 
-struct DataChangedEmission {
-  int firstRow = -1;
-  int lastRow = -1;
-  QList<int> roles;
-};
-
-[[nodiscard]] inline DataChangedEmission
-takeDataChangedEmission(QSignalSpy &spy) {
-  const QList<QVariant> arguments = spy.takeFirst();
-  return DataChangedEmission{
-      .firstRow = qvariant_cast<QModelIndex>(arguments.at(0)).row(),
-      .lastRow = qvariant_cast<QModelIndex>(arguments.at(1)).row(),
-      .roles = qvariant_cast<QList<int>>(arguments.at(2)),
-  };
-}
 } // namespace TabPagerTest

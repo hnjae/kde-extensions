@@ -3,56 +3,24 @@
 
 #include "tabpagerbackend.h"
 
-#include <QFontDatabase>
-
 #include <cassert>
 #include <optional>
 #include <utility>
 
 TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
                                  QObject *parent)
-    : QAbstractListModel(parent), m_source(std::move(source)) {
+    : TabPagerDesktopModel(parent), m_source(std::move(source)) {
   initializeSource();
 }
 
 TabPagerBackend::~TabPagerBackend() = default;
 
-int TabPagerBackend::rowCount(const QModelIndex &parent) const {
-  if (parent.isValid()) {
-    return 0;
-  }
-
-  return count();
-}
-
-QVariant TabPagerBackend::data(const QModelIndex &index, int role) const {
-  if (!index.isValid() || index.row() < 0 || index.row() >= m_state.count()) {
-    return {};
-  }
-
-  const TabPagerDesktopRowData rowData = m_state.rowData(index.row());
-  return tabPagerDesktopRowDataForRole(rowData, role);
-}
-
-QHash<int, QByteArray> TabPagerBackend::roleNames() const {
-  return tabPagerDesktopRowRoleNames();
-}
-
-int TabPagerBackend::count() const { return m_state.count(); }
-
-int TabPagerBackend::currentIndex() const { return m_state.currentIndex(); }
-
 bool TabPagerBackend::navigationWrappingAround() const {
   return m_navigator.navigationWrappingAround();
 }
 
-QFont TabPagerBackend::labelFont() const {
-  return QFontDatabase::systemFont(QFontDatabase::FixedFont);
-}
-
 void TabPagerBackend::activate(int index) {
-  const std::optional<TabPagerDesktopId> desktopId =
-      m_state.desktopIdForIndex(index);
+  const std::optional<TabPagerDesktopId> desktopId = desktopIdForIndex(index);
   if (!desktopId.has_value()) {
     return;
   }
@@ -86,7 +54,7 @@ void TabPagerBackend::reloadSourceState() {
 
 void TabPagerBackend::applySourceState(
     const TabPagerDesktopSourceState &state) {
-  applyDesktopSnapshot(state.desktopSnapshot);
+  setDesktopSnapshot(state.desktopSnapshot);
   applyNavigationWrappingAround(state.navigationWrappingAround);
 }
 
@@ -98,53 +66,6 @@ void TabPagerBackend::applyNavigationWrappingAround(
 
   m_navigator.setNavigationWrappingAround(navigationWrappingAround);
   Q_EMIT navigationWrappingAroundChanged();
-}
-
-void TabPagerBackend::applyDesktopSnapshot(
-    const TabPagerDesktopSnapshot &snapshot) {
-  TabPagerDesktopModelTransition transition =
-      m_state.transitionToRows(tabPagerDesktopRowsForSnapshot(snapshot));
-  const bool shouldEmitCountChanged = transition.countChanged;
-  const bool shouldEmitCurrentIndexChanged = transition.currentIndexChanged;
-
-  switch (transition.type) {
-  case TabPagerDesktopModelTransition::Type::Unchanged:
-    return;
-  case TabPagerDesktopModelTransition::Type::Reset:
-    resetDesktopState(std::move(transition.nextState));
-    break;
-  case TabPagerDesktopModelTransition::Type::RowsChanged:
-    updateDesktopStateRows(std::move(transition.nextState), transition.rows);
-    break;
-  }
-
-  if (shouldEmitCountChanged) {
-    Q_EMIT countChanged();
-  }
-
-  if (shouldEmitCurrentIndexChanged) {
-    Q_EMIT currentIndexChanged();
-  }
-}
-
-void TabPagerBackend::resetDesktopState(TabPagerDesktopModelState nextState) {
-  beginResetModel();
-  m_state = std::move(nextState);
-  endResetModel();
-}
-
-void TabPagerBackend::updateDesktopStateRows(
-    TabPagerDesktopModelState nextState,
-    const QList<TabPagerDesktopModelRowUpdate> &rows) {
-  m_state = std::move(nextState);
-
-  for (const TabPagerDesktopModelRowUpdate &rowUpdate : rows) {
-    const QModelIndex firstChangedIndex =
-        index(static_cast<int>(rowUpdate.firstRow));
-    const QModelIndex lastChangedIndex =
-        index(static_cast<int>(rowUpdate.lastRow));
-    Q_EMIT dataChanged(firstChangedIndex, lastChangedIndex, rowUpdate.roles);
-  }
 }
 
 TabPagerDesktopNavigationContext TabPagerBackend::navigationContext() const {

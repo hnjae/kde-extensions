@@ -6,7 +6,10 @@
 #include "tabpagerdesktop.h"
 #include "tabpagerdesktopmodelstate.h"
 
+#include <QModelIndex>
+#include <QSignalSpy>
 #include <QString>
+#include <QVariant>
 
 #include <utility>
 
@@ -64,5 +67,21 @@ desktopModelState(QList<TabPagerDesktop> desktops,
 
 [[nodiscard]] inline int role(TabPagerDesktopRowRole role) {
   return static_cast<int>(role);
+}
+
+struct DataChangedEmission {
+  int firstRow = -1;
+  int lastRow = -1;
+  QList<int> roles;
+};
+
+[[nodiscard]] inline DataChangedEmission
+takeDataChangedEmission(QSignalSpy &spy) {
+  const QList<QVariant> arguments = spy.takeFirst();
+  return DataChangedEmission{
+      .firstRow = qvariant_cast<QModelIndex>(arguments.at(0)).row(),
+      .lastRow = qvariant_cast<QModelIndex>(arguments.at(1)).row(),
+      .roles = qvariant_cast<QList<int>>(arguments.at(2)),
+  };
 }
 } // namespace TabPagerTest
