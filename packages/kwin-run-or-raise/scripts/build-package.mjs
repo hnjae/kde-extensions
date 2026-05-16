@@ -19,6 +19,7 @@ const packageDir = path.resolve(
 const buildCodeFiles = [
   path.join(packageDir, "build", "src", "core.js"),
   path.join(packageDir, "build", "src", "bindings.js"),
+  path.join(packageDir, "build", "src", "runtime.js"),
   path.join(packageDir, "build", "src", "main.js"),
 ];
 const distRoot = path.join(packageDir, "dist", "kwin-run-or-raise");
