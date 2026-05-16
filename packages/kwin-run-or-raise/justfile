@@ -17,6 +17,10 @@ _:
 build:
     nix build "{{ root }}#kwin-run-or-raise" --no-link --print-out-paths
 
+[group('build')]
+build-kpackage:
+    nix develop "{{ root }}#kwin-run-or-raise" -c build-kpackage
+
 [group('ci')]
 check:
     nix build "{{ check_prefix }}kwin-run-or-raise-check" --no-link --print-out-paths

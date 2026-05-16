@@ -10,6 +10,27 @@ Pressing a configured shortcut raises a matching window on the current virtual
 desktop and current Activity, cycles matching windows when one is already
 focused, restores a minimized match, or launches the application through KDE.
 
+## Build & Install
+
+Build the KWin KPackage archive from this package directory:
+
+```sh
+just build-kpackage
+
+# or
+
+nix develop 'path:../..#kwin-run-or-raise' -c build-kpackage
+```
+
+The archive is written to `dist/kwin-run-or-raise-0.1.0.kwinscript`.
+
+Install it from KDE System Settings with Window Management > KWin Scripts >
+Install from File, or install it from the command line:
+
+```sh
+kpackagetool6 --type=KWin/Script --install dist/kwin-run-or-raise-0.1.0.kwinscript
+```
+
 ## Configuration
 
 The script exposes 16 fixed binding slots in the KWin script configuration UI.
