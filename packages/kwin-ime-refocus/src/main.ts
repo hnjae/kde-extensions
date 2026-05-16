@@ -2,79 +2,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 (() => {
-  function isSameDesktop(
-    left: KWinVirtualDesktop | null,
-    right: KWinVirtualDesktop | null,
-  ): boolean {
-    if (left === null || right === null) {
-      return left === right;
-    }
-
-    return left === right || left.id === right.id;
-  }
-
-  function isWindowOnDesktop(
-    window: KWinWindow,
-    desktop: KWinVirtualDesktop | null,
-  ): boolean {
-    if (desktop === null) {
-      return false;
-    }
-
-    if (window.onAllDesktops) {
-      return true;
-    }
-
-    return window.desktops.some((windowDesktop) =>
-      isSameDesktop(windowDesktop, desktop),
-    );
-  }
-
-  function canRefocusWindow(
-    window: KWinWindow | null,
-    desktop: KWinVirtualDesktop | null,
-  ): window is KWinWindow {
-    if (window === null) {
-      return false;
-    }
-
-    return (
-      window.managed &&
-      !window.deleted &&
-      !window.hidden &&
-      !window.inputMethod &&
-      !window.minimized &&
-      !window.specialWindow &&
-      window.wantsInput &&
-      isWindowOnDesktop(window, desktop)
-    );
-  }
-
-  function recoverImeFocus(): void {
-    const originalWindow = workspace.activeWindow;
-    const originalDesktop = workspace.currentDesktop;
-
-    if (!canRefocusWindow(originalWindow, originalDesktop)) {
-      return;
-    }
-
-    workspace.activeWindow = null;
-
-    if (!isSameDesktop(workspace.currentDesktop, originalDesktop)) {
-      return;
-    }
-
-    if (!canRefocusWindow(originalWindow, originalDesktop)) {
-      return;
-    }
-
-    workspace.activeWindow = originalWindow;
-  }
-
   registerShortcut(
     "IME Refocus",
     "Recover IME focus for the active window",
     "",
-    recoverImeFocus,
+    () => {
+      KWinImeRefocus.recoverImeFocus(workspace);
+    },
   );
 })();

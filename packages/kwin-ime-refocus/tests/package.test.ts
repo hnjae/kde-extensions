@@ -35,41 +35,27 @@ test("main script registers an unbound IME recovery shortcut", async () => {
   assert.doesNotMatch(mainScript, /export\s+\{\};/);
 });
 
-test("main script clears focus before restoring the original window", async () => {
+test("main script packages refocus policy before shortcut registration", async () => {
   const mainScript = await readFile(
     new URL("contents/code/main.js", packageRoot),
     "utf8",
   );
 
-  const clearFocusIndex = mainScript.indexOf("workspace.activeWindow = null;");
-  const restoreFocusIndex = mainScript.indexOf(
-    "workspace.activeWindow = originalWindow;",
-  );
+  const policyIndex = mainScript.indexOf("var KWinImeRefocus;");
+  const shortcutIndex = mainScript.indexOf("registerShortcut(");
 
-  assert.notEqual(clearFocusIndex, -1);
-  assert.notEqual(restoreFocusIndex, -1);
-  assert.ok(clearFocusIndex < restoreFocusIndex);
+  assert.notEqual(policyIndex, -1);
+  assert.notEqual(shortcutIndex, -1);
+  assert.ok(policyIndex < shortcutIndex);
 });
 
-test("main script only restores the original window on the original desktop", async () => {
+test("main script delegates the shortcut callback to refocus policy", async () => {
   const mainScript = await readFile(
     new URL("contents/code/main.js", packageRoot),
     "utf8",
   );
 
-  assert.match(mainScript, /const originalWindow = workspace\.activeWindow;/);
-  assert.match(
-    mainScript,
-    /const originalDesktop = workspace\.currentDesktop;/,
-  );
-  assert.match(
-    mainScript,
-    /isSameDesktop\(workspace\.currentDesktop, originalDesktop\)/,
-  );
-  assert.match(
-    mainScript,
-    /canRefocusWindow\(originalWindow, originalDesktop\)/,
-  );
+  assert.match(mainScript, /KWinImeRefocus\.recoverImeFocus\(workspace\)/);
 });
 
 test("main script avoids recovery side-effect APIs", async () => {

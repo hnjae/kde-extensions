@@ -4,6 +4,7 @@
 declare module "node:assert/strict" {
   const assert: {
     doesNotMatch(actual: string, expected: RegExp, message?: string): void;
+    deepEqual(actual: unknown, expected: unknown, message?: string): void;
     equal(actual: unknown, expected: unknown, message?: string): void;
     match(actual: string, expected: RegExp, message?: string): void;
     notEqual(actual: unknown, expected: unknown, message?: string): void;
@@ -25,4 +26,12 @@ declare module "node:test" {
     name: string,
     fn: () => Promise<void> | void,
   ): void;
+}
+
+declare module "node:vm" {
+  export function createContext<T extends object>(contextObject: T): T;
+  export function runInContext(
+    code: string,
+    contextifiedObject: object,
+  ): unknown;
 }
