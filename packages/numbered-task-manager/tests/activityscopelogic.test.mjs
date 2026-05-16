@@ -6,14 +6,13 @@ import assert from "node:assert/strict";
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const logic = loadQmlJsModule(
-  new URL("../package/contents/ui/TaskActivityLogic.js", import.meta.url),
+  new URL("../package/contents/ui/ActivityScopeLogic.js", import.meta.url),
   [
     "activitiesAreAll",
     "allActivitiesId",
     "isInCurrentActivity",
     "normalizedActivityList",
     "stringListContains",
-    "taskActivitiesAfterToggle",
     "uniqueStringList",
   ],
 );
@@ -43,17 +42,3 @@ assert.equal(logic.isInCurrentActivity([], "work"), true);
 assert.equal(logic.isInCurrentActivity([nullActivityId], "work"), true);
 assert.equal(logic.isInCurrentActivity(["work"], "work"), true);
 assert.equal(logic.isInCurrentActivity(["chat"], "work"), false);
-
-assert.deepEqual(plain(logic.taskActivitiesAfterToggle([], "work")), ["work"]);
-assert.deepEqual(
-  plain(logic.taskActivitiesAfterToggle([nullActivityId], "work")),
-  ["work"],
-);
-assert.deepEqual(
-  plain(logic.taskActivitiesAfterToggle(["work", "chat"], "work")),
-  ["chat"],
-);
-assert.deepEqual(plain(logic.taskActivitiesAfterToggle(["work"], "chat")), [
-  "work",
-  "chat",
-]);

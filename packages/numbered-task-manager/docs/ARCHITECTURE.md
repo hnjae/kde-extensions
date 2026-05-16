@@ -15,9 +15,11 @@ in `SPEC.md`.
   rows by rewriting the persisted launcher list so launch-in-place window rows
   cannot collide with `TasksModel.move()` launcher barriers. Keep manually
   reordered unpinned windows in widget state.
-- Keep task activity scope decisions in `TaskActivityLogic.js` so current
-  activity matching and task activity toggles are shared by the task model and
-  context menu.
+- Keep activity scope primitives in `ActivityScopeLogic.js` so null-activity,
+  all-activities, de-duplication, and current-activity membership semantics are
+  shared by task and launcher code.
+- Keep task activity mutation decisions in `TaskActivityLogic.js` so task
+  activity toggles are shared by the task model and context menu.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.

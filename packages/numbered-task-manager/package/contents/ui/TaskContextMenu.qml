@@ -13,7 +13,6 @@ import "LauncherListLogic.js" as LauncherListLogic
 QtQuickControls.Menu {
     id: root
 
-    readonly property string nullActivityId: "00000000-0000-0000-0000-000000000000"
     readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(task.modelIndex)
     readonly property bool hasWindowTask: hasTask && task.isWindow
     readonly property var desktopEntries: {
@@ -88,7 +87,7 @@ QtQuickControls.Menu {
     }
 
     function launcherPinnedToAllActivities() {
-        return stringListContains(launcherActivityList, nullActivityId);
+        return stringListContains(launcherActivityList, TaskActivityLogic.allActivitiesId());
     }
 
     function launcherPinnedToActivity(activityId) {
