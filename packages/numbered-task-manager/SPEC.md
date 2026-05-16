@@ -64,6 +64,8 @@ item order with `Meta+0`.
 - `Meta+0` activates the final item in the visible item order. It is based on
   item order, not on a numbered slot or on pixel clipping, and it does nothing
   when there is no visible item.
+- Plasma delivers this behavior through the global shortcut action named
+  `Activate Task Manager Entry 10`.
 - If the `Meta+0` target is also one of slots `1` through `9`, both shortcuts
   activate the same item.
 - `Meta+0` is intentionally unbadged. Users identify its target by the final

@@ -32,6 +32,7 @@ QtQuickControls.Menu {
 
     signal pinRequested(string launcherUrl)
     signal unpinRequested(string launcherUrl)
+    signal launcherActivitiesChanged
 
     function openForTask(taskData, item) {
         task = taskData || {};
@@ -152,10 +153,15 @@ QtQuickControls.Menu {
             return;
         }
 
+        let changed = false;
         if (launcherPinnedToAllActivities()) {
-            taskModel.requestRemoveLauncherFromActivity(task.launcherUrl, nullActivityId);
+            changed = taskModel.requestRemoveLauncherFromActivity(task.launcherUrl, nullActivityId);
         } else {
-            taskModel.requestAddLauncherToActivity(task.launcherUrl, nullActivityId);
+            changed = taskModel.requestAddLauncherToActivity(task.launcherUrl, nullActivityId);
+        }
+
+        if (changed) {
+            root.launcherActivitiesChanged();
         }
         refreshLauncherActivities();
     }
@@ -165,13 +171,18 @@ QtQuickControls.Menu {
             return;
         }
 
+        let changed = false;
         if (launcherPinnedToAllActivities()) {
-            taskModel.requestRemoveLauncherFromActivity(task.launcherUrl, nullActivityId);
-            taskModel.requestAddLauncherToActivity(task.launcherUrl, activityId);
+            changed = taskModel.requestRemoveLauncherFromActivity(task.launcherUrl, nullActivityId);
+            changed = taskModel.requestAddLauncherToActivity(task.launcherUrl, activityId) || changed;
         } else if (stringListContains(launcherActivityList, activityId)) {
-            taskModel.requestRemoveLauncherFromActivity(task.launcherUrl, activityId);
+            changed = taskModel.requestRemoveLauncherFromActivity(task.launcherUrl, activityId);
         } else {
-            taskModel.requestAddLauncherToActivity(task.launcherUrl, activityId);
+            changed = taskModel.requestAddLauncherToActivity(task.launcherUrl, activityId);
+        }
+
+        if (changed) {
+            root.launcherActivitiesChanged();
         }
         refreshLauncherActivities();
     }
@@ -208,7 +219,7 @@ QtQuickControls.Menu {
 
         enabled: root.taskModel && root.task.launcherUrl
         title: "Launcher Activities"
-        visible: root.task.hasLauncher && root.task.launcherUrl && root.activityEntries.length > 1
+        visible: root.task.hasAnyLauncher && root.task.launcherUrl && root.activityEntries.length > 1
 
         QtQuickControls.MenuItem {
             checkable: true

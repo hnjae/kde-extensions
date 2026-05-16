@@ -11,6 +11,7 @@ import org.kde.plasma.plasmoid
 PlasmoidItem {
     id: root
 
+    readonly property string nullActivityId: "00000000-0000-0000-0000-000000000000"
     readonly property string taskDragMimeType: "application/x-numbered-task-manager-row"
     property var normalTaskEntries: []
     property var normalTaskEntryMap: ({})
@@ -179,7 +180,61 @@ PlasmoidItem {
         return "normal:" + nextNormalTaskPublicationId.toString();
     }
 
-    function launcherPosition(launcherUrl, launcherRevisionToken) {
+    function stringListContains(list, value) {
+        const needle = String(value);
+        const values = Array.from(list || []);
+        for (let i = 0; i < values.length; ++i) {
+            if (String(values[i]) === needle) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function serializedLauncherActivities(serializedLauncher) {
+        const launcher = String(serializedLauncher || "");
+        if (!launcher.startsWith("[")) {
+            return [];
+        }
+
+        const separator = launcher.indexOf("]\n");
+        if (separator === -1) {
+            return [];
+        }
+
+        const activityText = launcher.slice(1, separator);
+        if (!activityText) {
+            return [];
+        }
+
+        return activityText.split(",").filter(activityId => activityId.length > 0);
+    }
+
+    function serializedLauncherVisibleInCurrentActivity(serializedLauncher, launcherRevisionToken) {
+        const revision = launcherRevisionToken === undefined ? launcherRevision : launcherRevisionToken;
+        if (!serializedLauncher) {
+            return false;
+        }
+
+        if (revision < 0) {
+            return false;
+        }
+
+        const currentActivity = String(activityInfo.currentActivity || "");
+        if (!currentActivity) {
+            return true;
+        }
+
+        const launcherActivities = serializedLauncherActivities(serializedLauncher);
+        if (launcherActivities.length === 0 || stringListContains(launcherActivities, nullActivityId)) {
+            return true;
+        }
+
+        return stringListContains(launcherActivities, currentActivity);
+    }
+
+    function visibleLauncherPosition(launcherUrl, launcherRevisionToken) {
         const revision = launcherRevisionToken === undefined ? launcherRevision : launcherRevisionToken;
         if (!launcherUrl) {
             return -1;
@@ -189,7 +244,26 @@ PlasmoidItem {
             return -1;
         }
 
-        return tasksModel.launcherPosition(launcherUrl);
+        const launchers = normalizedLauncherList(tasksModel.launcherList);
+        const globalPosition = tasksModel.launcherPosition(launcherUrl);
+        if (globalPosition === -1) {
+            return -1;
+        }
+
+        let visiblePosition = 0;
+        for (let i = 0; i < launchers.length && i <= globalPosition; ++i) {
+            if (!serializedLauncherVisibleInCurrentActivity(launchers[i], revision)) {
+                continue;
+            }
+
+            if (i === globalPosition) {
+                return visiblePosition;
+            }
+
+            visiblePosition += 1;
+        }
+
+        return -1;
     }
 
     function isLauncherBackedRow(isLauncher, launcherUrl, sourceIndex, launcherRevisionToken) {
@@ -197,7 +271,7 @@ PlasmoidItem {
             return true;
         }
 
-        const position = launcherPosition(launcherUrl, launcherRevisionToken);
+        const position = visibleLauncherPosition(launcherUrl, launcherRevisionToken);
         return position !== -1 && sourceIndex === position;
     }
 
@@ -409,6 +483,10 @@ PlasmoidItem {
 
     TaskManager.ActivityInfo {
         id: activityInfo
+
+        onCurrentActivityChanged: {
+            root.launcherRevision += 1;
+        }
     }
 
     TaskManager.VirtualDesktopInfo {
@@ -458,7 +536,7 @@ PlasmoidItem {
             required property int index
 
             property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
-            property bool launcherPinned: root.launcherPosition(launcherUrl, root.launcherRevision) !== -1
+            property bool launcherPinned: root.visibleLauncherPosition(launcherUrl, root.launcherRevision) !== -1
             property bool launcherBacked: root.isLauncherBackedRow(model.IsLauncher || false, launcherUrl, index, root.launcherRevision)
             property string publishedKey: ""
             property string title: model.display || model.AppName || ""
@@ -470,7 +548,8 @@ PlasmoidItem {
                     closable: model.IsClosable || false,
                     demandingAttention: model.IsDemandingAttention || false,
                     fullScreenable: model.IsFullScreenable || false,
-                    hasLauncher: model.HasLauncher || model.IsLauncher || launcherPinned,
+                    hasAnyLauncher: model.HasLauncher || model.IsLauncher || launcherPinned,
+                    hasLauncher: model.IsLauncher || launcherPinned,
                     hasNoBorder: model.HasNoBorder || false,
                     iconSource: model.decoration || "application-x-executable",
                     index,
@@ -662,6 +741,10 @@ PlasmoidItem {
 
             onUnpinRequested: launcherUrl => {
                 root.unpinLauncher(launcherUrl);
+            }
+
+            onLauncherActivitiesChanged: {
+                root.launcherRevision += 1;
             }
         }
     }

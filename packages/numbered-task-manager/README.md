@@ -7,6 +7,10 @@ task order aligned with `Meta+1` through `Meta+9`. The first nine normal tasks
 show number badges, later tasks remain visible without badges, and `Meta+0`
 activates the final visible item.
 
+Plasma delivers `Meta+0` through the global shortcut action named
+`Activate Task Manager Entry 10`. If that action has no shortcut on the target
+system, bind it to `Meta+0` in Plasma's shortcut settings.
+
 ## Implemented v1 behavior
 
 - Current-virtual-desktop task list using KDE Plasma's `org.kde.taskmanager`
