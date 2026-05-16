@@ -27,9 +27,9 @@ check:
 
 [group('lint')]
 lint:
-    nix develop "{{ root }}#kwin-ime-refocus" -c npm run typecheck
-    nix develop "{{ root }}#kwin-ime-refocus" -c npm run lint
+    nix develop "{{ root }}#kwin-ime-refocus" -c pnpm run typecheck
+    nix develop "{{ root }}#kwin-ime-refocus" -c pnpm run lint
 
 [group('test')]
 test:
-    nix develop "{{ root }}#kwin-ime-refocus" -c npm test
+    nix develop "{{ root }}#kwin-ime-refocus" -c pnpm run test

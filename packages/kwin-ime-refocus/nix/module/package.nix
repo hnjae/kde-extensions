@@ -8,14 +8,12 @@
         let
           pluginId = "io.github.hnjae.kwin-ime-refocus";
           version = "0.1.0";
-          npmDepsHash = "sha256-m6GN5TrsVLSiGkcn8gjHTofaH3ApVMTUjVLSDZAaWE0=";
 
           sourceRoot = ../../.;
           source = lib.fileset.toSource {
             root = sourceRoot;
             fileset = lib.fileset.unions [
               ../../.biome.json
-              ../../package-lock.json
               ../../package.json
               ../../scripts
               ../../src
@@ -24,15 +22,26 @@
             ];
           };
         in
-        pkgs.buildNpmPackage {
+        pkgs.stdenvNoCC.mkDerivation {
           pname = "kwin-ime-refocus";
-          inherit
-            npmDepsHash
-            version
-            ;
+          inherit version;
           src = source;
 
-          npmBuildScript = "build";
+          nativeBuildInputs = [
+            pkgs.nodejs
+            pkgs.typescript
+          ];
+
+          dontConfigure = true;
+
+          buildPhase = ''
+            runHook preBuild
+
+            tsc --project tsconfig.json
+            node scripts/build-package.mjs
+
+            runHook postBuild
+          '';
 
           installPhase = ''
             runHook preInstall
@@ -45,7 +54,6 @@
 
           passthru = {
             inherit
-              npmDepsHash
               pluginId
               source
               version
