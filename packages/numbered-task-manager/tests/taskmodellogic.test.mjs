@@ -402,12 +402,27 @@ attentionOrder = attentionResult.order;
 assert.deepEqual(plain(attentionOrder), ["window:2", "a"]);
 assert.equal(attentionResult.snapshot.target.title, "A later");
 
+attentionResult = logic.publishRemoteAttention(
+  attentionEntryMap,
+  attentionOrder,
+  "window:2",
+  "window:2",
+  true,
+  { title: "B updated" },
+  false,
+);
+attentionEntryMap = attentionResult.entryMap;
+attentionOrder = attentionResult.order;
+assert.deepEqual(plain(attentionOrder), ["window:2", "a"]);
+assert.equal(attentionResult.snapshot.entries[0].title, "B updated");
+assert.equal(attentionResult.snapshot.target.title, "A later");
+
 const snapshot = logic.remoteAttentionSnapshot(attentionEntryMap, [
   "missing",
   "window:2",
 ]);
 assert.equal(snapshot.count, 1);
-assert.equal(snapshot.target.title, "B stable key");
+assert.equal(snapshot.target.title, "B updated");
 
 const removed = logic.removeRemoteAttention(
   attentionEntryMap,
@@ -416,15 +431,15 @@ const removed = logic.removeRemoteAttention(
 );
 assert.deepEqual(plain(removed.order), ["window:2"]);
 assert.equal(removed.snapshot.count, 1);
-assert.equal(removed.snapshot.target.title, "B stable key");
+assert.equal(removed.snapshot.target.title, "B updated");
 
 const unqualified = logic.publishRemoteAttention(
   removed.entryMap,
   removed.order,
   "window:2",
-  "window:2",
+  "row:gone",
   false,
-  { title: "B stable key" },
+  { title: "B no longer qualifies" },
   false,
 );
 assert.deepEqual(plain(unqualified.order), []);
