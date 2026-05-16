@@ -16,7 +16,6 @@
           runtimeInputs = [
             pkgs.coreutils
             pkgs.kdePackages.kpackage
-            pkgs.nix
             pkgs.zip
           ];
           text = ''
