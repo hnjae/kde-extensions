@@ -10,7 +10,20 @@ This program does not permanently fix the underlying KDE Plasma or Wayland text 
 
 ## Usage
 
-Install and enable the KWin script in KDE Plasma. Then open System Settings, go to Shortcuts, find the `IME Refocus` action, and assign the recovery shortcut you want to use.
+Install and enable the KWin script in KDE Plasma:
+
+1. Open System Settings.
+2. Go to Window Management > KWin Scripts.
+3. Enable `IME Refocus`.
+
+Then assign the recovery shortcut:
+
+1. Open System Settings.
+2. Go to Keyboard > Shortcuts > Window Management.
+3. Find the `IME Refocus` action.
+4. Assign the shortcut you want to use.
+
+The shortcut is configured from the Shortcuts page, not from the KWin Scripts page.
 
 The action is intentionally unbound by default. If no shortcut is configured, keyboard input will not trigger recovery.
 
