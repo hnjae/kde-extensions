@@ -41,6 +41,31 @@ function launcherListsEqual(left, right) {
   return true;
 }
 
+function launcherConfigUpdate(currentLaunchers, nextLaunchers) {
+  const normalized = normalizedLauncherList(nextLaunchers);
+  return {
+    changed: !launcherListsEqual(normalized, currentLaunchers),
+    launchers: normalized,
+  };
+}
+
+function launcherModelUpdate(
+  currentModelLaunchers,
+  currentConfigLaunchers,
+  nextLaunchers,
+) {
+  const normalized = normalizedLauncherList(nextLaunchers);
+  const modelChanged = !launcherListsEqual(normalized, currentModelLaunchers);
+  const configChanged = !launcherListsEqual(normalized, currentConfigLaunchers);
+
+  return {
+    changed: modelChanged || configChanged,
+    configChanged,
+    launchers: normalized,
+    modelChanged,
+  };
+}
+
 function uniqueStringList(list) {
   const result = [];
   const values = Array.from(list || []);
@@ -227,6 +252,23 @@ function launcherListWithActivitiesAt(launcherList, position, activities) {
     activities,
   );
   return result;
+}
+
+function launcherActivityUpdate(launcherList, position, activities) {
+  const nextLaunchers = launcherListWithActivitiesAt(
+    launcherList,
+    position,
+    activities,
+  );
+  if (!nextLaunchers) {
+    return null;
+  }
+
+  return {
+    activities: effectiveSerializedLauncherActivities(nextLaunchers[position]),
+    changed: !launcherListsEqual(nextLaunchers, launcherList),
+    launchers: nextLaunchers,
+  };
 }
 
 function launcherPositionForUrl(launcherUrl, launcherPosition) {

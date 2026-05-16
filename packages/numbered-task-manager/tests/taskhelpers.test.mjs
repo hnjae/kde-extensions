@@ -12,10 +12,13 @@ const helpers = loadQmlJsModule(
     "canMovePinnedLauncher",
     "effectiveSerializedLauncherActivities",
     "isInCurrentActivity",
+    "launcherActivityUpdate",
     "launcherActivitiesAfterAllToggle",
     "launcherActivitiesAfterToggle",
+    "launcherConfigUpdate",
     "launcherListWithActivitiesAt",
     "launcherListsEqual",
+    "launcherModelUpdate",
     "movePinnedLauncher",
     "normalizedActivityList",
     "normalizedLauncherList",
@@ -43,6 +46,44 @@ assert.deepEqual(
 );
 assert.equal(helpers.launcherListsEqual(["a", "", "b"], ["a", "b"]), true);
 assert.equal(helpers.launcherListsEqual(["a", "b"], ["b", "a"]), false);
+assert.deepEqual(
+  plain(helpers.launcherConfigUpdate(["a.desktop"], ["", "a.desktop"])),
+  {
+    changed: false,
+    launchers: ["a.desktop"],
+  },
+);
+assert.deepEqual(
+  plain(helpers.launcherConfigUpdate(["a.desktop"], ["b.desktop"])),
+  {
+    changed: true,
+    launchers: ["b.desktop"],
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherModelUpdate(
+      ["a.desktop"],
+      ["old.desktop"],
+      ["", "a.desktop"],
+    ),
+  ),
+  {
+    changed: true,
+    configChanged: true,
+    launchers: ["a.desktop"],
+    modelChanged: false,
+  },
+);
+assert.deepEqual(
+  plain(helpers.launcherModelUpdate(["a.desktop"], ["a.desktop"], [""])),
+  {
+    changed: true,
+    configChanged: true,
+    launchers: [],
+    modelChanged: true,
+  },
+);
 
 assert.deepEqual(
   plain(helpers.uniqueStringList(["work", "", "work", "chat"])),
@@ -140,6 +181,32 @@ assert.deepEqual(
 );
 assert.equal(
   helpers.launcherListWithActivitiesAt(["one.desktop"], 2, ["work"]),
+  null,
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherActivityUpdate(["one.desktop", "two.desktop"], 1, ["work"]),
+  ),
+  {
+    activities: ["work"],
+    changed: true,
+    launchers: ["one.desktop", "[work]\ntwo.desktop"],
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherActivityUpdate(["one.desktop", "[work]\ntwo.desktop"], 1, [
+      "work",
+    ]),
+  ),
+  {
+    activities: ["work"],
+    changed: false,
+    launchers: ["one.desktop", "[work]\ntwo.desktop"],
+  },
+);
+assert.equal(
+  helpers.launcherActivityUpdate(["one.desktop"], 3, ["work"]),
   null,
 );
 

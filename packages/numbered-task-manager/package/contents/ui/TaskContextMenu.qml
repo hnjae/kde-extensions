@@ -104,17 +104,17 @@ QtQuickControls.Menu {
 
     function applyLauncherActivities(activities) {
         const position = launcherPosition();
-        const nextLaunchers = TaskHelpers.launcherListWithActivitiesAt(taskModel.launcherList, position, activities);
-        if (!nextLaunchers) {
+        const update = TaskHelpers.launcherActivityUpdate(taskModel.launcherList, position, activities);
+        if (!update) {
             return false;
         }
 
-        launcherActivityList = TaskHelpers.effectiveSerializedLauncherActivities(nextLaunchers[position]);
-        if (TaskHelpers.launcherListsEqual(nextLaunchers, taskModel.launcherList)) {
+        launcherActivityList = update.activities;
+        if (!update.changed) {
             return false;
         }
 
-        root.launcherListChangeRequested(nextLaunchers);
+        root.launcherListChangeRequested(update.launchers);
         return true;
     }
 

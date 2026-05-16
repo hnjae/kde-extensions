@@ -18,6 +18,9 @@ in `SPEC.md`.
 - Keep launcher-list transformations in shared JavaScript helpers so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
+- Keep launcher-list mutation decisions in shared JavaScript helpers. QML code
+  may apply returned writes to Plasma objects, but normalization, equality
+  checks, and derived activity lists should stay in tested helper functions.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
   coercion, title/icon fallback, model-index validity, and virtual-desktop
   membership should not be duplicated between normal task composition, remote

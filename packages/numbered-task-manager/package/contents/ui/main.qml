@@ -65,30 +65,28 @@ PlasmoidItem {
     }
 
     function persistLaunchers(launchers) {
-        const normalized = TaskHelpers.normalizedLauncherList(launchers);
-        if (TaskHelpers.launcherListsEqual(normalized, Plasmoid.configuration.launchers)) {
+        const update = TaskHelpers.launcherConfigUpdate(Plasmoid.configuration.launchers, launchers);
+        if (!update.changed) {
             return;
         }
 
         updatingLauncherConfig = true;
-        Plasmoid.configuration.launchers = normalized;
+        Plasmoid.configuration.launchers = update.launchers;
         updatingLauncherConfig = false;
     }
 
     function applyLauncherList(launchers) {
-        const normalized = TaskHelpers.normalizedLauncherList(launchers);
-        const modelChanged = !TaskHelpers.launcherListsEqual(normalized, tasksModel.launcherList);
-        const configChanged = !TaskHelpers.launcherListsEqual(normalized, Plasmoid.configuration.launchers);
-        if (!modelChanged && !configChanged) {
+        const update = TaskHelpers.launcherModelUpdate(tasksModel.launcherList, Plasmoid.configuration.launchers, launchers);
+        if (!update.changed) {
             return false;
         }
 
         updatingLauncherConfig = true;
-        if (modelChanged) {
-            tasksModel.launcherList = normalized;
+        if (update.modelChanged) {
+            tasksModel.launcherList = update.launchers;
         }
-        if (configChanged) {
-            Plasmoid.configuration.launchers = normalized;
+        if (update.configChanged) {
+            Plasmoid.configuration.launchers = update.launchers;
         }
         updatingLauncherConfig = false;
         return true;
