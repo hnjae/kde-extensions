@@ -2,107 +2,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { createContext, runInContext } from "node:vm";
-
-interface DesktopFixture {
-  readonly id: string;
-}
-
-interface WindowFixture {
-  readonly active: boolean;
-  deleted: boolean;
-  readonly desktops: readonly DesktopFixture[];
-  hidden: boolean;
-  inputMethod: boolean;
-  managed: boolean;
-  readonly normalWindow: boolean;
-  onAllDesktops: boolean;
-  specialWindow: boolean;
-  wantsInput: boolean;
-  minimized: boolean;
-}
-
-interface WorkspaceFixture {
-  activeWindow: WindowFixture | null;
-  currentDesktop: DesktopFixture | null;
-  readonly assignments: readonly (WindowFixture | null)[];
-}
-
-interface RefocusApi {
-  canRefocusWindow(
-    window: WindowFixture | null,
-    desktop: DesktopFixture | null,
-  ): boolean;
-  recoverImeFocus(workspace: WorkspaceFixture): void;
-}
-
-async function loadRefocusApi(): Promise<RefocusApi> {
-  const refocusScript = await readFile(
-    new URL("../build/src/refocus.js", import.meta.url),
-    "utf8",
-  );
-  const sandbox: { KWinImeRefocus?: RefocusApi } = {};
-
-  createContext(sandbox);
-  runInContext(refocusScript, sandbox);
-
-  const api = sandbox.KWinImeRefocus;
-  if (api === undefined) {
-    throw new Error("refocus API was not loaded");
-  }
-
-  return api;
-}
-
-function createWindow(
-  desktop: DesktopFixture,
-  overrides: Partial<WindowFixture> = {},
-): WindowFixture {
-  return {
-    active: true,
-    deleted: false,
-    desktops: [desktop],
-    hidden: false,
-    inputMethod: false,
-    managed: true,
-    minimized: false,
-    normalWindow: true,
-    onAllDesktops: false,
-    specialWindow: false,
-    wantsInput: true,
-    ...overrides,
-  };
-}
-
-function createWorkspace(
-  activeWindow: WindowFixture | null,
-  currentDesktop: DesktopFixture | null,
-  onActiveWindowSet: (
-    value: WindowFixture | null,
-    workspace: WorkspaceFixture,
-  ) => void = () => {},
-): WorkspaceFixture {
-  const assignments: (WindowFixture | null)[] = [];
-  let storedActiveWindow = activeWindow;
-  let workspace: WorkspaceFixture;
-
-  workspace = {
-    get activeWindow() {
-      return storedActiveWindow;
-    },
-    set activeWindow(value: WindowFixture | null) {
-      assignments.push(value);
-      storedActiveWindow = value;
-      onActiveWindowSet(value, workspace);
-    },
-    currentDesktop,
-    assignments,
-  };
-
-  return workspace;
-}
+import {
+  createWindow,
+  createWorkspace,
+  loadRefocusApi,
+} from "./support/refocus-harness.js";
 
 test("recoverImeFocus clears focus and restores an eligible original window", async () => {
   const refocus = await loadRefocusApi();
