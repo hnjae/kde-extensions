@@ -1,0 +1,20 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "KIM Hyunjae"
+      }
+    ],
+    "Category": "Windows and Tasks",
+    "Description": "A Plasma 6 task manager for keyboard-friendly window selection.",
+    "EnabledByDefault": true,
+    "Icon": "preferences-system-windows",
+    "Id": "io.github.hnjae.numberedtaskmanager",
+    "License": "AGPL-3.0-or-later",
+    "Name": "Numbered Task Manager",
+    "Version": "0.1.0",
+    "Website": "https://github.com/hnjae/kde-plasma-extensions"
+  },
+  "X-Plasma-API-Minimum-Version": "6.5"
+}
