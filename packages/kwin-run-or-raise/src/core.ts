@@ -32,10 +32,34 @@ namespace RunOrRaise {
     rememberWindow(window: KWinWindow | null): void;
   };
 
-  type CycleState = {
+  export type WindowScope = {
+    currentActivity: string | undefined;
+    currentDesktop: KWinDesktop | undefined;
+  };
+
+  export type CycleState = {
     candidates: KWinWindow[];
     index: number;
   };
+
+  export type BindingActionInput = {
+    activeWindow: KWinWindow | null;
+    candidates: KWinWindow[];
+    cycleState: CycleState | undefined;
+    mruWindows: KWinWindow[];
+    stackingOrder: KWinWindow[] | undefined;
+  };
+
+  export type BindingActionPlan =
+    | {
+        cycleState: CycleState | undefined;
+        kind: "activate";
+        window: KWinWindow;
+      }
+    | {
+        cycleState: CycleState | undefined;
+        kind: "launch" | "none";
+      };
 
   export function slotName(slot: number): string {
     return `Binding${String(slot).padStart(2, "0")}`;
@@ -70,7 +94,7 @@ namespace RunOrRaise {
     return desktopId !== "" && desktopId === desktopIdentity(currentDesktop);
   }
 
-  function isOnCurrentDesktop(runtime: Runtime, window: KWinWindow): boolean {
+  function isOnCurrentDesktop(scope: WindowScope, window: KWinWindow): boolean {
     if (window.onAllDesktops === true) {
       return true;
     }
@@ -81,7 +105,7 @@ namespace RunOrRaise {
       return true;
     }
 
-    const currentDesktop = runtime.currentDesktop();
+    const currentDesktop = scope.currentDesktop;
 
     return (
       currentDesktop !== undefined &&
@@ -89,17 +113,19 @@ namespace RunOrRaise {
     );
   }
 
-  function isOnCurrentActivity(runtime: Runtime, window: KWinWindow): boolean {
+  function isOnCurrentActivity(
+    scope: WindowScope,
+    window: KWinWindow,
+  ): boolean {
     const activities = window.activities ?? [];
 
     if (activities.length === 0) {
       return true;
     }
 
-    const currentActivity = runtime.currentActivity();
-
     return (
-      currentActivity !== undefined && activities.indexOf(currentActivity) >= 0
+      scope.currentActivity !== undefined &&
+      activities.indexOf(scope.currentActivity) >= 0
     );
   }
 
@@ -114,17 +140,27 @@ namespace RunOrRaise {
     );
   }
 
-  function windowMatchesBinding(
-    runtime: Runtime,
+  export function windowMatchesBinding(
+    scope: WindowScope,
     window: KWinWindow,
     binding: Binding,
   ): boolean {
     return (
       isSupportedWindow(window) &&
-      isOnCurrentDesktop(runtime, window) &&
-      isOnCurrentActivity(runtime, window) &&
+      isOnCurrentDesktop(scope, window) &&
+      isOnCurrentActivity(scope, window) &&
       normalizeDesktopEntryId(window.desktopFileName ?? "") ===
         binding.normalizedDesktopEntryId
+    );
+  }
+
+  export function candidateWindowsForBinding(
+    windows: KWinWindow[],
+    scope: WindowScope,
+    binding: Binding,
+  ): KWinWindow[] {
+    return windows.filter((window) =>
+      windowMatchesBinding(scope, window, binding),
     );
   }
 
@@ -142,14 +178,151 @@ namespace RunOrRaise {
     );
   }
 
+  function orderedByMru(
+    candidates: KWinWindow[],
+    mruWindows: KWinWindow[],
+    activeWindow: KWinWindow | null,
+  ): KWinWindow[] {
+    const orderedWindows: KWinWindow[] = [];
+
+    if (activeWindow !== null && containsWindow(candidates, activeWindow)) {
+      orderedWindows.push(activeWindow);
+    }
+
+    for (const window of mruWindows) {
+      if (
+        containsWindow(candidates, window) &&
+        !containsWindow(orderedWindows, window)
+      ) {
+        orderedWindows.push(window);
+      }
+    }
+
+    for (const window of candidates) {
+      if (!containsWindow(orderedWindows, window)) {
+        orderedWindows.push(window);
+      }
+    }
+
+    return orderedWindows;
+  }
+
+  function stackingRank(
+    stackingOrder: KWinWindow[] | undefined,
+    window: KWinWindow,
+    fallbackRank: number,
+  ): number {
+    if (stackingOrder === undefined) {
+      return fallbackRank;
+    }
+
+    const rank = stackingOrder.indexOf(window);
+
+    return rank >= 0 ? rank : fallbackRank - stackingOrder.length;
+  }
+
+  function frontmostWindow(
+    windows: KWinWindow[],
+    stackingOrder: KWinWindow[] | undefined,
+  ): KWinWindow | null {
+    let selectedWindow: KWinWindow | null = null;
+    let selectedRank = Number.NEGATIVE_INFINITY;
+
+    for (let index = 0; index < windows.length; index += 1) {
+      const window = windows[index];
+      const rank = stackingRank(stackingOrder, window, index);
+
+      if (rank > selectedRank) {
+        selectedWindow = window;
+        selectedRank = rank;
+      }
+    }
+
+    return selectedWindow;
+  }
+
+  function mostRecentlyUsedWindow(
+    windows: KWinWindow[],
+    mruWindows: KWinWindow[],
+    activeWindow: KWinWindow | null,
+  ): KWinWindow {
+    return orderedByMru(windows, mruWindows, activeWindow)[0];
+  }
+
+  export function planBindingAction(
+    input: BindingActionInput,
+  ): BindingActionPlan {
+    const { activeWindow, candidates, cycleState, mruWindows, stackingOrder } =
+      input;
+
+    if (activeWindow !== null && containsWindow(candidates, activeWindow)) {
+      if (candidates.length <= 1) {
+        return { cycleState: undefined, kind: "none" };
+      }
+
+      const orderedWindows =
+        cycleState !== undefined &&
+        sameWindowSet(cycleState.candidates, candidates)
+          ? cycleState.candidates
+          : orderedByMru(candidates, mruWindows, activeWindow);
+      const activeIndex =
+        cycleState !== undefined &&
+        orderedWindows[cycleState.index] === activeWindow
+          ? cycleState.index
+          : orderedWindows.indexOf(activeWindow);
+      const nextIndex = (activeIndex + 1) % orderedWindows.length;
+
+      return {
+        cycleState: {
+          candidates: orderedWindows,
+          index: nextIndex,
+        },
+        kind: "activate",
+        window: orderedWindows[nextIndex],
+      };
+    }
+
+    const visibleWindow = frontmostWindow(
+      candidates.filter((window) => window.minimized !== true),
+      stackingOrder,
+    );
+
+    if (visibleWindow !== null) {
+      return {
+        cycleState: undefined,
+        kind: "activate",
+        window: visibleWindow,
+      };
+    }
+
+    const minimizedWindows = candidates.filter(
+      (window) => window.minimized === true,
+    );
+
+    if (minimizedWindows.length > 0) {
+      return {
+        cycleState: undefined,
+        kind: "activate",
+        window: mostRecentlyUsedWindow(
+          minimizedWindows,
+          mruWindows,
+          activeWindow,
+        ),
+      };
+    }
+
+    return { cycleState: undefined, kind: "launch" };
+  }
+
   export function createController(runtime: Runtime): Controller {
     const mruWindows: KWinWindow[] = [];
     const cycleStates: Record<string, CycleState | undefined> = {};
 
-    function matchingWindows(binding: Binding): KWinWindow[] {
-      return runtime
-        .windows()
-        .filter((window) => windowMatchesBinding(runtime, window, binding));
+    function currentScope(): WindowScope {
+      return {
+        currentActivity: runtime.currentActivity(),
+        currentDesktop: runtime.currentDesktop(),
+      };
     }
 
     function removeFromMru(window: KWinWindow): void {
@@ -185,61 +358,6 @@ namespace RunOrRaise {
       }
     }
 
-    function orderedByMru(candidates: KWinWindow[]): KWinWindow[] {
-      const orderedWindows: KWinWindow[] = [];
-      const activeWindow = runtime.activeWindow();
-
-      if (activeWindow !== null && containsWindow(candidates, activeWindow)) {
-        orderedWindows.push(activeWindow);
-      }
-
-      for (const window of mruWindows) {
-        if (
-          containsWindow(candidates, window) &&
-          !containsWindow(orderedWindows, window)
-        ) {
-          orderedWindows.push(window);
-        }
-      }
-
-      for (const window of candidates) {
-        if (!containsWindow(orderedWindows, window)) {
-          orderedWindows.push(window);
-        }
-      }
-
-      return orderedWindows;
-    }
-
-    function stackingRank(window: KWinWindow, fallbackRank: number): number {
-      const stackingOrder = runtime.stackingOrder();
-
-      if (stackingOrder === undefined) {
-        return fallbackRank;
-      }
-
-      const rank = stackingOrder.indexOf(window);
-
-      return rank >= 0 ? rank : fallbackRank - stackingOrder.length;
-    }
-
-    function frontmostWindow(windows: KWinWindow[]): KWinWindow | null {
-      let selectedWindow: KWinWindow | null = null;
-      let selectedRank = Number.NEGATIVE_INFINITY;
-
-      for (let index = 0; index < windows.length; index += 1) {
-        const window = windows[index];
-        const rank = stackingRank(window, index);
-
-        if (rank > selectedRank) {
-          selectedWindow = window;
-          selectedRank = rank;
-        }
-      }
-
-      return selectedWindow;
-    }
-
     function activateWindow(window: KWinWindow): void {
       if (window.minimized === true) {
         window.minimized = false;
@@ -250,73 +368,29 @@ namespace RunOrRaise {
       rememberWindow(window);
     }
 
-    function cycleFocusedWindow(
-      binding: Binding,
-      candidates: KWinWindow[],
-    ): boolean {
-      const activeWindow = runtime.activeWindow();
-
-      if (activeWindow === null || !containsWindow(candidates, activeWindow)) {
-        return false;
-      }
-
-      if (candidates.length <= 1) {
-        cycleStates[binding.actionName] = undefined;
-        return true;
-      }
-
-      const existingState = cycleStates[binding.actionName];
-      const orderedWindows =
-        existingState !== undefined &&
-        sameWindowSet(existingState.candidates, candidates)
-          ? existingState.candidates
-          : orderedByMru(candidates);
-      const activeIndex =
-        existingState !== undefined &&
-        orderedWindows[existingState.index] === activeWindow
-          ? existingState.index
-          : orderedWindows.indexOf(activeWindow);
-      const nextIndex = (activeIndex + 1) % orderedWindows.length;
-      const nextWindow = orderedWindows[nextIndex];
-
-      cycleStates[binding.actionName] = {
-        candidates: orderedWindows,
-        index: nextIndex,
-      };
-
-      activateWindow(nextWindow);
-
-      return true;
-    }
-
-    function mostRecentlyUsedWindow(windows: KWinWindow[]): KWinWindow {
-      return orderedByMru(windows)[0];
-    }
-
     function handleBinding(binding: Binding): void {
-      const candidates = matchingWindows(binding);
+      const activeWindow = runtime.activeWindow();
+      const candidates = candidateWindowsForBinding(
+        runtime.windows(),
+        currentScope(),
+        binding,
+      );
+      const plan = planBindingAction({
+        activeWindow,
+        candidates,
+        cycleState: cycleStates[binding.actionName],
+        mruWindows,
+        stackingOrder: runtime.stackingOrder(),
+      });
 
-      if (cycleFocusedWindow(binding, candidates)) {
+      cycleStates[binding.actionName] = plan.cycleState;
+
+      if (plan.kind === "none") {
         return;
       }
 
-      cycleStates[binding.actionName] = undefined;
-
-      const visibleWindow = frontmostWindow(
-        candidates.filter((window) => window.minimized !== true),
-      );
-
-      if (visibleWindow !== null) {
-        activateWindow(visibleWindow);
-        return;
-      }
-
-      const minimizedWindows = candidates.filter(
-        (window) => window.minimized === true,
-      );
-
-      if (minimizedWindows.length > 0) {
-        activateWindow(mostRecentlyUsedWindow(minimizedWindows));
+      if (plan.kind === "activate") {
+        activateWindow(plan.window);
         return;
       }
 
