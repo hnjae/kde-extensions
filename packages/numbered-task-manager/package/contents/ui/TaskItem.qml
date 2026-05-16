@@ -24,13 +24,14 @@ QtQuick.Item {
     property var iconSource: "application-x-executable"
     property var modelIndex
     property var taskData: ({})
+    property var canDropTask
     property bool dropHover: false
     readonly property int iconExtent: Math.max(16, Math.min(32, height - 8))
     readonly property bool badgeMode: slotNumber > 0 && iconExtent >= 24
 
     signal activated(int taskIndex)
     signal contextMenuRequested(var task)
-    signal taskDropped(int sourceIndex, int targetIndex)
+    signal taskDropped(int sourceIndex, int targetIndex, var drop)
 
     implicitWidth: Math.max(96, Math.min(220, contentRow.implicitWidth + 16))
     implicitHeight: 40
@@ -127,9 +128,26 @@ QtQuick.Item {
         anchors.fill: parent
         keys: root.dragMimeType ? [root.dragMimeType] : []
 
+        function sourceIndexFromDrop(drop) {
+            const sourceIndex = Number(drop.getDataAsString(root.dragMimeType));
+            return isNaN(sourceIndex) ? -1 : sourceIndex;
+        }
+
+        function acceptsDrop(sourceIndex) {
+            if (sourceIndex === root.taskIndex) {
+                return false;
+            }
+
+            if (typeof root.canDropTask !== "function") {
+                return false;
+            }
+
+            return root.canDropTask(sourceIndex, root.taskIndex);
+        }
+
         onEntered: drag => {
-            const sourceIndex = Number(drag.getDataAsString(root.dragMimeType));
-            root.dropHover = sourceIndex !== root.taskIndex;
+            const sourceIndex = sourceIndexFromDrop(drag);
+            root.dropHover = acceptsDrop(sourceIndex);
         }
 
         onExited: {
@@ -137,9 +155,11 @@ QtQuick.Item {
         }
 
         onDropped: drop => {
+            const sourceIndex = sourceIndexFromDrop(drop);
             root.dropHover = false;
-            root.taskDropped(Number(drop.getDataAsString(root.dragMimeType)), root.taskIndex);
-            drop.acceptProposedAction();
+            if (acceptsDrop(sourceIndex)) {
+                root.taskDropped(sourceIndex, root.taskIndex, drop);
+            }
         }
     }
 

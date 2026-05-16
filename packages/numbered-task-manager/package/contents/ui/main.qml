@@ -12,8 +12,11 @@ PlasmoidItem {
     id: root
 
     readonly property string taskDragMimeType: "application/x-numbered-task-manager-row"
+    property var normalTaskEntries: []
+    property var normalTaskEntryMap: ({})
     property int remoteAttentionCount: 0
-    property var remoteAttentionEntries: ({})
+    property var remoteAttentionEntries: []
+    property var remoteAttentionEntryMap: ({})
     property var remoteAttentionOrder: []
     property var remoteAttentionTarget: null
     property bool updatingLauncherConfig: false
@@ -28,7 +31,7 @@ PlasmoidItem {
             return;
         }
 
-        const taskCount = tasksModel.count;
+        const taskCount = normalTaskEntries.length;
         if (taskCount <= 0) {
             return;
         }
@@ -38,7 +41,7 @@ PlasmoidItem {
             return;
         }
 
-        tasksModel.requestActivate(tasksModel.makeModelIndex(targetIndex));
+        tasksModel.requestActivate(normalTaskEntries[targetIndex].modelIndex);
     }
 
     function normalizedLauncherList(value) {
@@ -97,21 +100,50 @@ PlasmoidItem {
     }
 
     function moveTask(sourceIndex, targetIndex) {
-        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
-            return;
-        }
-
-        const launcherCount = tasksModel.launcherCount;
-        const sourcePinned = sourceIndex < launcherCount;
-        const targetPinned = targetIndex < launcherCount;
-        if (sourcePinned !== targetPinned) {
-            return;
+        if (!canMoveTask(sourceIndex, targetIndex)) {
+            return false;
         }
 
         if (tasksModel.move(sourceIndex, targetIndex)) {
             tasksModel.syncLaunchers();
             persistLaunchers(tasksModel.launcherList);
+            return true;
         }
+
+        return false;
+    }
+
+    function canMoveTask(sourceIndex, targetIndex) {
+        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+            return false;
+        }
+
+        const sourceEntry = normalTaskEntryForSourceIndex(sourceIndex);
+        const targetEntry = normalTaskEntryForSourceIndex(targetIndex);
+        if (!sourceEntry || !targetEntry) {
+            return false;
+        }
+
+        return Boolean(sourceEntry.launcherBacked) === Boolean(targetEntry.launcherBacked);
+    }
+
+    function normalTaskEntryForSourceIndex(sourceIndex) {
+        const entries = normalTaskEntries || [];
+        for (let i = 0; i < entries.length; ++i) {
+            if (entries[i].sourceIndex === sourceIndex) {
+                return entries[i];
+            }
+        }
+
+        return null;
+    }
+
+    function isLauncherBacked(isLauncher, launcherUrl) {
+        if (isLauncher) {
+            return true;
+        }
+
+        return launcherUrl && tasksModel.launcherPosition(launcherUrl) !== -1;
     }
 
     function desktopId(desktop) {
@@ -146,8 +178,87 @@ PlasmoidItem {
         return false;
     }
 
+    function isOnCurrentVirtualDesktop(desktops, isOnAllDesktops) {
+        if (isOnAllDesktops) {
+            return true;
+        }
+
+        return desktopListContains(desktops, virtualDesktopInfo.currentDesktop);
+    }
+
     function isRemoteVirtualDesktop(desktops, isOnAllDesktops) {
-        return !isOnAllDesktops && !desktopListContains(desktops, virtualDesktopInfo.currentDesktop);
+        if (isOnAllDesktops) {
+            return false;
+        }
+
+        const desktopList = Array.from(desktops || []);
+        return desktopList.length > 0 && !desktopListContains(desktopList, virtualDesktopInfo.currentDesktop);
+    }
+
+    function isInCurrentActivity(activities) {
+        const currentActivity = String(activityInfo.currentActivity || "");
+        if (!currentActivity) {
+            return true;
+        }
+
+        const activityList = Array.from(activities || []);
+        if (activityList.length === 0) {
+            return true;
+        }
+
+        for (let i = 0; i < activityList.length; ++i) {
+            if (String(activityList[i]) === currentActivity) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function qualifiesNormalTask(isWindow, isLauncher, isStartup, desktops, isOnAllDesktops, activities) {
+        if (!isInCurrentActivity(activities)) {
+            return false;
+        }
+
+        if (isWindow) {
+            return isOnCurrentVirtualDesktop(desktops, isOnAllDesktops);
+        }
+
+        return isLauncher || isStartup;
+    }
+
+    function publishNormalTask(previousKey, key, qualifies, task) {
+        if (previousKey && previousKey !== key) {
+            removeNormalTask(previousKey);
+        }
+
+        if (!qualifies) {
+            removeNormalTask(key);
+            return "";
+        }
+
+        const entries = Object.assign({}, normalTaskEntryMap);
+        entries[key] = task;
+        normalTaskEntryMap = entries;
+        recomputeNormalTaskEntries();
+        return key;
+    }
+
+    function removeNormalTask(key) {
+        if (!key || !normalTaskEntryMap[key]) {
+            return;
+        }
+
+        const entries = Object.assign({}, normalTaskEntryMap);
+        delete entries[key];
+        normalTaskEntryMap = entries;
+        recomputeNormalTaskEntries();
+    }
+
+    function recomputeNormalTaskEntries() {
+        const entries = Object.keys(normalTaskEntryMap).map(key => normalTaskEntryMap[key]);
+        entries.sort((left, right) => left.sourceIndex - right.sourceIndex);
+        normalTaskEntries = entries;
     }
 
     function remoteAttentionKey(winIds, launcherUrl, title, row) {
@@ -169,40 +280,42 @@ PlasmoidItem {
             return "";
         }
 
-        const entries = Object.assign({}, remoteAttentionEntries);
+        const entries = Object.assign({}, remoteAttentionEntryMap);
         if (!entries[key]) {
             remoteAttentionOrder = remoteAttentionOrder.filter(existingKey => existingKey !== key).concat([key]);
         }
         entries[key] = task;
-        remoteAttentionEntries = entries;
+        remoteAttentionEntryMap = entries;
         recomputeRemoteAttention();
         return key;
     }
 
     function removeRemoteAttention(key) {
-        if (!key || !remoteAttentionEntries[key]) {
+        if (!key || !remoteAttentionEntryMap[key]) {
             return;
         }
 
-        const entries = Object.assign({}, remoteAttentionEntries);
+        const entries = Object.assign({}, remoteAttentionEntryMap);
         delete entries[key];
-        remoteAttentionEntries = entries;
+        remoteAttentionEntryMap = entries;
         remoteAttentionOrder = remoteAttentionOrder.filter(existingKey => existingKey !== key);
         recomputeRemoteAttention();
     }
 
     function recomputeRemoteAttention() {
-        const keys = Object.keys(remoteAttentionEntries);
-        remoteAttentionCount = keys.length;
+        const entries = [];
         remoteAttentionTarget = null;
 
-        for (let i = remoteAttentionOrder.length - 1; i >= 0; --i) {
+        for (let i = 0; i < remoteAttentionOrder.length; ++i) {
             const key = remoteAttentionOrder[i];
-            if (remoteAttentionEntries[key]) {
-                remoteAttentionTarget = remoteAttentionEntries[key];
-                return;
+            if (remoteAttentionEntryMap[key]) {
+                entries.push(remoteAttentionEntryMap[key]);
             }
         }
+
+        remoteAttentionEntries = entries;
+        remoteAttentionCount = entries.length;
+        remoteAttentionTarget = entries.length > 0 ? entries[entries.length - 1] : null;
     }
 
     function activateRemoteAttention() {
@@ -229,7 +342,7 @@ PlasmoidItem {
         filterByScreen: false
         filterByVirtualDesktop: true
         groupMode: TaskManager.TasksModel.GroupDisabled
-        hideActivatedLaunchers: false
+        hideActivatedLaunchers: true
         launchInPlace: true
         launcherList: Plasmoid.configuration.launchers || []
         separateLaunchers: true
@@ -248,12 +361,81 @@ PlasmoidItem {
         id: attentionTasksModel
 
         activity: activityInfo.currentActivity
-        filterByActivity: true
+        filterByActivity: false
         filterByScreen: false
         filterByVirtualDesktop: false
         groupMode: TaskManager.TasksModel.GroupDisabled
         sortMode: TaskManager.TasksModel.SortManual
         virtualDesktop: virtualDesktopInfo.currentDesktop
+    }
+
+    QtQuick.Repeater {
+        model: tasksModel
+
+        delegate: QtQuick.Item {
+            required property int index
+
+            property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
+            property bool launcherBacked: root.isLauncherBacked(model.IsLauncher || false, launcherUrl)
+            property string publishedKey: ""
+            property string taskKey: "row:" + index.toString()
+            property string title: model.display || model.AppName || ""
+            property var taskInfo: ({
+                    activities: Array.from(model.Activities || []),
+                    active: model.IsActive || false,
+                    canLaunchNewInstance: model.CanLaunchNewInstance || model.IsLauncher || false,
+                    canSetNoBorder: model.CanSetNoBorder || false,
+                    closable: model.IsClosable || false,
+                    demandingAttention: model.IsDemandingAttention || false,
+                    fullScreenable: model.IsFullScreenable || false,
+                    hasLauncher: launcherBacked,
+                    hasNoBorder: model.HasNoBorder || false,
+                    iconSource: model.decoration || "application-x-executable",
+                    index,
+                    isExcludedFromCapture: model.IsExcludedFromCapture || false,
+                    isFullScreen: model.IsFullScreen || false,
+                    isKeepAbove: model.IsKeepAbove || false,
+                    isKeepBelow: model.IsKeepBelow || false,
+                    isLauncher: model.IsLauncher || false,
+                    isMaximizable: model.IsMaximizable || false,
+                    isMaximized: model.IsMaximized || false,
+                    isMinimizable: model.IsMinimizable || false,
+                    isMinimized: model.IsMinimized || false,
+                    isMovable: model.IsMovable || false,
+                    isOnAllVirtualDesktops: model.IsOnAllVirtualDesktops || false,
+                    isResizable: model.IsResizable || false,
+                    isShadeable: model.IsShadeable || false,
+                    isShaded: model.IsShaded || false,
+                    isStartup: model.IsStartup || false,
+                    isVirtualDesktopsChangeable: model.IsVirtualDesktopsChangeable || false,
+                    isWindow: model.IsWindow || false,
+                    launcherBacked,
+                    launcherUrl,
+                    modelIndex: tasksModel.makeModelIndex(index),
+                    sourceIndex: index,
+                    title,
+                    virtualDesktops: Array.from(model.VirtualDesktops || [])
+                })
+            property bool qualifies: root.qualifiesNormalTask(model.IsWindow || false, model.IsLauncher || false, model.IsStartup || false, model.VirtualDesktops || [], model.IsOnAllVirtualDesktops || false, model.Activities || [])
+
+            height: 0
+            visible: false
+            width: 0
+
+            function syncTask() {
+                publishedKey = root.publishNormalTask(publishedKey, taskKey, qualifies, taskInfo);
+            }
+
+            QtQuick.Component.onCompleted: syncTask()
+            QtQuick.Component.onDestruction: {
+                root.removeNormalTask(publishedKey);
+            }
+            onIndexChanged: syncTask()
+            onLauncherBackedChanged: syncTask()
+            onQualifiesChanged: syncTask()
+            onTaskInfoChanged: syncTask()
+            onTaskKeyChanged: syncTask()
+        }
     }
 
     QtQuick.Repeater {
@@ -272,7 +454,7 @@ PlasmoidItem {
                     modelIndex: attentionTasksModel.makeModelIndex(index),
                     title
                 })
-            property bool qualifies: model.IsWindow && model.IsDemandingAttention && root.isRemoteVirtualDesktop(model.VirtualDesktops || [], model.IsOnAllVirtualDesktops || false)
+            property bool qualifies: model.IsWindow && model.IsDemandingAttention && root.isInCurrentActivity(model.Activities || []) && root.isRemoteVirtualDesktop(model.VirtualDesktops || [], model.IsOnAllVirtualDesktops || false)
 
             height: 0
             visible: false
@@ -318,50 +500,46 @@ PlasmoidItem {
                 boundsBehavior: QtQuick.Flickable.StopAtBounds
                 clip: true
                 interactive: contentWidth > width
-                model: tasksModel
+                model: root.normalTaskEntries
                 orientation: QtQuick.ListView.Horizontal
                 spacing: 2
 
                 delegate: TaskItem {
                     required property int index
+                    required property var modelData
+
+                    readonly property var entry: modelData || ({})
 
                     height: taskList.height
-                    taskIndex: index
-                    modelIndex: tasksModel.makeModelIndex(index)
+                    taskIndex: entry.sourceIndex ?? -1
+                    modelIndex: entry.modelIndex
                     slotNumber: index < 9 ? index + 1 : 0
-                    title: model.display || model.AppName || ""
-                    iconSource: model.decoration || "application-x-executable"
-                    active: model.IsActive || false
-                    minimized: model.IsMinimized || false
-                    launcher: model.IsLauncher || false
-                    demandingAttention: model.IsDemandingAttention || false
-                    pinned: index < tasksModel.launcherCount
+                    title: entry.title || ""
+                    iconSource: entry.iconSource || "application-x-executable"
+                    active: entry.active || false
+                    minimized: entry.isMinimized || false
+                    launcher: entry.isLauncher || false
+                    demandingAttention: entry.demandingAttention || false
+                    pinned: entry.launcherBacked || false
                     dragMimeType: root.taskDragMimeType
-                    hasLauncher: model.HasLauncher || model.IsLauncher || false
+                    hasLauncher: entry.launcherBacked || false
+                    canDropTask: (sourceIndex, targetIndex) => root.canMoveTask(sourceIndex, targetIndex)
 
-                    onActivated: taskIndex => {
-                        root.activateTaskAtIndex(taskIndex);
+                    onActivated: {
+                        root.activateTaskAtIndex(index);
                     }
 
                     onContextMenuRequested: task => {
                         taskContextMenu.openForTask(task, this);
                     }
 
-                    onTaskDropped: (sourceIndex, targetIndex) => {
-                        root.moveTask(sourceIndex, targetIndex);
+                    onTaskDropped: (sourceIndex, targetIndex, drop) => {
+                        if (root.moveTask(sourceIndex, targetIndex)) {
+                            drop.acceptProposedAction();
+                        }
                     }
 
-                    taskData: ({
-                            canLaunchNewInstance: model.CanLaunchNewInstance || model.IsLauncher || false,
-                            closable: model.IsClosable || false,
-                            hasLauncher: model.HasLauncher || model.IsLauncher || false,
-                            index,
-                            isLauncher: model.IsLauncher || false,
-                            isWindow: model.IsWindow || false,
-                            launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || ""),
-                            modelIndex: tasksModel.makeModelIndex(index),
-                            title: model.display || model.AppName || ""
-                        })
+                    taskData: entry
                 }
             }
 

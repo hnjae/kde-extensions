@@ -51,7 +51,28 @@
             cmake --build "$build_dir"
             cmake --install "$build_dir"
 
+            installed_plasmoid="$install_prefix/share/plasma/plasmoids/${package.pluginId}"
+            for file in \
+              metadata.json \
+              contents/ui/main.qml \
+              contents/ui/TaskItem.qml \
+              contents/ui/AttentionItem.qml \
+              contents/ui/TaskContextMenu.qml \
+              contents/ui/NumberBadge.qml \
+              contents/config/main.xml
+            do
+              test -f "$installed_plasmoid/$file"
+            done
+
             find package/contents/ui -name '*.qml' -print0 \
+              | sort -z \
+              | xargs -0 qmllint \
+                  --ignore-settings \
+                  --max-warnings 0 \
+                  --unqualified disable \
+                  ${qmlImportFlags}
+
+            find "$installed_plasmoid/contents/ui" -name '*.qml' -print0 \
               | sort -z \
               | xargs -0 qmllint \
                   --ignore-settings \
@@ -66,7 +87,7 @@
             kpackagetool6 \
               --type Plasma/Applet \
               --packageroot "$TMPDIR/plasmoids" \
-              --install "$install_prefix/share/plasma/plasmoids/${package.pluginId}"
+              --install "$installed_plasmoid"
 
             test -f "$TMPDIR/plasmoids/${package.pluginId}/metadata.json"
             test -f "$TMPDIR/plasmoids/${package.pluginId}/contents/ui/main.qml"
