@@ -34,7 +34,7 @@ QtQuickControls.Menu {
 
     signal pinRequested(string launcherUrl)
     signal unpinRequested(string launcherUrl)
-    signal launcherActivitiesChanged
+    signal launcherListChangeRequested(var launchers)
 
     function openForTask(taskData, item) {
         task = taskData || {};
@@ -114,8 +114,7 @@ QtQuickControls.Menu {
             return false;
         }
 
-        taskModel.launcherList = nextLaunchers;
-        root.launcherActivitiesChanged();
+        root.launcherListChangeRequested(nextLaunchers);
         return true;
     }
 

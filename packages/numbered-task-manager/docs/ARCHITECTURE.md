@@ -18,6 +18,10 @@ in `SPEC.md`.
 - Keep launcher-list transformations in shared JavaScript helpers so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
+- Keep launcher-list writes owned by the root widget. Child components such as
+  the task context menu may compute and request a replacement launcher list, but
+  `main.qml` is responsible for applying it to `TasksModel` and persisting it to
+  plasmoid configuration.
 - Do not claim support for upstream task-manager private backend behavior, such
   as file-open drops onto task delegates, unless that backend integration is
   actually added.

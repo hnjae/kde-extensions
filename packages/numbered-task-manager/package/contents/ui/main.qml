@@ -62,23 +62,34 @@ PlasmoidItem {
         tasksModel.requestActivate(task.modelIndex);
     }
 
-    function normalizedLauncherList(value) {
-        return TaskHelpers.normalizedLauncherList(value);
-    }
-
-    function launcherListsEqual(left, right) {
-        return TaskHelpers.launcherListsEqual(left, right);
-    }
-
     function persistLaunchers(launchers) {
-        const normalized = normalizedLauncherList(launchers);
-        if (launcherListsEqual(normalized, Plasmoid.configuration.launchers)) {
+        const normalized = TaskHelpers.normalizedLauncherList(launchers);
+        if (TaskHelpers.launcherListsEqual(normalized, Plasmoid.configuration.launchers)) {
             return;
         }
 
         updatingLauncherConfig = true;
         Plasmoid.configuration.launchers = normalized;
         updatingLauncherConfig = false;
+    }
+
+    function applyLauncherList(launchers) {
+        const normalized = TaskHelpers.normalizedLauncherList(launchers);
+        const modelChanged = !TaskHelpers.launcherListsEqual(normalized, tasksModel.launcherList);
+        const configChanged = !TaskHelpers.launcherListsEqual(normalized, Plasmoid.configuration.launchers);
+        if (!modelChanged && !configChanged) {
+            return false;
+        }
+
+        updatingLauncherConfig = true;
+        if (modelChanged) {
+            tasksModel.launcherList = normalized;
+        }
+        if (configChanged) {
+            Plasmoid.configuration.launchers = normalized;
+        }
+        updatingLauncherConfig = false;
+        return true;
     }
 
     function pinLauncher(launcherUrl) {
@@ -136,8 +147,7 @@ PlasmoidItem {
             return false;
         }
 
-        persistLaunchers(result.launchers);
-        return true;
+        return applyLauncherList(result.launchers);
     }
 
     function canMovePinnedLauncher(sourceEntry, targetEntry) {
@@ -155,10 +165,6 @@ PlasmoidItem {
     function createNormalTaskPublicationKey() {
         nextNormalTaskPublicationId += 1;
         return "normal:" + nextNormalTaskPublicationId.toString();
-    }
-
-    function stringListContains(list, value) {
-        return TaskHelpers.stringListContains(list, value);
     }
 
     function visibleLauncherPosition(launcherUrl, launcherRevisionToken) {
@@ -521,9 +527,8 @@ PlasmoidItem {
                 root.unpinLauncher(launcherUrl);
             }
 
-            onLauncherActivitiesChanged: {
-                root.launcherRevision += 1;
-                root.persistLaunchers(tasksModel.launcherList);
+            onLauncherListChangeRequested: launchers => {
+                root.applyLauncherList(launchers);
             }
         }
     }
