@@ -14,9 +14,10 @@
         qmlImportPaths = [
           "${pkgs.kdePackages.qtdeclarative}/lib/qt-6/qml"
           "${pkgs.kdePackages.kconfig}/lib/qt-6/qml"
-          "${pkgs.kdePackages.kirigami}/lib/qt-6/qml"
+          "${pkgs.kdePackages.kirigami.unwrapped}/lib/qt-6/qml"
           "${pkgs.kdePackages.ksvg}/lib/qt-6/qml"
           "${pkgs.kdePackages.libplasma}/lib/qt-6/qml"
+          "${pkgs.kdePackages.plasma-workspace}/lib/qt-6/qml"
         ];
         qmlImportPath = lib.concatStringsSep ":" qmlImportPaths;
         qmlImportFlags = lib.concatMapStringsSep " " (path: "-I ${lib.escapeShellArg path}") qmlImportPaths;
@@ -27,6 +28,7 @@
           pkgs.kdePackages.extra-cmake-modules
           pkgs.kdePackages.kpackage
           pkgs.kdePackages.libplasma
+          pkgs.kdePackages.plasma-workspace
           pkgs.ninja
           pkgs.qt6.qtdeclarative
           pkgs.stdenv.cc
@@ -73,20 +75,22 @@
             qmllsWrapper
             (mkDevCommand "numbered-task-manager-lint" ''
               ${localBuildAndInstall}
-              qmllint \
-                --ignore-settings \
-                --max-warnings 0 \
-                --unqualified disable \
-                ${qmlImportFlags} \
-                package/contents/ui/main.qml
+              find package/contents/ui -name '*.qml' -print0 \
+                | sort -z \
+                | xargs -0 qmllint \
+                    --ignore-settings \
+                    --max-warnings 0 \
+                    --unqualified disable \
+                    ${qmlImportFlags}
             '')
             (mkDevCommand "lint-qml" ''
-              qmllint \
-                --ignore-settings \
-                --max-warnings 0 \
-                --unqualified disable \
-                ${qmlImportFlags} \
-                package/contents/ui/main.qml
+              find package/contents/ui -name '*.qml' -print0 \
+                | sort -z \
+                | xargs -0 qmllint \
+                    --ignore-settings \
+                    --max-warnings 0 \
+                    --unqualified disable \
+                    ${qmlImportFlags}
             '')
           ]
           ++ runtimeInputs

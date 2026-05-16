@@ -26,6 +26,7 @@
 
           extraNativeBuildInputs = [
             pkgs.kdePackages.extra-cmake-modules
+            pkgs.kdePackages.plasma-workspace
           ];
 
           extraCmakeFlags = [
