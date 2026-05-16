@@ -3,8 +3,6 @@
 
 #include "tabpagerbackend.h"
 
-#include "tabpagerdesktoprow.h"
-
 #include <cassert>
 #include <optional>
 #include <utility>
@@ -56,7 +54,7 @@ void TabPagerBackend::reloadSourceState() {
 
 void TabPagerBackend::applySourceState(
     const TabPagerDesktopSourceState &state) {
-  setDesktopRows(tabPagerDesktopRowsForSnapshot(state.desktopSnapshot));
+  setDesktopSnapshot(state.desktopSnapshot);
   applyNavigationWrappingAround(state.navigationWrappingAround);
 }
 

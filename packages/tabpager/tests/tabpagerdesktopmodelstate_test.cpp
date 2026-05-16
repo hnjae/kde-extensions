@@ -12,7 +12,8 @@ namespace {
 using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
 using TabPagerTest::desktopModelState;
-using TabPagerTest::desktopRows;
+using TabPagerTest::desktopSnapshot;
+using TabPagerTest::invalidDesktop;
 using TabPagerTest::namedDesktop;
 using TabPagerTest::role;
 using TabPagerTest::unnamedDesktop;
@@ -39,8 +40,8 @@ void expectRowsChanged(const TabPagerDesktopModelTransition &transition,
 transitionForDesktopState(const TabPagerDesktopModelState &state,
                           QList<TabPagerDesktop> desktops,
                           TabPagerDesktopId currentDesktop = {}) {
-  return state.transitionToRows(
-      desktopRows(std::move(desktops), std::move(currentDesktop)));
+  return state.transitionToSnapshot(
+      desktopSnapshot(std::move(desktops), std::move(currentDesktop)));
 }
 } // namespace
 
@@ -48,6 +49,8 @@ class TabPagerDesktopModelStateTest : public QObject {
   Q_OBJECT
 
 private Q_SLOTS:
+  void projectsDesktopSnapshotToRows();
+  void filtersInvalidDesktopIdsFromRows();
   void plansChangedDesktopRowRoles();
   void tracksDesktopModelStateIndex();
   void plansDesktopModelTransitionState();
@@ -60,6 +63,40 @@ private Q_SLOTS:
   void groupsAdjacentDesktopDataRowUpdates();
   void separatesDesktopDataRowUpdatesWithDifferentRoles();
 };
+
+void TabPagerDesktopModelStateTest::projectsDesktopSnapshotToRows() {
+  const TabPagerDesktopModelState state =
+      TabPagerDesktopModelState::fromSnapshot(desktopSnapshot(
+          {defaultDesktop("a", 1), namedDesktop("b", "Work")}, desktopId("b")));
+
+  QCOMPARE(state.count(), 2);
+  QCOMPARE(state.currentIndex(), 1);
+  QCOMPARE(state.rowData(0).desktopId, desktopId("a"));
+  QCOMPARE(state.rowData(0).name, QStringLiteral("Desktop 1"));
+  QCOMPARE(state.rowData(0).label, QStringLiteral("1"));
+  QCOMPARE(state.rowData(0).number, 1);
+  QCOMPARE(state.rowData(0).active, false);
+  QCOMPARE(state.rowData(1).desktopId, desktopId("b"));
+  QCOMPARE(state.rowData(1).name, QStringLiteral("Work"));
+  QCOMPARE(state.rowData(1).label, QStringLiteral("Work"));
+  QCOMPARE(state.rowData(1).number, 2);
+  QCOMPARE(state.rowData(1).active, true);
+}
+
+void TabPagerDesktopModelStateTest::filtersInvalidDesktopIdsFromRows() {
+  const TabPagerDesktopModelState state =
+      TabPagerDesktopModelState::fromSnapshot(desktopSnapshot(
+          {invalidDesktop(QStringLiteral("Broken")), defaultDesktop("b", 2)},
+          desktopId("b")));
+
+  QCOMPARE(state.count(), 1);
+  QCOMPARE(state.currentIndex(), 0);
+  QCOMPARE(state.rowData(0).desktopId, desktopId("b"));
+  QCOMPARE(state.rowData(0).name, QStringLiteral("Desktop 2"));
+  QCOMPARE(state.rowData(0).label, QStringLiteral("2"));
+  QCOMPARE(state.rowData(0).number, 2);
+  QCOMPARE(state.rowData(0).active, true);
+}
 
 void TabPagerDesktopModelStateTest::plansChangedDesktopRowRoles() {
   const TabPagerDesktopModelState state =
@@ -110,13 +147,12 @@ void TabPagerDesktopModelStateTest::plansDesktopModelTransitionState() {
 }
 
 void TabPagerDesktopModelStateTest::plansNoChangeForSameDesktopModelRows() {
-  QList<TabPagerDesktopRowData> rows =
-      desktopRows({defaultDesktop("a", 1)}, desktopId("a"));
+  const QList<TabPagerDesktop> desktops = {defaultDesktop("a", 1)};
   const TabPagerDesktopModelState state =
-      TabPagerDesktopModelState::fromRows(rows);
+      desktopModelState(desktops, desktopId("a"));
 
   const TabPagerDesktopModelTransition transition =
-      state.transitionToRows(std::move(rows));
+      transitionForDesktopState(state, desktops, desktopId("a"));
 
   expectUnchanged(transition);
 }

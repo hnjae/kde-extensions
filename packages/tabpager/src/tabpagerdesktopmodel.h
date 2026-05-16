@@ -31,7 +31,7 @@ public:
   [[nodiscard]] int currentIndex() const;
   [[nodiscard]] QFont labelFont() const;
 
-  void setDesktopRows(QList<TabPagerDesktopRowData> rows);
+  void setDesktopSnapshot(TabPagerDesktopSnapshot snapshot);
 
 Q_SIGNALS:
   void countChanged();

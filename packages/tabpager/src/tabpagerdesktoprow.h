@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "tabpagerdesktop.h"
 #include "tabpagerdesktopid.h"
 
 #include <QHash>
@@ -29,8 +28,6 @@ struct TabPagerDesktopRowData {
   bool active = false;
 };
 
-[[nodiscard]] QList<TabPagerDesktopRowData>
-tabPagerDesktopRowsForSnapshot(const TabPagerDesktopSnapshot &snapshot);
 [[nodiscard]] QHash<int, QByteArray> tabPagerDesktopRowRoleNames();
 [[nodiscard]] QVariant
 tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData, int role);

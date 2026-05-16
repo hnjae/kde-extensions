@@ -7,57 +7,18 @@
 #include <QTest>
 
 namespace {
-using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
-using TabPagerTest::desktopSnapshot;
-using TabPagerTest::invalidDesktop;
-using TabPagerTest::namedDesktop;
 using TabPagerTest::role;
-
-void expectDesktopRow(const TabPagerDesktopRowData &row,
-                      const TabPagerDesktopId &desktopId, const QString &name,
-                      const QString &label, int number, bool active) {
-  QCOMPARE(row.desktopId, desktopId);
-  QCOMPARE(row.name, name);
-  QCOMPARE(row.label, label);
-  QCOMPARE(row.number, number);
-  QCOMPARE(row.active, active);
-}
 } // namespace
 
 class TabPagerDesktopRowTest : public QObject {
   Q_OBJECT
 
 private Q_SLOTS:
-  void projectsDesktopSnapshotToRows();
-  void filtersInvalidDesktopIdsFromRows();
   void exposesDesktopRowRoleNames();
   void readsDesktopRowDataByRole();
   void detectsDesktopRowChangedRoles();
 };
-
-void TabPagerDesktopRowTest::projectsDesktopSnapshotToRows() {
-  const QList<TabPagerDesktopRowData> rows =
-      tabPagerDesktopRowsForSnapshot(desktopSnapshot(
-          {defaultDesktop("a", 1), namedDesktop("b", "Work")}, desktopId("b")));
-
-  QCOMPARE(rows.size(), 2);
-  expectDesktopRow(rows.at(0), desktopId("a"), QStringLiteral("Desktop 1"),
-                   QStringLiteral("1"), 1, false);
-  expectDesktopRow(rows.at(1), desktopId("b"), QStringLiteral("Work"),
-                   QStringLiteral("Work"), 2, true);
-}
-
-void TabPagerDesktopRowTest::filtersInvalidDesktopIdsFromRows() {
-  const QList<TabPagerDesktopRowData> rows =
-      tabPagerDesktopRowsForSnapshot(desktopSnapshot(
-          {invalidDesktop(QStringLiteral("Broken")), defaultDesktop("b", 2)},
-          desktopId("b")));
-
-  QCOMPARE(rows.size(), 1);
-  expectDesktopRow(rows.at(0), desktopId("b"), QStringLiteral("Desktop 2"),
-                   QStringLiteral("2"), 2, true);
-}
 
 void TabPagerDesktopRowTest::exposesDesktopRowRoleNames() {
   const QHash<int, QByteArray> expected = {
