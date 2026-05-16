@@ -6,8 +6,7 @@ This is still pre-release. Do not spend effort preserving backward compatibility
 
 ## Commit & Pull Request Guidelines
 
-Use Conventional Commit style, such as `feat: init project`. After completing a requested repository change, create a commit before ending the task unless the user explicitly asks not to commit or asks to pause. Check `git status` before committing and stage paths explicitly. Do not include
-unrelated user changes in these commits.
+Use Conventional Commit style, such as `feat: init project`. If the work is specific to a package, use that package name as the Conventional Commit scope, such as `feat(package-name): add setting`. After completing a requested repository change, create a commit before ending the task unless the user explicitly asks not to commit or asks to pause. Check `git status` before committing and stage paths explicitly. Do not include unrelated user changes in these commits.
 
 ## Licensing & Configuration
 
