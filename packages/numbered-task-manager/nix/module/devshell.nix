@@ -104,6 +104,7 @@
           '';
         };
         runtimeInputs = [
+          pkgs.biome
           pkgs.coreutils
           pkgs.findutils
           pkgs.git
@@ -146,6 +147,7 @@
             buildKPackage
             qmllsWrapper
             (mkDevCommand "numbered-task-manager-lint" ''
+              biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
               find package/contents/ui -name '*.qml' -print0 \
                 | sort -z \
                 | xargs -0 qmllint \
@@ -159,6 +161,9 @@
               do
                 node "$test_file"
               done
+            '')
+            (mkDevCommand "lint-js" ''
+              biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
             '')
             (mkDevCommand "lint-qml" ''
               find package/contents/ui -name '*.qml' -print0 \

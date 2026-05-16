@@ -72,7 +72,7 @@ function numberValue(value, fallback) {
   }
 
   const numericValue = Number(value);
-  return isNaN(numericValue) ? fallback : numericValue;
+  return Number.isNaN(numericValue) ? fallback : numericValue;
 }
 
 function taskTitle(display, appName) {

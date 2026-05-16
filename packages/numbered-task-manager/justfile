@@ -30,9 +30,28 @@ check:
 test:
     nix develop "{{ dev_shell }}" -c numbered-task-manager-test
 
+[group('test')]
+test-host:
+    for test_file in tests/*.test.mjs; do node "$test_file"; done
+
 [group('lint')]
 lint:
     nix develop "{{ dev_shell }}" -c numbered-task-manager-lint
+
+[group('lint')]
+lint-host: lint-js-host
+
+[group('lint')]
+lint-js:
+    nix develop "{{ dev_shell }}" -c lint-js
+
+[group('lint')]
+lint-js-host:
+    if command -v biome >/dev/null 2>&1; then \
+        biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs; \
+    else \
+        npx -y @biomejs/biome@2.4.15 lint --error-on-warnings package/contents/ui/*.js tests/*.mjs; \
+    fi
 
 [group('lint')]
 lint-qml:

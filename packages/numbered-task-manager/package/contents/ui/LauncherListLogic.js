@@ -215,7 +215,7 @@ function launcherPositionForUrl(launcherUrl, launcherPosition) {
   }
 
   const numericPosition = Number(position);
-  return isNaN(numericPosition) ? -1 : numericPosition;
+  return Number.isNaN(numericPosition) ? -1 : numericPosition;
 }
 
 function visibleLauncherPosition(

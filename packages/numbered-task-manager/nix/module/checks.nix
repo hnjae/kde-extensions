@@ -29,6 +29,7 @@
 
           nativeBuildInputs = [
             pkgs.appstream
+            pkgs.biome
             pkgs.kdePackages.kpackage
             pkgs.kdePackages.libplasma
             pkgs.kdePackages.plasma-workspace
@@ -44,6 +45,7 @@
             runHook preBuild
 
             reuse lint
+            biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
 
             installed_plasmoid="${package}/share/plasma/plasmoids/${package.pluginId}"
             installed_metainfo="${package}/share/metainfo/${package.pluginId}.metainfo.xml"

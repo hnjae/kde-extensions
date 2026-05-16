@@ -6,6 +6,7 @@ SPDX-PackageName = "numbered-task-manager"
 
 [[annotations]]
 path = [
+  ".biome.json",
   ".envrc",
   "README.md",
   "SPEC.md",
