@@ -61,8 +61,8 @@ desktopSnapshot(QList<TabPagerDesktop> desktops,
 [[nodiscard]] inline TabPagerDesktopModelState
 desktopModelState(QList<TabPagerDesktop> desktops,
                   TabPagerDesktopId currentDesktop = {}) {
-  return TabPagerDesktopModelState::fromRows(tabPagerDesktopRowsForSnapshot(
-      desktopSnapshot(std::move(desktops), std::move(currentDesktop))));
+  return TabPagerDesktopModelState::fromSnapshot(
+      desktopSnapshot(std::move(desktops), std::move(currentDesktop)));
 }
 
 [[nodiscard]] inline int role(TabPagerDesktopRowRole role) {

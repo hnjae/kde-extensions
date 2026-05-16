@@ -46,7 +46,7 @@ QFont TabPagerDesktopModel::labelFont() const {
 void TabPagerDesktopModel::setDesktopSnapshot(
     const TabPagerDesktopSnapshot &snapshot) {
   TabPagerDesktopModelTransition transition =
-      m_state.transitionToRows(tabPagerDesktopRowsForSnapshot(snapshot));
+      m_state.transitionToSnapshot(snapshot);
   const bool shouldEmitCountChanged = transition.countChanged;
   const bool shouldEmitCurrentIndexChanged = transition.currentIndexChanged;
 

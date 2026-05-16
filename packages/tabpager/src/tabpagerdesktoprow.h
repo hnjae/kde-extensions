@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "tabpagerdesktop.h"
+#include "tabpagerdesktopid.h"
 
 #include <QHash>
 #include <QList>
@@ -34,5 +34,3 @@ tabPagerDesktopRowDataForRole(const TabPagerDesktopRowData &rowData, int role);
 [[nodiscard]] QList<int>
 tabPagerDesktopRowChangedRoles(const TabPagerDesktopRowData &previousRow,
                                const TabPagerDesktopRowData &nextRow);
-[[nodiscard]] QList<TabPagerDesktopRowData>
-tabPagerDesktopRowsForSnapshot(const TabPagerDesktopSnapshot &snapshot);

@@ -7,11 +7,7 @@
 #include <QTest>
 
 namespace {
-using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
-using TabPagerTest::desktopSnapshot;
-using TabPagerTest::invalidDesktop;
-using TabPagerTest::namedDesktop;
 using TabPagerTest::role;
 } // namespace
 
@@ -22,8 +18,6 @@ private Q_SLOTS:
   void exposesDesktopRowRoleNames();
   void readsDesktopRowDataByRole();
   void detectsDesktopRowChangedRoles();
-  void filtersInvalidDesktopIds();
-  void derivesRowsFromSnapshot();
 };
 
 void TabPagerDesktopRowTest::exposesDesktopRowRoleNames() {
@@ -88,36 +82,6 @@ void TabPagerDesktopRowTest::detectsDesktopRowChangedRoles() {
                role(TabPagerDesktopRowRole::Active),
            }));
   QCOMPARE(tabPagerDesktopRowChangedRoles(previousRow, previousRow).size(), 0);
-}
-
-void TabPagerDesktopRowTest::filtersInvalidDesktopIds() {
-  const QList<TabPagerDesktopRowData> rows =
-      tabPagerDesktopRowsForSnapshot(desktopSnapshot(
-          {invalidDesktop(QStringLiteral("Broken")), defaultDesktop("b", 2)},
-          desktopId("b")));
-
-  QCOMPARE(rows.size(), 1);
-  QCOMPARE(rows.at(0).desktopId, desktopId("b"));
-  QCOMPARE(rows.at(0).number, 2);
-  QCOMPARE(rows.at(0).label, QStringLiteral("2"));
-  QCOMPARE(rows.at(0).active, true);
-}
-
-void TabPagerDesktopRowTest::derivesRowsFromSnapshot() {
-  const QList<TabPagerDesktopRowData> rows =
-      tabPagerDesktopRowsForSnapshot(desktopSnapshot(
-          {defaultDesktop("a", 1), namedDesktop("b", "Work")}, desktopId("b")));
-
-  QCOMPARE(rows.size(), 2);
-  QCOMPARE(rows.at(0).desktopId, desktopId("a"));
-  QCOMPARE(rows.at(0).name, QStringLiteral("Desktop 1"));
-  QCOMPARE(rows.at(0).label, QStringLiteral("1"));
-  QCOMPARE(rows.at(0).number, 1);
-  QCOMPARE(rows.at(0).active, false);
-
-  QCOMPARE(rows.at(1).desktopId, desktopId("b"));
-  QCOMPARE(rows.at(1).label, QStringLiteral("Work"));
-  QCOMPARE(rows.at(1).active, true);
 }
 
 QTEST_MAIN(TabPagerDesktopRowTest)
