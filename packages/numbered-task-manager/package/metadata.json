@@ -16,5 +16,6 @@
     "Version": "0.1.0",
     "Website": "https://github.com/hnjae/kde-plasma-extensions"
   },
-  "X-Plasma-API-Minimum-Version": "6.6"
+  "X-Plasma-API-Minimum-Version": "6.6",
+  "X-Plasma-Provides": ["org.kde.plasma.multitasking"]
 }
