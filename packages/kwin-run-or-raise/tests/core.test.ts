@@ -2,121 +2,25 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
-import vm from "node:vm";
 
-type TestDesktop = {
-  id?: string;
-  name?: string;
-};
+import {
+  appWindow,
+  binding,
+  loadRunOrRaise,
+  type RunOrRaiseCoreApi,
+} from "./support/run-or-raise.js";
 
-type TestWindow = {
-  activities?: string[];
-  deleted?: boolean;
-  desktopFileName?: string;
-  desktops?: TestDesktop[];
-  dialog?: boolean;
-  hidden?: boolean;
-  inputMethod?: boolean;
-  managed?: boolean;
-  minimized?: boolean;
-  normalWindow?: boolean;
-  onAllDesktops?: boolean;
-  wantsInput?: boolean;
-};
-
-type Binding = {
-  actionName: string;
-  desktopEntryId: string;
-  displayName: string;
-  normalizedDesktopEntryId: string;
-  shortcut: string;
-  slotName: string;
-};
-
-type WindowScope = {
-  currentActivity: string | undefined;
-  currentDesktop: TestDesktop | undefined;
-};
-
-type CycleState = {
-  candidates: TestWindow[];
-  index: number;
-};
-
-type BindingActionInput = {
-  activeWindow: TestWindow | null;
-  candidates: TestWindow[];
-  cycleState: CycleState | undefined;
-  mruWindows: TestWindow[];
-  stackingOrder: TestWindow[] | undefined;
-};
-
-type BindingActionPlan =
-  | {
-      cycleState: CycleState | undefined;
-      kind: "activate";
-      window: TestWindow;
-    }
-  | {
-      cycleState: CycleState | undefined;
-      kind: "launch" | "none";
-    };
-
-type RunOrRaiseApi = {
-  candidateWindowsForBinding(
-    windows: TestWindow[],
-    scope: WindowScope,
-    binding: Binding,
-  ): TestWindow[];
-  normalizeDesktopEntryId(desktopEntryId: string): string;
-  planBindingAction(input: BindingActionInput): BindingActionPlan;
-};
-
-const sourceUrls = [
-  new URL("../build/src/core.js", import.meta.url),
-  new URL("../build/src/window-matching.js", import.meta.url),
-  new URL("../build/src/action-planning.js", import.meta.url),
-];
-
-async function loadRunOrRaise(): Promise<RunOrRaiseApi> {
-  const source = await Promise.all(
-    sourceUrls.map((url) => readFile(url, "utf8")),
-  );
-
-  return vm.runInNewContext(
-    `${source.join("\n")}\nRunOrRaise;`,
-    {},
-  ) as RunOrRaiseApi;
-}
-
-function appWindow(overrides: Partial<TestWindow> = {}): TestWindow {
-  return {
-    activities: [],
-    desktopFileName: "firefox",
-    desktops: [],
-    managed: true,
-    normalWindow: true,
-    wantsInput: true,
-    ...overrides,
-  };
-}
-
-function binding(overrides: Partial<Binding> = {}): Binding {
-  return {
-    actionName: "RunOrRaiseBinding01",
-    desktopEntryId: "firefox.desktop",
-    displayName: "Firefox",
-    normalizedDesktopEntryId: "firefox",
-    shortcut: "Meta+W",
-    slotName: "Binding01",
-    ...overrides,
-  };
+async function loadCore(): Promise<RunOrRaiseCoreApi> {
+  return loadRunOrRaise<RunOrRaiseCoreApi>([
+    "core",
+    "window-matching",
+    "action-planning",
+  ]);
 }
 
 test("filters binding candidates by support, identity, desktop, and activity", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadCore();
   const currentDesktop = { id: "desktop-1" };
   const matchingWindow = appWindow({
     desktopFileName: "/usr/share/applications/firefox.desktop",
@@ -155,7 +59,7 @@ test("filters binding candidates by support, identity, desktop, and activity", a
 });
 
 test("plans the frontmost visible candidate from a stacking-order snapshot", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadCore();
   const backWindow = appWindow();
   const frontWindow = appWindow();
 
@@ -176,7 +80,7 @@ test("plans the frontmost visible candidate from a stacking-order snapshot", asy
 });
 
 test("plans minimized activation by most recently used order", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadCore();
   const olderWindow = appWindow({ minimized: true });
   const newerWindow = appWindow({ minimized: true });
 
@@ -196,7 +100,7 @@ test("plans minimized activation by most recently used order", async () => {
 });
 
 test("plans focused-window cycling with a stable candidate snapshot", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadCore();
   const firstWindow = appWindow();
   const secondWindow = appWindow();
   const thirdWindow = appWindow();
@@ -241,7 +145,7 @@ test("plans focused-window cycling with a stable candidate snapshot", async () =
 });
 
 test("plans no-op for one active candidate and launch for no candidates", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadCore();
   const onlyWindow = appWindow();
 
   const noOpPlan = runOrRaise.planBindingAction({

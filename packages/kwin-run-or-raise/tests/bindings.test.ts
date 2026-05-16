@@ -2,77 +2,23 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
-import vm from "node:vm";
 
-type Binding = {
-  actionName: string;
-  desktopEntryId: string;
-  displayName: string;
-  normalizedDesktopEntryId: string;
-  shortcut: string;
-  slotName: string;
-};
+import {
+  type Binding,
+  configReader,
+  loadRunOrRaise,
+  plainJson,
+  type RegisteredShortcut,
+  type RunOrRaiseBindingsApi,
+} from "./support/run-or-raise.js";
 
-type ConfigReader = (
-  key: string,
-  defaultValue: boolean | string,
-) => boolean | string | number | null | undefined;
-
-type RegisteredShortcut = {
-  actionName: string;
-  callback: () => void;
-  keySequence: string;
-  text: string;
-};
-
-type RunOrRaiseApi = {
-  readBindings(readConfig: ConfigReader): Binding[];
-  registerBindings(
-    runtime: { log(message: string): void },
-    controller: { handleBinding(binding: Binding): void },
-    bindings: Binding[],
-    registerShortcut: (
-      actionName: string,
-      text: string,
-      keySequence: string,
-      callback: () => void,
-    ) => void,
-  ): void;
-};
-
-function plainJson<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
-
-const sourceUrls = [
-  new URL("../build/src/core.js", import.meta.url),
-  new URL("../build/src/bindings.js", import.meta.url),
-];
-
-async function loadRunOrRaise(): Promise<RunOrRaiseApi> {
-  const source = await Promise.all(
-    sourceUrls.map((url) => readFile(url, "utf8")),
-  );
-
-  return vm.runInNewContext(
-    `${source.join("\n")}\nRunOrRaise;`,
-    {},
-  ) as RunOrRaiseApi;
-}
-
-function configReader(config: Record<string, unknown>): ConfigReader {
-  const keys = new Set(Object.keys(config));
-
-  return (key, defaultValue) =>
-    keys.has(key)
-      ? (config[key] as boolean | string | number | null | undefined)
-      : defaultValue;
+async function loadBindings(): Promise<RunOrRaiseBindingsApi> {
+  return loadRunOrRaise<RunOrRaiseBindingsApi>(["core", "bindings"]);
 }
 
 test("reads configured bindings from KWin config slots", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadBindings();
 
   assert.deepEqual(
     plainJson(
@@ -103,7 +49,7 @@ test("reads configured bindings from KWin config slots", async () => {
 });
 
 test("registers bindings once per non-empty shortcut", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadBindings();
   const bindings = runOrRaise.readBindings(
     configReader({
       Binding01DesktopEntryId: "firefox.desktop",

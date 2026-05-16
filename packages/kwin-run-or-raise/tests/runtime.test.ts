@@ -2,98 +2,22 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
-import vm from "node:vm";
 
-type TestDesktop = {
-  id: string;
-};
+import {
+  loadRunOrRaise,
+  plainJson,
+  type RunOrRaiseRuntimeApi,
+  type TestWindow,
+  workspace,
+} from "./support/run-or-raise.js";
 
-type TestWindow = {
-  desktopFileName?: string;
-  minimized?: boolean;
-};
-
-type TestWorkspace = {
-  activeWindow: TestWindow | null;
-  currentActivity?: string;
-  currentDesktop?: TestDesktop;
-  raiseWindow(window: TestWindow): void;
-  stackingOrder?: TestWindow[];
-  windowActivated?: {
-    connect(callback: (window: TestWindow | null) => void): void;
-  };
-  windowList?: () => TestWindow[];
-  windowRemoved?: {
-    connect(callback: (window: TestWindow) => void): void;
-  };
-  windows?: TestWindow[];
-};
-
-type Runtime = {
-  activeWindow(): TestWindow | null;
-  currentActivity(): string | undefined;
-  currentDesktop(): TestDesktop | undefined;
-  launchDesktopEntry(desktopEntryId: string): void;
-  log(message: string): void;
-  raiseWindow(window: TestWindow): void;
-  setActiveWindow(window: TestWindow): void;
-  stackingOrder(): TestWindow[] | undefined;
-  windows(): TestWindow[];
-};
-
-type Controller = {
-  forgetWindow(window: TestWindow): void;
-  rememberWindow(window: TestWindow | null): void;
-};
-
-type KWinEnvironment = {
-  callDBus(...args: unknown[]): void;
-  print(message: string): void;
-  workspace: TestWorkspace;
-};
-
-type RunOrRaiseApi = {
-  connectWorkspaceSignals(
-    workspace: TestWorkspace,
-    controller: Controller,
-  ): void;
-  createKWinRuntime(environment: KWinEnvironment): Runtime;
-};
-
-function plainJson<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
-
-const sourceUrls = [
-  new URL("../build/src/core.js", import.meta.url),
-  new URL("../build/src/runtime.js", import.meta.url),
-];
-
-async function loadRunOrRaise(): Promise<RunOrRaiseApi> {
-  const source = await Promise.all(
-    sourceUrls.map((url) => readFile(url, "utf8")),
-  );
-
-  return vm.runInNewContext(
-    `${source.join("\n")}\nRunOrRaise;`,
-    {},
-  ) as RunOrRaiseApi;
-}
-
-function workspace(overrides: Partial<TestWorkspace> = {}): TestWorkspace {
-  return {
-    activeWindow: null,
-    currentActivity: "activity-1",
-    currentDesktop: { id: "desktop-1" },
-    raiseWindow(): void {},
-    ...overrides,
-  };
+async function loadRuntime(): Promise<RunOrRaiseRuntimeApi> {
+  return loadRunOrRaise<RunOrRaiseRuntimeApi>(["core", "runtime"]);
 }
 
 test("adapts KWin workspace state and actions into a controller runtime", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadRuntime();
   const firstWindow = {};
   const secondWindow = {};
   const raisedWindows: TestWindow[] = [];
@@ -125,7 +49,7 @@ test("adapts KWin workspace state and actions into a controller runtime", async 
 });
 
 test("falls back across supported KWin window sources", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadRuntime();
   const windowListWindow = {};
   const windowsWindow = {};
   const stackingWindow = {};
@@ -166,7 +90,7 @@ test("falls back across supported KWin window sources", async () => {
 });
 
 test("launches desktop entries through klauncher and reports failures", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadRuntime();
   const dbusCalls: unknown[][] = [];
   const prints: string[] = [];
   const runtime = runOrRaise.createKWinRuntime({
@@ -216,7 +140,7 @@ test("launches desktop entries through klauncher and reports failures", async ()
 });
 
 test("connects optional workspace signals to controller state hooks", async () => {
-  const runOrRaise = await loadRunOrRaise();
+  const runOrRaise = await loadRuntime();
   const activatedWindow = {};
   const removedWindow = {};
   const rememberedWindows: Array<TestWindow | null> = [];
