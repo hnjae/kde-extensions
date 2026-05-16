@@ -6,12 +6,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 
-const bindingFields = [
-  { name: "Enabled", type: "Bool", defaultValue: "false" },
-  { name: "Name", type: "String", defaultValue: "" },
-  { name: "DesktopEntryId", type: "String", defaultValue: "" },
-  { name: "Shortcut", type: "String", defaultValue: "" },
-];
 const packageDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
@@ -57,37 +51,58 @@ function generatedFileComment(indent = "") {
   ].join("\n");
 }
 
-function loadBindingSlots(coreSource) {
-  const bindingSlots = vm.runInNewContext(
+function loadBindingSchema(coreSource) {
+  const bindingSchema = vm.runInNewContext(
     `${coreSource}
-Array.from(
-  { length: RunOrRaise.bindingCount },
-  (_, index) => RunOrRaise.slotName(index + 1),
-);`,
+({
+  fields: RunOrRaise.bindingConfigFields,
+  slots: RunOrRaise.bindingSlotNames(),
+});`,
     {},
   );
 
   if (
-    !Array.isArray(bindingSlots) ||
-    bindingSlots.length === 0 ||
-    bindingSlots.some((slot) => typeof slot !== "string" || slot === "")
+    typeof bindingSchema !== "object" ||
+    bindingSchema === null ||
+    !Array.isArray(bindingSchema.slots) ||
+    bindingSchema.slots.length === 0 ||
+    bindingSchema.slots.some((slot) => typeof slot !== "string" || slot === "")
   ) {
     throw new Error(
       "Failed to load binding slot schema from build/src/core.js",
     );
   }
 
-  return bindingSlots;
+  if (
+    !Array.isArray(bindingSchema.fields) ||
+    bindingSchema.fields.length === 0 ||
+    bindingSchema.fields.some(
+      (field) =>
+        typeof field !== "object" ||
+        field === null ||
+        typeof field.name !== "string" ||
+        typeof field.label !== "string" ||
+        typeof field.valueType !== "string" ||
+        typeof field.widgetClass !== "string" ||
+        !["boolean", "string"].includes(typeof field.defaultValue),
+    )
+  ) {
+    throw new Error(
+      "Failed to load binding field schema from build/src/core.js",
+    );
+  }
+
+  return bindingSchema;
 }
 
-function configEntries(bindingSlots) {
+function configEntries(bindingSchema) {
   const entries = [];
 
-  for (const name of bindingSlots) {
-    for (const field of bindingFields) {
+  for (const name of bindingSchema.slots) {
+    for (const field of bindingSchema.fields) {
       entries.push(
         [
-          `        <entry name="${name}${field.name}" type="${field.type}">`,
+          `        <entry name="${name}${field.name}" type="${field.valueType}">`,
           `            <default>${field.defaultValue}</default>`,
           "        </entry>",
         ].join("\n"),
@@ -98,7 +113,7 @@ function configEntries(bindingSlots) {
   return entries.join("\n");
 }
 
-function generateMainConfig(bindingSlots) {
+function generateMainConfig(bindingSchema) {
   return `${[
     '<?xml version="1.0" encoding="UTF-8"?>',
     "<!--",
@@ -109,7 +124,7 @@ function generateMainConfig(bindingSlots) {
     '      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 https://www.kde.org/standards/kcfg/1.0/kcfg.xsd">',
     '    <kcfgfile name=""/>',
     '    <group name="">',
-    configEntries(bindingSlots),
+    configEntries(bindingSchema),
     "    </group>",
     "</kcfg>",
   ].join("\n")}\n`;
@@ -137,33 +152,52 @@ function widget(className, name) {
   return `                                <widget class="${className}" name="${name}"/>`;
 }
 
-function configUiRows(bindingSlots) {
-  const rows = [
-    uiCell(0, 0, label("enabledLabel", "Enabled")),
-    uiCell(0, 1, label("slotLabel", "Slot")),
-    uiCell(0, 2, label("nameLabel", "Name")),
-    uiCell(0, 3, label("desktopEntryIdLabel", "Desktop Entry ID")),
-    uiCell(0, 4, label("shortcutLabel", "Default Shortcut")),
-  ];
+function fieldColumn(index) {
+  return index === 0 ? 0 : index + 1;
+}
 
-  for (let index = 0; index < bindingSlots.length; index += 1) {
-    const name = bindingSlots[index];
+function configUiRows(bindingSchema) {
+  const rows = [uiCell(0, 1, label("slotLabel", "Slot"))];
+
+  for (let index = 0; index < bindingSchema.fields.length; index += 1) {
+    const field = bindingSchema.fields[index];
+    const labelName = `${field.name.slice(0, 1).toLowerCase()}${field.name.slice(
+      1,
+    )}Label`;
+
+    rows.push(uiCell(0, fieldColumn(index), label(labelName, field.label)));
+  }
+
+  for (let index = 0; index < bindingSchema.slots.length; index += 1) {
+    const name = bindingSchema.slots[index];
     const row = index + 1;
-    const labelName = `${name.slice(0, 1).toLowerCase()}${name.slice(1)}Label`;
+    const slotLabelName = `${name.slice(0, 1).toLowerCase()}${name.slice(
+      1,
+    )}Label`;
 
-    rows.push(
-      uiCell(row, 0, widget("QCheckBox", `kcfg_${name}Enabled`)),
-      uiCell(row, 1, label(labelName, String(row))),
-      uiCell(row, 2, widget("QLineEdit", `kcfg_${name}Name`)),
-      uiCell(row, 3, widget("QLineEdit", `kcfg_${name}DesktopEntryId`)),
-      uiCell(row, 4, widget("QLineEdit", `kcfg_${name}Shortcut`)),
-    );
+    rows.push(uiCell(row, 1, label(slotLabelName, String(row))));
+
+    for (
+      let fieldIndex = 0;
+      fieldIndex < bindingSchema.fields.length;
+      fieldIndex += 1
+    ) {
+      const field = bindingSchema.fields[fieldIndex];
+
+      rows.push(
+        uiCell(
+          row,
+          fieldColumn(fieldIndex),
+          widget(field.widgetClass, `kcfg_${name}${field.name}`),
+        ),
+      );
+    }
   }
 
   return rows.join("\n");
 }
 
-function generateConfigUi(bindingSlots) {
+function generateConfigUi(bindingSchema) {
   return `${[
     '<?xml version="1.0" encoding="UTF-8"?>',
     "<!--",
@@ -188,7 +222,7 @@ function generateConfigUi(bindingSlots) {
     "                            </rect>",
     "                        </property>",
     '                        <layout class="QGridLayout" name="bindingsLayout">',
-    configUiRows(bindingSlots),
+    configUiRows(bindingSchema),
     "                        </layout>",
     "                    </widget>",
     "                </widget>",
@@ -206,7 +240,7 @@ await mkdir(distCodeDir, { recursive: true });
 const scriptParts = await Promise.all(
   buildCodeFiles.map((file) => readFile(file, "utf8")),
 );
-const bindingSlots = loadBindingSlots(scriptParts[0]);
+const bindingSchema = loadBindingSchema(scriptParts[0]);
 await writeFile(
   path.join(distCodeDir, "main.js"),
   `${scriptParts.join("\n")}\n`,
@@ -215,11 +249,11 @@ await mkdir(path.join(distRoot, "contents", "config"), { recursive: true });
 await mkdir(path.join(distRoot, "contents", "ui"), { recursive: true });
 await writeFile(
   path.join(distRoot, "contents", "config", "main.xml"),
-  generateMainConfig(bindingSlots),
+  generateMainConfig(bindingSchema),
 );
 await writeFile(
   path.join(distRoot, "contents", "ui", "config.ui"),
-  generateConfigUi(bindingSlots),
+  generateConfigUi(bindingSchema),
 );
 await writeFile(
   path.join(distRoot, "metadata.json"),

@@ -31,19 +31,17 @@ namespace RunOrRaise {
     return String(value).trim();
   }
 
-  export function readBinding(
+  function readBindingSlot(
     readConfig: ConfigReader,
-    slot: number,
+    name: string,
   ): Binding | null {
-    const name = slotName(slot);
-
-    if (!readBooleanConfig(readConfig, `${name}Enabled`)) {
+    if (!readBooleanConfig(readConfig, bindingConfigKey(name, "Enabled"))) {
       return null;
     }
 
     const desktopEntryId = readStringConfig(
       readConfig,
-      `${name}DesktopEntryId`,
+      bindingConfigKey(name, "DesktopEntryId"),
     );
     const normalizedDesktopEntryId = normalizeDesktopEntryId(desktopEntryId);
 
@@ -51,23 +49,36 @@ namespace RunOrRaise {
       return null;
     }
 
-    const configuredName = readStringConfig(readConfig, `${name}Name`);
+    const configuredName = readStringConfig(
+      readConfig,
+      bindingConfigKey(name, "Name"),
+    );
 
     return {
-      actionName: `RunOrRaise${name}`,
+      actionName: bindingActionName(name),
       desktopEntryId,
       displayName: configuredName === "" ? desktopEntryId : configuredName,
       normalizedDesktopEntryId,
-      shortcut: readStringConfig(readConfig, `${name}Shortcut`),
+      shortcut: readStringConfig(
+        readConfig,
+        bindingConfigKey(name, "Shortcut"),
+      ),
       slotName: name,
     };
+  }
+
+  export function readBinding(
+    readConfig: ConfigReader,
+    slot: number,
+  ): Binding | null {
+    return readBindingSlot(readConfig, slotName(slot));
   }
 
   export function readBindings(readConfig: ConfigReader): Binding[] {
     const bindings: Binding[] = [];
 
-    for (let slot = 1; slot <= bindingCount; slot += 1) {
-      const binding = readBinding(readConfig, slot);
+    for (const name of bindingSlotNames()) {
+      const binding = readBindingSlot(readConfig, name);
 
       if (binding !== null) {
         bindings.push(binding);

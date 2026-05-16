@@ -5,6 +5,51 @@
 namespace RunOrRaise {
   export const bindingCount = 16;
 
+  export type BindingConfigFieldName =
+    | "Enabled"
+    | "Name"
+    | "DesktopEntryId"
+    | "Shortcut";
+
+  export type BindingConfigField = {
+    defaultValue: boolean | string;
+    label: string;
+    name: BindingConfigFieldName;
+    valueType: "Bool" | "String";
+    widgetClass: "QCheckBox" | "QLineEdit";
+  };
+
+  export const bindingConfigFields: BindingConfigField[] = [
+    {
+      defaultValue: false,
+      label: "Enabled",
+      name: "Enabled",
+      valueType: "Bool",
+      widgetClass: "QCheckBox",
+    },
+    {
+      defaultValue: "",
+      label: "Name",
+      name: "Name",
+      valueType: "String",
+      widgetClass: "QLineEdit",
+    },
+    {
+      defaultValue: "",
+      label: "Desktop Entry ID",
+      name: "DesktopEntryId",
+      valueType: "String",
+      widgetClass: "QLineEdit",
+    },
+    {
+      defaultValue: "",
+      label: "Default Shortcut",
+      name: "Shortcut",
+      valueType: "String",
+      widgetClass: "QLineEdit",
+    },
+  ];
+
   export type Binding = {
     actionName: string;
     desktopEntryId: string;
@@ -63,6 +108,23 @@ namespace RunOrRaise {
 
   export function slotName(slot: number): string {
     return `Binding${String(slot).padStart(2, "0")}`;
+  }
+
+  export function bindingSlotNames(): string[] {
+    return Array.from({ length: bindingCount }, (_, index) =>
+      slotName(index + 1),
+    );
+  }
+
+  export function bindingActionName(slotName: string): string {
+    return `RunOrRaise${slotName}`;
+  }
+
+  export function bindingConfigKey(
+    slotName: string,
+    fieldName: BindingConfigFieldName,
+  ): string {
+    return `${slotName}${fieldName}`;
   }
 
   export function normalizeDesktopEntryId(desktopEntryId: string): string {
