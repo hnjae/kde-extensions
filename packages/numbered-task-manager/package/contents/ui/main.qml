@@ -308,6 +308,7 @@ PlasmoidItem {
 
         delegate: QtQuick.Item {
             required property int index
+            required property var model
 
             property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
             property int launcherPosition: root.visibleLauncherPosition(launcherUrl, root.launcherRevision)
@@ -387,6 +388,7 @@ PlasmoidItem {
 
         delegate: QtQuick.Item {
             required property int index
+            required property var model
 
             property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
             property bool hasSyncedAttention: false
