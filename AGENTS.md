@@ -4,11 +4,10 @@
 
 This is still pre-release. Do not spend effort preserving backward compatibility or writing migrations for existing user data, configuration, APIs, or internal formats unless explicitly requested.
 
-## Commit & Pull Request Guidelines
+## Commit Guidelines
 
-Use Conventional Commit style, such as `feat: init project`. If the work is specific to a package, use that package name as the Conventional Commit scope, such as `feat(package-name): add setting`. After completing a requested repository change, create a commit before ending the task unless the user explicitly asks not to commit or asks to pause. Check `git status` before committing and stage paths explicitly. Do not include unrelated user changes in these commits.
-
-When changing user-visible behavior for a package, check whether that package has a `SPEC.md`. If it does, update `SPEC.md` first and commit that spec change before committing the behavior change.
+- Write all commit messages using Conventional Commits, with a scope whenever a clear scope exists.
+- When a change is localized to one tool, use that subproject name as the scope.
 
 ## Licensing & Configuration
 
