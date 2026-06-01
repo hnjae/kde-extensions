@@ -122,6 +122,9 @@ in `SPEC.md`.
 - Prefix fallback should keep the same slot number and activation behavior as
   badge mode.
 - Do not render a `0` number badge for `Meta+0`.
+- Render task delegate state backgrounds with `KSvg.FrameSvgItem` from Plasma's `widgets/tasks` theme asset instead of hand-painted QML rectangles.
+- Keep the themed frame prefix decision in a small tested helper so normal, hover, active, minimized, attention, launcher, drag-drop target, and panel-edge fallbacks stay aligned with KDE task manager behavior.
+- Anchor task content inside the themed frame margins plus normal Kirigami spacing so Plasma themes can own the visible background geometry without covering badges, icons, or titles.
 
 ## Packaging And Dependencies
 
