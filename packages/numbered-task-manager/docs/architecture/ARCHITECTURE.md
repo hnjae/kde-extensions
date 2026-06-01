@@ -20,6 +20,13 @@ in `SPEC.md`.
   shared by task and launcher code.
 - Keep task activity mutation decisions in `TaskActivityLogic.js` so task
   activity toggles are shared by the task model and context menu.
+- Create task context menus per invocation as Plasma-native menus. Do not keep a
+  long-lived Qt Quick Controls popup inside `fullRepresentation`, because panel
+  delegates need a native menu anchored to the task delegate to avoid clipping
+  and applet-menu collisions.
+- Read task context-menu data from live `TasksModel` roles through the menu's
+  model index when invoking task actions. Snapshot data may describe the
+  visible delegate, but menu mutations should target the current model entry.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
