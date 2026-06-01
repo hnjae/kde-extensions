@@ -22,11 +22,9 @@ item order with `Meta+0`.
   manager interaction patterns unless this spec says otherwise.
 - The first nine normal visible task slots are numbered `1` through `9`.
 - Normal tasks after slot 9 remain visible but are not numbered.
-- The default number style is a badge over the lower-left corner of the task
-  icon.
+- In supported normal horizontal panel sizes, the expected number style is a badge over the lower-left corner of the task icon.
 - Number badges use KDE's configured fixed-width font.
-- If the task icon is too small for a readable badge, the number is shown as a
-  text prefix before the icon and title instead.
+- If the task icon is too small for a readable badge, the number is shown as an accessibility fallback text prefix before the icon and title instead.
 - The normal task list shows tasks from the current virtual desktop.
 - The widget is not limited to the current screen.
 - Activity filtering follows KDE's task manager behavior. Empty activity lists
