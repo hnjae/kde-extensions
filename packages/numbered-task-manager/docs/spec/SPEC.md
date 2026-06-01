@@ -34,6 +34,14 @@ item order with `Meta+0`.
 - Horizontal panels are the supported v1 target. Vertical panels may work, but
   they are best-effort in v1.
 
+## Context Menu Behavior
+
+- Right-clicking a task opens that task's context menu, using a Plasma-native menu positioned outside the panel bounds.
+- Pressing the keyboard Menu key while a task has focus opens the same task context menu.
+- Right-clicking empty widget space or panel space continues to use Plasma's normal applet or panel context menu.
+- Task actions appear before any widget configuration or panel edit actions.
+- Configure and edit-mode actions may appear in the task context menu only as footer actions after task actions.
+
 ## Pinned Applications
 
 - A new widget starts with no pinned applications.
