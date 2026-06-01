@@ -30,19 +30,20 @@ QtQuick.Item {
     readonly property bool badgeMode: slotNumber > 0 && iconExtent >= 24
 
     signal activated(int taskIndex)
-    signal contextMenuRequested(var task)
+    signal contextMenuRequested(var request)
     signal taskDropped(int sourceIndex, int targetIndex, var drop)
 
     implicitWidth: Math.max(96, Math.min(220, contentRow.implicitWidth + 16))
     implicitHeight: 40
     width: implicitWidth
+    activeFocusOnTab: true
 
     KirigamiPlatform.Theme.colorSet: KirigamiPlatform.Theme.Button
 
     QtQuick.Rectangle {
         anchors.fill: parent
         color: root.active ? KirigamiPlatform.Theme.highlightColor : KirigamiPlatform.Theme.backgroundColor
-        opacity: root.active || pointerHandler.containsMouse || root.dropHover ? 0.85 : 0
+        opacity: root.active || pointerHandler.hovered || root.dropHover ? 0.85 : 0
         radius: 4
     }
 
@@ -72,7 +73,7 @@ QtQuick.Item {
 
             KirigamiPrimitives.Icon {
                 anchors.fill: parent
-                active: root.active || pointerHandler.containsMouse
+                active: root.active || pointerHandler.hovered
                 fallback: "application-x-executable"
                 source: root.iconSource
             }
@@ -170,19 +171,44 @@ QtQuick.Item {
         enabled: root.taskIndex >= 0
     }
 
-    QtQuick.MouseArea {
+    QtQuick.Keys.onMenuPressed: contextMenuTimer.start()
+
+    QtQuick.HoverHandler {
         id: pointerHandler
+    }
 
-        anchors.fill: parent
-        acceptedButtons: QtQuick.Qt.LeftButton | QtQuick.Qt.RightButton
-        hoverEnabled: true
+    QtQuick.TapHandler {
+        acceptedButtons: QtQuick.Qt.RightButton
+        acceptedDevices: QtQuick.PointerDevice.Mouse | QtQuick.PointerDevice.TouchPad | QtQuick.PointerDevice.Stylus
+        gesturePolicy: QtQuick.TapHandler.WithinBounds
 
-        onClicked: mouse => {
-            if (mouse.button === QtQuick.Qt.RightButton) {
-                root.contextMenuRequested(root.taskData);
-            } else {
-                root.activated(root.taskIndex);
+        onPressedChanged: {
+            if (pressed) {
+                contextMenuTimer.start();
             }
+        }
+    }
+
+    QtQuick.TapHandler {
+        acceptedButtons: QtQuick.Qt.LeftButton
+
+        onTapped: {
+            root.activated(root.taskIndex);
+        }
+    }
+
+    QtQuick.Timer {
+        id: contextMenuTimer
+
+        interval: 0
+
+        onTriggered: {
+            root.forceActiveFocus(QtQuick.Qt.MouseFocusReason);
+            root.contextMenuRequested({
+                modelIndex: root.modelIndex,
+                task: root.taskData,
+                visualParent: root
+            });
         }
     }
 }

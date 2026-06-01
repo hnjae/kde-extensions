@@ -255,6 +255,30 @@ PlasmoidItem {
         attentionTasksModel.requestActivate(remoteAttentionTarget.modelIndex);
     }
 
+    function openTaskContextMenu(request) {
+        const menuRequest = request || {};
+        if (!menuRequest.visualParent || !menuRequest.taskModel || !TaskEntryLogic.hasValidModelIndex(menuRequest.modelIndex)) {
+            return;
+        }
+
+        const menu = contextMenuComponent.createObject(menuRequest.visualParent, {
+            launcherModel: tasksModel,
+            modelIndex: menuRequest.modelIndex,
+            task: menuRequest.task || {},
+            taskModel: menuRequest.taskModel,
+            visualParent: menuRequest.visualParent,
+            visualParentWidth: menuRequest.visualParent.width || 0
+        }) as TaskContextMenu;
+        if (!menu) {
+            return;
+        }
+
+        menu.pinRequested.connect(root.pinLauncher);
+        menu.unpinRequested.connect(root.unpinLauncher);
+        menu.launcherListChangeRequested.connect(root.applyLauncherList);
+        menu.show();
+    }
+
     TaskManager.ActivityInfo {
         id: activityInfo
 
@@ -265,6 +289,12 @@ PlasmoidItem {
 
     TaskManager.VirtualDesktopInfo {
         id: virtualDesktopInfo
+    }
+
+    QtQuick.Component {
+        id: contextMenuComponent
+
+        TaskContextMenu {}
     }
 
     TaskManager.TasksModel {
@@ -487,8 +517,10 @@ PlasmoidItem {
                         root.activateTaskEntry(entry);
                     }
 
-                    onContextMenuRequested: task => {
-                        taskContextMenu.openForTask(task, this);
+                    onContextMenuRequested: request => {
+                        root.openTaskContextMenu(Object.assign({
+                            taskModel: tasksModel
+                        }, request));
                     }
 
                     onTaskDropped: (sourceIndex, targetIndex, drop) => {
@@ -508,30 +540,20 @@ PlasmoidItem {
 
                 count: root.remoteAttentionCount
                 iconSource: root.remoteAttentionTarget ? root.remoteAttentionTarget.iconSource : "dialog-warning"
+                modelIndex: root.remoteAttentionTarget ? root.remoteAttentionTarget.modelIndex : undefined
+                taskData: root.remoteAttentionTarget || {}
                 title: root.remoteAttentionTarget ? root.remoteAttentionTarget.title : ""
                 visible: root.remoteAttentionCount > 0
 
                 onActivated: {
                     root.activateRemoteAttention();
                 }
-            }
-        }
 
-        TaskContextMenu {
-            id: taskContextMenu
-
-            taskModel: tasksModel
-
-            onPinRequested: launcherUrl => {
-                root.pinLauncher(launcherUrl);
-            }
-
-            onUnpinRequested: launcherUrl => {
-                root.unpinLauncher(launcherUrl);
-            }
-
-            onLauncherListChangeRequested: launchers => {
-                root.applyLauncherList(launchers);
+                onContextMenuRequested: request => {
+                    root.openTaskContextMenu(Object.assign({
+                        taskModel: attentionTasksModel
+                    }, request));
+                }
             }
         }
     }

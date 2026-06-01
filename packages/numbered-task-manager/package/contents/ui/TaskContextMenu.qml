@@ -4,17 +4,22 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import QtQuick.Controls as QtQuickControls
+import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.extras as PlasmaExtras
+import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
 import "TaskActivityLogic.js" as TaskActivityLogic
+import "TaskContextMenuLogic.js" as TaskContextMenuLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
 
-QtQuickControls.Menu {
+// qmllint disable incompatible-type
+PlasmaExtras.Menu {
     id: root
 
-    readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(task.modelIndex)
-    readonly property bool hasWindowTask: hasTask && task.isWindow
+    readonly property var atm: TaskManager.AbstractTasksModel
+    readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(modelIndex)
+    readonly property bool hasWindowTask: hasTask && isWindow()
     readonly property var desktopEntries: {
         const ids = Array.from(virtualDesktopInfo.desktopIds || []);
         const names = Array.from(virtualDesktopInfo.desktopNames || []);
@@ -28,19 +33,61 @@ QtQuickControls.Menu {
         return entries;
     }
     property var activityEntries: []
+    property var launcherModel: taskModel
     property var launcherActivityList: []
+    property var modelIndex
     property var task: ({})
     property var taskModel
+    property int visualParentWidth: 0
+
+    minimumWidth: visualParentWidth
+    placement: TaskContextMenuLogic.panelMenuPlacement(Plasmoid.location, PlasmaCore.Types, PlasmaExtras.Menu)
 
     signal pinRequested(string launcherUrl)
     signal unpinRequested(string launcherUrl)
     signal launcherListChangeRequested(var launchers)
 
-    function openForTask(taskData, item) {
-        task = taskData || {};
+    function show() {
         refreshActivities();
         refreshLauncherActivities();
-        popup(item, 0, item.height);
+        openRelative();
+    }
+
+    function roleData(role, fallback) {
+        if (!hasTask) {
+            return fallback;
+        }
+
+        const value = taskModel.data(modelIndex, role);
+        return value === undefined || value === null ? fallback : value;
+    }
+
+    function boolRole(role, fallback) {
+        return Boolean(roleData(role, fallback || false));
+    }
+
+    function launcherUrl() {
+        return String(roleData(atm.LauncherUrlWithoutIcon, roleData(atm.LauncherUrl, task.launcherUrl || "")) || "");
+    }
+
+    function activities() {
+        return Array.from(roleData(atm.Activities, task.activities || []) || []);
+    }
+
+    function virtualDesktops() {
+        return Array.from(roleData(atm.VirtualDesktops, task.virtualDesktops || []) || []);
+    }
+
+    function isWindow() {
+        return boolRole(atm.IsWindow, task.isWindow || false);
+    }
+
+    function isLauncher() {
+        return boolRole(atm.IsLauncher, task.isLauncher || false);
+    }
+
+    function hasLauncher() {
+        return boolRole(atm.HasLauncher, task.hasLauncher || false);
     }
 
     function refreshActivities() {
@@ -58,12 +105,13 @@ QtQuickControls.Menu {
     }
 
     function refreshLauncherActivities() {
-        if (!taskModel || !task.launcherUrl) {
+        const url = launcherUrl();
+        if (!launcherModel || !url) {
             launcherActivityList = [];
             return;
         }
 
-        launcherActivityList = Array.from(taskModel.launcherActivities(task.launcherUrl) || []);
+        launcherActivityList = Array.from(launcherModel.launcherActivities(url) || []);
     }
 
     function stringListContains(list, value) {
@@ -71,11 +119,11 @@ QtQuickControls.Menu {
     }
 
     function taskOnAllActivities() {
-        return TaskActivityLogic.activitiesAreAll(task.activities || []);
+        return TaskActivityLogic.activitiesAreAll(activities());
     }
 
     function taskOnActivity(activityId) {
-        return taskOnAllActivities() || stringListContains(task.activities || [], activityId);
+        return taskOnAllActivities() || stringListContains(activities(), activityId);
     }
 
     function toggleTaskActivity(activityId) {
@@ -83,7 +131,7 @@ QtQuickControls.Menu {
             return;
         }
 
-        taskModel.requestActivities(task.modelIndex, TaskActivityLogic.taskActivitiesAfterToggle(task.activities || [], activityId));
+        taskModel.requestActivities(modelIndex, TaskActivityLogic.taskActivitiesAfterToggle(activities(), activityId));
     }
 
     function launcherPinnedToAllActivities() {
@@ -95,16 +143,17 @@ QtQuickControls.Menu {
     }
 
     function launcherPosition() {
-        if (!taskModel || !task.launcherUrl) {
+        const url = launcherUrl();
+        if (!launcherModel || !url) {
             return -1;
         }
 
-        return taskModel.launcherPosition(task.launcherUrl);
+        return launcherModel.launcherPosition(url);
     }
 
     function applyLauncherActivities(activities) {
         const position = launcherPosition();
-        const update = LauncherListLogic.launcherActivityUpdate(taskModel.launcherList, position, activities);
+        const update = LauncherListLogic.launcherActivityUpdate(launcherModel.launcherList, position, activities);
         if (!update) {
             return false;
         }
@@ -119,7 +168,8 @@ QtQuickControls.Menu {
     }
 
     function setLauncherAllActivities() {
-        if (!taskModel || !task.launcherUrl) {
+        const url = launcherUrl();
+        if (!launcherModel || !url) {
             return;
         }
 
@@ -131,12 +181,19 @@ QtQuickControls.Menu {
     }
 
     function toggleLauncherActivity(activityId) {
-        if (!taskModel || !task.launcherUrl) {
+        const url = launcherUrl();
+        if (!launcherModel || !url) {
             return;
         }
 
         applyLauncherActivities(LauncherListLogic.launcherActivitiesAfterToggle(launcherActivityList, activityId, activityInfo.currentActivity));
         refreshLauncherActivities();
+    }
+
+    onStatusChanged: {
+        if (status === PlasmaExtras.Menu.Closed) {
+            destroy();
+        }
     }
 
     QtQuick.Component.onCompleted: refreshActivities()
@@ -153,302 +210,326 @@ QtQuickControls.Menu {
         id: virtualDesktopInfo
     }
 
-    QtQuickControls.MenuItem {
-        enabled: root.task.launcherUrl && root.task.launcherUrl.length > 0
-        text: root.task.hasLauncher ? "Unpin from Task Manager" : "Pin to Task Manager"
+    PlasmaExtras.MenuItem {
+        enabled: root.launcherUrl().length > 0
+        text: root.hasLauncher() ? "Unpin from Task Manager" : "Pin to Task Manager"
 
-        onTriggered: {
-            if (root.task.hasLauncher) {
-                root.unpinRequested(root.task.launcherUrl);
+        onClicked: {
+            const url = root.launcherUrl();
+            if (root.hasLauncher()) {
+                root.unpinRequested(url);
             } else {
-                root.pinRequested(root.task.launcherUrl);
+                root.pinRequested(url);
             }
         }
     }
 
-    QtQuickControls.Menu {
+    PlasmaExtras.MenuItem {
+        id: launcherActivitiesItem
+
+        enabled: root.taskModel && root.launcherUrl()
+        text: "Launcher Activities"
+        visible: root.hasLauncher() && root.launcherUrl() && root.activityEntries.length > 1
+    }
+
+    PlasmaExtras.Menu {
         id: launcherActivitiesMenu
 
-        enabled: root.taskModel && root.task.launcherUrl
-        title: "Launcher Activities"
-        visible: root.task.hasLauncher && root.task.launcherUrl && root.activityEntries.length > 1
+        placement: PlasmaExtras.Menu.RightPosedTopAlignedPopup
+        visualParent: launcherActivitiesItem.action
 
-        QtQuickControls.MenuItem {
+        PlasmaExtras.MenuItem {
             checkable: true
             checked: root.launcherPinnedToAllActivities()
             text: "All Activities"
 
-            onTriggered: {
+            onClicked: {
                 root.setLauncherAllActivities();
             }
         }
 
         QtQuick.Instantiator {
-            active: launcherActivitiesMenu.visible
+            active: launcherActivitiesItem.visible
             model: root.activityEntries
 
-            delegate: QtQuickControls.MenuItem {
+            delegate: PlasmaExtras.MenuItem {
                 required property var modelData
 
                 checkable: true
                 checked: root.launcherPinnedToActivity(modelData.id)
                 text: modelData.name
 
-                onTriggered: {
+                onClicked: {
                     root.toggleLauncherActivity(modelData.id);
                 }
             }
 
             onObjectAdded: (index, object) => {
-                launcherActivitiesMenu.insertItem(index + 1, object);
+                launcherActivitiesMenu.addMenuItem(object);
             }
 
             onObjectRemoved: (index, object) => {
-                launcherActivitiesMenu.removeItem(object);
+                launcherActivitiesMenu.removeMenuItem(object);
             }
         }
     }
 
-    QtQuickControls.MenuSeparator {
-        visible: launcherActivitiesMenu.visible || newInstanceItem.visible || root.hasWindowTask
+    PlasmaExtras.MenuItem {
+        separator: true
+        visible: launcherActivitiesItem.visible || newInstanceItem.visible || root.hasWindowTask
     }
 
-    QtQuickControls.MenuItem {
+    PlasmaExtras.MenuItem {
         id: newInstanceItem
 
         enabled: root.hasTask
         text: "New Instance"
-        visible: root.task.canLaunchNewInstance || root.task.isLauncher
+        visible: root.boolRole(root.atm.CanLaunchNewInstance, root.task.canLaunchNewInstance || false) || root.isLauncher()
 
-        onTriggered: {
-            root.taskModel.requestNewInstance(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestNewInstance(root.modelIndex);
         }
     }
 
-    QtQuickControls.MenuItem {
-        enabled: root.hasWindowTask && root.task.isMovable
+    PlasmaExtras.MenuItem {
+        enabled: root.hasWindowTask && root.boolRole(root.atm.IsMovable, root.task.isMovable || false)
         text: "Move"
-        visible: root.task.isWindow && root.task.isMovable
+        visible: root.isWindow() && root.boolRole(root.atm.IsMovable, root.task.isMovable || false)
 
-        onTriggered: {
-            root.taskModel.requestMove(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestMove(root.modelIndex);
         }
     }
 
-    QtQuickControls.MenuItem {
-        enabled: root.hasWindowTask && root.task.isResizable
+    PlasmaExtras.MenuItem {
+        enabled: root.hasWindowTask && root.boolRole(root.atm.IsResizable, root.task.isResizable || false)
         text: "Resize"
-        visible: root.task.isWindow && root.task.isResizable
+        visible: root.isWindow() && root.boolRole(root.atm.IsResizable, root.task.isResizable || false)
 
-        onTriggered: {
-            root.taskModel.requestResize(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestResize(root.modelIndex);
         }
     }
 
-    QtQuickControls.MenuItem {
+    PlasmaExtras.MenuItem {
         checkable: true
-        checked: root.task.isMinimized || false
-        enabled: root.hasWindowTask && root.task.isMinimizable
+        checked: root.boolRole(root.atm.IsMinimized, root.task.isMinimized || false)
+        enabled: root.hasWindowTask && root.boolRole(root.atm.IsMinimizable, root.task.isMinimizable || false)
         text: "Minimize"
-        visible: root.task.isWindow && root.task.isMinimizable
+        visible: root.isWindow() && root.boolRole(root.atm.IsMinimizable, root.task.isMinimizable || false)
 
-        onTriggered: {
-            root.taskModel.requestToggleMinimized(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestToggleMinimized(root.modelIndex);
         }
     }
 
-    QtQuickControls.MenuItem {
+    PlasmaExtras.MenuItem {
         checkable: true
-        checked: root.task.isMaximized || false
-        enabled: root.hasWindowTask && root.task.isMaximizable
+        checked: root.boolRole(root.atm.IsMaximized, root.task.isMaximized || false)
+        enabled: root.hasWindowTask && root.boolRole(root.atm.IsMaximizable, root.task.isMaximizable || false)
         text: "Maximize"
-        visible: root.task.isWindow && root.task.isMaximizable
+        visible: root.isWindow() && root.boolRole(root.atm.IsMaximizable, root.task.isMaximizable || false)
 
-        onTriggered: {
-            root.taskModel.requestToggleMaximized(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestToggleMaximized(root.modelIndex);
         }
     }
 
-    QtQuickControls.MenuItem {
+    PlasmaExtras.MenuItem {
         checkable: true
-        checked: root.task.isKeepAbove || false
+        checked: root.boolRole(root.atm.IsKeepAbove, root.task.isKeepAbove || false)
         enabled: root.hasWindowTask
         text: "Keep Above Others"
-        visible: root.task.isWindow
+        visible: root.isWindow()
 
-        onTriggered: {
-            root.taskModel.requestToggleKeepAbove(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestToggleKeepAbove(root.modelIndex);
         }
     }
 
-    QtQuickControls.MenuItem {
+    PlasmaExtras.MenuItem {
         checkable: true
-        checked: root.task.isKeepBelow || false
+        checked: root.boolRole(root.atm.IsKeepBelow, root.task.isKeepBelow || false)
         enabled: root.hasWindowTask
         text: "Keep Below Others"
-        visible: root.task.isWindow
+        visible: root.isWindow()
 
-        onTriggered: {
-            root.taskModel.requestToggleKeepBelow(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestToggleKeepBelow(root.modelIndex);
         }
     }
 
-    QtQuickControls.MenuItem {
+    PlasmaExtras.MenuItem {
         checkable: true
-        checked: root.task.isFullScreen || false
-        enabled: root.hasWindowTask && root.task.fullScreenable
+        checked: root.boolRole(root.atm.IsFullScreen, root.task.isFullScreen || false)
+        enabled: root.hasWindowTask && root.boolRole(root.atm.IsFullScreenable, root.task.fullScreenable || false)
         text: "Fullscreen"
-        visible: root.task.isWindow && root.task.fullScreenable
+        visible: root.isWindow() && root.boolRole(root.atm.IsFullScreenable, root.task.fullScreenable || false)
 
-        onTriggered: {
-            root.taskModel.requestToggleFullScreen(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestToggleFullScreen(root.modelIndex);
         }
     }
 
-    QtQuickControls.MenuItem {
+    PlasmaExtras.MenuItem {
         checkable: true
-        checked: root.task.isShaded || false
-        enabled: root.hasWindowTask && root.task.isShadeable
+        checked: root.boolRole(root.atm.IsShaded, root.task.isShaded || false)
+        enabled: root.hasWindowTask && root.boolRole(root.atm.IsShadeable, root.task.isShadeable || false)
         text: "Shade"
-        visible: root.task.isWindow && root.task.isShadeable
+        visible: root.isWindow() && root.boolRole(root.atm.IsShadeable, root.task.isShadeable || false)
 
-        onTriggered: {
-            root.taskModel.requestToggleShaded(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestToggleShaded(root.modelIndex);
         }
     }
 
-    QtQuickControls.MenuItem {
+    PlasmaExtras.MenuItem {
         checkable: true
-        checked: root.task.hasNoBorder || false
-        enabled: root.hasWindowTask && root.task.canSetNoBorder
+        checked: root.boolRole(root.atm.HasNoBorder, root.task.hasNoBorder || false)
+        enabled: root.hasWindowTask && root.boolRole(root.atm.CanSetNoBorder, root.task.canSetNoBorder || false)
         text: "No Border"
-        visible: root.task.isWindow && root.task.canSetNoBorder
+        visible: root.isWindow() && root.boolRole(root.atm.CanSetNoBorder, root.task.canSetNoBorder || false)
 
-        onTriggered: {
-            root.taskModel.requestToggleNoBorder(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestToggleNoBorder(root.modelIndex);
         }
     }
 
-    QtQuickControls.MenuItem {
+    PlasmaExtras.MenuItem {
         checkable: true
-        checked: root.task.isExcludedFromCapture || false
+        checked: root.boolRole(root.atm.IsExcludedFromCapture, root.task.isExcludedFromCapture || false)
         enabled: root.hasWindowTask
         text: "Hide from Screencasts"
-        visible: root.task.isWindow
+        visible: root.isWindow()
 
-        onTriggered: {
-            root.taskModel.requestToggleExcludeFromCapture(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestToggleExcludeFromCapture(root.modelIndex);
         }
     }
 
-    QtQuickControls.Menu {
+    PlasmaExtras.MenuItem {
+        id: virtualDesktopsItem
+
+        enabled: root.hasWindowTask && root.boolRole(root.atm.IsVirtualDesktopsChangeable, root.task.isVirtualDesktopsChangeable || false)
+        text: "Virtual Desktops"
+        visible: root.isWindow() && root.boolRole(root.atm.IsVirtualDesktopsChangeable, root.task.isVirtualDesktopsChangeable || false)
+    }
+
+    PlasmaExtras.Menu {
         id: virtualDesktopsMenu
 
-        enabled: root.hasWindowTask && root.task.isVirtualDesktopsChangeable
-        title: "Virtual Desktops"
-        visible: root.task.isWindow && root.task.isVirtualDesktopsChangeable
+        placement: PlasmaExtras.Menu.RightPosedTopAlignedPopup
+        visualParent: virtualDesktopsItem.action
 
-        QtQuickControls.MenuItem {
+        PlasmaExtras.MenuItem {
             checkable: true
-            checked: root.task.isOnAllVirtualDesktops || false
+            checked: root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false)
             text: "All Desktops"
 
-            onTriggered: {
-                root.taskModel.requestVirtualDesktops(root.task.modelIndex, []);
+            onClicked: {
+                root.taskModel.requestVirtualDesktops(root.modelIndex, []);
             }
         }
 
         QtQuick.Instantiator {
-            active: virtualDesktopsMenu.visible
+            active: virtualDesktopsItem.visible
             model: root.desktopEntries
 
-            delegate: QtQuickControls.MenuItem {
+            delegate: PlasmaExtras.MenuItem {
                 required property var modelData
 
                 checkable: true
-                checked: root.task.isOnAllVirtualDesktops || TaskEntryLogic.desktopListContains(root.task.virtualDesktops || [], modelData.id)
+                checked: root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false) || TaskEntryLogic.desktopListContains(root.virtualDesktops(), modelData.id)
                 text: modelData.name
 
-                onTriggered: {
-                    root.taskModel.requestVirtualDesktops(root.task.modelIndex, [modelData.id]);
+                onClicked: {
+                    root.taskModel.requestVirtualDesktops(root.modelIndex, [modelData.id]);
                 }
             }
 
             onObjectAdded: (index, object) => {
-                virtualDesktopsMenu.insertItem(index + 1, object);
+                virtualDesktopsMenu.addMenuItem(object);
             }
 
             onObjectRemoved: (index, object) => {
-                virtualDesktopsMenu.removeItem(object);
+                virtualDesktopsMenu.removeMenuItem(object);
             }
         }
 
-        QtQuickControls.MenuItem {
+        PlasmaExtras.MenuItem {
             enabled: root.hasWindowTask
             text: "New Desktop"
 
-            onTriggered: {
-                root.taskModel.requestNewVirtualDesktop(root.task.modelIndex);
+            onClicked: {
+                root.taskModel.requestNewVirtualDesktop(root.modelIndex);
             }
         }
     }
 
-    QtQuickControls.Menu {
-        id: activitiesMenu
+    PlasmaExtras.MenuItem {
+        id: activitiesItem
 
         enabled: root.hasWindowTask
-        title: "Activities"
-        visible: root.task.isWindow && root.activityEntries.length > 1
+        text: "Activities"
+        visible: root.isWindow() && root.activityEntries.length > 1
+    }
 
-        QtQuickControls.MenuItem {
+    PlasmaExtras.Menu {
+        id: activitiesMenu
+
+        placement: PlasmaExtras.Menu.RightPosedTopAlignedPopup
+        visualParent: activitiesItem.action
+
+        PlasmaExtras.MenuItem {
             checkable: true
             checked: root.taskOnAllActivities()
             text: "All Activities"
 
-            onTriggered: {
-                root.taskModel.requestActivities(root.task.modelIndex, []);
+            onClicked: {
+                root.taskModel.requestActivities(root.modelIndex, []);
             }
         }
 
         QtQuick.Instantiator {
-            active: activitiesMenu.visible
+            active: activitiesItem.visible
             model: root.activityEntries
 
-            delegate: QtQuickControls.MenuItem {
+            delegate: PlasmaExtras.MenuItem {
                 required property var modelData
 
                 checkable: true
                 checked: root.taskOnActivity(modelData.id)
                 text: modelData.name
 
-                onTriggered: {
+                onClicked: {
                     root.toggleTaskActivity(modelData.id);
                 }
             }
 
             onObjectAdded: (index, object) => {
-                activitiesMenu.insertItem(index + 1, object);
+                activitiesMenu.addMenuItem(object);
             }
 
             onObjectRemoved: (index, object) => {
-                activitiesMenu.removeItem(object);
+                activitiesMenu.removeMenuItem(object);
             }
         }
     }
 
-    QtQuickControls.MenuSeparator {
+    PlasmaExtras.MenuItem {
+        separator: true
         visible: closeItem.visible
     }
 
-    QtQuickControls.MenuItem {
+    PlasmaExtras.MenuItem {
         id: closeItem
 
         enabled: root.hasTask
         text: "Close"
-        visible: root.task.isWindow && root.task.closable
+        visible: root.isWindow() && root.boolRole(root.atm.IsClosable, root.task.closable || false)
 
-        onTriggered: {
-            root.taskModel.requestClose(root.task.modelIndex);
+        onClicked: {
+            root.taskModel.requestClose(root.modelIndex);
         }
     }
 }
