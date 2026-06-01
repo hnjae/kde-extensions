@@ -13,6 +13,8 @@ QtQuick.Item {
 
     implicitWidth: Math.max(18, badgeText.implicitWidth + 8)
     implicitHeight: Math.max(18, badgeText.implicitHeight + 4)
+    width: implicitWidth
+    height: implicitHeight
 
     KirigamiPlatform.Theme.colorSet: KirigamiPlatform.Theme.Selection
 

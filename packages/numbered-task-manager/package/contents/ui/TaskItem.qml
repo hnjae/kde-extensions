@@ -7,6 +7,7 @@ import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
+import "BadgeDisplayLogic.js" as BadgeDisplayLogic
 
 QtQuick.Item {
     id: root
@@ -26,8 +27,8 @@ QtQuick.Item {
     property var taskData: ({})
     property var canDropTask
     property bool dropHover: false
-    readonly property int iconExtent: Math.max(16, Math.min(32, height - 8))
-    readonly property bool badgeMode: slotNumber > 0 && iconExtent >= 24
+    readonly property int iconExtent: BadgeDisplayLogic.iconExtentForTaskHeight(height)
+    readonly property string badgePresentation: BadgeDisplayLogic.badgePresentation(root.slotNumber, root.iconExtent)
 
     signal activated(int taskIndex)
     signal contextMenuRequested(var request)
@@ -61,11 +62,11 @@ QtQuick.Item {
             font.family: KirigamiPlatform.Theme.fixedWidthFont.family
             font.bold: true
             text: root.slotNumber > 0 ? root.slotNumber.toString() : ""
-            visible: root.slotNumber > 0 && !root.badgeMode
+            visible: root.badgePresentation === "prefix"
         }
 
         QtQuick.Item {
-            id: iconContainer
+            id: iconOverlayContainer
 
             QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
             QtQuickLayouts.Layout.preferredHeight: root.iconExtent
@@ -76,6 +77,7 @@ QtQuick.Item {
                 active: root.active || pointerHandler.hovered
                 fallback: "application-x-executable"
                 source: root.iconSource
+                z: 0
             }
 
             NumberBadge {
@@ -84,7 +86,8 @@ QtQuick.Item {
                 number: root.slotNumber
                 scale: 0.85
                 transformOrigin: QtQuick.Item.BottomLeft
-                visible: root.badgeMode
+                visible: root.badgePresentation === "overlay"
+                z: 1
             }
         }
 
