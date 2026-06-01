@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
+import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
 
@@ -16,37 +17,42 @@ QtQuick.Item {
     property var iconSource: "dialog-warning"
     property var modelIndex
     property var taskData: ({})
+    readonly property real contentHorizontalPadding: taskFrame.contentLeftMargin + taskFrame.contentRightMargin + Kirigami.Units.smallSpacing * 2
+    readonly property int iconExtent: Math.max(16, Math.min(32, height - taskFrame.contentTopMargin - taskFrame.contentBottomMargin - Kirigami.Units.smallSpacing * 2))
 
     signal activated
     signal contextMenuRequested(var request)
 
-    implicitWidth: Math.max(112, Math.min(220, contentRow.implicitWidth + 16))
+    implicitWidth: Math.max(112, Math.min(220, contentRow.implicitWidth + contentHorizontalPadding))
     implicitHeight: 40
     width: implicitWidth
     activeFocusOnTab: true
 
     KirigamiPlatform.Theme.colorSet: KirigamiPlatform.Theme.Button
 
-    QtQuick.Rectangle {
+    TaskFrame {
+        id: taskFrame
+
         anchors.fill: parent
-        color: pointerHandler.hovered ? KirigamiPlatform.Theme.hoverColor : KirigamiPlatform.Theme.neutralBackgroundColor
-        opacity: 0.9
-        radius: 4
+        attention: true
+        hovered: pointerHandler.hovered
     }
 
     QtQuickLayouts.RowLayout {
         id: contentRow
 
         anchors.fill: parent
-        anchors.leftMargin: 6
-        anchors.rightMargin: 6
-        spacing: 6
+        anchors.bottomMargin: taskFrame.contentBottomMargin
+        anchors.leftMargin: taskFrame.contentLeftMargin + Kirigami.Units.smallSpacing
+        anchors.rightMargin: taskFrame.contentRightMargin + Kirigami.Units.smallSpacing
+        anchors.topMargin: taskFrame.contentTopMargin
+        spacing: Kirigami.Units.smallSpacing
 
         QtQuick.Item {
             id: iconContainer
 
             QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
-            QtQuickLayouts.Layout.preferredHeight: Math.max(16, Math.min(32, root.height - 8))
+            QtQuickLayouts.Layout.preferredHeight: root.iconExtent
             QtQuickLayouts.Layout.preferredWidth: QtQuickLayouts.Layout.preferredHeight
 
             KirigamiPrimitives.Icon {
@@ -75,15 +81,6 @@ QtQuick.Item {
             text: root.title
             verticalAlignment: QtQuick.Text.AlignVCenter
         }
-    }
-
-    QtQuick.Rectangle {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        color: KirigamiPlatform.Theme.neutralTextColor
-        height: 2
-        radius: 1
     }
 
     QtQuick.Keys.onMenuPressed: contextMenuTimer.start()

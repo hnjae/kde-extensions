@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
+import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
 import "BadgeDisplayLogic.js" as BadgeDisplayLogic
@@ -27,38 +28,46 @@ QtQuick.Item {
     property var taskData: ({})
     property var canDropTask
     property bool dropHover: false
-    readonly property int iconExtent: BadgeDisplayLogic.iconExtentForTaskHeight(height)
+    readonly property real contentHorizontalPadding: taskFrame.contentLeftMargin + taskFrame.contentRightMargin + Kirigami.Units.smallSpacing * 2
+    readonly property int iconExtent: BadgeDisplayLogic.iconExtentForTaskHeight(Math.max(0, height - taskFrame.contentTopMargin - taskFrame.contentBottomMargin))
     readonly property string badgePresentation: BadgeDisplayLogic.badgePresentation(root.slotNumber, root.iconExtent)
 
     signal activated(int taskIndex)
     signal contextMenuRequested(var request)
     signal taskDropped(int sourceIndex, int targetIndex, var drop)
 
-    implicitWidth: Math.max(96, Math.min(220, contentRow.implicitWidth + 16))
+    implicitWidth: Math.max(96, Math.min(220, contentRow.implicitWidth + contentHorizontalPadding))
     implicitHeight: 40
     width: implicitWidth
     activeFocusOnTab: true
 
     KirigamiPlatform.Theme.colorSet: KirigamiPlatform.Theme.Button
 
-    QtQuick.Rectangle {
+    TaskFrame {
+        id: taskFrame
+
         anchors.fill: parent
-        color: root.active ? KirigamiPlatform.Theme.highlightColor : KirigamiPlatform.Theme.backgroundColor
-        opacity: root.active || pointerHandler.hovered || root.dropHover ? 0.85 : 0
-        radius: 4
+        active: root.active
+        attention: root.demandingAttention
+        dropHover: root.dropHover
+        hovered: pointerHandler.hovered
+        launcher: root.launcher
+        minimized: root.minimized
     }
 
     QtQuickLayouts.RowLayout {
         id: contentRow
 
         anchors.fill: parent
-        anchors.leftMargin: 6
-        anchors.rightMargin: 6
-        spacing: 6
+        anchors.bottomMargin: taskFrame.contentBottomMargin
+        anchors.leftMargin: taskFrame.contentLeftMargin + Kirigami.Units.smallSpacing
+        anchors.rightMargin: taskFrame.contentRightMargin + Kirigami.Units.smallSpacing
+        anchors.topMargin: taskFrame.contentTopMargin
+        spacing: Kirigami.Units.smallSpacing
 
         QtQuick.Text {
             QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
-            color: root.active ? KirigamiPlatform.Theme.highlightedTextColor : KirigamiPlatform.Theme.textColor
+            color: KirigamiPlatform.Theme.textColor
             font.family: KirigamiPlatform.Theme.fixedWidthFont.family
             font.bold: true
             text: root.slotNumber > 0 ? root.slotNumber.toString() : ""
@@ -94,23 +103,13 @@ QtQuick.Item {
         QtQuick.Text {
             QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
             QtQuickLayouts.Layout.fillWidth: true
-            color: root.active ? KirigamiPlatform.Theme.highlightedTextColor : KirigamiPlatform.Theme.textColor
+            color: KirigamiPlatform.Theme.textColor
             elide: QtQuick.Text.ElideRight
             font.strikeout: root.minimized
             maximumLineCount: 1
             text: root.title
             verticalAlignment: QtQuick.Text.AlignVCenter
         }
-    }
-
-    QtQuick.Rectangle {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        color: KirigamiPlatform.Theme.neutralTextColor
-        height: 2
-        radius: 1
-        visible: root.demandingAttention || root.dropHover
     }
 
     QtQuick.Drag.active: dragHandler.active
