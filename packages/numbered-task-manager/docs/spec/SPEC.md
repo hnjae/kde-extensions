@@ -20,6 +20,7 @@ item order with `Meta+0`.
 
 - The widget uses an icons-and-text task item layout and follows KDE task
   manager interaction patterns unless this spec says otherwise.
+- Task backgrounds and state indicators follow the active Plasma task-manager theme for normal, hover, active, minimized, demanding-attention, and drag-drop target states.
 - The first nine normal visible task slots are numbered `1` through `9`.
 - Normal tasks after slot 9 remain visible but are not numbered.
 - In supported normal horizontal panel sizes, the expected number style is a badge over the lower-left corner of the task icon.
@@ -92,6 +93,7 @@ item order with `Meta+0`.
   order and do not change existing slot numbers.
 - When at least one remote attention task exists, the widget shows one distinct
   attention item at the far right of the widget.
+- The remote attention item uses the same Plasma task-manager attention styling as a demanding-attention task.
 - The attention item is the `Meta+0` target because it is the final item in the
   visible item order, not because remote attention has a dedicated shortcut.
 - The attention item does not show a `0` number badge.
