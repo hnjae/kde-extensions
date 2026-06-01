@@ -116,9 +116,9 @@ in `SPEC.md`.
 
 - Render slot numbers as lower-left icon badges by default.
 - Use KDE's fixed-width font for number labels.
-- Badge rendering should require enough task icon space for at least a 10 px
-  digit and enough badge padding for contrast. Fall back to prefix numbering
-  below that threshold.
+- Task items should keep the icon in an explicit overlay container: the icon is the base layer, and the slot badge is a higher `z` layer anchored to the lower-left of the icon bounds.
+- Badge components should own their rendered width and height, not only implicit size, so QML anchors have real geometry to position.
+- Badge rendering should require enough task icon space for at least a 10 px digit and enough badge padding for contrast. Fall back to prefix numbering only below that threshold.
 - Prefix fallback should keep the same slot number and activation behavior as
   badge mode.
 - Do not render a `0` number badge for `Meta+0`.
