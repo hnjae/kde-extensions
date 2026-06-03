@@ -76,10 +76,13 @@ function directMenuContentObjectViolations(qml) {
     const objectMatch = line.match(
       /^\s*(?:(?:readonly\s+)?property\s+[\w.]+\s+\w+\s*:\s*)?([\w.]+)\s*\{/,
     );
+    const isPropertyObject =
+      /^\s*(?:readonly\s+)?property\s+[\w.]+\s+\w+\s*:/.test(line);
     const topMenu = menuStack.at(-1);
 
     if (
       objectMatch &&
+      !isPropertyObject &&
       topMenu &&
       depth === topMenu.contentDepth &&
       objectMatch[1] !== "PlasmaExtras.MenuItem"
