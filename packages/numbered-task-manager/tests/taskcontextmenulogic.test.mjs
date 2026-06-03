@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -60,3 +61,54 @@ assert.equal(
   logic.panelMenuPlacement(undefined, plasmaCoreTypes, plasmaMenu),
   plasmaMenu.TopPosedLeftAlignedPopup,
 );
+
+const menuQml = readFileSync(
+  new URL("../package/contents/ui/TaskContextMenu.qml", import.meta.url),
+  "utf8",
+);
+
+function directMenuContentObjectViolations(qml) {
+  const violations = [];
+  const menuStack = [];
+  let depth = 0;
+
+  for (const [index, line] of qml.split("\n").entries()) {
+    const objectMatch = line.match(
+      /^\s*(?:(?:readonly\s+)?property\s+[\w.]+\s+\w+\s*:\s*)?([\w.]+)\s*\{/,
+    );
+    const topMenu = menuStack.at(-1);
+
+    if (
+      objectMatch &&
+      topMenu &&
+      depth === topMenu.contentDepth &&
+      objectMatch[1] !== "PlasmaExtras.MenuItem"
+    ) {
+      violations.push({
+        line: index + 1,
+        type: objectMatch[1],
+      });
+    }
+
+    if (objectMatch && objectMatch[1] === "PlasmaExtras.Menu") {
+      menuStack.push({
+        contentDepth: depth + 1,
+      });
+    }
+
+    for (const character of line) {
+      if (character === "{") {
+        depth += 1;
+      } else if (character === "}") {
+        depth -= 1;
+        while (menuStack.length > 0 && depth < menuStack.at(-1).contentDepth) {
+          menuStack.pop();
+        }
+      }
+    }
+  }
+
+  return violations;
+}
+
+assert.deepEqual(directMenuContentObjectViolations(menuQml), []);
