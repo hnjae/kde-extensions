@@ -129,6 +129,7 @@ in `SPEC.md`.
 - Render task delegate state backgrounds with `KSvg.FrameSvgItem` from Plasma's `widgets/tasks` theme asset instead of hand-painted QML rectangles.
 - Keep the themed frame prefix decision in a small tested helper so normal, hover, active, minimized, attention, launcher, drag-drop target, and panel-edge fallbacks stay aligned with KDE task manager behavior.
 - Anchor themed task frames to the full delegate bounds so the task background owns the panel cross-axis.
+- Keep task-to-task layout spacing at zero; only theme margins and explicit content padding should create visible internal breathing room.
 - Anchor task content inside the themed frame margins plus normal Kirigami spacing so Plasma themes can own the visible background geometry without covering badges, icons, or titles.
 
 ## Packaging And Dependencies
