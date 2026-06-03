@@ -23,6 +23,8 @@ item order with `Meta+0`.
 - Task backgrounds and state indicators follow the active Plasma task-manager theme for normal, hover, active, minimized, demanding-attention, and drag-drop target states.
 - Task backgrounds fill the panel cross-axis: the available height in horizontal panels and the available width in vertical panels.
 - Adjacent task backgrounds do not add a fixed layout gap beyond the active Plasma task-manager theme geometry.
+- Task icon size follows KDE Plasma 6.6's default icons-and-text task manager behavior for the same panel size and active Plasma theme.
+- The active window uses the Plasma task-manager active background state, but its icon is not rendered with the hover-active icon appearance unless the task itself is highlighted by hover, keyboard focus, or an open task menu.
 - The first nine normal visible task slots are numbered `1` through `9`.
 - Normal tasks after slot 9 remain visible but are not numbered.
 - In supported normal horizontal panel sizes, the expected number style is a badge over the lower-left corner of the task icon.
