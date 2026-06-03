@@ -36,8 +36,8 @@ PlasmoidItem {
     preferredRepresentation: root.fullRepresentation
     toolTipMainText: "Numbered Task Manager"
 
-    QtQuickLayouts.Layout.fillWidth: root.vertical
-    QtQuickLayouts.Layout.fillHeight: !root.vertical
+    QtQuickLayouts.Layout.fillWidth: true
+    QtQuickLayouts.Layout.fillHeight: true
 
     function activateTaskAtIndex(index) {
         if (index === 9 && remoteAttentionTarget) {
@@ -487,11 +487,11 @@ PlasmoidItem {
         implicitWidth: root.vertical ? Math.max(96, Math.max(taskList.contentWidth, attentionItem.visible ? attentionItem.implicitWidth : 0)) : Math.max(160, taskList.contentWidth + attentionLongExtent)
         implicitHeight: root.vertical ? Math.max(taskExtent, taskList.contentHeight + attentionLongExtent) : taskExtent
 
-        QtQuickLayouts.Layout.fillWidth: root.vertical
-        QtQuickLayouts.Layout.fillHeight: !root.vertical
-        QtQuickLayouts.Layout.minimumWidth: root.vertical ? 0 : implicitWidth
+        QtQuickLayouts.Layout.fillWidth: true
+        QtQuickLayouts.Layout.fillHeight: true
+        QtQuickLayouts.Layout.minimumWidth: 0
         QtQuickLayouts.Layout.preferredWidth: implicitWidth
-        QtQuickLayouts.Layout.minimumHeight: root.vertical ? implicitHeight : 0
+        QtQuickLayouts.Layout.minimumHeight: 0
         QtQuickLayouts.Layout.preferredHeight: implicitHeight
 
         QtQuickLayouts.GridLayout {
