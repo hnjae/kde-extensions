@@ -490,8 +490,8 @@ PlasmoidItem {
             anchors.fill: parent
             columns: root.vertical ? 1 : 2
             rows: root.vertical ? 2 : 1
-            columnSpacing: 2
-            rowSpacing: 2
+            columnSpacing: 0
+            rowSpacing: 0
 
             QtQuick.ListView {
                 id: taskList
@@ -506,7 +506,7 @@ PlasmoidItem {
                 interactive: root.vertical ? contentHeight > height : contentWidth > width
                 model: root.normalTaskEntries
                 orientation: root.vertical ? QtQuick.ListView.Vertical : QtQuick.ListView.Horizontal
-                spacing: 2
+                spacing: 0
 
                 delegate: TaskItem {
                     required property int index
