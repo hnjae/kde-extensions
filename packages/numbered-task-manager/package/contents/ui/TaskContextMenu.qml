@@ -198,7 +198,7 @@ PlasmaExtras.Menu {
 
     QtQuick.Component.onCompleted: refreshActivities()
 
-    TaskManager.ActivityInfo {
+    readonly property TaskManager.ActivityInfo _activityInfo: TaskManager.ActivityInfo {
         id: activityInfo
 
         onCurrentActivityChanged: root.refreshActivities()
@@ -206,7 +206,7 @@ PlasmaExtras.Menu {
         onNumberOfRunningActivitiesChanged: root.refreshActivities()
     }
 
-    TaskManager.VirtualDesktopInfo {
+    readonly property TaskManager.VirtualDesktopInfo _virtualDesktopInfo: TaskManager.VirtualDesktopInfo {
         id: virtualDesktopInfo
     }
 
@@ -230,46 +230,46 @@ PlasmaExtras.Menu {
         enabled: root.taskModel && root.launcherUrl()
         text: "Launcher Activities"
         visible: root.hasLauncher() && root.launcherUrl() && root.activityEntries.length > 1
-    }
 
-    PlasmaExtras.Menu {
-        id: launcherActivitiesMenu
+        readonly property PlasmaExtras.Menu _launcherActivitiesMenu: PlasmaExtras.Menu {
+            id: launcherActivitiesMenu
 
-        placement: PlasmaExtras.Menu.RightPosedTopAlignedPopup
-        visualParent: launcherActivitiesItem.action
+            placement: PlasmaExtras.Menu.RightPosedTopAlignedPopup
+            visualParent: launcherActivitiesItem.action
 
-        PlasmaExtras.MenuItem {
-            checkable: true
-            checked: root.launcherPinnedToAllActivities()
-            text: "All Activities"
-
-            onClicked: {
-                root.setLauncherAllActivities();
-            }
-        }
-
-        QtQuick.Instantiator {
-            active: launcherActivitiesItem.visible
-            model: root.activityEntries
-
-            delegate: PlasmaExtras.MenuItem {
-                required property var modelData
-
+            PlasmaExtras.MenuItem {
                 checkable: true
-                checked: root.launcherPinnedToActivity(modelData.id)
-                text: modelData.name
+                checked: root.launcherPinnedToAllActivities()
+                text: "All Activities"
 
                 onClicked: {
-                    root.toggleLauncherActivity(modelData.id);
+                    root.setLauncherAllActivities();
                 }
             }
 
-            onObjectAdded: (index, object) => {
-                launcherActivitiesMenu.addMenuItem(object);
-            }
+            readonly property QtQuick.Instantiator _activityItems: QtQuick.Instantiator {
+                active: launcherActivitiesItem.visible
+                model: root.activityEntries
 
-            onObjectRemoved: (index, object) => {
-                launcherActivitiesMenu.removeMenuItem(object);
+                delegate: PlasmaExtras.MenuItem {
+                    required property var modelData
+
+                    checkable: true
+                    checked: root.launcherPinnedToActivity(modelData.id)
+                    text: modelData.name
+
+                    onClicked: {
+                        root.toggleLauncherActivity(modelData.id);
+                    }
+                }
+
+                onObjectAdded: (index, object) => {
+                    launcherActivitiesMenu.addMenuItem(object);
+                }
+
+                onObjectRemoved: (index, object) => {
+                    launcherActivitiesMenu.removeMenuItem(object);
+                }
             }
         }
     }
@@ -413,55 +413,55 @@ PlasmaExtras.Menu {
         enabled: root.hasWindowTask && root.boolRole(root.atm.IsVirtualDesktopsChangeable, root.task.isVirtualDesktopsChangeable || false)
         text: "Virtual Desktops"
         visible: root.isWindow() && root.boolRole(root.atm.IsVirtualDesktopsChangeable, root.task.isVirtualDesktopsChangeable || false)
-    }
 
-    PlasmaExtras.Menu {
-        id: virtualDesktopsMenu
+        readonly property PlasmaExtras.Menu _virtualDesktopsMenu: PlasmaExtras.Menu {
+            id: virtualDesktopsMenu
 
-        placement: PlasmaExtras.Menu.RightPosedTopAlignedPopup
-        visualParent: virtualDesktopsItem.action
+            placement: PlasmaExtras.Menu.RightPosedTopAlignedPopup
+            visualParent: virtualDesktopsItem.action
 
-        PlasmaExtras.MenuItem {
-            checkable: true
-            checked: root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false)
-            text: "All Desktops"
-
-            onClicked: {
-                root.taskModel.requestVirtualDesktops(root.modelIndex, []);
-            }
-        }
-
-        QtQuick.Instantiator {
-            active: virtualDesktopsItem.visible
-            model: root.desktopEntries
-
-            delegate: PlasmaExtras.MenuItem {
-                required property var modelData
-
+            PlasmaExtras.MenuItem {
                 checkable: true
-                checked: root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false) || TaskEntryLogic.desktopListContains(root.virtualDesktops(), modelData.id)
-                text: modelData.name
+                checked: root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false)
+                text: "All Desktops"
 
                 onClicked: {
-                    root.taskModel.requestVirtualDesktops(root.modelIndex, [modelData.id]);
+                    root.taskModel.requestVirtualDesktops(root.modelIndex, []);
                 }
             }
 
-            onObjectAdded: (index, object) => {
-                virtualDesktopsMenu.addMenuItem(object);
+            readonly property QtQuick.Instantiator _desktopItems: QtQuick.Instantiator {
+                active: virtualDesktopsItem.visible
+                model: root.desktopEntries
+
+                delegate: PlasmaExtras.MenuItem {
+                    required property var modelData
+
+                    checkable: true
+                    checked: root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false) || TaskEntryLogic.desktopListContains(root.virtualDesktops(), modelData.id)
+                    text: modelData.name
+
+                    onClicked: {
+                        root.taskModel.requestVirtualDesktops(root.modelIndex, [modelData.id]);
+                    }
+                }
+
+                onObjectAdded: (index, object) => {
+                    virtualDesktopsMenu.addMenuItem(object);
+                }
+
+                onObjectRemoved: (index, object) => {
+                    virtualDesktopsMenu.removeMenuItem(object);
+                }
             }
 
-            onObjectRemoved: (index, object) => {
-                virtualDesktopsMenu.removeMenuItem(object);
-            }
-        }
+            PlasmaExtras.MenuItem {
+                enabled: root.hasWindowTask
+                text: "New Desktop"
 
-        PlasmaExtras.MenuItem {
-            enabled: root.hasWindowTask
-            text: "New Desktop"
-
-            onClicked: {
-                root.taskModel.requestNewVirtualDesktop(root.modelIndex);
+                onClicked: {
+                    root.taskModel.requestNewVirtualDesktop(root.modelIndex);
+                }
             }
         }
     }
@@ -472,46 +472,46 @@ PlasmaExtras.Menu {
         enabled: root.hasWindowTask
         text: "Activities"
         visible: root.isWindow() && root.activityEntries.length > 1
-    }
 
-    PlasmaExtras.Menu {
-        id: activitiesMenu
+        readonly property PlasmaExtras.Menu _activitiesMenu: PlasmaExtras.Menu {
+            id: activitiesMenu
 
-        placement: PlasmaExtras.Menu.RightPosedTopAlignedPopup
-        visualParent: activitiesItem.action
+            placement: PlasmaExtras.Menu.RightPosedTopAlignedPopup
+            visualParent: activitiesItem.action
 
-        PlasmaExtras.MenuItem {
-            checkable: true
-            checked: root.taskOnAllActivities()
-            text: "All Activities"
-
-            onClicked: {
-                root.taskModel.requestActivities(root.modelIndex, []);
-            }
-        }
-
-        QtQuick.Instantiator {
-            active: activitiesItem.visible
-            model: root.activityEntries
-
-            delegate: PlasmaExtras.MenuItem {
-                required property var modelData
-
+            PlasmaExtras.MenuItem {
                 checkable: true
-                checked: root.taskOnActivity(modelData.id)
-                text: modelData.name
+                checked: root.taskOnAllActivities()
+                text: "All Activities"
 
                 onClicked: {
-                    root.toggleTaskActivity(modelData.id);
+                    root.taskModel.requestActivities(root.modelIndex, []);
                 }
             }
 
-            onObjectAdded: (index, object) => {
-                activitiesMenu.addMenuItem(object);
-            }
+            readonly property QtQuick.Instantiator _activityItems: QtQuick.Instantiator {
+                active: activitiesItem.visible
+                model: root.activityEntries
 
-            onObjectRemoved: (index, object) => {
-                activitiesMenu.removeMenuItem(object);
+                delegate: PlasmaExtras.MenuItem {
+                    required property var modelData
+
+                    checkable: true
+                    checked: root.taskOnActivity(modelData.id)
+                    text: modelData.name
+
+                    onClicked: {
+                        root.toggleTaskActivity(modelData.id);
+                    }
+                }
+
+                onObjectAdded: (index, object) => {
+                    activitiesMenu.addMenuItem(object);
+                }
+
+                onObjectRemoved: (index, object) => {
+                    activitiesMenu.removeMenuItem(object);
+                }
             }
         }
     }
