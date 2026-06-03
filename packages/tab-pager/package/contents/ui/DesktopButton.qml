@@ -23,10 +23,8 @@ QtQuick.Item {
 
     signal activated(int desktopIndex)
 
-    height: implicitHeight
     implicitHeight: desktopLabel.implicitHeight + frameMetrics.margins.top + frameMetrics.margins.bottom + root.verticalPadding * 2
     implicitWidth: desktopLabel.implicitWidth + frameMetrics.margins.left + frameMetrics.margins.right + root.horizontalPadding * 2
-    width: implicitWidth
 
     KSvg.FrameSvgItem {
         id: frameMetrics
