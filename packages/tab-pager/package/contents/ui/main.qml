@@ -91,13 +91,37 @@ PlasmoidItem {
         QtQuick.Component {
             id: horizontalLayoutComponent
 
-            QtQuickLayouts.RowLayout {
-                spacing: layoutMetrics.desktopGap
+            QtQuick.Item {
+                id: horizontalLayout
 
-                QtQuick.Repeater {
-                    model: backend
+                implicitHeight: horizontalMetricsButton.implicitHeight
+                implicitWidth: horizontalRow.implicitWidth
 
-                    delegate: desktopButtonComponent
+                DesktopButton {
+                    id: horizontalMetricsButton
+
+                    active: false
+                    horizontalPadding: fullRepresentationItem.horizontalPadding
+                    index: -1
+                    label: ""
+                    labelFont: backend.labelFont
+                    verticalPadding: fullRepresentationItem.verticalPadding
+                    visible: false
+                }
+
+                QtQuick.Row {
+                    id: horizontalRow
+
+                    anchors.centerIn: parent
+                    height: parent.height > 0 ? parent.height : horizontalLayout.implicitHeight
+                    spacing: layoutMetrics.desktopGap
+                    width: implicitWidth
+
+                    QtQuick.Repeater {
+                        model: backend
+
+                        delegate: horizontalDesktopButtonComponent
+                    }
                 }
             }
         }
@@ -111,21 +135,35 @@ PlasmoidItem {
                 QtQuick.Repeater {
                     model: backend
 
-                    delegate: desktopButtonComponent
+                    delegate: verticalDesktopButtonComponent
                 }
             }
         }
 
         QtQuick.Component {
-            id: desktopButtonComponent
+            id: horizontalDesktopButtonComponent
 
             DesktopButton {
-                QtQuickLayouts.Layout.fillHeight: !root.verticalPanel
-                QtQuickLayouts.Layout.fillWidth: root.verticalPanel
-                QtQuickLayouts.Layout.maximumHeight: root.verticalPanel ? implicitHeight : Infinity
-                QtQuickLayouts.Layout.maximumWidth: root.verticalPanel ? Infinity : implicitWidth
-                QtQuickLayouts.Layout.minimumHeight: root.verticalPanel ? implicitHeight : 1
-                QtQuickLayouts.Layout.minimumWidth: root.verticalPanel ? 1 : implicitWidth
+                height: horizontalRow.height
+                width: implicitWidth
+
+                horizontalPadding: fullRepresentationItem.horizontalPadding
+                labelFont: backend.labelFont
+                verticalPadding: fullRepresentationItem.verticalPadding
+
+                onActivated: desktopIndex => backend.activate(desktopIndex)
+            }
+        }
+
+        QtQuick.Component {
+            id: verticalDesktopButtonComponent
+
+            DesktopButton {
+                QtQuickLayouts.Layout.fillWidth: true
+                QtQuickLayouts.Layout.maximumHeight: implicitHeight
+                QtQuickLayouts.Layout.maximumWidth: Infinity
+                QtQuickLayouts.Layout.minimumHeight: implicitHeight
+                QtQuickLayouts.Layout.minimumWidth: 1
                 QtQuickLayouts.Layout.preferredHeight: implicitHeight
                 QtQuickLayouts.Layout.preferredWidth: implicitWidth
 
