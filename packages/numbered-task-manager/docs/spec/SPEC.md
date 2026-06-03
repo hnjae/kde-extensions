@@ -22,6 +22,7 @@ item order with `Meta+0`.
   manager interaction patterns unless this spec says otherwise.
 - Task backgrounds and state indicators follow the active Plasma task-manager theme for normal, hover, active, minimized, demanding-attention, and drag-drop target states.
 - Task backgrounds fill the panel cross-axis: the available height in horizontal panels and the available width in vertical panels.
+- The widget fills available panel space like KDE's task manager: horizontal panels expand the widget across available width, and vertical panels expand it across available height.
 - Adjacent task backgrounds do not add a fixed layout gap beyond the active Plasma task-manager theme geometry.
 - Task icon size follows KDE Plasma 6.6's default icons-and-text task manager behavior for the same panel size and active Plasma theme.
 - The active window uses the Plasma task-manager active background state, but its icon is not rendered with the hover-active icon appearance unless the task itself is highlighted by hover, keyboard focus, or an open task menu.
