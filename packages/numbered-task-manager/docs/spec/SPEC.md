@@ -22,6 +22,7 @@ item order with `Meta+0`.
   manager interaction patterns unless this spec says otherwise.
 - Task backgrounds and state indicators follow the active Plasma task-manager theme for normal, hover, active, minimized, demanding-attention, and drag-drop target states.
 - Task backgrounds fill the panel cross-axis: the available height in horizontal panels and the available width in vertical panels.
+- Adjacent task backgrounds do not add a fixed layout gap beyond the active Plasma task-manager theme geometry.
 - The first nine normal visible task slots are numbered `1` through `9`.
 - Normal tasks after slot 9 remain visible but are not numbered.
 - In supported normal horizontal panel sizes, the expected number style is a badge over the lower-left corner of the task icon.
