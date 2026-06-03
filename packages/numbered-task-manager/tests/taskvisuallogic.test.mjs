@@ -86,6 +86,31 @@ const taskFrameQml = readFileSync(
 assert.match(taskFrameQml, /KSvg\.FrameSvgItem/);
 assert.match(taskFrameQml, /imagePath:\s*"widgets\/tasks"/);
 
+const mainQml = readFileSync(
+  new URL("../package/contents/ui/main.qml", import.meta.url),
+  "utf8",
+);
+assert.match(mainQml, /import org\.kde\.plasma\.core as PlasmaCore/);
+assert.match(
+  mainQml,
+  /readonly property bool vertical:\s*Plasmoid\.formFactor === PlasmaCore\.Types\.Vertical/,
+);
+assert.match(mainQml, /Plasmoid\.constraintHints:\s*Plasmoid\.CanFillArea/);
+assert.match(mainQml, /QtQuickLayouts\.Layout\.fillWidth:\s*root\.vertical/);
+assert.match(mainQml, /QtQuickLayouts\.Layout\.fillHeight:\s*!root\.vertical/);
+assert.match(
+  mainQml,
+  /orientation:\s*root\.vertical\s*\?\s*QtQuick\.ListView\.Vertical\s*:\s*QtQuick\.ListView\.Horizontal/,
+);
+assert.match(
+  mainQml,
+  /height:\s*root\.vertical\s*\?\s*implicitHeight\s*:\s*taskList\.height/,
+);
+assert.match(
+  mainQml,
+  /width:\s*root\.vertical\s*\?\s*taskList\.width\s*:\s*implicitWidth/,
+);
+
 for (const fileName of ["TaskItem.qml", "AttentionItem.qml"]) {
   const qml = readFileSync(
     new URL(`../package/contents/ui/${fileName}`, import.meta.url),
