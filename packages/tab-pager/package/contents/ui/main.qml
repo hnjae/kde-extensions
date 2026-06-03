@@ -59,6 +59,12 @@ PlasmoidItem {
             font: backend.labelFont
         }
 
+        PagerLayoutMetrics {
+            id: layoutMetrics
+
+            verticalPanel: root.verticalPanel
+        }
+
         QtQuick.MouseArea {
             anchors.fill: parent
             acceptedButtons: QtQuick.Qt.NoButton
@@ -72,7 +78,13 @@ PlasmoidItem {
         QtQuick.Loader {
             id: pagerLayoutLoader
 
-            anchors.fill: parent
+            anchors {
+                fill: parent
+                bottomMargin: root.verticalPanel ? 0 : layoutMetrics.panelCrossAxisInset
+                leftMargin: root.verticalPanel ? layoutMetrics.panelCrossAxisInset : 0
+                rightMargin: root.verticalPanel ? layoutMetrics.panelCrossAxisInset : 0
+                topMargin: root.verticalPanel ? 0 : layoutMetrics.panelCrossAxisInset
+            }
             sourceComponent: root.verticalPanel ? verticalLayoutComponent : horizontalLayoutComponent
         }
 
@@ -80,7 +92,7 @@ PlasmoidItem {
             id: horizontalLayoutComponent
 
             QtQuickLayouts.RowLayout {
-                spacing: 0
+                spacing: layoutMetrics.desktopGap
 
                 QtQuick.Repeater {
                     model: backend
@@ -94,7 +106,7 @@ PlasmoidItem {
             id: verticalLayoutComponent
 
             QtQuickLayouts.ColumnLayout {
-                spacing: 0
+                spacing: layoutMetrics.desktopGap
 
                 QtQuick.Repeater {
                     model: backend
