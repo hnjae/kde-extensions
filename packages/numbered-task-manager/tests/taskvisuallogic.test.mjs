@@ -106,8 +106,14 @@ assert.match(
   /readonly property bool vertical:\s*Plasmoid\.formFactor === PlasmaCore\.Types\.Vertical/,
 );
 assert.match(mainQml, /Plasmoid\.constraintHints:\s*Plasmoid\.CanFillArea/);
-assert.match(mainQml, /QtQuickLayouts\.Layout\.fillWidth:\s*root\.vertical/);
-assert.match(mainQml, /QtQuickLayouts\.Layout\.fillHeight:\s*!root\.vertical/);
+assert.match(
+  mainQml,
+  /preferredRepresentation:\s*root\.fullRepresentation[\s\S]*?QtQuickLayouts\.Layout\.fillWidth:\s*true[\s\S]*?QtQuickLayouts\.Layout\.fillHeight:\s*true[\s\S]*?function activateTaskAtIndex/,
+);
+assert.match(
+  mainQml,
+  /fullRepresentation:\s*QtQuick\.Item\s*\{[\s\S]*?QtQuickLayouts\.Layout\.fillWidth:\s*true[\s\S]*?QtQuickLayouts\.Layout\.fillHeight:\s*true[\s\S]*?QtQuickLayouts\.Layout\.minimumWidth:\s*0[\s\S]*?QtQuickLayouts\.Layout\.minimumHeight:\s*0/,
+);
 assert.match(
   mainQml,
   /orientation:\s*root\.vertical\s*\?\s*QtQuick\.ListView\.Vertical\s*:\s*QtQuick\.ListView\.Horizontal/,
