@@ -9,7 +9,7 @@ in `SPEC.md`.
   discovery or activation from scratch.
 - Use the Plasma Workspace `org.kde.taskmanager` QML module for task data and
   task actions.
-- Advertise Plasma's fill-area constraint and fill the panel cross-axis in the root layout: horizontal panels fill height, vertical panels fill width, and the long axis remains content-sized unless a later setting explicitly changes that.
+- Advertise Plasma's fill-area constraint and request fill layout on both axes so the widget occupies available panel space; task delegates remain content-sized while the task list viewport absorbs extra long-axis space and clips when content exceeds the panel allocation.
 - Keep the implementation on public QML APIs where possible. Context menu
   actions should call `TasksModel.request*` methods directly.
 - Implement drag reordering with a widget-owned task MIME type. Reorder pinned
