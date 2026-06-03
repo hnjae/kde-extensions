@@ -24,6 +24,9 @@ in `SPEC.md`.
   long-lived Qt Quick Controls popup inside `fullRepresentation`, because panel
   delegates need a native menu anchored to the task delegate to avoid clipping
   and applet-menu collisions.
+- Keep `PlasmaExtras.Menu` direct content limited to menu items. Helper objects,
+  dynamic item factories, and submenus should be object-valued properties so
+  they do not enter the menu's `QMenuItem` content list.
 - Read task context-menu data from live `TasksModel` roles through the menu's
   model index when invoking task actions. Snapshot data may describe the
   visible delegate, but menu mutations should target the current model entry.
