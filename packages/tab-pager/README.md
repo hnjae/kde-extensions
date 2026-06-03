@@ -5,9 +5,7 @@
 
 Tab Pager is a Plasma 6 widget for switching between virtual desktops.
 
-It displays the user's virtual desktops as a compact horizontal row. Desktops
-with KDE's default `Desktop [number]` names are shown as numbers, while custom
-desktop names are shown as labels. The current desktop is highlighted.
+It displays the user's virtual desktops as compact adjacent boxes, using a row in horizontal panels and a column in vertical panels. Desktops with KDE's default `Desktop [number]` names are shown as numbers, while custom desktop names are shown as labels. The current desktop is highlighted.
 
 Click a desktop to switch to it. Scroll over the widget to move to the previous
 or next desktop. Scrolling follows KDE's virtual desktop wrapping setting, and
