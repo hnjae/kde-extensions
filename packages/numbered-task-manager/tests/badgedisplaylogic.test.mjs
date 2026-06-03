@@ -8,11 +8,9 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/BadgeDisplayLogic.js", import.meta.url),
-  ["badgePresentation", "iconExtentForTaskHeight"],
+  ["badgePresentation"],
 );
 
-assert.equal(logic.iconExtentForTaskHeight(40), 32);
-assert.equal(logic.iconExtentForTaskHeight(31), 23);
 assert.equal(logic.badgePresentation(1, 24), "overlay");
 assert.equal(logic.badgePresentation(9, 32), "overlay");
 assert.equal(logic.badgePresentation(1, 23), "prefix");
@@ -36,3 +34,4 @@ assert.match(
   taskItemQml,
   /badgePresentation\(root\.slotNumber,\s*root\.iconExtent\)/,
 );
+assert.match(taskItemQml, /import "TaskMetricsLogic\.js" as TaskMetricsLogic/);

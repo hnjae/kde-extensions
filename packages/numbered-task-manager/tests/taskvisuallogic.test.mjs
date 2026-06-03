@@ -8,7 +8,13 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskVisualLogic.js", import.meta.url),
-  ["baseFramePrefix", "framePrefixes", "hoveredFramePrefixes", "taskPrefix"],
+  [
+    "baseFramePrefix",
+    "framePrefixes",
+    "hoveredFramePrefixes",
+    "iconActive",
+    "taskPrefix",
+  ],
 );
 
 const edges = {
@@ -28,6 +34,10 @@ assert.equal(logic.baseFramePrefix({ attention: true }), "attention");
 assert.equal(logic.baseFramePrefix({ dropHover: true }), "attention");
 assert.equal(logic.baseFramePrefix({ launcher: true }), "");
 assert.equal(logic.baseFramePrefix({}), "normal");
+assert.equal(logic.iconActive({ active: true, highlighted: false }), false);
+assert.equal(logic.iconActive({ active: false, highlighted: true }), true);
+assert.equal(logic.iconActive({ active: true, highlighted: true }), true);
+assert.equal(logic.iconActive({}), false);
 
 assertArrayEqual(logic.taskPrefix("focus", undefined, edges), [
   "south-focus",
@@ -120,5 +130,7 @@ for (const fileName of ["TaskItem.qml", "AttentionItem.qml"]) {
     "utf8",
   );
   assert.match(qml, /\bTaskFrame\s*\{/);
+  assert.match(qml, /readonly property bool visualHighlighted:/);
+  assert.match(qml, /TaskVisualLogic\.iconActive\(\{/);
   assert.doesNotMatch(qml, /QtQuick\.Rectangle\s*\{/);
 }
