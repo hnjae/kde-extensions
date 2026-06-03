@@ -110,6 +110,9 @@ assert.match(
   mainQml,
   /width:\s*root\.vertical\s*\?\s*taskList\.width\s*:\s*implicitWidth/,
 );
+assert.match(mainQml, /columnSpacing:\s*0/);
+assert.match(mainQml, /rowSpacing:\s*0/);
+assert.match(mainQml, /^\s*spacing:\s*0$/m);
 
 for (const fileName of ["TaskItem.qml", "AttentionItem.qml"]) {
   const qml = readFileSync(
