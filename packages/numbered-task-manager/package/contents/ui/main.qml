@@ -5,8 +5,9 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
-import org.kde.taskmanager as TaskManager
+import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
+import org.kde.taskmanager as TaskManager
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskActivityLogic.js" as TaskActivityLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
@@ -17,6 +18,7 @@ PlasmoidItem {
     id: root
 
     readonly property string taskDragMimeType: "application/x-numbered-task-manager-row"
+    readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
     property var normalTaskEntries: []
     property var normalTaskEntryMap: ({})
     property var normalTaskManualOrder: []
@@ -30,8 +32,12 @@ PlasmoidItem {
     property bool updatingLauncherConfig: false
 
     Plasmoid.icon: "preferences-system-windows"
+    Plasmoid.constraintHints: Plasmoid.CanFillArea
     preferredRepresentation: root.fullRepresentation
     toolTipMainText: "Numbered Task Manager"
+
+    QtQuickLayouts.Layout.fillWidth: root.vertical
+    QtQuickLayouts.Layout.fillHeight: !root.vertical
 
     function activateTaskAtIndex(index) {
         if (index === 9 && remoteAttentionTarget) {
@@ -465,31 +471,41 @@ PlasmoidItem {
     fullRepresentation: QtQuick.Item {
         id: fullRepresentationItem
 
-        implicitWidth: Math.max(160, taskList.contentWidth + (attentionItem.visible ? attentionItem.implicitWidth + taskLayout.spacing : 0))
-        implicitHeight: 40
+        readonly property int taskExtent: 40
+        readonly property real attentionLongExtent: attentionItem.visible ? (root.vertical ? attentionItem.implicitHeight + taskLayout.rowSpacing : attentionItem.implicitWidth + taskLayout.columnSpacing) : 0
 
-        QtQuickLayouts.Layout.minimumWidth: implicitWidth
+        implicitWidth: root.vertical ? Math.max(96, Math.max(taskList.contentWidth, attentionItem.visible ? attentionItem.implicitWidth : 0)) : Math.max(160, taskList.contentWidth + attentionLongExtent)
+        implicitHeight: root.vertical ? Math.max(taskExtent, taskList.contentHeight + attentionLongExtent) : taskExtent
+
+        QtQuickLayouts.Layout.fillWidth: root.vertical
+        QtQuickLayouts.Layout.fillHeight: !root.vertical
+        QtQuickLayouts.Layout.minimumWidth: root.vertical ? 0 : implicitWidth
         QtQuickLayouts.Layout.preferredWidth: implicitWidth
-        QtQuickLayouts.Layout.minimumHeight: implicitHeight
+        QtQuickLayouts.Layout.minimumHeight: root.vertical ? implicitHeight : 0
         QtQuickLayouts.Layout.preferredHeight: implicitHeight
 
-        QtQuickLayouts.RowLayout {
+        QtQuickLayouts.GridLayout {
             id: taskLayout
+
             anchors.fill: parent
-            spacing: 2
+            columns: root.vertical ? 1 : 2
+            rows: root.vertical ? 2 : 1
+            columnSpacing: 2
+            rowSpacing: 2
 
             QtQuick.ListView {
                 id: taskList
 
                 QtQuickLayouts.Layout.fillHeight: true
                 QtQuickLayouts.Layout.fillWidth: true
-                QtQuickLayouts.Layout.preferredWidth: contentWidth
+                QtQuickLayouts.Layout.preferredHeight: root.vertical ? contentHeight : fullRepresentationItem.taskExtent
+                QtQuickLayouts.Layout.preferredWidth: root.vertical ? fullRepresentationItem.taskExtent : contentWidth
 
                 boundsBehavior: QtQuick.Flickable.StopAtBounds
                 clip: true
-                interactive: contentWidth > width
+                interactive: root.vertical ? contentHeight > height : contentWidth > width
                 model: root.normalTaskEntries
-                orientation: QtQuick.ListView.Horizontal
+                orientation: root.vertical ? QtQuick.ListView.Vertical : QtQuick.ListView.Horizontal
                 spacing: 2
 
                 delegate: TaskItem {
@@ -498,7 +514,8 @@ PlasmoidItem {
 
                     readonly property var entry: modelData || ({})
 
-                    height: taskList.height
+                    height: root.vertical ? implicitHeight : taskList.height
+                    width: root.vertical ? taskList.width : implicitWidth
                     taskIndex: entry.moveIndex ?? entry.sourceIndex ?? -1
                     modelIndex: entry.modelIndex
                     slotNumber: index < 9 ? index + 1 : 0
@@ -536,7 +553,8 @@ PlasmoidItem {
             AttentionItem {
                 id: attentionItem
 
-                QtQuickLayouts.Layout.fillHeight: true
+                QtQuickLayouts.Layout.fillHeight: !root.vertical
+                QtQuickLayouts.Layout.fillWidth: root.vertical
 
                 count: root.remoteAttentionCount
                 iconSource: root.remoteAttentionTarget ? root.remoteAttentionTarget.iconSource : "dialog-warning"
