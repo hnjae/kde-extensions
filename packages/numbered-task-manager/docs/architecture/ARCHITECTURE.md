@@ -9,6 +9,7 @@ in `SPEC.md`.
   discovery or activation from scratch.
 - Use the Plasma Workspace `org.kde.taskmanager` QML module for task data and
   task actions.
+- Advertise Plasma's fill-area constraint and fill the panel cross-axis in the root layout: horizontal panels fill height, vertical panels fill width, and the long axis remains content-sized unless a later setting explicitly changes that.
 - Keep the implementation on public QML APIs where possible. Context menu
   actions should call `TasksModel.request*` methods directly.
 - Implement drag reordering with a widget-owned task MIME type. Reorder pinned
@@ -127,6 +128,7 @@ in `SPEC.md`.
 - Do not render a `0` number badge for `Meta+0`.
 - Render task delegate state backgrounds with `KSvg.FrameSvgItem` from Plasma's `widgets/tasks` theme asset instead of hand-painted QML rectangles.
 - Keep the themed frame prefix decision in a small tested helper so normal, hover, active, minimized, attention, launcher, drag-drop target, and panel-edge fallbacks stay aligned with KDE task manager behavior.
+- Anchor themed task frames to the full delegate bounds so the task background owns the panel cross-axis.
 - Anchor task content inside the themed frame margins plus normal Kirigami spacing so Plasma themes can own the visible background geometry without covering badges, icons, or titles.
 
 ## Packaging And Dependencies
