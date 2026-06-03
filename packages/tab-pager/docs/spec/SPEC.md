@@ -6,6 +6,10 @@ Tab Pager is a Plasma widget for switching between virtual desktops.
 
 The widget presents the virtual desktops as adjacent boxes. In a horizontal panel, the boxes are arranged in a single horizontal row and fill the panel height. In a vertical panel, the boxes are arranged in a single vertical column and fill the panel width.
 
+Adjacent boxes are separated by the same one-pixel gap used by KDE's built-in pager.
+
+The widget does not add extra outer spacing between the boxes and the panel edge. In a horizontal panel, the visible top and bottom bezel comes from the KDE pager frame. In a vertical panel, the boxes extend to the left and right panel edges.
+
 Each box represents one virtual desktop. A desktop whose name is exactly `Desktop [number]` is shown only by its current desktop number, such as `1` or `2`.
 
 A desktop with any other name is shown by that name.
