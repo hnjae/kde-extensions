@@ -267,6 +267,7 @@ PlasmoidItem {
             return;
         }
 
+        const visualParent = menuRequest.visualParent;
         const menu = contextMenuComponent.createObject(menuRequest.visualParent, {
             launcherModel: tasksModel,
             modelIndex: menuRequest.modelIndex,
@@ -277,6 +278,15 @@ PlasmoidItem {
         }) as TaskContextMenu;
         if (!menu) {
             return;
+        }
+
+        if (visualParent.contextMenuOpen !== undefined) {
+            visualParent.contextMenuOpen = true;
+            menu.closed.connect(() => {
+                if (visualParent.contextMenuOpen !== undefined) {
+                    visualParent.contextMenuOpen = false;
+                }
+            });
         }
 
         menu.pinRequested.connect(root.pinLauncher);

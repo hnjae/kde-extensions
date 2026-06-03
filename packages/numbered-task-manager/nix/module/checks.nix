@@ -61,6 +61,7 @@
               contents/ui/TaskEntryLogic.js
               contents/ui/RemoteAttentionLogic.js
               contents/ui/TaskModelLogic.js
+              contents/ui/TaskMetricsLogic.js
               contents/ui/NumberBadge.qml
               contents/config/main.xml
             "

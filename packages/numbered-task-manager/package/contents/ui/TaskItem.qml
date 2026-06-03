@@ -9,6 +9,8 @@ import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
 import "BadgeDisplayLogic.js" as BadgeDisplayLogic
+import "TaskMetricsLogic.js" as TaskMetricsLogic
+import "TaskVisualLogic.js" as TaskVisualLogic
 
 QtQuick.Item {
     id: root
@@ -28,9 +30,11 @@ QtQuick.Item {
     property var taskData: ({})
     property var canDropTask
     property bool dropHover: false
+    property bool contextMenuOpen: false
     readonly property real contentHorizontalPadding: taskFrame.contentLeftMargin + taskFrame.contentRightMargin + Kirigami.Units.smallSpacing * 2
-    readonly property int iconExtent: BadgeDisplayLogic.iconExtentForTaskHeight(Math.max(0, height - taskFrame.contentTopMargin - taskFrame.contentBottomMargin))
+    readonly property int iconExtent: TaskMetricsLogic.iconExtentForTaskFrame(height, taskFrame.contentTopMargin, taskFrame.contentBottomMargin, Kirigami.Units.iconSizes.small)
     readonly property string badgePresentation: BadgeDisplayLogic.badgePresentation(root.slotNumber, root.iconExtent)
+    readonly property bool visualHighlighted: pointerHandler.hovered || root.activeFocus || root.contextMenuOpen
 
     signal activated(int taskIndex)
     signal contextMenuRequested(var request)
@@ -50,7 +54,7 @@ QtQuick.Item {
         active: root.active
         attention: root.demandingAttention
         dropHover: root.dropHover
-        hovered: pointerHandler.hovered
+        hovered: root.visualHighlighted
         launcher: root.launcher
         minimized: root.minimized
     }
@@ -83,7 +87,10 @@ QtQuick.Item {
 
             KirigamiPrimitives.Icon {
                 anchors.fill: parent
-                active: root.active || pointerHandler.hovered
+                active: TaskVisualLogic.iconActive({
+                    active: root.active,
+                    highlighted: root.visualHighlighted
+                })
                 fallback: "application-x-executable"
                 source: root.iconSource
                 z: 0

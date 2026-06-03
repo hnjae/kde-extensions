@@ -63,6 +63,11 @@ function hoveredFramePrefixes(prefix, location, plasmaCoreTypes) {
   return prefixes;
 }
 
+function iconActive(state) {
+  const taskState = state || {};
+  return Boolean(taskState.highlighted);
+}
+
 function framePrefixes(state, location, plasmaCoreTypes) {
   const prefix = baseFramePrefix(state);
   if (state && state.hovered) {

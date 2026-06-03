@@ -46,6 +46,7 @@ PlasmaExtras.Menu {
     signal pinRequested(string launcherUrl)
     signal unpinRequested(string launcherUrl)
     signal launcherListChangeRequested(var launchers)
+    signal closed
 
     function show() {
         refreshActivities();
@@ -192,6 +193,7 @@ PlasmaExtras.Menu {
 
     onStatusChanged: {
         if (status === PlasmaExtras.Menu.Closed) {
+            closed();
             destroy();
         }
     }

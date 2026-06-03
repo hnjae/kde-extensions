@@ -8,6 +8,8 @@ import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
+import "TaskMetricsLogic.js" as TaskMetricsLogic
+import "TaskVisualLogic.js" as TaskVisualLogic
 
 QtQuick.Item {
     id: root
@@ -17,8 +19,10 @@ QtQuick.Item {
     property var iconSource: "dialog-warning"
     property var modelIndex
     property var taskData: ({})
+    property bool contextMenuOpen: false
     readonly property real contentHorizontalPadding: taskFrame.contentLeftMargin + taskFrame.contentRightMargin + Kirigami.Units.smallSpacing * 2
-    readonly property int iconExtent: Math.max(16, Math.min(32, height - taskFrame.contentTopMargin - taskFrame.contentBottomMargin - Kirigami.Units.smallSpacing * 2))
+    readonly property int iconExtent: TaskMetricsLogic.iconExtentForTaskFrame(height, taskFrame.contentTopMargin, taskFrame.contentBottomMargin, Kirigami.Units.iconSizes.small)
+    readonly property bool visualHighlighted: pointerHandler.hovered || root.activeFocus || root.contextMenuOpen
 
     signal activated
     signal contextMenuRequested(var request)
@@ -35,7 +39,7 @@ QtQuick.Item {
 
         anchors.fill: parent
         attention: true
-        hovered: pointerHandler.hovered
+        hovered: root.visualHighlighted
     }
 
     QtQuickLayouts.RowLayout {
@@ -57,7 +61,9 @@ QtQuick.Item {
 
             KirigamiPrimitives.Icon {
                 anchors.fill: parent
-                active: pointerHandler.hovered
+                active: TaskVisualLogic.iconActive({
+                    highlighted: root.visualHighlighted
+                })
                 fallback: "dialog-warning"
                 source: root.iconSource
             }
