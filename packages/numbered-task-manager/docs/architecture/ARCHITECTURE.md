@@ -128,6 +128,9 @@ in `SPEC.md`.
 - Do not render a `0` number badge for `Meta+0`.
 - Render task delegate state backgrounds with `KSvg.FrameSvgItem` from Plasma's `widgets/tasks` theme asset instead of hand-painted QML rectangles.
 - Keep the themed frame prefix decision in a small tested helper so normal, hover, active, minimized, attention, launcher, drag-drop target, and panel-edge fallbacks stay aligned with KDE task manager behavior.
+- Keep task visual metrics in `TaskMetricsLogic.js`. Delegate size, icon extent, theme-margin adjustment, and badge-size thresholds should have one tested owner instead of being duplicated by normal task and remote-attention delegates.
+- Keep hover-active icon decisions in `TaskVisualLogic.js`. A task model's active-window state selects the frame `focus` prefix only; icon active rendering is controlled by delegate highlight state.
+- Each task-like delegate owns its own `visualHighlighted` state from pointer hover, keyboard focus, and task-menu-open status. The root widget owns menu lifecycle, but it must not own per-delegate hover state.
 - Anchor themed task frames to the full delegate bounds so the task background owns the panel cross-axis.
 - Keep task-to-task layout spacing at zero; only theme margins and explicit content padding should create visible internal breathing room.
 - Anchor task content inside the themed frame margins plus normal Kirigami spacing so Plasma themes can own the visible background geometry without covering badges, icons, or titles.
@@ -136,6 +139,7 @@ in `SPEC.md`.
 
 - The package currently declares Plasma 6.6 as the minimum supported API version;
   keep that minimum unless an implementation detail requires raising it.
+- Visual task metrics should match KDE Plasma 6.6's default icons-and-text task manager through local helper logic with explicit inputs, not through imports of Plasma private task-manager QML modules.
 - Nix build, check, and development shells must include the QML import path for
   Plasma Workspace so `org.kde.taskmanager` resolves during linting and local
   development.
