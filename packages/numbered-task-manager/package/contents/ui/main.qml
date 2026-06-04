@@ -535,9 +535,7 @@ PlasmoidItem {
                     minimized: entry.isMinimized || false
                     launcher: entry.isLauncher || false
                     demandingAttention: entry.demandingAttention || false
-                    pinned: entry.launcherBacked || false
                     dragMimeType: root.taskDragMimeType
-                    hasLauncher: entry.hasLauncher || false
                     canDropTask: (sourceIndex, targetIndex) => root.canMoveTask(sourceIndex, targetIndex)
 
                     onActivated: {

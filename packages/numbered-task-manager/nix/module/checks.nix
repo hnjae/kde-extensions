@@ -55,10 +55,10 @@
               contents/ui/AttentionItem.qml
               contents/ui/TaskContextMenu.qml
               contents/ui/ActivityScopeLogic.js
-              contents/ui/BadgeDisplayLogic.js
               contents/ui/LauncherListLogic.js
               contents/ui/TaskActivityLogic.js
               contents/ui/TaskEntryLogic.js
+              contents/ui/TaskItemPresentationLogic.js
               contents/ui/RemoteAttentionLogic.js
               contents/ui/TaskModelLogic.js
               contents/ui/TaskMetricsLogic.js

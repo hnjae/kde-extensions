@@ -13,6 +13,7 @@ const logic = loadQmlJsModule(
   ),
   ["taskItemPresentation"],
 );
+const plain = (value) => JSON.parse(JSON.stringify(value));
 
 function presentation({
   slotNumber = 1,
@@ -21,13 +22,15 @@ function presentation({
   contentEndMargin = 4,
   minimumIconExtent = 16,
 }) {
-  return logic.taskItemPresentation({
-    contentEndMargin,
-    contentStartMargin,
-    frameExtent,
-    minimumIconExtent,
-    slotNumber,
-  });
+  return plain(
+    logic.taskItemPresentation({
+      contentEndMargin,
+      contentStartMargin,
+      frameExtent,
+      minimumIconExtent,
+      slotNumber,
+    }),
+  );
 }
 
 assert.deepEqual(
@@ -43,6 +46,14 @@ assert.deepEqual(presentation({ frameExtent: 32 }), {
   numberMode: "prefix",
   slotLabel: "1",
 });
+assert.deepEqual(
+  presentation({ contentEndMargin: 0, contentStartMargin: 0, frameExtent: 39 }),
+  {
+    iconExtent: 39,
+    numberMode: "prefix",
+    slotLabel: "1",
+  },
+);
 assert.deepEqual(presentation({ frameExtent: 40 }), {
   iconExtent: 32,
   numberMode: "overlay",

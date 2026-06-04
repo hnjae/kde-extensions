@@ -8,8 +8,7 @@ import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
-import "BadgeDisplayLogic.js" as BadgeDisplayLogic
-import "TaskMetricsLogic.js" as TaskMetricsLogic
+import "TaskItemPresentationLogic.js" as TaskItemPresentationLogic
 import "TaskVisualLogic.js" as TaskVisualLogic
 
 QtQuick.Item {
@@ -17,10 +16,8 @@ QtQuick.Item {
 
     property bool active: false
     property bool demandingAttention: false
-    property bool hasLauncher: false
     property bool launcher: false
     property bool minimized: false
-    property bool pinned: false
     property string dragMimeType: ""
     property int slotNumber: 0
     property int taskIndex: -1
@@ -32,8 +29,16 @@ QtQuick.Item {
     property bool dropHover: false
     property bool contextMenuOpen: false
     readonly property real contentHorizontalPadding: taskFrame.contentLeftMargin + taskFrame.contentRightMargin + Kirigami.Units.smallSpacing * 2
-    readonly property int iconExtent: TaskMetricsLogic.iconExtentForTaskFrame(height, taskFrame.contentTopMargin, taskFrame.contentBottomMargin, Kirigami.Units.iconSizes.small)
-    readonly property string badgePresentation: BadgeDisplayLogic.badgePresentation(root.slotNumber, root.iconExtent)
+    readonly property var itemPresentation: TaskItemPresentationLogic.taskItemPresentation({
+        contentEndMargin: taskFrame.contentBottomMargin,
+        contentStartMargin: taskFrame.contentTopMargin,
+        frameExtent: height,
+        minimumIconExtent: Kirigami.Units.iconSizes.small,
+        slotNumber: root.slotNumber
+    })
+    readonly property int iconExtent: itemPresentation.iconExtent
+    readonly property string numberMode: itemPresentation.numberMode
+    readonly property string slotLabel: itemPresentation.slotLabel
     readonly property bool visualHighlighted: pointerHandler.hovered || root.activeFocus || root.contextMenuOpen
 
     signal activated(int taskIndex)
@@ -74,8 +79,8 @@ QtQuick.Item {
             color: KirigamiPlatform.Theme.textColor
             font.family: KirigamiPlatform.Theme.fixedWidthFont.family
             font.bold: true
-            text: root.slotNumber > 0 ? root.slotNumber.toString() : ""
-            visible: root.badgePresentation === "prefix"
+            text: root.slotLabel
+            visible: root.numberMode === "prefix"
         }
 
         QtQuick.Item {
@@ -102,7 +107,7 @@ QtQuick.Item {
                 number: root.slotNumber
                 scale: 0.85
                 transformOrigin: QtQuick.Item.BottomLeft
-                visible: root.badgePresentation === "overlay"
+                visible: root.numberMode === "overlay"
                 z: 1
             }
         }

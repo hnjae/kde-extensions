@@ -20,11 +20,22 @@ assert.equal(logic.iconExtentForTaskFrame(40, 4, 4, 16), 32);
 assert.equal(logic.iconExtentForTaskFrame(18, 4, 4, 16), 14);
 assert.equal(logic.iconExtentForTaskFrame(0, 4, 4, 16), 0);
 
-for (const fileName of ["TaskItem.qml", "AttentionItem.qml"]) {
-  const qml = readFileSync(
-    new URL(`../package/contents/ui/${fileName}`, import.meta.url),
-    "utf8",
-  );
-  assert.match(qml, /import "TaskMetricsLogic\.js" as TaskMetricsLogic/);
-  assert.match(qml, /iconExtentForTaskFrame\(/);
-}
+const attentionItemQml = readFileSync(
+  new URL("../package/contents/ui/AttentionItem.qml", import.meta.url),
+  "utf8",
+);
+assert.match(
+  attentionItemQml,
+  /import "TaskMetricsLogic\.js" as TaskMetricsLogic/,
+);
+assert.match(attentionItemQml, /iconExtentForTaskFrame\(/);
+
+const presentationLogicJs = readFileSync(
+  new URL(
+    "../package/contents/ui/TaskItemPresentationLogic.js",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.match(presentationLogicJs, /Qt\.include\("TaskMetricsLogic\.js"\)/);
+assert.match(presentationLogicJs, /iconExtentForTaskFrame\(/);
