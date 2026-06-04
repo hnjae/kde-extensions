@@ -90,6 +90,9 @@ const taskItemQml = readFileSync(
   "utf8",
 );
 assert.match(taskItemQml, /id:\s*iconOverlayContainer/);
+assert.match(taskItemQml, /property bool showTitle:\s*true/);
+assert.match(taskItemQml, /root\.showTitle \? 96 : 0/);
+assert.match(taskItemQml, /visible:\s*root\.showTitle/);
 assert.match(taskItemQml, /z:\s*1/);
 assert.match(
   taskItemQml,
@@ -97,3 +100,12 @@ assert.match(
 );
 assert.match(taskItemQml, /TaskItemPresentationLogic\.taskItemPresentation\(/);
 assert.doesNotMatch(taskItemQml, /BadgeDisplayLogic/);
+
+const mainQml = readFileSync(
+  new URL("../package/contents/ui/main.qml", import.meta.url),
+  "utf8",
+);
+assert.match(
+  mainQml,
+  /showTitle:\s*!\(entry\.launcherBacked && entry\.isLauncher\)/,
+);
