@@ -21,6 +21,7 @@ PlasmoidItem {
     implicitHeight: Math.max(pagerLayoutLoader.implicitHeight, 1)
 
     Plasmoid.icon: "user-desktop"
+    Plasmoid.constraintHints: root.verticalPanel ? Plasmoid.CanFillArea : Plasmoid.NoHint
     toolTipMainText: "Tab Pager"
     toolTipSubText: backend.count + " virtual desktops"
 
