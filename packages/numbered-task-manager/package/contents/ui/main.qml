@@ -530,6 +530,7 @@ PlasmoidItem {
                     modelIndex: entry.modelIndex
                     slotNumber: index < 9 ? index + 1 : 0
                     title: entry.title || ""
+                    showTitle: !(entry.launcherBacked && entry.isLauncher)
                     iconSource: entry.iconSource || "application-x-executable"
                     active: entry.active || false
                     minimized: entry.isMinimized || false

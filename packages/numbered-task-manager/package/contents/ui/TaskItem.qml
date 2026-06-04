@@ -22,6 +22,7 @@ QtQuick.Item {
     property int slotNumber: 0
     property int taskIndex: -1
     property string title: ""
+    property bool showTitle: true
     property var iconSource: "application-x-executable"
     property var modelIndex
     property var taskData: ({})
@@ -45,7 +46,7 @@ QtQuick.Item {
     signal contextMenuRequested(var request)
     signal taskDropped(int sourceIndex, int targetIndex, var drop)
 
-    implicitWidth: Math.max(96, Math.min(220, contentRow.implicitWidth + contentHorizontalPadding))
+    implicitWidth: Math.max(root.showTitle ? 96 : 0, Math.min(220, contentRow.implicitWidth + contentHorizontalPadding))
     implicitHeight: 40
     width: implicitWidth
     activeFocusOnTab: true
@@ -114,13 +115,14 @@ QtQuick.Item {
 
         QtQuick.Text {
             QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
-            QtQuickLayouts.Layout.fillWidth: true
+            QtQuickLayouts.Layout.fillWidth: root.showTitle
             color: KirigamiPlatform.Theme.textColor
             elide: QtQuick.Text.ElideRight
             font.strikeout: root.minimized
             maximumLineCount: 1
             text: root.title
             verticalAlignment: QtQuick.Text.AlignVCenter
+            visible: root.showTitle
         }
     }
 
