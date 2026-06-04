@@ -30,7 +30,7 @@ item order with `Meta+0`.
 - Normal tasks after slot 9 remain visible but are not numbered.
 - In supported normal horizontal panel sizes, the expected number style is a badge over the lower-left corner of the task icon.
 - Number badges use KDE's configured fixed-width font.
-- If the task icon is too small for a readable badge, the number is shown as an accessibility fallback text prefix before the icon and title instead; this applies equally to windows, pinned-slot windows, and pinned launcher icons.
+- If the task icon is too small for a readable badge, the number is shown as an accessibility fallback text prefix before the icon and any visible title instead; this applies equally to windows, pinned-slot windows, and pinned launcher icons.
 - The normal task list shows tasks from the current virtual desktop.
 - The widget is not limited to the current screen.
 - Activity filtering follows KDE's task manager behavior. Empty activity lists
@@ -61,6 +61,7 @@ item order with `Meta+0`.
   the boundary are ignored and do not pin, unpin, or reorder the item.
 - A pinned application appears as a launcher icon when it has no matching window
   in the normal task list.
+- A pinned launcher with no matching window shows only its slot number and icon; its text label is hidden.
 - Activating a pinned launcher opens the application in that pinned slot instead
   of creating the first matching window at the far right.
 - If a pinned application already has a window in its pinned slot, opening
