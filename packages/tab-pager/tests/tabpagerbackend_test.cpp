@@ -28,6 +28,7 @@ class TabPagerBackendTest : public QObject {
   Q_OBJECT
 
 private Q_SLOTS:
+  void exposesExplicitModel();
   void exposesModelState();
   void exposesModelData();
   void exposesRoleNames();
@@ -48,6 +49,14 @@ private Q_SLOTS:
   void activatesFromAccumulatedWheelDelta();
   void activatesFromMultipleWheelSteps();
 };
+
+void TabPagerBackendTest::exposesExplicitModel() {
+  BackendFixture fixture({});
+  TabPagerBackend &backend = fixture.backend;
+
+  QCOMPARE(backend.model(), &backend);
+  QCOMPARE(backend.property("model").value<QObject *>(), &backend);
+}
 
 void TabPagerBackendTest::exposesModelState() {
   BackendFixture fixture(
