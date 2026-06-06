@@ -15,6 +15,14 @@ using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
 using TabPagerTest::FakeDesktopSource;
 
+constexpr int wheelStepDelta = 120;
+constexpr int halfWheelStepDelta = wheelStepDelta / 2;
+
+void expectActivationResult(TabPagerActivationResult actual,
+                            TabPagerActivationResult expected) {
+  QCOMPARE(static_cast<int>(actual), static_cast<int>(expected));
+}
+
 struct ControllerFixture {
 private:
   struct AdoptSource {};
@@ -45,6 +53,8 @@ private Q_SLOTS:
   void synchronizesSourceStateToModelAndNavigation();
   void activatesDesktopsThroughModelIndexes();
   void activatesRelativeNavigationTargets();
+  void reportsActivationResults();
+  void reportsNavigationNoOpResults();
 };
 
 void TabPagerDesktopControllerTest::
@@ -102,6 +112,60 @@ void TabPagerDesktopControllerTest::activatesRelativeNavigationTargets() {
 
   const QList<TabPagerDesktopId> expected = {desktopId("c"), desktopId("a")};
   QCOMPARE(fixture.source->activatedDesktops(), expected);
+}
+
+void TabPagerDesktopControllerTest::reportsActivationResults() {
+  ControllerFixture fixture({
+      defaultDesktop("a", 1),
+      defaultDesktop("b", 2),
+  });
+
+  expectActivationResult(fixture.controller.activateWithResult(-1),
+                         TabPagerActivationResult::InvalidIndex);
+  expectActivationResult(fixture.controller.activateWithResult(2),
+                         TabPagerActivationResult::InvalidIndex);
+  expectActivationResult(fixture.controller.activateWithResult(1),
+                         TabPagerActivationResult::Activated);
+
+  QCOMPARE(fixture.source->activatedDesktops(),
+           QList<TabPagerDesktopId>{desktopId("b")});
+}
+
+void TabPagerDesktopControllerTest::reportsNavigationNoOpResults() {
+  ControllerFixture missingCurrentDesktop({
+      defaultDesktop("a", 1),
+      defaultDesktop("b", 2),
+  });
+  expectActivationResult(
+      missingCurrentDesktop.controller.activateNextWithResult(),
+      TabPagerActivationResult::NoCurrentDesktop);
+
+  ControllerFixture stoppedAtEdge(
+      {
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+      },
+      desktopId("a"), false);
+  expectActivationResult(stoppedAtEdge.controller.activatePreviousWithResult(),
+                         TabPagerActivationResult::StoppedAtEdge);
+
+  ControllerFixture wheelNavigation(
+      {
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+      },
+      desktopId("b"), false);
+  expectActivationResult(
+      wheelNavigation.controller.activateByWheelDeltaWithResult(
+          halfWheelStepDelta),
+      TabPagerActivationResult::NoWheelStep);
+  expectActivationResult(
+      wheelNavigation.controller.activateByWheelDeltaWithResult(
+          halfWheelStepDelta),
+      TabPagerActivationResult::Activated);
+
+  QCOMPARE(wheelNavigation.source->activatedDesktops(),
+           QList<TabPagerDesktopId>{desktopId("a")});
 }
 
 QTEST_MAIN(TabPagerDesktopControllerTest)
