@@ -126,6 +126,15 @@ if(BUILD_TESTING)
     target_link_libraries(tabpagerlayoutmetrics_test PRIVATE
         Qt6::Qml
     )
+    add_tabpager_test(tabpagerview tests/tabpagerview_test.cpp)
+    target_compile_definitions(tabpagerview_test PRIVATE
+        TABPAGER_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+        TABPAGER_QML_IMPORT_PATH="${QT6_QML_INSTALL_PREFIX}/lib/qt-6/qml"
+    )
+    target_link_libraries(tabpagerview_test PRIVATE
+        Qt6::Qml
+        Qt6::Quick
+    )
     add_tabpager_test(tabpagerbackend tests/tabpagerbackend_test.cpp
         tests/tabpagerbackendtesthelpers.h
     )
