@@ -12,6 +12,8 @@
 - 2026-06-06: Checkpoint 2 implementation added mapper diagnostics plus the `io.github.hnjae.tabpager` logging category; `TaskManagerDesktopSource` now logs source anomalies while returning the same source state.
 - 2026-06-06: Checkpoint 3 test layer committed as `545e8fe`, specifying an injectable `TabPagerView.qml` that loads without Plasma shell imports and dispatches click/wheel interactions to a fake backend.
 - 2026-06-06: Checkpoint 3 implementation extracted `TabPagerView.qml`, reduced `main.qml` to Plasma shell wiring plus production backend creation, and fixed horizontal delegate scoping in `PagerDesktopStrip.qml` so the extracted view can be tested.
+- 2026-06-06: Checkpoint 4 test layer committed as `3db1f43`, specifying an explicit `TabPagerBackend::model` property before changing the backend facade.
+- 2026-06-06: Checkpoint 4 implementation introduced the explicit backend `model` property and migrated production QML row-model and tooltip-count bindings to use it while preserving the temporary inheritance-based compatibility surface.
 
 ## Verification
 
@@ -20,11 +22,13 @@
 - 2026-06-06: After checkpoint 2 implementation, `nix develop "path:../..#tab-pager" -c cmake --build build-codex && nix develop "path:../..#tab-pager" -c ctest --test-dir build-codex --output-on-failure` passed, including all 10 CTest tests.
 - 2026-06-06: After checkpoint 3 implementation, `nix develop "path:../..#tab-pager" -c cmake --build build-codex && nix develop "path:../..#tab-pager" -c ctest --test-dir build-codex --output-on-failure` passed, including all 11 CTest tests.
 - 2026-06-06: Manual QML lint against the `build-codex` install prefix passed with `qmllint --ignore-settings --max-warnings 0 --unqualified disable`.
+- 2026-06-06: After checkpoint 4 implementation, `nix develop "path:../..#tab-pager" -c ctest --test-dir build-codex -R tabpagerbackend --output-on-failure`, `nix develop "path:../..#tab-pager" -c ctest --test-dir build-codex -R tabpagerview --output-on-failure`, and the full `build-codex` CTest suite passed.
+- 2026-06-06: After checkpoint 4 implementation, manual QML lint against `.tab-pager-install-codex` passed with `qmllint --ignore-settings --max-warnings 0 --unqualified disable`.
 
 ## Remaining
 
 - Source normalization still preserves the characterized malformed-source outcomes; invalid ID filtering, duplicate-ID policy, and unmatched-current policy remain to be centralized in later checkpoints.
-- `TabPagerBackend` still subclasses `TabPagerDesktopModel`; backend composition remains pending P1 work.
+- `TabPagerBackend` now exposes an explicit `model` property for QML, but it still subclasses `TabPagerDesktopModel`; backend composition remains pending P1 work.
 - Activation/navigation no-op taxonomy remains pending P1 work.
 
 ## Deviations

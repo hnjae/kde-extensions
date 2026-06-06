@@ -12,6 +12,7 @@
 
 class TabPagerBackend : public TabPagerDesktopModel {
   Q_OBJECT
+  Q_PROPERTY(QAbstractItemModel *model READ model CONSTANT)
   Q_PROPERTY(bool navigationWrappingAround READ navigationWrappingAround NOTIFY
                  navigationWrappingAroundChanged)
 
@@ -20,6 +21,7 @@ public:
                            QObject *parent = nullptr);
   ~TabPagerBackend() override;
 
+  [[nodiscard]] QAbstractItemModel *model();
   [[nodiscard]] bool navigationWrappingAround() const;
 
   Q_INVOKABLE void activate(int index);

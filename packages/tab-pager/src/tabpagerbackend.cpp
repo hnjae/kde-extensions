@@ -15,6 +15,8 @@ TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
 
 TabPagerBackend::~TabPagerBackend() = default;
 
+QAbstractItemModel *TabPagerBackend::model() { return this; }
+
 bool TabPagerBackend::navigationWrappingAround() const {
   return m_navigator.navigationWrappingAround();
 }

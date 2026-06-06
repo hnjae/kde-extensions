@@ -19,7 +19,7 @@ PlasmoidItem {
     Plasmoid.icon: "user-desktop"
     Plasmoid.constraintHints: tabPagerView.useFillAreaConstraintHint ? Plasmoid.CanFillArea : Plasmoid.NoHint
     toolTipMainText: "Tab Pager"
-    toolTipSubText: backend.count + " virtual desktops"
+    toolTipSubText: tabPagerView.model.count + " virtual desktops"
 
     QtQuickLayouts.Layout.fillHeight: tabPagerView.fillHeight
     QtQuickLayouts.Layout.fillWidth: tabPagerView.fillWidth
@@ -41,7 +41,7 @@ PlasmoidItem {
 
         anchors.fill: parent
         backend: backend
-        model: backend
+        model: backend.model
         verticalPanel: root.verticalPanel
     }
 }

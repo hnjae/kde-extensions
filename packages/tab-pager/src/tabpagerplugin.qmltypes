@@ -19,6 +19,7 @@ Module {
         }
         Property { name: "count"; type: "int"; isReadonly: true }
         Property { name: "currentIndex"; type: "int"; isReadonly: true }
+        Property { name: "model"; type: "QAbstractItemModel"; isPointer: true; isReadonly: true }
         Property { name: "navigationWrappingAround"; type: "bool"; isReadonly: true }
         Property { name: "labelFont"; type: "QFont"; isReadonly: true }
         Signal { name: "countChanged" }
