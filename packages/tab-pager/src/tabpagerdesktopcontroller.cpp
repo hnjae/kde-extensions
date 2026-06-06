@@ -3,9 +3,32 @@
 
 #include "tabpagerdesktopcontroller.h"
 
+#include "tabpagerlogging.h"
+
 #include <cassert>
 #include <optional>
 #include <utility>
+
+namespace {
+void logUnexpectedActivationNoOp(TabPagerActivationResult result, int index) {
+  switch (result) {
+  case TabPagerActivationResult::InvalidIndex:
+    qCWarning(tabPagerLog).nospace()
+        << "Ignoring desktop activation for invalid index " << index;
+    break;
+  case TabPagerActivationResult::InvalidDesktopId:
+    qCWarning(tabPagerLog).nospace()
+        << "Ignoring desktop activation for invalid desktop id at index "
+        << index;
+    break;
+  case TabPagerActivationResult::Activated:
+  case TabPagerActivationResult::NoCurrentDesktop:
+  case TabPagerActivationResult::StoppedAtEdge:
+  case TabPagerActivationResult::NoWheelStep:
+    break;
+  }
+}
+} // namespace
 
 TabPagerDesktopController::TabPagerDesktopController(
     std::unique_ptr<TabPagerDesktopSource> source, TabPagerDesktopModel &model,
@@ -21,22 +44,51 @@ bool TabPagerDesktopController::navigationWrappingAround() const {
 }
 
 void TabPagerDesktopController::activate(int index) {
+  const TabPagerActivationResult result = activateWithResult(index);
+  logUnexpectedActivationNoOp(result, index);
+}
+
+TabPagerActivationResult
+TabPagerDesktopController::activateWithResult(int index) {
   const std::optional<TabPagerDesktopId> desktopId =
       m_model.desktopIdForIndex(index);
   if (!desktopId.has_value()) {
-    return;
+    return TabPagerActivationResult::InvalidIndex;
+  }
+
+  if (!desktopId->isValid()) {
+    return TabPagerActivationResult::InvalidDesktopId;
   }
 
   m_source->activateDesktop(*desktopId);
+  return TabPagerActivationResult::Activated;
 }
 
-void TabPagerDesktopController::activateNext() { activateOffset(1); }
+void TabPagerDesktopController::activateNext() {
+  (void)activateNextWithResult();
+}
 
-void TabPagerDesktopController::activatePrevious() { activateOffset(-1); }
+TabPagerActivationResult TabPagerDesktopController::activateNextWithResult() {
+  return activateOffsetWithResult(1);
+}
+
+void TabPagerDesktopController::activatePrevious() {
+  (void)activatePreviousWithResult();
+}
+
+TabPagerActivationResult
+TabPagerDesktopController::activatePreviousWithResult() {
+  return activateOffsetWithResult(-1);
+}
 
 void TabPagerDesktopController::activateByWheelDelta(int delta) {
-  activateNavigationTarget(
-      m_navigator.targetIndexForWheelDelta(navigationContext(), delta));
+  (void)activateByWheelDeltaWithResult(delta);
+}
+
+TabPagerActivationResult
+TabPagerDesktopController::activateByWheelDeltaWithResult(int delta) {
+  return activateNavigationTarget(
+      m_navigator.consumeWheelDelta(navigationContext(), delta));
 }
 
 void TabPagerDesktopController::initializeSource() {
@@ -78,14 +130,28 @@ TabPagerDesktopController::navigationContext() const {
   };
 }
 
-void TabPagerDesktopController::activateNavigationTarget(
-    std::optional<int> targetIndex) {
-  if (targetIndex.has_value()) {
-    activate(*targetIndex);
+TabPagerActivationResult TabPagerDesktopController::activateNavigationTarget(
+    const TabPagerDesktopNavigationResult &target) {
+  switch (target.type) {
+  case TabPagerDesktopNavigationResultType::Target:
+    return activateWithResult(target.targetIndex);
+  case TabPagerDesktopNavigationResultType::NoCurrentDesktop:
+    return TabPagerActivationResult::NoCurrentDesktop;
+  case TabPagerDesktopNavigationResultType::StoppedAtEdge:
+    return TabPagerActivationResult::StoppedAtEdge;
+  case TabPagerDesktopNavigationResultType::NoWheelStep:
+    return TabPagerActivationResult::NoWheelStep;
   }
+
+  return TabPagerActivationResult::NoCurrentDesktop;
+}
+
+TabPagerActivationResult
+TabPagerDesktopController::activateOffsetWithResult(int offset) {
+  return activateNavigationTarget(
+      m_navigator.targetForOffset(navigationContext(), offset));
 }
 
 void TabPagerDesktopController::activateOffset(int offset) {
-  activateNavigationTarget(
-      m_navigator.targetIndexForOffset(navigationContext(), offset));
+  (void)activateOffsetWithResult(offset);
 }

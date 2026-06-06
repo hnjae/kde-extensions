@@ -47,6 +47,8 @@ add_library(tabpagermodel STATIC
     src/tabpagerdesktoprows.h
     src/tabpagerdesktopsource.cpp
     src/tabpagerdesktopsource.h
+    src/tabpagerlogging.cpp
+    src/tabpagerlogging.h
 )
 set_target_properties(tabpagermodel PROPERTIES
     POSITION_INDEPENDENT_CODE ON
@@ -62,8 +64,6 @@ target_link_libraries(tabpagermodel PUBLIC
 add_library(tabpagerplasma STATIC
     src/taskmanagerdesktopmapper.cpp
     src/taskmanagerdesktopmapper.h
-    src/tabpagerlogging.cpp
-    src/tabpagerlogging.h
     src/tabpagerqmlbackend.cpp
     src/tabpagerqmlbackend.h
     src/tabpagervirtualdesktopinfo.cpp

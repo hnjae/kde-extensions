@@ -10,7 +10,15 @@
 #include <QObject>
 
 #include <memory>
-#include <optional>
+
+enum class TabPagerActivationResult {
+  Activated,
+  InvalidIndex,
+  InvalidDesktopId,
+  NoCurrentDesktop,
+  StoppedAtEdge,
+  NoWheelStep,
+};
 
 class TabPagerDesktopController final : public QObject {
   Q_OBJECT
@@ -28,6 +36,12 @@ public:
   void activatePrevious();
   void activateByWheelDelta(int delta);
 
+  [[nodiscard]] TabPagerActivationResult activateWithResult(int index);
+  [[nodiscard]] TabPagerActivationResult activateNextWithResult();
+  [[nodiscard]] TabPagerActivationResult activatePreviousWithResult();
+  [[nodiscard]] TabPagerActivationResult
+  activateByWheelDeltaWithResult(int delta);
+
 Q_SIGNALS:
   void navigationWrappingAroundChanged();
 
@@ -38,7 +52,9 @@ private:
   void applySourceState(const TabPagerDesktopSourceState &state);
   void applyNavigationWrappingAround(bool navigationWrappingAround);
   [[nodiscard]] TabPagerDesktopNavigationContext navigationContext() const;
-  void activateNavigationTarget(std::optional<int> targetIndex);
+  [[nodiscard]] TabPagerActivationResult
+  activateNavigationTarget(const TabPagerDesktopNavigationResult &target);
+  [[nodiscard]] TabPagerActivationResult activateOffsetWithResult(int offset);
   void activateOffset(int offset);
 
   TabPagerDesktopModel &m_model;
