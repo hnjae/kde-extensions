@@ -124,6 +124,8 @@ private Q_SLOTS:
   void passesThroughInvalidDesktopIds();
   void passesThroughDuplicateDesktopIds();
   void passesThroughUnmatchedCurrentDesktop();
+  void reportsNameCountDiagnostics();
+  void reportsDesktopIdentityDiagnostics();
   void emitsSourceStateChangedWhenVirtualDesktopInfoChanges();
   void requestsActivationForValidDesktopIdsOnly();
 };
@@ -216,6 +218,61 @@ void TaskManagerDesktopSourceTest::passesThroughUnmatchedCurrentDesktop() {
   QCOMPARE(state.desktopSnapshot.desktops.size(), 2);
   QCOMPARE(state.desktopSnapshot.currentDesktop,
            TabPagerDesktopId::fromVariant(QStringLiteral("missing")));
+}
+
+void TaskManagerDesktopSourceTest::reportsNameCountDiagnostics() {
+  const TaskManagerDesktopSourceMappingResult missingNames =
+      taskManagerDesktopSourceMappingFromRawState(TaskManagerDesktopRawState{
+          .desktopIds = {QStringLiteral("a"), QStringLiteral("b")},
+          .desktopNames = {QStringLiteral("Desktop 1")},
+          .currentDesktop = QStringLiteral("a"),
+      });
+  const TaskManagerDesktopSourceMappingResult extraNames =
+      taskManagerDesktopSourceMappingFromRawState(TaskManagerDesktopRawState{
+          .desktopIds = {QStringLiteral("a")},
+          .desktopNames = {QStringLiteral("Desktop 1"),
+                           QStringLiteral("Ignored extra name")},
+          .currentDesktop = QStringLiteral("a"),
+      });
+
+  QCOMPARE(missingNames.diagnostics.size(), 1);
+  QCOMPARE(missingNames.diagnostics.at(0).type,
+           TaskManagerDesktopSourceDiagnostic::Type::MissingDesktopNames);
+  QCOMPARE(missingNames.diagnostics.at(0).row, 1);
+  QCOMPARE(missingNames.diagnostics.at(0).desktopIdCount, 2);
+  QCOMPARE(missingNames.diagnostics.at(0).desktopNameCount, 1);
+
+  QCOMPARE(extraNames.diagnostics.size(), 1);
+  QCOMPARE(extraNames.diagnostics.at(0).type,
+           TaskManagerDesktopSourceDiagnostic::Type::ExtraDesktopNames);
+  QCOMPARE(extraNames.diagnostics.at(0).row, 1);
+  QCOMPARE(extraNames.diagnostics.at(0).desktopIdCount, 1);
+  QCOMPARE(extraNames.diagnostics.at(0).desktopNameCount, 2);
+}
+
+void TaskManagerDesktopSourceTest::reportsDesktopIdentityDiagnostics() {
+  const TaskManagerDesktopSourceMappingResult result =
+      taskManagerDesktopSourceMappingFromRawState(TaskManagerDesktopRawState{
+          .desktopIds = {QVariant{}, QStringLiteral("a"), QStringLiteral("a")},
+          .desktopNames = {QStringLiteral("Broken"), QStringLiteral("Work"),
+                           QStringLiteral("Duplicate")},
+          .currentDesktop = QStringLiteral("missing"),
+      });
+
+  QCOMPARE(result.state.desktopSnapshot.desktops.size(), 3);
+  QCOMPARE(result.diagnostics.size(), 3);
+  QCOMPARE(result.diagnostics.at(0).type,
+           TaskManagerDesktopSourceDiagnostic::Type::InvalidDesktopId);
+  QCOMPARE(result.diagnostics.at(0).row, 0);
+  QCOMPARE(result.diagnostics.at(1).type,
+           TaskManagerDesktopSourceDiagnostic::Type::DuplicateDesktopId);
+  QCOMPARE(result.diagnostics.at(1).row, 2);
+  QCOMPARE(result.diagnostics.at(1).relatedRow, 1);
+  QCOMPARE(result.diagnostics.at(1).desktopId, QVariant{QStringLiteral("a")});
+  QCOMPARE(result.diagnostics.at(2).type,
+           TaskManagerDesktopSourceDiagnostic::Type::UnmatchedCurrentDesktop);
+  QCOMPARE(result.diagnostics.at(2).desktopId,
+           QVariant{QStringLiteral("missing")});
 }
 
 void TaskManagerDesktopSourceTest::
