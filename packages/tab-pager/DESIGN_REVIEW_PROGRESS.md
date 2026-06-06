@@ -20,6 +20,8 @@
 - 2026-06-06: Checkpoint 6 implementation extracted `TabPagerDesktopController`; `TabPagerBackend` now delegates source synchronization, activation, and navigation orchestration to the controller while remaining the QML facade.
 - 2026-06-06: Checkpoint 7 test layer committed as `ad167bc`, specifying activation/navigation result taxonomy for invalid index, missing current desktop, edge stop, no wheel step, and successful activation.
 - 2026-06-06: Checkpoint 7 implementation added controller-level activation results, richer navigator no-target reasons behind the existing optional API, and invalid activation logging through the shared `io.github.hnjae.tabpager` category.
+- 2026-06-06: Checkpoint 8 test layer committed as `71debd2`, changing malformed source identity expectations from pass-through to normalized source-boundary behavior.
+- 2026-06-06: Checkpoint 8 implementation normalized TaskManager source identity by dropping invalid desktop IDs, dropping duplicate desktop IDs after the first occurrence, and clearing unmatched current desktop IDs while preserving diagnostics.
 
 ## Verification
 
@@ -36,10 +38,11 @@
 - 2026-06-06: After checkpoint 6 implementation, manual QML lint against `.tab-pager-install-codex` passed with `qmllint --ignore-settings --max-warnings 0 --unqualified disable`.
 - 2026-06-06: After checkpoint 7 implementation, `nix develop "path:../..#tab-pager" -c ctest --test-dir build-codex -R tabpagerdesktopcontroller --output-on-failure` and the full 12-test `build-codex` CTest suite passed.
 - 2026-06-06: After checkpoint 7 implementation, manual QML lint against `.tab-pager-install-codex` passed with `qmllint --ignore-settings --max-warnings 0 --unqualified disable`.
+- 2026-06-06: After checkpoint 8 implementation, `nix develop "path:../..#tab-pager" -c ctest --test-dir build-codex -R taskmanagerdesktopsource --output-on-failure` and the full 12-test `build-codex` CTest suite passed.
 
 ## Remaining
 
-- Source normalization still preserves the characterized malformed-source outcomes; invalid ID filtering, duplicate-ID policy, and unmatched-current policy remain to be centralized in later checkpoints.
+- The highest-priority P1 checkpoints identified from the design review are implemented and verified; remaining design-review items are lower-priority follow-up work.
 - Activation/navigation no-op taxonomy is explicit at the controller level; the public QML facade still intentionally exposes void invokables.
 
 ## Deviations

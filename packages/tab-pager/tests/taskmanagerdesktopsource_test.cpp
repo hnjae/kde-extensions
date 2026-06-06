@@ -255,7 +255,10 @@ void TaskManagerDesktopSourceTest::reportsDesktopIdentityDiagnostics() {
           .currentDesktop = QStringLiteral("missing"),
       });
 
-  QCOMPARE(result.state.desktopSnapshot.desktops.size(), 3);
+  QCOMPARE(result.state.desktopSnapshot.desktops.size(), 1);
+  QCOMPARE(result.state.desktopSnapshot.desktops.at(0).id,
+           TabPagerDesktopId::fromVariant(QStringLiteral("a")));
+  QCOMPARE(result.state.desktopSnapshot.currentDesktop.isValid(), false);
   QCOMPARE(result.diagnostics.size(), 3);
   QCOMPARE(result.diagnostics.at(0).type,
            TaskManagerDesktopSourceDiagnostic::Type::InvalidDesktopId);

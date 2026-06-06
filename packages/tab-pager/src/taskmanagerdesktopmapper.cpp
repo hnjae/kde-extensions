@@ -68,25 +68,25 @@ taskManagerDesktopSourceMappingFromRawState(
           .row = index,
           .desktopId = {},
       });
-    } else {
-      const qsizetype matchingIndex =
-          firstMatchingDesktopIdIndex(validDesktopIds, rawDesktopId);
-      if (matchingIndex >= 0) {
-        diagnostics.append(TaskManagerDesktopSourceDiagnostic{
-            .type =
-                TaskManagerDesktopSourceDiagnostic::Type::DuplicateDesktopId,
-            .row = index,
-            .relatedRow = validDesktopIdRows.at(matchingIndex),
-            .desktopId = rawDesktopId,
-        });
-      }
-
-      validDesktopIds.append(rawDesktopId);
-      validDesktopIdRows.append(index);
-      currentDesktopMatched =
-          currentDesktopMatched || desktopId.matches(currentDesktop);
+      continue;
     }
 
+    const qsizetype matchingIndex =
+        firstMatchingDesktopIdIndex(validDesktopIds, rawDesktopId);
+    if (matchingIndex >= 0) {
+      diagnostics.append(TaskManagerDesktopSourceDiagnostic{
+          .type = TaskManagerDesktopSourceDiagnostic::Type::DuplicateDesktopId,
+          .row = index,
+          .relatedRow = validDesktopIdRows.at(matchingIndex),
+          .desktopId = rawDesktopId,
+      });
+      continue;
+    }
+
+    validDesktopIds.append(rawDesktopId);
+    validDesktopIdRows.append(index);
+    currentDesktopMatched =
+        currentDesktopMatched || desktopId.matches(currentDesktop);
     desktops.append(TabPagerDesktop{
         .id = desktopId,
         .name = rawState.desktopNames.value(index),
@@ -107,7 +107,9 @@ taskManagerDesktopSourceMappingFromRawState(
               .desktopSnapshot =
                   TabPagerDesktopSnapshot{
                       .desktops = std::move(desktops),
-                      .currentDesktop = currentDesktop,
+                      .currentDesktop = currentDesktopMatched
+                                            ? currentDesktop
+                                            : TabPagerDesktopId{},
                   },
               .navigationWrappingAround = rawState.navigationWrappingAround,
           },
