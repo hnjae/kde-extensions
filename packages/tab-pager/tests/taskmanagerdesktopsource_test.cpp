@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 #include "tabpagerdesktopid.h"
+#include "taskmanagerdesktopmapper.h"
 #include "taskmanagerdesktopsource.h"
 
 #include <QSignalSpy>
@@ -99,6 +100,18 @@ private:
                          std::unique_ptr<FakeVirtualDesktopInfo> fakeInfo)
       : info(fakeInfo.get()), source(std::move(fakeInfo)) {}
 };
+
+[[nodiscard]] TabPagerDesktopSourceState
+sourceStateFromRawState(QVariantList desktopIds, QStringList desktopNames = {},
+                        QVariant currentDesktop = {},
+                        bool navigationWrappingAround = false) {
+  return taskManagerDesktopSourceStateFromRawState(TaskManagerDesktopRawState{
+      .desktopIds = std::move(desktopIds),
+      .desktopNames = std::move(desktopNames),
+      .currentDesktop = std::move(currentDesktop),
+      .navigationWrappingAround = navigationWrappingAround,
+  });
+}
 } // namespace
 
 class TaskManagerDesktopSourceTest : public QObject {
@@ -136,10 +149,9 @@ void TaskManagerDesktopSourceTest::projectsVirtualDesktopInfoToSourceState() {
 }
 
 void TaskManagerDesktopSourceTest::projectsMissingDesktopNamesAsEmptyNames() {
-  SourceFixture fixture({QStringLiteral("a"), QStringLiteral("b")},
-                        {QStringLiteral("Desktop 1")}, QStringLiteral("b"));
-
-  const TabPagerDesktopSourceState state = fixture.source.sourceState();
+  const TabPagerDesktopSourceState state = sourceStateFromRawState(
+      {QStringLiteral("a"), QStringLiteral("b")}, {QStringLiteral("Desktop 1")},
+      QStringLiteral("b"));
 
   QCOMPARE(state.desktopSnapshot.desktops.size(), 2);
   QCOMPARE(state.desktopSnapshot.desktops.at(0).id,
@@ -152,12 +164,10 @@ void TaskManagerDesktopSourceTest::projectsMissingDesktopNamesAsEmptyNames() {
 }
 
 void TaskManagerDesktopSourceTest::ignoresExtraDesktopNames() {
-  SourceFixture fixture(
+  const TabPagerDesktopSourceState state = sourceStateFromRawState(
       {QStringLiteral("a")},
       {QStringLiteral("Desktop 1"), QStringLiteral("Ignored extra name")},
       QStringLiteral("a"));
-
-  const TabPagerDesktopSourceState state = fixture.source.sourceState();
 
   QCOMPARE(state.desktopSnapshot.desktops.size(), 1);
   QCOMPARE(state.desktopSnapshot.desktops.at(0).id,
@@ -167,11 +177,9 @@ void TaskManagerDesktopSourceTest::ignoresExtraDesktopNames() {
 }
 
 void TaskManagerDesktopSourceTest::passesThroughInvalidDesktopIds() {
-  SourceFixture fixture({QVariant{}, QStringLiteral("b")},
-                        {QStringLiteral("Broken"), QStringLiteral("Work")},
-                        QStringLiteral("b"));
-
-  const TabPagerDesktopSourceState state = fixture.source.sourceState();
+  const TabPagerDesktopSourceState state = sourceStateFromRawState(
+      {QVariant{}, QStringLiteral("b")},
+      {QStringLiteral("Broken"), QStringLiteral("Work")}, QStringLiteral("b"));
 
   QCOMPARE(state.desktopSnapshot.desktops.size(), 2);
   QCOMPARE(state.desktopSnapshot.desktops.at(0).id, TabPagerDesktopId{});
@@ -182,13 +190,11 @@ void TaskManagerDesktopSourceTest::passesThroughInvalidDesktopIds() {
 }
 
 void TaskManagerDesktopSourceTest::passesThroughDuplicateDesktopIds() {
-  SourceFixture fixture(
+  const TabPagerDesktopSourceState state = sourceStateFromRawState(
       {QStringLiteral("a"), QStringLiteral("a"), QStringLiteral("b")},
       {QStringLiteral("Desktop 1"), QStringLiteral("Duplicate"),
        QStringLiteral("Work")},
       QStringLiteral("a"));
-
-  const TabPagerDesktopSourceState state = fixture.source.sourceState();
 
   QCOMPARE(state.desktopSnapshot.desktops.size(), 3);
   QCOMPARE(state.desktopSnapshot.desktops.at(0).id,
@@ -202,11 +208,10 @@ void TaskManagerDesktopSourceTest::passesThroughDuplicateDesktopIds() {
 }
 
 void TaskManagerDesktopSourceTest::passesThroughUnmatchedCurrentDesktop() {
-  SourceFixture fixture({QStringLiteral("a"), QStringLiteral("b")},
-                        {QStringLiteral("Desktop 1"), QStringLiteral("Work")},
-                        QStringLiteral("missing"));
-
-  const TabPagerDesktopSourceState state = fixture.source.sourceState();
+  const TabPagerDesktopSourceState state = sourceStateFromRawState(
+      {QStringLiteral("a"), QStringLiteral("b")},
+      {QStringLiteral("Desktop 1"), QStringLiteral("Work")},
+      QStringLiteral("missing"));
 
   QCOMPARE(state.desktopSnapshot.desktops.size(), 2);
   QCOMPARE(state.desktopSnapshot.currentDesktop,
