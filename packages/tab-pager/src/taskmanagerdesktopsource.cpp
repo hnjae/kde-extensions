@@ -3,10 +3,61 @@
 
 #include "taskmanagerdesktopsource.h"
 
+#include "tabpagerlogging.h"
 #include "taskmanagerdesktopmapper.h"
+
+#include <QDebug>
 
 #include <cassert>
 #include <utility>
+
+namespace {
+void logDesktopSourceDiagnostic(
+    const TaskManagerDesktopSourceDiagnostic &diagnostic) {
+  using DiagnosticType = TaskManagerDesktopSourceDiagnostic::Type;
+
+  switch (diagnostic.type) {
+  case DiagnosticType::MissingDesktopNames:
+    qCWarning(tabPagerLog).nospace()
+        << "TaskManager desktop source has fewer names than IDs: ids="
+        << diagnostic.desktopIdCount
+        << ", names=" << diagnostic.desktopNameCount
+        << ", firstMissingNameRow=" << diagnostic.row;
+    break;
+  case DiagnosticType::ExtraDesktopNames:
+    qCWarning(tabPagerLog).nospace()
+        << "TaskManager desktop source has extra names: ids="
+        << diagnostic.desktopIdCount
+        << ", names=" << diagnostic.desktopNameCount
+        << ", firstExtraNameRow=" << diagnostic.row;
+    break;
+  case DiagnosticType::InvalidDesktopId:
+    qCWarning(tabPagerLog).nospace()
+        << "TaskManager desktop source has invalid desktop ID at row "
+        << diagnostic.row;
+    break;
+  case DiagnosticType::DuplicateDesktopId:
+    qCWarning(tabPagerLog).nospace()
+        << "TaskManager desktop source has duplicate desktop ID "
+        << diagnostic.desktopId << " at row " << diagnostic.row
+        << ", first seen at row " << diagnostic.relatedRow;
+    break;
+  case DiagnosticType::UnmatchedCurrentDesktop:
+    qCWarning(tabPagerLog).nospace()
+        << "TaskManager desktop source current desktop does not match any "
+           "valid desktop ID: "
+        << diagnostic.desktopId;
+    break;
+  }
+}
+
+void logDesktopSourceDiagnostics(
+    const QList<TaskManagerDesktopSourceDiagnostic> &diagnostics) {
+  for (const TaskManagerDesktopSourceDiagnostic &diagnostic : diagnostics) {
+    logDesktopSourceDiagnostic(diagnostic);
+  }
+}
+} // namespace
 
 TaskManagerDesktopSource::TaskManagerDesktopSource(QObject *parent)
     : TaskManagerDesktopSource(createTaskManagerVirtualDesktopInfo(), parent) {}
@@ -35,12 +86,15 @@ void TaskManagerDesktopSource::connectDesktopInfo() {
 TaskManagerDesktopSource::~TaskManagerDesktopSource() = default;
 
 TabPagerDesktopSourceState TaskManagerDesktopSource::sourceState() const {
-  return taskManagerDesktopSourceStateFromRawState(TaskManagerDesktopRawState{
-      .desktopIds = m_info->desktopIds(),
-      .desktopNames = m_info->desktopNames(),
-      .currentDesktop = m_info->currentDesktop(),
-      .navigationWrappingAround = m_info->navigationWrappingAround(),
-  });
+  const TaskManagerDesktopSourceMappingResult result =
+      taskManagerDesktopSourceMappingFromRawState(TaskManagerDesktopRawState{
+          .desktopIds = m_info->desktopIds(),
+          .desktopNames = m_info->desktopNames(),
+          .currentDesktop = m_info->currentDesktop(),
+          .navigationWrappingAround = m_info->navigationWrappingAround(),
+      });
+  logDesktopSourceDiagnostics(result.diagnostics);
+  return result.state;
 }
 
 void TaskManagerDesktopSource::activateDesktop(

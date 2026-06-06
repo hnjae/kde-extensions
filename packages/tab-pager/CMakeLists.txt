@@ -60,6 +60,8 @@ target_link_libraries(tabpagermodel PUBLIC
 add_library(tabpagerplasma STATIC
     src/taskmanagerdesktopmapper.cpp
     src/taskmanagerdesktopmapper.h
+    src/tabpagerlogging.cpp
+    src/tabpagerlogging.h
     src/tabpagerqmlbackend.cpp
     src/tabpagerqmlbackend.h
     src/tabpagervirtualdesktopinfo.cpp
