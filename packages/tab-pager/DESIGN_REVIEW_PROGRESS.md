@@ -16,6 +16,8 @@
 - 2026-06-06: Checkpoint 4 implementation introduced the explicit backend `model` property and migrated production QML row-model and tooltip-count bindings to use it while preserving the temporary inheritance-based compatibility surface.
 - 2026-06-06: Checkpoint 5 test layer committed as `ed9036b`, specifying that the backend facade is not itself a `QAbstractItemModel` and that rows are reached through `backend.model`.
 - 2026-06-06: Checkpoint 5 implementation converted `TabPagerBackend` to a `QObject` facade with a composed `TabPagerDesktopModel`, kept temporary `count` and `currentIndex` forwarding, moved fixed-font presentation policy to the facade, and updated QML type metadata.
+- 2026-06-06: Checkpoint 6 test layer committed as `d5ea883`, specifying a `TabPagerDesktopController` boundary that synchronizes a source into a model and handles activation/navigation commands without the QML facade.
+- 2026-06-06: Checkpoint 6 implementation extracted `TabPagerDesktopController`; `TabPagerBackend` now delegates source synchronization, activation, and navigation orchestration to the controller while remaining the QML facade.
 
 ## Verification
 
@@ -28,11 +30,13 @@
 - 2026-06-06: After checkpoint 4 implementation, manual QML lint against `.tab-pager-install-codex` passed with `qmllint --ignore-settings --max-warnings 0 --unqualified disable`.
 - 2026-06-06: After checkpoint 5 implementation, `nix develop "path:../..#tab-pager" -c ctest --test-dir build-codex -R tabpagerbackend --output-on-failure` and the full `build-codex` CTest suite passed.
 - 2026-06-06: After checkpoint 5 implementation, manual QML lint against `.tab-pager-install-codex` passed with `qmllint --ignore-settings --max-warnings 0 --unqualified disable`.
+- 2026-06-06: After checkpoint 6 implementation, `nix develop "path:../..#tab-pager" -c ctest --test-dir build-codex -R 'tabpagerdesktopcontroller|tabpagerbackend' --output-on-failure` and the full 12-test `build-codex` CTest suite passed.
+- 2026-06-06: After checkpoint 6 implementation, manual QML lint against `.tab-pager-install-codex` passed with `qmllint --ignore-settings --max-warnings 0 --unqualified disable`.
 
 ## Remaining
 
 - Source normalization still preserves the characterized malformed-source outcomes; invalid ID filtering, duplicate-ID policy, and unmatched-current policy remain to be centralized in later checkpoints.
-- `TabPagerBackend` now composes `TabPagerDesktopModel`; source synchronization, activation, and navigation orchestration still live directly in the facade and can be extracted into a controller in a later checkpoint.
+- `TabPagerBackend` now delegates source synchronization, activation, and navigation orchestration to `TabPagerDesktopController`; activation result/no-op taxonomy remains to be made explicit.
 - Activation/navigation no-op taxonomy remains pending P1 work.
 
 ## Deviations

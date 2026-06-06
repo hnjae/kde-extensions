@@ -3,15 +3,12 @@
 
 #pragma once
 
-#include "tabpagerdesktopmodel.h"
-#include "tabpagerdesktopnavigator.h"
-#include "tabpagerdesktopsource.h"
+#include "tabpagerdesktopcontroller.h"
 
 #include <QFont>
 #include <QObject>
 
 #include <memory>
-#include <optional>
 
 class TabPagerBackend : public QObject {
   Q_OBJECT
@@ -44,16 +41,6 @@ Q_SIGNALS:
   void navigationWrappingAroundChanged();
 
 private:
-  void initializeSource();
-  void connectSource();
-  void reloadSourceState();
-  void applySourceState(const TabPagerDesktopSourceState &state);
-  void applyNavigationWrappingAround(bool navigationWrappingAround);
-  [[nodiscard]] TabPagerDesktopNavigationContext navigationContext() const;
-  void activateNavigationTarget(std::optional<int> targetIndex);
-  void activateOffset(int offset);
-
   TabPagerDesktopModel m_model;
-  std::unique_ptr<TabPagerDesktopSource> m_source;
-  TabPagerDesktopNavigator m_navigator;
+  TabPagerDesktopController m_controller;
 };
