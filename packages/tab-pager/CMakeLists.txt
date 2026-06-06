@@ -117,6 +117,10 @@ if(BUILD_TESTING)
     add_tabpager_test(tabpagerdesktopmodel tests/tabpagerdesktopmodel_test.cpp)
     add_tabpager_test(tabpagerdesktopmodelstate tests/tabpagerdesktopmodelstate_test.cpp)
     add_tabpager_test(tabpagerdesktopnavigator tests/tabpagerdesktopnavigator_test.cpp)
+    add_tabpager_test(tabpagerdesktopcontroller
+        tests/tabpagerdesktopcontroller_test.cpp
+        tests/tabpagerbackendtesthelpers.h
+    )
     add_tabpager_test(tabpagerlayoutmetrics tests/tabpagerlayoutmetrics_test.cpp)
     get_filename_component(QT6_QML_INSTALL_PREFIX "${Qt6Qml_DIR}/../../.." ABSOLUTE)
     target_compile_definitions(tabpagerlayoutmetrics_test PRIVATE
