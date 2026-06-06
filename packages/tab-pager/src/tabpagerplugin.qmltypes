@@ -4,7 +4,7 @@ Module {
     Component {
         name: "TabPagerBackend"
         accessSemantics: "reference"
-        prototype: "QAbstractListModel"
+        prototype: "QObject"
         exports: ["io.github.hnjae.tabpager/TabPagerBackend 1.0"]
         exportMetaObjectRevisions: [256]
         Method {

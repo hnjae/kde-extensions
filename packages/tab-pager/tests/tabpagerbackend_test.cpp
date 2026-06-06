@@ -22,6 +22,12 @@ using TabPagerTest::unnamedDesktop;
 constexpr int wheelStepDelta = 120;
 constexpr int halfWheelStepDelta = wheelStepDelta / 2;
 constexpr int almostHalfWheelStepDelta = halfWheelStepDelta - 1;
+
+[[nodiscard]] TabPagerDesktopModel &desktopModel(TabPagerBackend &backend) {
+  auto *model = qobject_cast<TabPagerDesktopModel *>(backend.model());
+  Q_ASSERT(model != nullptr);
+  return *model;
+}
 } // namespace
 
 class TabPagerBackendTest : public QObject {
@@ -55,8 +61,9 @@ void TabPagerBackendTest::exposesExplicitModel() {
   BackendFixture fixture({});
   TabPagerBackend &backend = fixture.backend;
 
-  QCOMPARE(backend.model(), &backend);
-  QCOMPARE(backend.property("model").value<QObject *>(), &backend);
+  QVERIFY(backend.model() != nullptr);
+  QCOMPARE(backend.property("model").value<QObject *>(),
+           static_cast<QObject *>(backend.model()));
 }
 
 void TabPagerBackendTest::keepsModelSeparateFromFacade() {
@@ -76,10 +83,11 @@ void TabPagerBackendTest::exposesModelState() {
           unnamedDesktop("c"),
       },
       desktopId("b"), true);
-  const TabPagerBackend &backend = fixture.backend;
+  TabPagerBackend &backend = fixture.backend;
+  const TabPagerDesktopModel &model = desktopModel(backend);
 
   QCOMPARE(backend.count(), 3);
-  QCOMPARE(backend.rowCount(), 3);
+  QCOMPARE(model.rowCount(), 3);
   QCOMPARE(backend.currentIndex(), 1);
   QCOMPARE(backend.navigationWrappingAround(), true);
 }
@@ -92,31 +100,32 @@ void TabPagerBackendTest::exposesModelData() {
           unnamedDesktop("c"),
       },
       desktopId("b"), true);
-  const TabPagerBackend &backend = fixture.backend;
+  TabPagerBackend &backend = fixture.backend;
+  const TabPagerDesktopModel &model = desktopModel(backend);
 
-  const QModelIndex first = backend.index(0);
-  QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::DesktopId)),
+  const QModelIndex first = model.index(0);
+  QCOMPARE(model.data(first, role(TabPagerDesktopRowRole::DesktopId)),
            desktopId("a").toVariant());
-  QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::Name)),
+  QCOMPARE(model.data(first, role(TabPagerDesktopRowRole::Name)),
            QVariant(QStringLiteral("Desktop 1")));
-  QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::Label)),
+  QCOMPARE(model.data(first, role(TabPagerDesktopRowRole::Label)),
            QVariant(QStringLiteral("1")));
-  QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::Number)),
+  QCOMPARE(model.data(first, role(TabPagerDesktopRowRole::Number)),
            QVariant(1));
-  QCOMPARE(backend.data(first, role(TabPagerDesktopRowRole::Active)),
+  QCOMPARE(model.data(first, role(TabPagerDesktopRowRole::Active)),
            QVariant(false));
 
-  const QModelIndex second = backend.index(1);
-  QCOMPARE(backend.data(second, role(TabPagerDesktopRowRole::Label)),
+  const QModelIndex second = model.index(1);
+  QCOMPARE(model.data(second, role(TabPagerDesktopRowRole::Label)),
            QVariant(QStringLiteral("Work")));
-  QCOMPARE(backend.data(second, role(TabPagerDesktopRowRole::Active)),
+  QCOMPARE(model.data(second, role(TabPagerDesktopRowRole::Active)),
            QVariant(true));
 }
 
 void TabPagerBackendTest::exposesRoleNames() {
   BackendFixture fixture({});
-  const TabPagerBackend &backend = fixture.backend;
-  const QHash<int, QByteArray> roles = backend.roleNames();
+  const TabPagerDesktopModel &model = desktopModel(fixture.backend);
+  const QHash<int, QByteArray> roles = model.roleNames();
 
   const QHash<int, QByteArray> expected = {
       {role(TabPagerDesktopRowRole::DesktopId), "desktopId"},
@@ -132,8 +141,9 @@ void TabPagerBackendTest::updatesWhenDesktopsChange() {
   BackendFixture fixture({
       defaultDesktop("a", 1),
   });
+  TabPagerDesktopModel &model = desktopModel(fixture.backend);
   QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
-  QSignalSpy resetSpy(&fixture.backend, &QAbstractItemModel::modelReset);
+  QSignalSpy resetSpy(&model, &QAbstractItemModel::modelReset);
 
   fixture.source->setDesktops({
       defaultDesktop("a", 1),
@@ -143,8 +153,7 @@ void TabPagerBackendTest::updatesWhenDesktopsChange() {
   QCOMPARE(fixture.backend.count(), 2);
   QCOMPARE(countSpy.count(), 1);
   QCOMPARE(resetSpy.count(), 1);
-  QCOMPARE(fixture.backend.data(fixture.backend.index(1),
-                                role(TabPagerDesktopRowRole::Label)),
+  QCOMPARE(model.data(model.index(1), role(TabPagerDesktopRowRole::Label)),
            QVariant(QStringLiteral("Chat")));
 }
 
@@ -155,8 +164,9 @@ void TabPagerBackendTest::resetsWhenDesktopIdentityChanges() {
           defaultDesktop("b", 2),
       },
       desktopId("a"));
+  TabPagerDesktopModel &model = desktopModel(fixture.backend);
   QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
-  QSignalSpy resetSpy(&fixture.backend, &QAbstractItemModel::modelReset);
+  QSignalSpy resetSpy(&model, &QAbstractItemModel::modelReset);
 
   fixture.source->setDesktops({
       defaultDesktop("b", 1),
@@ -176,8 +186,9 @@ void TabPagerBackendTest::updatesDesktopRowsWithoutReset() {
           defaultDesktop("b", 2),
       },
       desktopId("b"));
+  TabPagerDesktopModel &model = desktopModel(fixture.backend);
   QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
-  QSignalSpy resetSpy(&fixture.backend, &QAbstractItemModel::modelReset);
+  QSignalSpy resetSpy(&model, &QAbstractItemModel::modelReset);
 
   fixture.source->setDesktops({
       defaultDesktop("a", 1),
@@ -187,8 +198,7 @@ void TabPagerBackendTest::updatesDesktopRowsWithoutReset() {
   QCOMPARE(fixture.backend.count(), 2);
   QCOMPARE(countSpy.count(), 0);
   QCOMPARE(resetSpy.count(), 0);
-  QCOMPARE(fixture.backend.data(fixture.backend.index(1),
-                                role(TabPagerDesktopRowRole::Label)),
+  QCOMPARE(model.data(model.index(1), role(TabPagerDesktopRowRole::Label)),
            QVariant(QStringLiteral("Chat")));
 }
 
@@ -199,7 +209,8 @@ void TabPagerBackendTest::emitsChangedRolesForUpdatedDesktopRows() {
           defaultDesktop("b", 2),
       },
       desktopId("b"));
-  QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
+  TabPagerDesktopModel &model = desktopModel(fixture.backend);
+  QSignalSpy dataSpy(&model, &QAbstractItemModel::dataChanged);
 
   fixture.source->setDesktops({
       defaultDesktop("a", 1),
@@ -222,9 +233,10 @@ void TabPagerBackendTest::tracksCurrentDesktopFromDesktopReload() {
       defaultDesktop("b", 2),
   };
   BackendFixture fixture(desktops, desktopId("a"));
+  TabPagerDesktopModel &model = desktopModel(fixture.backend);
   QSignalSpy currentSpy(&fixture.backend,
                         &TabPagerBackend::currentIndexChanged);
-  QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
+  QSignalSpy dataSpy(&model, &QAbstractItemModel::dataChanged);
 
   fixture.source->setDesktopState(desktops, desktopId("b"));
 
@@ -235,11 +247,9 @@ void TabPagerBackendTest::tracksCurrentDesktopFromDesktopReload() {
   QCOMPARE(emission.firstRow, 0);
   QCOMPARE(emission.lastRow, 1);
   QCOMPARE(emission.roles, QList<int>{role(TabPagerDesktopRowRole::Active)});
-  QCOMPARE(fixture.backend.data(fixture.backend.index(0),
-                                role(TabPagerDesktopRowRole::Active)),
+  QCOMPARE(model.data(model.index(0), role(TabPagerDesktopRowRole::Active)),
            QVariant(false));
-  QCOMPARE(fixture.backend.data(fixture.backend.index(1),
-                                role(TabPagerDesktopRowRole::Active)),
+  QCOMPARE(model.data(model.index(1), role(TabPagerDesktopRowRole::Active)),
            QVariant(true));
 }
 
@@ -248,9 +258,10 @@ void TabPagerBackendTest::tracksCurrentDesktop() {
       defaultDesktop("a", 1),
       defaultDesktop("b", 2),
   });
+  TabPagerDesktopModel &model = desktopModel(fixture.backend);
   QSignalSpy currentSpy(&fixture.backend,
                         &TabPagerBackend::currentIndexChanged);
-  QSignalSpy dataSpy(&fixture.backend, &QAbstractItemModel::dataChanged);
+  QSignalSpy dataSpy(&model, &QAbstractItemModel::dataChanged);
 
   fixture.source->setCurrentDesktop(desktopId("b"));
 
@@ -261,8 +272,7 @@ void TabPagerBackendTest::tracksCurrentDesktop() {
   QCOMPARE(emission.firstRow, 1);
   QCOMPARE(emission.lastRow, 1);
   QCOMPARE(emission.roles, QList<int>{role(TabPagerDesktopRowRole::Active)});
-  QCOMPARE(fixture.backend.data(fixture.backend.index(1),
-                                role(TabPagerDesktopRowRole::Active)),
+  QCOMPARE(model.data(model.index(1), role(TabPagerDesktopRowRole::Active)),
            QVariant(true));
 }
 

@@ -7,12 +7,18 @@
 #include "tabpagerdesktopnavigator.h"
 #include "tabpagerdesktopsource.h"
 
+#include <QFont>
+#include <QObject>
+
 #include <memory>
 #include <optional>
 
-class TabPagerBackend : public TabPagerDesktopModel {
+class TabPagerBackend : public QObject {
   Q_OBJECT
   Q_PROPERTY(QAbstractItemModel *model READ model CONSTANT)
+  Q_PROPERTY(int count READ count NOTIFY countChanged)
+  Q_PROPERTY(int currentIndex READ currentIndex NOTIFY currentIndexChanged)
+  Q_PROPERTY(QFont labelFont READ labelFont CONSTANT)
   Q_PROPERTY(bool navigationWrappingAround READ navigationWrappingAround NOTIFY
                  navigationWrappingAroundChanged)
 
@@ -22,6 +28,9 @@ public:
   ~TabPagerBackend() override;
 
   [[nodiscard]] QAbstractItemModel *model();
+  [[nodiscard]] int count() const;
+  [[nodiscard]] int currentIndex() const;
+  [[nodiscard]] QFont labelFont() const;
   [[nodiscard]] bool navigationWrappingAround() const;
 
   Q_INVOKABLE void activate(int index);
@@ -30,6 +39,8 @@ public:
   Q_INVOKABLE void activateByWheelDelta(int delta);
 
 Q_SIGNALS:
+  void countChanged();
+  void currentIndexChanged();
   void navigationWrappingAroundChanged();
 
 private:
@@ -42,6 +53,7 @@ private:
   void activateNavigationTarget(std::optional<int> targetIndex);
   void activateOffset(int offset);
 
+  TabPagerDesktopModel m_model;
   std::unique_ptr<TabPagerDesktopSource> m_source;
   TabPagerDesktopNavigator m_navigator;
 };

@@ -3,8 +3,6 @@
 
 #include "tabpagerdesktopmodel.h"
 
-#include <QFontDatabase>
-
 #include <utility>
 
 TabPagerDesktopModel::TabPagerDesktopModel(QObject *parent)
@@ -37,10 +35,6 @@ int TabPagerDesktopModel::count() const { return m_state.count(); }
 
 int TabPagerDesktopModel::currentIndex() const {
   return m_state.currentIndex();
-}
-
-QFont TabPagerDesktopModel::labelFont() const {
-  return QFontDatabase::systemFont(QFontDatabase::FixedFont);
 }
 
 void TabPagerDesktopModel::setDesktopSnapshot(

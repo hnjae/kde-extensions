@@ -3,26 +3,41 @@
 
 #include "tabpagerbackend.h"
 
+#include <QFontDatabase>
+
 #include <cassert>
 #include <optional>
 #include <utility>
 
 TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
                                  QObject *parent)
-    : TabPagerDesktopModel(parent), m_source(std::move(source)) {
+    : QObject(parent), m_source(std::move(source)) {
+  connect(&m_model, &TabPagerDesktopModel::countChanged, this,
+          &TabPagerBackend::countChanged);
+  connect(&m_model, &TabPagerDesktopModel::currentIndexChanged, this,
+          &TabPagerBackend::currentIndexChanged);
   initializeSource();
 }
 
 TabPagerBackend::~TabPagerBackend() = default;
 
-QAbstractItemModel *TabPagerBackend::model() { return this; }
+QAbstractItemModel *TabPagerBackend::model() { return &m_model; }
+
+int TabPagerBackend::count() const { return m_model.count(); }
+
+int TabPagerBackend::currentIndex() const { return m_model.currentIndex(); }
+
+QFont TabPagerBackend::labelFont() const {
+  return QFontDatabase::systemFont(QFontDatabase::FixedFont);
+}
 
 bool TabPagerBackend::navigationWrappingAround() const {
   return m_navigator.navigationWrappingAround();
 }
 
 void TabPagerBackend::activate(int index) {
-  const std::optional<TabPagerDesktopId> desktopId = desktopIdForIndex(index);
+  const std::optional<TabPagerDesktopId> desktopId =
+      m_model.desktopIdForIndex(index);
   if (!desktopId.has_value()) {
     return;
   }
@@ -56,7 +71,7 @@ void TabPagerBackend::reloadSourceState() {
 
 void TabPagerBackend::applySourceState(
     const TabPagerDesktopSourceState &state) {
-  setDesktopSnapshot(state.desktopSnapshot);
+  m_model.setDesktopSnapshot(state.desktopSnapshot);
   applyNavigationWrappingAround(state.navigationWrappingAround);
 }
 
