@@ -60,7 +60,16 @@ QtQuick.Item {
                 QtQuick.Repeater {
                     model: root.model
 
-                    delegate: horizontalDesktopButtonComponent
+                    delegate: DesktopButton {
+                        height: horizontalRow.height
+                        width: implicitWidth
+
+                        horizontalPadding: root.horizontalPadding
+                        labelFont: root.labelFont
+                        verticalPadding: root.verticalPadding
+
+                        onActivated: desktopIndex => root.activated(desktopIndex)
+                    }
                 }
             }
         }
@@ -77,21 +86,6 @@ QtQuick.Item {
 
                 delegate: verticalDesktopButtonComponent
             }
-        }
-    }
-
-    QtQuick.Component {
-        id: horizontalDesktopButtonComponent
-
-        DesktopButton {
-            height: horizontalRow.height
-            width: implicitWidth
-
-            horizontalPadding: root.horizontalPadding
-            labelFont: root.labelFont
-            verticalPadding: root.verticalPadding
-
-            onActivated: desktopIndex => root.activated(desktopIndex)
         }
     }
 

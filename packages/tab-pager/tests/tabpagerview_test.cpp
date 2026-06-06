@@ -8,6 +8,7 @@
 #include <QQmlEngine>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QStringList>
 #include <QTest>
 #include <QWheelEvent>
 
@@ -71,10 +72,21 @@ public:
   }
 };
 
+void addQmlImportPathsFromEnvironment(QQmlEngine &engine,
+                                      const char *variableName) {
+  const QString importPaths = QString::fromLocal8Bit(qgetenv(variableName));
+  for (const QString &path :
+       importPaths.split(QLatin1Char(':'), Qt::SkipEmptyParts)) {
+    engine.addImportPath(path);
+  }
+}
+
 std::unique_ptr<QObject> createTabPagerView(QQmlEngine &engine,
                                             FakeBackend &backend,
                                             FakeDesktopModel &model,
                                             QString *errorString) {
+  addQmlImportPathsFromEnvironment(engine, "QML2_IMPORT_PATH");
+  addQmlImportPathsFromEnvironment(engine, "NIXPKGS_QML_SEARCH_PATHS");
   engine.addImportPath(QLibraryInfo::path(QLibraryInfo::QmlImportsPath));
   engine.addImportPath(QStringLiteral(TABPAGER_QML_IMPORT_PATH));
 
