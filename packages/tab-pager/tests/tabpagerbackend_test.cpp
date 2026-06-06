@@ -29,6 +29,7 @@ class TabPagerBackendTest : public QObject {
 
 private Q_SLOTS:
   void exposesExplicitModel();
+  void keepsModelSeparateFromFacade();
   void exposesModelState();
   void exposesModelData();
   void exposesRoleNames();
@@ -56,6 +57,15 @@ void TabPagerBackendTest::exposesExplicitModel() {
 
   QCOMPARE(backend.model(), &backend);
   QCOMPARE(backend.property("model").value<QObject *>(), &backend);
+}
+
+void TabPagerBackendTest::keepsModelSeparateFromFacade() {
+  BackendFixture fixture({});
+  TabPagerBackend &backend = fixture.backend;
+
+  QVERIFY(backend.model() != nullptr);
+  QVERIFY(qobject_cast<QAbstractItemModel *>(&backend) == nullptr);
+  QVERIFY(backend.model() != qobject_cast<QAbstractItemModel *>(&backend));
 }
 
 void TabPagerBackendTest::exposesModelState() {
