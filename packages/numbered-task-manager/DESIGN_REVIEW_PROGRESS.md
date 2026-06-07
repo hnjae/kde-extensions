@@ -56,9 +56,17 @@
 - Verification: `node tests/normaltaskstorelogic.test.mjs`; `node tests/taskmodellogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/NormalTaskStoreLogic.js`, `package/contents/ui/main.qml`, `tests/normaltaskstorelogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Planned Checkpoint 7: Single Normal Task Store State
+
+- Status: planned.
+- What will change: extend the normal-task store to own the publication counter and route root through one `normalTaskStoreState` property instead of separate normal entry-map, manual-order, entries, and publication-id properties.
+- Behavior that must remain unchanged: normal publication keys remain `normal:1`, `normal:2`, and so on; visible normal task entries, pinned-prefix ordering, manual unpinned ordering, drag/drop movement, and hidden normal-task repeater publication behavior remain unchanged.
+- Verification: `node tests/normaltaskstorelogic.test.mjs`; `node tests/taskmodellogic.test.mjs`; `rg "normalTaskEntryMap|normalTaskManualOrder|nextNormalTaskPublicationId" package/contents/ui/main.qml`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files likely changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/NormalTaskStoreLogic.js`, `package/contents/ui/main.qml`, `tests/normaltaskstorelogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Launcher sync: add bounded retry or next-change reconciliation for logged model/config mismatches.
-- Root/model ownership: move normal publication storage out of root properties after the store boundary settles, and extract remote-attention source state from `main.qml` in later checkpoints.
+- Root/model ownership: extract remote-attention source state from `main.qml` in later checkpoints.
 - Context menu: migrate role normalization and action policy into tested helpers before simplifying the QML menu.
 - Observability: extend structured action results beyond activation, menu creation, and launcher mutations to context-menu window/task requests.
