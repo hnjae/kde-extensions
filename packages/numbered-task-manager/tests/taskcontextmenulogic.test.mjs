@@ -18,6 +18,7 @@ const logic = loadQmlJsModule(
     "checkableWindowCapabilityActionState",
     "closeAction",
     "closeActionSection",
+    "closeActionsSection",
     "closeCommand",
     "closeActionState",
     "activityEntriesSnapshot",
@@ -993,6 +994,30 @@ assert.deepEqual(plain(logic.closeActionSection({ visible: false })), {
 assert.deepEqual(plain(logic.closeActionSection({ visible: true })), {
   visible: true,
 });
+assert.deepEqual(
+  plain(
+    logic.closeActionsSection({
+      closable: true,
+      hasTask: false,
+      isWindow: true,
+    }),
+  ),
+  {
+    close: {
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestClose",
+      },
+      enabled: false,
+      text: "Close",
+      visible: true,
+    },
+    separator: {
+      visible: true,
+    },
+  },
+);
 assert.deepEqual(plain(logic.allTaskActivitiesCommand()), {
   arguments: [[]],
   kind: "task-model-request",
@@ -2826,8 +2851,15 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.excludeFromCaptureAction"),
   false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.closeAction"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.closeActionSection"), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.closeActionsSection({"),
+  true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.closeAction({"), false);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.closeActionSection("),
+  false,
+);
 assert.equal(menuQml.includes("TaskContextMenuLogic.closeActionState"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.closeCommand"), false);
 assert.equal(menuQml.includes("visible: closeItem.visible"), false);
