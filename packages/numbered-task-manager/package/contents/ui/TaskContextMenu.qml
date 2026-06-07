@@ -70,6 +70,7 @@ PlasmaExtras.Menu {
         isMinimized: minimizeMaximizeRoles.isMinimized,
         isWindow: taskRoles.isWindow
     })
+    readonly property var pinActionsSection: TaskContextMenuLogic.pinActionsSection(launcherPinState())
     readonly property var virtualDesktopRoles: TaskContextMenuLogic.virtualDesktopRoleSnapshot(roleSource(), roleIds(), task)
     property var activityEntries: []
     property var launcherModel: taskModel
@@ -223,7 +224,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var pinAction: TaskContextMenuLogic.pinLauncherAction(root.launcherPinState())
+        readonly property var pinAction: root.pinActionsSection.pinLauncher
 
         enabled: pinAction.enabled
         text: pinAction.text

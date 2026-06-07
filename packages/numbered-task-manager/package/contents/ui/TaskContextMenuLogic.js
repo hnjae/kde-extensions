@@ -84,6 +84,12 @@ function pinLauncherAction(pinState) {
   });
 }
 
+function pinActionsSection(sectionState) {
+  return {
+    pinLauncher: pinLauncherAction(sectionState),
+  };
+}
+
 function launcherPinStateSnapshot(
   launcherList,
   launcherUrl,
