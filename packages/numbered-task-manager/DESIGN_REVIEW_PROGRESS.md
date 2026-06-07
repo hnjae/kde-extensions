@@ -40,9 +40,17 @@
 - Verification: `node tests/taskactionlogic.test.mjs`; `node tests/visibletaskitemslogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/main.qml`, `tests/taskactionlogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Planned Checkpoint 5: Launcher Mutation Action Results
+
+- Status: planned.
+- What will change: extend `TaskActionLogic.js` to classify launcher pin/unpin request inputs and Plasma request outcomes, then route root `pinLauncher()` and `unpinLauncher()` through those results so rejected launcher mutations can be diagnosed.
+- Behavior that must remain unchanged: empty launcher URLs still do not change launcher state; successful pin/unpin still calls the same `TasksModel.requestAddLauncher` or `TasksModel.requestRemoveLauncher` method and then persists `tasksModel.launcherList`; false Plasma request results still do not persist or rewrite launcher configuration.
+- Verification: `node tests/taskactionlogic.test.mjs`; `node tests/launcherlistlogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files likely changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/main.qml`, `tests/taskactionlogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Launcher sync: add bounded retry or next-change reconciliation for logged model/config mismatches.
 - Root/model ownership: extract normal publication/order and remote-attention source state from `main.qml` in later checkpoints.
 - Context menu: migrate role normalization and action policy into tested helpers before simplifying the QML menu.
-- Observability: extend structured action results beyond activation/menu creation to launcher mutations and context-menu window/task requests.
+- Observability: extend structured action results beyond activation/menu creation and launcher mutations to context-menu window/task requests.
