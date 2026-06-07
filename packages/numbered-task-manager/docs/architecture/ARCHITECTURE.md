@@ -34,6 +34,7 @@ in `SPEC.md`.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
+- Keep widget pin membership in `LauncherListLogic.js`, derived from launcher URL, launcher list, current activity, and launcher-position lookup. Context-menu Pin/Unpin state should consume that menu-facing pin state instead of KDE's raw launcher-association role.
 - Keep launcher-list mutation decisions in `LauncherListLogic.js`. QML code may
   apply returned writes to Plasma objects, but normalization, equality checks,
   and derived launcher activity lists should stay in tested helper functions.
