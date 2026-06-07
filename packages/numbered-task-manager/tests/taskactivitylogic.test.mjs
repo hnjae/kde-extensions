@@ -2,47 +2,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskActivityLogic.js", import.meta.url),
-  [
-    "activitiesAreAll",
-    "allActivitiesId",
-    "isInCurrentActivity",
-    "normalizedActivityList",
-    "stringListContains",
-    "taskActivitiesAfterToggle",
-    "uniqueStringList",
-  ],
+  ["taskActivitiesAfterToggle"],
 );
 
 const nullActivityId = "00000000-0000-0000-0000-000000000000";
 const plain = (value) => JSON.parse(JSON.stringify(value));
-
-assert.equal(logic.allActivitiesId(), nullActivityId);
-assert.equal(logic.stringListContains(["1", "2"], 2), true);
-assert.equal(logic.stringListContains(["1", "2"], 3), false);
-
-assert.deepEqual(plain(logic.uniqueStringList(["work", "", "work", "chat"])), [
-  "work",
-  "chat",
-]);
-assert.equal(logic.activitiesAreAll([]), true);
-assert.equal(logic.activitiesAreAll([nullActivityId]), true);
-assert.equal(logic.activitiesAreAll(["work"]), false);
-assert.deepEqual(plain(logic.normalizedActivityList([])), [nullActivityId]);
-assert.deepEqual(
-  plain(logic.normalizedActivityList(["work", "work", "chat"])),
-  ["work", "chat"],
-);
-
-assert.equal(logic.isInCurrentActivity(["work"], ""), true);
-assert.equal(logic.isInCurrentActivity([], "work"), true);
-assert.equal(logic.isInCurrentActivity([nullActivityId], "work"), true);
-assert.equal(logic.isInCurrentActivity(["work"], "work"), true);
-assert.equal(logic.isInCurrentActivity(["chat"], "work"), false);
 
 assert.deepEqual(plain(logic.taskActivitiesAfterToggle([], "work")), ["work"]);
 assert.deepEqual(
@@ -57,3 +27,28 @@ assert.deepEqual(plain(logic.taskActivitiesAfterToggle(["work"], "chat")), [
   "work",
   "chat",
 ]);
+
+const taskActivityLogic = readFileSync(
+  new URL("../package/contents/ui/TaskActivityLogic.js", import.meta.url),
+  "utf8",
+);
+const mainQml = readFileSync(
+  new URL("../package/contents/ui/main.qml", import.meta.url),
+  "utf8",
+);
+
+assert.doesNotMatch(taskActivityLogic, /function allActivitiesId\b/);
+assert.doesNotMatch(taskActivityLogic, /function stringListContains\b/);
+assert.doesNotMatch(taskActivityLogic, /function uniqueStringList\b/);
+assert.doesNotMatch(taskActivityLogic, /function activitiesAreAll\b/);
+assert.doesNotMatch(taskActivityLogic, /function normalizedActivityList\b/);
+assert.doesNotMatch(taskActivityLogic, /function isInCurrentActivity\b/);
+assert.match(mainQml, /import "ActivityScopeLogic\.js" as ActivityScopeLogic/);
+assert.match(
+  mainQml,
+  /return ActivityScopeLogic\.isInCurrentActivity\(activities, activityInfo\.currentActivity\);/,
+);
+assert.doesNotMatch(
+  mainQml,
+  /TaskActivityLogic\.isInCurrentActivity\(activities, activityInfo\.currentActivity\)/,
+);
