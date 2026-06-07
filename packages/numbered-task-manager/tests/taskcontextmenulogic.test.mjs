@@ -10,6 +10,7 @@ const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskContextMenuLogic.js", import.meta.url),
   [
     "boolRoleData",
+    "checkableWindowCapabilityActionState",
     "launcherActivityListSnapshot",
     "launcherActivityMenuState",
     "launcherActivitiesVisible",
@@ -175,6 +176,51 @@ assert.deepEqual(
     }),
   ),
   {
+    enabled: false,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.checkableWindowCapabilityActionState({
+      capable: true,
+      checked: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: true,
+    enabled: true,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.checkableWindowCapabilityActionState({
+      capable: false,
+      checked: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: true,
+    enabled: false,
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.checkableWindowCapabilityActionState({
+      capable: true,
+      checked: false,
+      hasWindowTask: false,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: false,
     enabled: false,
     visible: true,
   },
@@ -380,6 +426,10 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.windowCapabilityActionState"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.checkableWindowCapabilityActionState"),
   true,
 );
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), true);
