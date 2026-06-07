@@ -451,6 +451,8 @@ assert.deepEqual(
     activities: ["work"],
     changed: true,
     launchers: ["one.desktop", "[work]\ntwo.desktop"],
+    ok: true,
+    reason: "updated",
   },
 );
 assert.deepEqual(
@@ -463,11 +465,19 @@ assert.deepEqual(
     activities: ["work"],
     changed: false,
     launchers: ["one.desktop", "[work]\ntwo.desktop"],
+    ok: true,
+    reason: "unchanged",
   },
 );
-assert.equal(
-  helpers.launcherActivityUpdate(["one.desktop"], 3, ["work"]),
-  null,
+assert.deepEqual(
+  plain(helpers.launcherActivityUpdate(["one.desktop"], 3, ["work"])),
+  {
+    activities: [],
+    changed: false,
+    launchers: ["one.desktop"],
+    ok: false,
+    reason: "invalid-position",
+  },
 );
 
 assert.deepEqual(
