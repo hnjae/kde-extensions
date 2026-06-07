@@ -9,6 +9,11 @@ function titleVisibilityThreshold() {
   return 96;
 }
 
+function taskTitleVisible(showTitle, slotWidth, threshold) {
+  const width = Number(slotWidth || 0);
+  return Boolean(showTitle) && (width <= 0 || width >= Number(threshold || 0));
+}
+
 function maximumSlotWidth() {
   return 220;
 }

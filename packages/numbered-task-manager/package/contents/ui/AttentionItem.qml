@@ -25,7 +25,7 @@ QtQuick.Item {
     readonly property real contentHorizontalPadding: taskFrame.contentLeftMargin + taskFrame.contentRightMargin + Kirigami.Units.smallSpacing * 2
     readonly property int iconExtent: TaskMetricsLogic.iconExtentForTaskFrame(height, taskFrame.contentTopMargin, taskFrame.contentBottomMargin, Kirigami.Units.iconSizes.small)
     readonly property real naturalImplicitWidth: Math.max(TaskMetricsLogic.attentionNaturalWidthMinimum(), Math.min(TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth + contentHorizontalPadding))
-    readonly property bool titleVisible: root.showTitle && (root.slotWidth <= 0 || root.slotWidth >= root.titleVisibilityThreshold)
+    readonly property bool titleVisible: TaskMetricsLogic.taskTitleVisible(root.showTitle, root.slotWidth, root.titleVisibilityThreshold)
     readonly property bool visualHighlighted: taskLikeInteraction.highlighted
 
     signal activated

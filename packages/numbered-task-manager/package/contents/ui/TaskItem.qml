@@ -46,7 +46,7 @@ QtQuick.Item {
     readonly property real naturalImplicitWidth: Math.max(TaskMetricsLogic.normalNaturalWidthMinimum(root.showTitle), Math.min(TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth + contentHorizontalPadding))
     readonly property string numberMode: itemPresentation.numberMode
     readonly property string slotLabel: itemPresentation.slotLabel
-    readonly property bool titleVisible: root.showTitle && (root.slotWidth <= 0 || root.slotWidth >= root.titleVisibilityThreshold)
+    readonly property bool titleVisible: TaskMetricsLogic.taskTitleVisible(root.showTitle, root.slotWidth, root.titleVisibilityThreshold)
     readonly property bool visualHighlighted: taskLikeInteraction.highlighted
 
     signal activated(int taskIndex)
