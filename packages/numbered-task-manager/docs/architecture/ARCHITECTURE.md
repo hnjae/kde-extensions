@@ -67,9 +67,9 @@ in `SPEC.md`.
   apply returned writes to Plasma objects, but normalization, equality checks,
   and derived launcher activity lists should stay in tested helper functions.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
-  coercion, title/icon fallback, model-index validity, and virtual-desktop
-  membership should not be duplicated between normal task composition, remote
-  attention, and context menu code.
+  coercion, launcher URL precedence, title/icon fallback, model-index validity,
+  and virtual-desktop membership should not be duplicated between normal task
+  composition, remote attention, context menu code, and task-like delegates.
 - Keep normal task publication state transitions in `NormalTaskStoreLogic.js`.
   `NormalTaskSource.qml` owns observation of the normal `TasksModel` rows and
   emits explicit publication/removal events into the root-owned store.
