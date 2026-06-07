@@ -2353,8 +2353,10 @@ assert.equal(
   true,
 );
 assert.equal(menuQml.includes("TaskContextMenuLogic.closeAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.closeActionSection"), true);
 assert.equal(menuQml.includes("TaskContextMenuLogic.closeActionState"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.closeCommand"), false);
+assert.equal(menuQml.includes("visible: closeItem.visible"), false);
 assert.equal(menuQml.includes('text: "Hide from Screencasts"'), false);
 assert.equal(menuQml.includes('text: "Close"'), false);
 assert.equal(

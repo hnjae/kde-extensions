@@ -243,6 +243,13 @@ function closeAction(taskState) {
   });
 }
 
+function closeActionSection(closeActionState) {
+  const state = closeActionState || {};
+  return {
+    visible: Boolean(state.visible),
+  };
+}
+
 function allTaskActivitiesCommand() {
   return contextMenuTaskCommand("requestActivities", []);
 }

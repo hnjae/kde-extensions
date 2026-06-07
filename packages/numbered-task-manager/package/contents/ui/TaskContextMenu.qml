@@ -22,6 +22,11 @@ PlasmaExtras.Menu {
     readonly property bool hasWindowTask: hasTask && taskRoles.isWindow
     readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var captureCloseRoles: TaskContextMenuLogic.captureCloseRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var closeAction: TaskContextMenuLogic.closeAction({
+        closable: captureCloseRoles.closable,
+        hasTask: hasTask,
+        isWindow: taskRoles.isWindow
+    })
     readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
     readonly property var fullscreenShadeBorderRoles: TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
@@ -600,17 +605,15 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        readonly property var sectionState: TaskContextMenuLogic.closeActionSection(root.closeAction)
+
         separator: true
-        visible: closeItem.visible
+        visible: sectionState.visible
     }
 
     PlasmaExtras.MenuItem {
         id: closeItem
-        readonly property var actionState: TaskContextMenuLogic.closeAction({
-            closable: root.captureCloseRoles.closable,
-            hasTask: root.hasTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.closeAction
 
         enabled: actionState.enabled
         text: actionState.text
