@@ -102,6 +102,18 @@ function keepBelowCommand() {
   return contextMenuTaskCommand("requestToggleKeepBelow");
 }
 
+function fullscreenCommand() {
+  return contextMenuTaskCommand("requestToggleFullScreen");
+}
+
+function shadeCommand() {
+  return contextMenuTaskCommand("requestToggleShaded");
+}
+
+function noBorderCommand() {
+  return contextMenuTaskCommand("requestToggleNoBorder");
+}
+
 function windowCapabilityActionState(taskState) {
   const state = taskState || {};
   const capable = Boolean(state.capable);

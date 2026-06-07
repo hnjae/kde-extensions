@@ -430,7 +430,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleFullScreen"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.fullscreenCommand());
         }
     }
 
@@ -449,7 +449,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleShaded"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.shadeCommand());
         }
     }
 
@@ -468,7 +468,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleNoBorder"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.noBorderCommand());
         }
     }
 
