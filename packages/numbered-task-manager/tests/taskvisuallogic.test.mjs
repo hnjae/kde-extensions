@@ -297,7 +297,9 @@ assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
 assert.match(taskItemQml, /mutedLauncher:\s*root\.pinnedLauncherOnly/);
 assert.match(taskItemQml, /readonly property bool visualHighlighted:/);
 assert.match(taskItemQml, /readonly property bool titleVisible:/);
-assert.match(taskItemQml, /TaskVisualLogic\.iconActive\(\{/);
+assert.match(taskItemQml, /\bTaskLikeIcon\s*\{/);
+assert.doesNotMatch(taskItemQml, /KirigamiPrimitives\.Icon\s*\{/);
+assert.doesNotMatch(taskItemQml, /TaskVisualLogic\.iconActive\(\{/);
 assert.match(
   taskItemQml,
   /QtQuick\.Drag\.mimeData:\s*TaskInteractionLogic\.taskDragMimeData\(root\.dragMimeType, root\.taskIndex\)/,
@@ -356,7 +358,9 @@ assert.match(
   /readonly property bool visualHighlighted:\s*taskLikeInteraction\.highlighted/,
 );
 assert.match(attentionItemQml, /readonly property bool titleVisible:/);
-assert.match(attentionItemQml, /TaskVisualLogic\.iconActive\(\{/);
+assert.match(attentionItemQml, /\bTaskLikeIcon\s*\{/);
+assert.doesNotMatch(attentionItemQml, /KirigamiPrimitives\.Icon\s*\{/);
+assert.doesNotMatch(attentionItemQml, /TaskVisualLogic\.iconActive\(\{/);
 assert.match(attentionItemQml, /\bTaskLikeInteraction\s*\{/);
 assert.doesNotMatch(
   attentionItemQml,
