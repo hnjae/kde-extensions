@@ -645,6 +645,21 @@ function taskActivityAction(taskActivities, activity) {
   };
 }
 
+function taskActivityActionsSection(sectionState) {
+  const state = sectionState || {};
+
+  return {
+    activityAction: (activity) =>
+      taskActivityAction(state.activities, activity),
+    allTaskActivities: allTaskActivitiesAction(state.activities),
+    taskActivities: taskActivitiesAction({
+      activityEntryCount: state.activityEntryCount,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+  };
+}
+
 function virtualDesktopId(desktop) {
   if (!desktop) {
     return "";

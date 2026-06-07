@@ -79,6 +79,12 @@ PlasmaExtras.Menu {
         isWindow: taskRoles.isWindow,
         virtualDesktops: taskRoles.virtualDesktops
     })
+    readonly property var taskActivityActionsSection: TaskContextMenuLogic.taskActivityActionsSection({
+        activities: taskRoles.activities,
+        activityEntryCount: activityEntries.length,
+        hasWindowTask: hasWindowTask,
+        isWindow: taskRoles.isWindow
+    })
     property var activityEntries: []
     property var launcherModel: taskModel
     property var launcherActivityList: []
@@ -535,11 +541,7 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: activitiesItem
-        readonly property var actionState: TaskContextMenuLogic.taskActivitiesAction({
-            activityEntryCount: root.activityEntries.length,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.taskActivityActionsSection.taskActivities
 
         enabled: actionState.enabled
         text: actionState.text
@@ -552,7 +554,7 @@ PlasmaExtras.Menu {
             visualParent: activitiesItem.action
 
             PlasmaExtras.MenuItem {
-                readonly property var actionState: TaskContextMenuLogic.allTaskActivitiesAction(root.taskRoles.activities)
+                readonly property var actionState: root.taskActivityActionsSection.allTaskActivities
 
                 checkable: true
                 checked: actionState.checked
@@ -570,7 +572,7 @@ PlasmaExtras.Menu {
                 delegate: PlasmaExtras.MenuItem {
                     required property var modelData
 
-                    readonly property var actionState: TaskContextMenuLogic.taskActivityAction(root.taskRoles.activities, modelData)
+                    readonly property var actionState: root.taskActivityActionsSection.activityAction(modelData)
 
                     checkable: true
                     checked: actionState.checked
