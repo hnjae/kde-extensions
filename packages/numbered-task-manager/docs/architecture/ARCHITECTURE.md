@@ -42,7 +42,9 @@ in `SPEC.md`.
 - Keep context-menu task-activity checked-state policy in
   `TaskContextMenuLogic.js`. Task activity mutation decisions remain in
   `TaskActivityLogic.js`, but menu-facing all-activities and per-activity
-  checked predicates should come from tested helper output.
+  checked predicates should come from tested helper output. QML menu items
+  should consume that output directly instead of adding menu-local
+  checked-state wrapper functions.
 - Keep context-menu virtual-desktop checked-state policy in
   `TaskContextMenuLogic.js`. The menu may still request `TasksModel`
   virtual-desktop mutations directly, but all-desktops and per-desktop checked
