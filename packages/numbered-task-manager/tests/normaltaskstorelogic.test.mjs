@@ -8,6 +8,7 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/NormalTaskStoreLogic.js", import.meta.url),
   [
+    "allocateNormalTaskPublication",
     "createNormalTaskPublicationKey",
     "createNormalTaskStore",
     "publishNormalTask",
@@ -56,6 +57,7 @@ assert.deepEqual(plain(logic.createNormalTaskStore()), {
   entries: [],
   entryMap: {},
   manualOrder: [],
+  nextPublicationId: 0,
 });
 assert.deepEqual(plain(logic.createNormalTaskPublicationKey(0)), {
   key: "normal:1",
@@ -67,6 +69,35 @@ assert.deepEqual(plain(logic.createNormalTaskPublicationKey(41)), {
 });
 
 const initial = logic.createNormalTaskStore();
+const firstPublication = logic.allocateNormalTaskPublication(initial);
+assert.deepEqual(plain(firstPublication), {
+  key: "normal:1",
+  store: {
+    entries: [],
+    entryMap: {},
+    manualOrder: [],
+    nextPublicationId: 1,
+  },
+});
+assert.deepEqual(plain(initial), {
+  entries: [],
+  entryMap: {},
+  manualOrder: [],
+  nextPublicationId: 0,
+});
+assert.deepEqual(
+  plain(logic.allocateNormalTaskPublication(firstPublication.store)),
+  {
+    key: "normal:2",
+    store: {
+      entries: [],
+      entryMap: {},
+      manualOrder: [],
+      nextPublicationId: 2,
+    },
+  },
+);
+
 const launcherStore = logic.publishNormalTask(
   initial,
   "launcherA",
@@ -78,6 +109,7 @@ assert.deepEqual(plain(initial), {
   entries: [],
   entryMap: {},
   manualOrder: [],
+  nextPublicationId: 0,
 });
 assert.deepEqual(plain(Object.keys(launcherStore.entryMap)), ["launcherA"]);
 assert.deepEqual(plain(launcherStore.entries.map((entry) => entry.entryKey)), [
