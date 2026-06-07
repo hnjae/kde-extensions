@@ -10,6 +10,7 @@ const logic = loadQmlJsModule(
   [
     "contextMenuCreationResult",
     "contextMenuLauncherCommand",
+    "contextMenuLauncherCommandDispatchResult",
     "contextMenuRequestResult",
     "contextMenuTaskCommand",
     "contextMenuTaskExecutionResult",
@@ -207,6 +208,42 @@ assert.deepEqual(
     launchers: ["app.desktop"],
   },
 );
+assert.deepEqual(
+  plain(
+    logic.contextMenuLauncherCommandDispatchResult(
+      logic.contextMenuLauncherCommand("pinLauncher", "app.desktop"),
+    ),
+  ),
+  {
+    action: "pinLauncher",
+    code: "ready",
+    context: {
+      launcherUrl: "app.desktop",
+    },
+    diagnostic: false,
+    kind: "launcher-command",
+    launcherUrl: "app.desktop",
+    launchers: [],
+    ok: true,
+  },
+);
+const unknownLauncherCommand = logic.contextMenuLauncherCommandDispatchResult({
+  action: "openPortal",
+  kind: "launcher-command",
+});
+assert.deepEqual(plain(unknownLauncherCommand), {
+  action: "openPortal",
+  code: "unknown-launcher-command",
+  context: {
+    commandKind: "launcher-command",
+  },
+  diagnostic: true,
+  kind: "launcher-command",
+  launcherUrl: "",
+  launchers: [],
+  ok: false,
+});
+assert.equal(logic.shouldLogActionResult(unknownLauncherCommand), true);
 
 const taskRequestModel = {
   requestMove() {},

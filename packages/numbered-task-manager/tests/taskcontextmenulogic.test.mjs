@@ -675,6 +675,10 @@ assert.equal(
   ),
   true,
 );
+assert.equal(
+  mainQml.includes("TaskActionLogic.contextMenuLauncherCommandDispatchResult"),
+  true,
+);
 assert.equal(mainQml.includes("pinRequested.connect"), false);
 assert.equal(mainQml.includes("unpinRequested.connect"), false);
 assert.equal(mainQml.includes("launcherListChangeRequested.connect"), false);
