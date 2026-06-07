@@ -15,6 +15,7 @@ const logic = loadQmlJsModule(
     "contextMenuTaskCommand",
     "contextMenuTaskExecutionResult",
     "contextMenuTaskRequest",
+    "dragMoveRejectionResult",
     "launcherMutationRequest",
     "launcherMutationResult",
     "shortcutActivationRequest",
@@ -423,3 +424,44 @@ assert.equal(rejectedLauncherMutation.ok, false);
 assert.equal(rejectedLauncherMutation.code, "request-rejected");
 assert.equal(rejectedLauncherMutation.context.launcherUrl, "app.desktop");
 assert.equal(logic.shouldLogActionResult(rejectedLauncherMutation), true);
+
+assert.deepEqual(
+  plain(
+    logic.dragMoveRejectionResult(
+      { canMove: false, reason: "boundary-crossing" },
+      1,
+      4,
+    ),
+  ),
+  {
+    action: "dragMoveTask",
+    code: "boundary-crossing",
+    context: {
+      reason: "boundary-crossing",
+      sourceIndex: 1,
+      targetIndex: 4,
+    },
+    diagnostic: false,
+    ok: false,
+  },
+);
+const staleDragMove = logic.dragMoveRejectionResult(
+  { canMove: false, reason: "missing-source" },
+  12,
+  2,
+);
+assert.equal(staleDragMove.ok, false);
+assert.equal(staleDragMove.code, "missing-source");
+assert.equal(staleDragMove.context.sourceIndex, 12);
+assert.equal(staleDragMove.context.targetIndex, 2);
+assert.equal(logic.shouldLogActionResult(staleDragMove), true);
+assert.equal(
+  logic.shouldLogActionResult(
+    logic.dragMoveRejectionResult(
+      { canMove: false, reason: "pinned-launcher-denied" },
+      0,
+      1,
+    ),
+  ),
+  false,
+);

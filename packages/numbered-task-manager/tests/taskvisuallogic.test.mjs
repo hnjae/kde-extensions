@@ -187,6 +187,10 @@ assert.match(
 );
 assert.match(
   mainQml,
+  /const rejection = TaskActionLogic\.dragMoveRejectionResult\(moveDecision, sourceIndex, targetIndex\);[\s\S]*?logActionResult\(rejection\);/,
+);
+assert.match(
+  mainQml,
   /canDropTask:\s*\(sourceIndex, targetIndex\) => root\.canMoveTaskResult\(sourceIndex, targetIndex\)\.canMove/,
 );
 assert.doesNotMatch(
