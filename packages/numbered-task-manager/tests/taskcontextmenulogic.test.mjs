@@ -32,6 +32,7 @@ const logic = loadQmlJsModule(
     "launcherAllActivitiesUpdateCommand",
     "launcherActivityToggleUpdateCommand",
     "launcherActivitiesVisible",
+    "launcherPinStateSnapshot",
     "keepAboveCommand",
     "keepAboveBelowRoleSnapshot",
     "keepBelowCommand",
@@ -208,6 +209,56 @@ assert.deepEqual(
     kind: "launcher-command",
     launcherUrl: "app.desktop",
     launchers: [],
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherPinStateSnapshot(
+      ["app.desktop"],
+      "app.desktop",
+      "work",
+      () => 0,
+    ),
+  ),
+  {
+    canPin: true,
+    isPinned: true,
+    launcherUrl: "app.desktop",
+    pinnedLauncherPosition: 0,
+  },
+);
+assert.deepEqual(
+  plain(logic.launcherPinStateSnapshot([], "app.desktop", "work", () => -1)),
+  {
+    canPin: true,
+    isPinned: false,
+    launcherUrl: "app.desktop",
+    pinnedLauncherPosition: -1,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherPinStateSnapshot(
+      ["[chat]\napp.desktop"],
+      "app.desktop",
+      "work",
+      () => 0,
+    ),
+  ),
+  {
+    canPin: true,
+    isPinned: false,
+    launcherUrl: "app.desktop",
+    pinnedLauncherPosition: -1,
+  },
+);
+assert.deepEqual(
+  plain(logic.launcherPinStateSnapshot(["app.desktop"], "", "work", () => 0)),
+  {
+    canPin: false,
+    isPinned: false,
+    launcherUrl: "",
+    pinnedLauncherPosition: -1,
   },
 );
 assert.deepEqual(
@@ -1396,6 +1447,12 @@ assert.equal(
   menuQml.includes("LauncherListLogic.launcherActivityUpdate"),
   false,
 );
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.launcherPinStateSnapshot"),
+  true,
+);
+assert.equal(menuQml.includes('import "LauncherListLogic.js"'), false);
+assert.equal(menuQml.includes("LauncherListLogic.launcherPinState"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.pinLauncherCommand"), true);
 assert.equal(
   menuQml.includes('TaskActionLogic.contextMenuLauncherCommand("pinLauncher"'),
