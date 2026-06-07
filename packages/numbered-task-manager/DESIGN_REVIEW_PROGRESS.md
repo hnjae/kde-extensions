@@ -121,13 +121,13 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs`; `rg "visible: root\\.boolRole\\(root\\.atm\\.(CanLaunchNewInstance|IsMovable|IsResizable)|enabled: root\\.hasWindowTask && root\\.boolRole\\(root\\.atm\\.(IsMovable|IsResizable)" package/contents/ui/TaskContextMenu.qml`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
-## Planned Checkpoint 15: Context-Menu Checkable Window Action State
+## Completed Checkpoint 15: Context-Menu Checkable Window Action State
 
-- Status: planned.
-- What will change: add tested helpers for Minimize and Maximize checked/visible/enabled state in `TaskContextMenuLogic.js` and route those `TaskContextMenu.qml` bindings through helper output.
+- Status: completed.
+- What changed: added tested helpers for Minimize and Maximize checked/visible/enabled state in `TaskContextMenuLogic.js` and routed those `TaskContextMenu.qml` bindings through helper output.
 - Behavior that must remain unchanged: context-menu order, labels, checked state, visibility, enabled state, click effects, request method names, and request payloads remain unchanged.
-- Verification: `node tests/taskcontextmenulogic.test.mjs`; `rg "IsMinimized|IsMinimizable|IsMaximized|IsMaximizable" package/contents/ui/TaskContextMenu.qml`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
-- Files likely changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+- Verification: `node tests/taskcontextmenulogic.test.mjs`; `rg "checked: root\\.boolRole\\(root\\.atm\\.(IsMinimized|IsMaximized)|enabled: root\\.hasWindowTask && root\\.boolRole\\(root\\.atm\\.(IsMinimizable|IsMaximizable)|visible: root\\.isWindow\\(\\) && root\\.boolRole\\(root\\.atm\\.(IsMinimizable|IsMaximizable)" package/contents/ui/TaskContextMenu.qml`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
 ## Remaining Follow-Up Work
 

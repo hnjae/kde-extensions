@@ -49,6 +49,15 @@ function windowCapabilityActionState(taskState) {
   };
 }
 
+function checkableWindowCapabilityActionState(taskState) {
+  const state = taskState || {};
+  const actionState = windowCapabilityActionState(state);
+
+  return Object.assign({}, actionState, {
+    checked: Boolean(state.checked),
+  });
+}
+
 function launcherActivitiesVisible(pinState, activityEntryCount) {
   const state = pinState || {};
   const count = Number(activityEntryCount || 0);

@@ -134,6 +134,15 @@ PlasmaExtras.Menu {
         });
     }
 
+    function checkableWindowCapabilityActionState(capabilityRole, capabilityFallback, checkedRole, checkedFallback) {
+        return TaskContextMenuLogic.checkableWindowCapabilityActionState({
+            capable: boolRole(capabilityRole, capabilityFallback || false),
+            checked: boolRole(checkedRole, checkedFallback || false),
+            hasWindowTask: hasWindowTask,
+            isWindow: isWindow()
+        });
+    }
+
     function activities() {
         return roleSnapshot().activities;
     }
@@ -393,11 +402,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        readonly property var actionState: root.checkableWindowCapabilityActionState(root.atm.IsMinimizable, root.task.isMinimizable || false, root.atm.IsMinimized, root.task.isMinimized || false)
+
         checkable: true
-        checked: root.boolRole(root.atm.IsMinimized, root.task.isMinimized || false)
-        enabled: root.hasWindowTask && root.boolRole(root.atm.IsMinimizable, root.task.isMinimizable || false)
+        checked: actionState.checked
+        enabled: actionState.enabled
         text: "Minimize"
-        visible: root.isWindow() && root.boolRole(root.atm.IsMinimizable, root.task.isMinimizable || false)
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestToggleMinimized");
@@ -405,11 +416,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        readonly property var actionState: root.checkableWindowCapabilityActionState(root.atm.IsMaximizable, root.task.isMaximizable || false, root.atm.IsMaximized, root.task.isMaximized || false)
+
         checkable: true
-        checked: root.boolRole(root.atm.IsMaximized, root.task.isMaximized || false)
-        enabled: root.hasWindowTask && root.boolRole(root.atm.IsMaximizable, root.task.isMaximizable || false)
+        checked: actionState.checked
+        enabled: actionState.enabled
         text: "Maximize"
-        visible: root.isWindow() && root.boolRole(root.atm.IsMaximizable, root.task.isMaximizable || false)
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestToggleMaximized");
