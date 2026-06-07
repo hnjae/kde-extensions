@@ -9,6 +9,7 @@ import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
 import "TaskActivityLogic.js" as TaskActivityLogic
+import "TaskActionLogic.js" as TaskActionLogic
 import "TaskContextMenuLogic.js" as TaskContextMenuLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
@@ -52,6 +53,29 @@ PlasmaExtras.Menu {
         refreshActivities();
         refreshLauncherActivities();
         openRelative();
+    }
+
+    function logActionResult(result) {
+        if (!TaskActionLogic.shouldLogActionResult(result)) {
+            return;
+        }
+
+        console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
+    }
+
+    function requestTaskModelAction(requestMethod, argument) {
+        const result = TaskActionLogic.contextMenuTaskRequest(requestMethod, taskModel, modelIndex, task);
+        if (!result.ok) {
+            logActionResult(result);
+            return result;
+        }
+
+        if (argument === undefined) {
+            taskModel[requestMethod](modelIndex);
+        } else {
+            taskModel[requestMethod](modelIndex, argument);
+        }
+        return result;
     }
 
     function roleData(role, fallback) {
@@ -151,7 +175,7 @@ PlasmaExtras.Menu {
             return;
         }
 
-        taskModel.requestActivities(modelIndex, TaskActivityLogic.taskActivitiesAfterToggle(activities(), activityId));
+        requestTaskModelAction("requestActivities", TaskActivityLogic.taskActivitiesAfterToggle(activities(), activityId));
     }
 
     function launcherPinnedToAllActivities() {
@@ -318,7 +342,7 @@ PlasmaExtras.Menu {
         visible: root.boolRole(root.atm.CanLaunchNewInstance, root.task.canLaunchNewInstance || false) || root.isLauncher()
 
         onClicked: {
-            root.taskModel.requestNewInstance(root.modelIndex);
+            root.requestTaskModelAction("requestNewInstance");
         }
     }
 
@@ -328,7 +352,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow() && root.boolRole(root.atm.IsMovable, root.task.isMovable || false)
 
         onClicked: {
-            root.taskModel.requestMove(root.modelIndex);
+            root.requestTaskModelAction("requestMove");
         }
     }
 
@@ -338,7 +362,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow() && root.boolRole(root.atm.IsResizable, root.task.isResizable || false)
 
         onClicked: {
-            root.taskModel.requestResize(root.modelIndex);
+            root.requestTaskModelAction("requestResize");
         }
     }
 
@@ -350,7 +374,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow() && root.boolRole(root.atm.IsMinimizable, root.task.isMinimizable || false)
 
         onClicked: {
-            root.taskModel.requestToggleMinimized(root.modelIndex);
+            root.requestTaskModelAction("requestToggleMinimized");
         }
     }
 
@@ -362,7 +386,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow() && root.boolRole(root.atm.IsMaximizable, root.task.isMaximizable || false)
 
         onClicked: {
-            root.taskModel.requestToggleMaximized(root.modelIndex);
+            root.requestTaskModelAction("requestToggleMaximized");
         }
     }
 
@@ -374,7 +398,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow()
 
         onClicked: {
-            root.taskModel.requestToggleKeepAbove(root.modelIndex);
+            root.requestTaskModelAction("requestToggleKeepAbove");
         }
     }
 
@@ -386,7 +410,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow()
 
         onClicked: {
-            root.taskModel.requestToggleKeepBelow(root.modelIndex);
+            root.requestTaskModelAction("requestToggleKeepBelow");
         }
     }
 
@@ -398,7 +422,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow() && root.boolRole(root.atm.IsFullScreenable, root.task.fullScreenable || false)
 
         onClicked: {
-            root.taskModel.requestToggleFullScreen(root.modelIndex);
+            root.requestTaskModelAction("requestToggleFullScreen");
         }
     }
 
@@ -410,7 +434,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow() && root.boolRole(root.atm.IsShadeable, root.task.isShadeable || false)
 
         onClicked: {
-            root.taskModel.requestToggleShaded(root.modelIndex);
+            root.requestTaskModelAction("requestToggleShaded");
         }
     }
 
@@ -422,7 +446,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow() && root.boolRole(root.atm.CanSetNoBorder, root.task.canSetNoBorder || false)
 
         onClicked: {
-            root.taskModel.requestToggleNoBorder(root.modelIndex);
+            root.requestTaskModelAction("requestToggleNoBorder");
         }
     }
 
@@ -434,7 +458,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow()
 
         onClicked: {
-            root.taskModel.requestToggleExcludeFromCapture(root.modelIndex);
+            root.requestTaskModelAction("requestToggleExcludeFromCapture");
         }
     }
 
@@ -457,7 +481,7 @@ PlasmaExtras.Menu {
                 text: "All Desktops"
 
                 onClicked: {
-                    root.taskModel.requestVirtualDesktops(root.modelIndex, []);
+                    root.requestTaskModelAction("requestVirtualDesktops", []);
                 }
             }
 
@@ -473,7 +497,7 @@ PlasmaExtras.Menu {
                     text: modelData.name
 
                     onClicked: {
-                        root.taskModel.requestVirtualDesktops(root.modelIndex, [modelData.id]);
+                        root.requestTaskModelAction("requestVirtualDesktops", [modelData.id]);
                     }
                 }
 
@@ -491,7 +515,7 @@ PlasmaExtras.Menu {
                 text: "New Desktop"
 
                 onClicked: {
-                    root.taskModel.requestNewVirtualDesktop(root.modelIndex);
+                    root.requestTaskModelAction("requestNewVirtualDesktop");
                 }
             }
         }
@@ -516,7 +540,7 @@ PlasmaExtras.Menu {
                 text: "All Activities"
 
                 onClicked: {
-                    root.taskModel.requestActivities(root.modelIndex, []);
+                    root.requestTaskModelAction("requestActivities", []);
                 }
             }
 
@@ -560,7 +584,7 @@ PlasmaExtras.Menu {
         visible: root.isWindow() && root.boolRole(root.atm.IsClosable, root.task.closable || false)
 
         onClicked: {
-            root.taskModel.requestClose(root.modelIndex);
+            root.requestTaskModelAction("requestClose");
         }
     }
 }

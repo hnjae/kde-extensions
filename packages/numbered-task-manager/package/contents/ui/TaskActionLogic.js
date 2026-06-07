@@ -227,6 +227,65 @@ function contextMenuCreationResult(menu, requestResult) {
   );
 }
 
+function contextMenuTaskRequestContext(modelIndex, task) {
+  const entry = task || {};
+  const context = {
+    modelIndexValid: hasValidModelIndex(modelIndex),
+  };
+
+  if (entry.entryKey) {
+    context.entryKey = entry.entryKey;
+  }
+  if (entry.title) {
+    context.title = entry.title;
+  }
+
+  return context;
+}
+
+function contextMenuTaskRequest(action, taskModel, modelIndex, task) {
+  const requestAction = action || "taskRequest";
+  const context = contextMenuTaskRequestContext(modelIndex, task);
+
+  if (!taskModel) {
+    return actionResult(
+      requestAction,
+      "missing-task-model",
+      false,
+      true,
+      context,
+    );
+  }
+
+  if (!hasValidModelIndex(modelIndex)) {
+    return actionResult(
+      requestAction,
+      "invalid-model-index",
+      false,
+      true,
+      context,
+    );
+  }
+
+  if (typeof taskModel[requestAction] !== "function") {
+    return actionResult(
+      requestAction,
+      "missing-request-method",
+      false,
+      true,
+      context,
+    );
+  }
+
+  return Object.assign(
+    actionResult(requestAction, "ready", true, false, context),
+    {
+      modelIndex,
+      requestMethod: requestAction,
+    },
+  );
+}
+
 function launcherMutationContext(launcherUrl) {
   const url = String(launcherUrl || "");
   return url ? { launcherUrl: url } : {};
