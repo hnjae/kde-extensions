@@ -15,6 +15,7 @@ const logic = loadQmlJsModule(
     "checkableWindowCapabilityActionState",
     "closeActionState",
     "activityEntriesSnapshot",
+    "fullscreenShadeBorderRoleSnapshot",
     "menuActionSectionVisible",
     "newVirtualDesktopActionState",
     "launcherActivityListSnapshot",
@@ -563,9 +564,13 @@ assert.equal(
 
 const liveRoles = {
   Activities: ["live-activity"],
+  CanSetNoBorder: true,
   CanLaunchNewInstance: true,
+  HasNoBorder: false,
   IsKeepAbove: true,
   IsKeepBelow: false,
+  IsFullScreen: true,
+  IsFullScreenable: false,
   IsLauncher: 1,
   IsMaximizable: true,
   IsMaximized: false,
@@ -573,6 +578,8 @@ const liveRoles = {
   IsMinimized: true,
   IsMovable: false,
   IsResizable: true,
+  IsShadeable: true,
+  IsShaded: false,
   IsWindow: true,
   LauncherUrl: "launcher.desktop",
   LauncherUrlWithoutIcon: "launcher-without-icon.desktop",
@@ -591,7 +598,11 @@ const roleSource = {
 };
 const roles = {
   Activities: "Activities",
+  CanSetNoBorder: "CanSetNoBorder",
   CanLaunchNewInstance: "CanLaunchNewInstance",
+  HasNoBorder: "HasNoBorder",
+  IsFullScreen: "IsFullScreen",
+  IsFullScreenable: "IsFullScreenable",
   IsKeepAbove: "IsKeepAbove",
   IsKeepBelow: "IsKeepBelow",
   IsLauncher: "IsLauncher",
@@ -601,6 +612,8 @@ const roles = {
   IsMinimized: "IsMinimized",
   IsMovable: "IsMovable",
   IsResizable: "IsResizable",
+  IsShadeable: "IsShadeable",
+  IsShaded: "IsShaded",
   IsWindow: "IsWindow",
   LauncherUrl: "LauncherUrl",
   LauncherUrlWithoutIcon: "LauncherUrlWithoutIcon",
@@ -745,6 +758,50 @@ assert.deepEqual(
     isKeepBelow: true,
   },
 );
+assert.deepEqual(
+  plain(
+    logic.fullscreenShadeBorderRoleSnapshot(roleSource, roles, {
+      canSetNoBorder: false,
+      fullScreenable: true,
+      hasNoBorder: true,
+      isFullScreen: false,
+      isShadeable: false,
+      isShaded: true,
+    }),
+  ),
+  {
+    canSetNoBorder: true,
+    fullScreenable: false,
+    hasNoBorder: false,
+    isFullScreen: true,
+    isShadeable: true,
+    isShaded: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.fullscreenShadeBorderRoleSnapshot(
+      { ...roleSource, hasTask: false },
+      roles,
+      {
+        canSetNoBorder: false,
+        fullScreenable: true,
+        hasNoBorder: true,
+        isFullScreen: false,
+        isShadeable: false,
+        isShaded: true,
+      },
+    ),
+  ),
+  {
+    canSetNoBorder: false,
+    fullScreenable: true,
+    hasNoBorder: true,
+    isFullScreen: false,
+    isShadeable: false,
+    isShaded: true,
+  },
+);
 assert.deepEqual(plain(roleCalls.map((call) => call.role).slice(0, 2)), [
   "LauncherUrl",
   "Missing",
@@ -776,6 +833,10 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.keepAboveBelowRoleSnapshot"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot"),
   true,
 );
 assert.equal(
@@ -822,6 +883,36 @@ assert.equal(
   menuQml.includes(
     "readonly property bool roleChecked: root.boolRole(root.atm.IsKeepBelow",
   ),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "readonly property bool roleChecked: root.boolRole(root.atm.IsFullScreen",
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes("capable: root.boolRole(root.atm.IsFullScreenable"),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "readonly property bool roleChecked: root.boolRole(root.atm.IsShaded",
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes("capable: root.boolRole(root.atm.IsShadeable"),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "readonly property bool roleChecked: root.boolRole(root.atm.HasNoBorder",
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes("capable: root.boolRole(root.atm.CanSetNoBorder"),
   false,
 );
 assert.equal(menuQml.includes('names[i] || "Desktop "'), false);
