@@ -8,7 +8,7 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskContextMenuLogic.js", import.meta.url),
-  ["panelMenuPlacement"],
+  ["launcherActivitiesVisible", "panelMenuPlacement", "pinActionState"],
 );
 
 const plasmaCoreTypes = {
@@ -62,10 +62,49 @@ assert.equal(
   plasmaMenu.TopPosedLeftAlignedPopup,
 );
 
+assert.deepEqual(logic.pinActionState({ canPin: true, isPinned: true }), {
+  action: "unpin",
+  enabled: true,
+  text: "Unpin from Task Manager",
+});
+assert.deepEqual(logic.pinActionState({ canPin: true, isPinned: false }), {
+  action: "pin",
+  enabled: true,
+  text: "Pin to Task Manager",
+});
+assert.deepEqual(logic.pinActionState({ canPin: false, isPinned: true }), {
+  action: "unpin",
+  enabled: false,
+  text: "Unpin from Task Manager",
+});
+assert.equal(
+  logic.launcherActivitiesVisible(
+    { canPin: true, isPinned: true, launcherUrl: "app.desktop" },
+    2,
+  ),
+  true,
+);
+assert.equal(
+  logic.launcherActivitiesVisible(
+    { canPin: true, isPinned: false, launcherUrl: "app.desktop" },
+    2,
+  ),
+  false,
+);
+assert.equal(
+  logic.launcherActivitiesVisible(
+    { canPin: true, isPinned: true, launcherUrl: "app.desktop" },
+    1,
+  ),
+  false,
+);
+
 const menuQml = readFileSync(
   new URL("../package/contents/ui/TaskContextMenu.qml", import.meta.url),
   "utf8",
 );
+
+assert.equal(menuQml.includes("atm.HasLauncher"), false);
 
 function directMenuContentObjectViolations(qml) {
   const violations = [];

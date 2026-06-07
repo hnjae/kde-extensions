@@ -17,6 +17,7 @@ const helpers = loadQmlJsModule(
     "launcherListWithActivitiesAt",
     "launcherListsEqual",
     "launcherModelUpdate",
+    "launcherPinState",
     "movePinnedLauncher",
     "normalizedLauncherList",
     "parseSerializedLauncher",
@@ -165,6 +166,52 @@ assert.deepEqual(
 assert.equal(
   helpers.launcherActivityUpdate(["one.desktop"], 3, ["work"]),
   null,
+);
+
+assert.deepEqual(
+  plain(
+    helpers.launcherPinState(["app.desktop"], "app.desktop", "work", () => 0),
+  ),
+  {
+    canPin: true,
+    isPinned: true,
+    launcherUrl: "app.desktop",
+    pinnedLauncherPosition: 0,
+  },
+);
+assert.deepEqual(
+  plain(helpers.launcherPinState([], "app.desktop", "work", () => -1)),
+  {
+    canPin: true,
+    isPinned: false,
+    launcherUrl: "app.desktop",
+    pinnedLauncherPosition: -1,
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherPinState(
+      ["[chat]\napp.desktop"],
+      "app.desktop",
+      "work",
+      () => 0,
+    ),
+  ),
+  {
+    canPin: true,
+    isPinned: false,
+    launcherUrl: "app.desktop",
+    pinnedLauncherPosition: -1,
+  },
+);
+assert.deepEqual(
+  plain(helpers.launcherPinState(["app.desktop"], "", "work", () => 0)),
+  {
+    canPin: false,
+    isPinned: false,
+    launcherUrl: "",
+    pinnedLauncherPosition: -1,
+  },
 );
 
 assert.deepEqual(
