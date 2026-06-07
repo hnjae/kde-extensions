@@ -85,9 +85,12 @@ in `SPEC.md`.
 - Apply launcher-list writes through a root-owned transaction that always releases its update guard. Keep post-write convergence checks in `LauncherListLogic.js` so failed model/config writes can be logged with the attempted launcher list.
 - Keep remote-attention qualification, keying, ordering, state transitions, and
   count/target snapshots in `RemoteAttentionLogic.js` so the separate attention
-  model remains testable independently from normal task composition. Root QML
-  should bind to one remote-attention state instead of owning separate entry-map,
-  order, count, entries, and target properties.
+  model remains testable independently from normal task composition.
+  `RemoteAttentionSource.qml` owns observation of the attention `TasksModel`
+  rows and emits explicit publication/removal events into the root-owned state.
+  Root QML should bind to one remote-attention state instead of owning hidden
+  attention publication delegates or separate entry-map, order, count, entries,
+  and target properties.
 - Keep composed visible item order, slot labels, `Meta+0` target selection, item source metadata, and item count in a visible-item composer instead of reconstructing those policies independently in root activation, layout sizing, and delegates.
 - Keep shortcut activation, context-menu creation, and launcher pin/unpin request outcomes in a small action-result helper. Root QML should still execute Plasma side effects, but invalid requests, stale model indexes, missing targets, rejected launcher requests, and creation failures should be classified before deciding whether to log a diagnostic.
 - Keep context-menu task request outcomes in the same action-result helper.
