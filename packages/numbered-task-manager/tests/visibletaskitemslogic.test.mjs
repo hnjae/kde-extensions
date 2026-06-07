@@ -21,7 +21,6 @@ const logic = loadQmlJsModule(
     "activationTargetForShortcutIndex",
     "composeVisibleTaskItems",
     "normalVisibleTaskItems",
-    "visibleItemForNormalIndex",
     "visibleRemoteAttentionItem",
   ],
 );
@@ -97,11 +96,6 @@ assert.equal(
   logic.activationTargetForShortcutIndex(threeNormalItems, 9).entry.entryKey,
   "task-2",
 );
-assert.equal(
-  logic.visibleItemForNormalIndex(threeNormalItems, 1).slotNumber,
-  2,
-);
-assert.equal(logic.visibleItemForNormalIndex(threeNormalItems, 99), null);
 
 const overflowItems = logic.composeVisibleTaskItems(normalEntries, {
   count: 0,

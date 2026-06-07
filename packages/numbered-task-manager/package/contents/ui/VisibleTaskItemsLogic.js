@@ -65,23 +65,6 @@ function composeVisibleTaskItems(normalEntries, remoteAttentionSnapshot) {
   return markMetaZeroTarget(visibleItems);
 }
 
-function visibleItemForNormalIndex(visibleItems, normalIndex) {
-  const targetIndex = integerValue(normalIndex, -1);
-  if (targetIndex < 0) {
-    return null;
-  }
-
-  const items = Array.from(visibleItems || []);
-  for (let index = 0; index < items.length; ++index) {
-    const item = items[index];
-    if (item?.kind === "normal" && item.sourceIndex === targetIndex) {
-      return item;
-    }
-  }
-
-  return null;
-}
-
 function normalVisibleTaskItems(visibleItems) {
   const items = Array.from(visibleItems || []);
   return items.filter((item) => item?.kind === "normal");
