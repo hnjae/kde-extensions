@@ -92,6 +92,7 @@ in `SPEC.md`.
   Root QML should bind to one remote-attention state instead of owning hidden
   attention publication delegates or separate entry-map, order, count, entries,
   and target properties.
+- Keep remote-attention projection dependencies explicit. `RemoteAttentionLogic.js` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
 - Keep composed visible item order, slot labels, `Meta+0` target selection, item source metadata, and item count in a visible-item composer instead of reconstructing those policies independently in root activation, layout sizing, and delegates.
 - Keep shortcut activation, context-menu creation, and launcher pin/unpin request outcomes in a small action-result helper. Root QML should still execute Plasma side effects, but invalid requests, stale model indexes, missing targets, rejected launcher requests, and creation failures should be classified before deciding whether to log a diagnostic.
 - Keep context-menu task request outcomes in the same action-result helper.
