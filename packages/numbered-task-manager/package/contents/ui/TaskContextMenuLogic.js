@@ -58,6 +58,16 @@ function checkableWindowCapabilityActionState(taskState) {
   });
 }
 
+function checkableWindowActionState(taskState) {
+  const state = taskState || {};
+
+  return {
+    checked: Boolean(state.checked),
+    enabled: Boolean(state.hasWindowTask),
+    visible: Boolean(state.isWindow),
+  };
+}
+
 function launcherActivitiesVisible(pinState, activityEntryCount) {
   const state = pinState || {};
   const count = Number(activityEntryCount || 0);

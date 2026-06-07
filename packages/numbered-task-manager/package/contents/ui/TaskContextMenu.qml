@@ -143,6 +143,14 @@ PlasmaExtras.Menu {
         });
     }
 
+    function checkableWindowActionState(checkedRole, checkedFallback) {
+        return TaskContextMenuLogic.checkableWindowActionState({
+            checked: boolRole(checkedRole, checkedFallback || false),
+            hasWindowTask: hasWindowTask,
+            isWindow: isWindow()
+        });
+    }
+
     function activities() {
         return roleSnapshot().activities;
     }
@@ -430,11 +438,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        readonly property var actionState: root.checkableWindowActionState(root.atm.IsKeepAbove, root.task.isKeepAbove || false)
+
         checkable: true
-        checked: root.boolRole(root.atm.IsKeepAbove, root.task.isKeepAbove || false)
-        enabled: root.hasWindowTask
+        checked: actionState.checked
+        enabled: actionState.enabled
         text: "Keep Above Others"
-        visible: root.isWindow()
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestToggleKeepAbove");
@@ -442,11 +452,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        readonly property var actionState: root.checkableWindowActionState(root.atm.IsKeepBelow, root.task.isKeepBelow || false)
+
         checkable: true
-        checked: root.boolRole(root.atm.IsKeepBelow, root.task.isKeepBelow || false)
-        enabled: root.hasWindowTask
+        checked: actionState.checked
+        enabled: actionState.enabled
         text: "Keep Below Others"
-        visible: root.isWindow()
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestToggleKeepBelow");
@@ -454,11 +466,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        readonly property var actionState: root.checkableWindowCapabilityActionState(root.atm.IsFullScreenable, root.task.fullScreenable || false, root.atm.IsFullScreen, root.task.isFullScreen || false)
+
         checkable: true
-        checked: root.boolRole(root.atm.IsFullScreen, root.task.isFullScreen || false)
-        enabled: root.hasWindowTask && root.boolRole(root.atm.IsFullScreenable, root.task.fullScreenable || false)
+        checked: actionState.checked
+        enabled: actionState.enabled
         text: "Fullscreen"
-        visible: root.isWindow() && root.boolRole(root.atm.IsFullScreenable, root.task.fullScreenable || false)
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestToggleFullScreen");
@@ -466,11 +480,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        readonly property var actionState: root.checkableWindowCapabilityActionState(root.atm.IsShadeable, root.task.isShadeable || false, root.atm.IsShaded, root.task.isShaded || false)
+
         checkable: true
-        checked: root.boolRole(root.atm.IsShaded, root.task.isShaded || false)
-        enabled: root.hasWindowTask && root.boolRole(root.atm.IsShadeable, root.task.isShadeable || false)
+        checked: actionState.checked
+        enabled: actionState.enabled
         text: "Shade"
-        visible: root.isWindow() && root.boolRole(root.atm.IsShadeable, root.task.isShadeable || false)
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestToggleShaded");
@@ -478,11 +494,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        readonly property var actionState: root.checkableWindowCapabilityActionState(root.atm.CanSetNoBorder, root.task.canSetNoBorder || false, root.atm.HasNoBorder, root.task.hasNoBorder || false)
+
         checkable: true
-        checked: root.boolRole(root.atm.HasNoBorder, root.task.hasNoBorder || false)
-        enabled: root.hasWindowTask && root.boolRole(root.atm.CanSetNoBorder, root.task.canSetNoBorder || false)
+        checked: actionState.checked
+        enabled: actionState.enabled
         text: "No Border"
-        visible: root.isWindow() && root.boolRole(root.atm.CanSetNoBorder, root.task.canSetNoBorder || false)
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestToggleNoBorder");
@@ -490,11 +508,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        readonly property var actionState: root.checkableWindowActionState(root.atm.IsExcludedFromCapture, root.task.isExcludedFromCapture || false)
+
         checkable: true
-        checked: root.boolRole(root.atm.IsExcludedFromCapture, root.task.isExcludedFromCapture || false)
-        enabled: root.hasWindowTask
+        checked: actionState.checked
+        enabled: actionState.enabled
         text: "Hide from Screencasts"
-        visible: root.isWindow()
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestToggleExcludeFromCapture");
