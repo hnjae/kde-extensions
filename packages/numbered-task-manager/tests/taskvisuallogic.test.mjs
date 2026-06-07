@@ -165,6 +165,11 @@ assert.match(
 assert.match(mainQml, /visibleItemCount:\s*root\.visibleTaskItems\.length/);
 assert.match(
   mainQml,
+  /readonly property var remoteAttentionVisibleItem:\s*VisibleTaskItemsLogic\.visibleRemoteAttentionItem\(root\.visibleTaskItems\)/,
+);
+assert.doesNotMatch(mainQml, /root\.remoteAttentionState\.target\s*\?/);
+assert.match(
+  mainQml,
   /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*fullRepresentationItem\.taskSlotWidth/,
 );
 assert.match(mainQml, /columnSpacing:\s*0/);
