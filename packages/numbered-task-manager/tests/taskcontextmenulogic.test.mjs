@@ -26,7 +26,9 @@ const logic = loadQmlJsModule(
     "launcherActivityMenuState",
     "launcherActivitiesVisible",
     "keepAboveBelowRoleSnapshot",
+    "maximizeCommand",
     "minimizeMaximizeRoleSnapshot",
+    "minimizeCommand",
     "newInstanceCommand",
     "newInstanceActionState",
     "panelMenuPlacement",
@@ -226,6 +228,16 @@ assert.deepEqual(plain(logic.resizeCommand()), {
   arguments: [],
   kind: "task-model-request",
   requestMethod: "requestResize",
+});
+assert.deepEqual(plain(logic.minimizeCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestToggleMinimized",
+});
+assert.deepEqual(plain(logic.maximizeCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestToggleMaximized",
 });
 assert.deepEqual(
   plain(
@@ -1160,6 +1172,20 @@ assert.equal(menuQml.includes("function menuActionSectionVisible"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.checkableWindowCapabilityActionState"),
   true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.minimizeCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.maximizeCommand"), true);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuTaskCommand("requestToggleMinimized"',
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuTaskCommand("requestToggleMaximized"',
+  ),
+  false,
 );
 assert.equal(
   menuQml.includes("function checkableWindowCapabilityActionState"),
