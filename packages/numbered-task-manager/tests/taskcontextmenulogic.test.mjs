@@ -30,6 +30,7 @@ const logic = loadQmlJsModule(
     "launcherActivityMenuState",
     "launcherActivityUpdateCommand",
     "launcherAllActivitiesUpdateCommand",
+    "launcherActivityToggleUpdateCommand",
     "launcherActivitiesVisible",
     "keepAboveCommand",
     "keepAboveBelowRoleSnapshot",
@@ -742,6 +743,92 @@ assert.deepEqual(
     reason: "missing-current-activity",
   },
 );
+assert.deepEqual(
+  plain(
+    logic.launcherActivityToggleUpdateCommand(
+      ["one.desktop", "two.desktop"],
+      1,
+      [nullActivityId],
+      "chat",
+      "work",
+    ),
+  ),
+  {
+    activities: ["chat"],
+    changed: true,
+    command: {
+      action: "replaceLauncherList",
+      kind: "launcher-command",
+      launcherUrl: "",
+      launchers: ["one.desktop", "[chat]\ntwo.desktop"],
+    },
+    launchers: ["one.desktop", "[chat]\ntwo.desktop"],
+    ok: true,
+    reason: "updated",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherActivityToggleUpdateCommand(
+      ["one.desktop", "[work]\ntwo.desktop"],
+      1,
+      ["work"],
+      "work",
+      "work",
+    ),
+  ),
+  {
+    activities: ["work"],
+    changed: false,
+    command: null,
+    launchers: ["one.desktop", "[work]\ntwo.desktop"],
+    ok: true,
+    reason: "unchanged",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherActivityToggleUpdateCommand(
+      ["one.desktop", "[work]\ntwo.desktop"],
+      1,
+      ["work"],
+      "chat",
+      "work",
+    ),
+  ),
+  {
+    activities: ["work", "chat"],
+    changed: true,
+    command: {
+      action: "replaceLauncherList",
+      kind: "launcher-command",
+      launcherUrl: "",
+      launchers: ["one.desktop", "[work,chat]\ntwo.desktop"],
+    },
+    launchers: ["one.desktop", "[work,chat]\ntwo.desktop"],
+    ok: true,
+    reason: "updated",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherActivityToggleUpdateCommand(
+      ["one.desktop", "[work]\ntwo.desktop"],
+      1,
+      ["work"],
+      "",
+      "work",
+    ),
+  ),
+  {
+    activities: ["work"],
+    changed: false,
+    command: null,
+    launchers: ["one.desktop", "[work]\ntwo.desktop"],
+    ok: true,
+    reason: "unchanged",
+  },
+);
 assert.deepEqual(plain(logic.taskActivityMenuState([], "work")), {
   activityChecked: true,
   allActivitiesChecked: true,
@@ -1295,6 +1382,14 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("LauncherListLogic.launcherActivitiesAfterAllToggle"),
+  false,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.launcherActivityToggleUpdateCommand"),
+  true,
+);
+assert.equal(
+  menuQml.includes("LauncherListLogic.launcherActivitiesAfterToggle"),
   false,
 );
 assert.equal(
