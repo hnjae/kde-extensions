@@ -11,6 +11,7 @@ const logic = loadQmlJsModule(
   [
     "boolRoleData",
     "basicActionRoleSnapshot",
+    "captureCloseRoleSnapshot",
     "checkableWindowActionState",
     "checkableWindowCapabilityActionState",
     "closeActionState",
@@ -568,6 +569,8 @@ const liveRoles = {
   CanSetNoBorder: true,
   CanLaunchNewInstance: true,
   HasNoBorder: false,
+  IsClosable: true,
+  IsExcludedFromCapture: false,
   IsKeepAbove: true,
   IsKeepBelow: false,
   IsFullScreen: true,
@@ -604,6 +607,8 @@ const roles = {
   CanSetNoBorder: "CanSetNoBorder",
   CanLaunchNewInstance: "CanLaunchNewInstance",
   HasNoBorder: "HasNoBorder",
+  IsClosable: "IsClosable",
+  IsExcludedFromCapture: "IsExcludedFromCapture",
   IsFullScreen: "IsFullScreen",
   IsFullScreenable: "IsFullScreenable",
   IsKeepAbove: "IsKeepAbove",
@@ -831,6 +836,30 @@ assert.deepEqual(
     isVirtualDesktopsChangeable: true,
   },
 );
+assert.deepEqual(
+  plain(
+    logic.captureCloseRoleSnapshot(roleSource, roles, {
+      closable: false,
+      isExcludedFromCapture: true,
+    }),
+  ),
+  {
+    closable: true,
+    isExcludedFromCapture: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.captureCloseRoleSnapshot({ ...roleSource, hasTask: false }, roles, {
+      closable: false,
+      isExcludedFromCapture: true,
+    }),
+  ),
+  {
+    closable: false,
+    isExcludedFromCapture: true,
+  },
+);
 assert.deepEqual(plain(roleCalls.map((call) => call.role).slice(0, 2)), [
   "LauncherUrl",
   "Missing",
@@ -870,6 +899,10 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopRoleSnapshot"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.captureCloseRoleSnapshot"),
   true,
 );
 assert.equal(
@@ -956,6 +989,16 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("root.boolRole(root.atm.IsOnAllVirtualDesktops"),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "readonly property bool roleChecked: root.boolRole(root.atm.IsExcludedFromCapture",
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes("closable: root.boolRole(root.atm.IsClosable"),
   false,
 );
 assert.equal(menuQml.includes('names[i] || "Desktop "'), false);
