@@ -600,6 +600,9 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivityMenuState"),
   true,
 );
+assert.equal(menuQml.includes("function launcherPinnedToAllActivities"), false);
+assert.equal(menuQml.includes("function launcherPinnedToActivity"), false);
+assert.equal(menuQml.includes("function launcherActivityMenuState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivityMenuState"),
   true,
