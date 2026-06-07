@@ -7,10 +7,8 @@ import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
-import org.kde.kirigami.primitives as KirigamiPrimitives
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
-import "TaskVisualLogic.js" as TaskVisualLogic
 
 QtQuick.Item {
     id: root
@@ -72,12 +70,10 @@ QtQuick.Item {
             QtQuickLayouts.Layout.preferredHeight: root.iconExtent
             QtQuickLayouts.Layout.preferredWidth: QtQuickLayouts.Layout.preferredHeight
 
-            KirigamiPrimitives.Icon {
+            TaskLikeIcon {
                 anchors.fill: parent
-                active: TaskVisualLogic.iconActive({
-                    highlighted: root.visualHighlighted
-                })
                 fallback: TaskEntryLogic.remoteAttentionIconFallback()
+                highlighted: root.visualHighlighted
                 source: root.iconSource
             }
 
