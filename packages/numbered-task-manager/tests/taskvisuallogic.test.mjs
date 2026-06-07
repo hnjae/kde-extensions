@@ -188,27 +188,26 @@ assert.match(
   mainQml,
   /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*fullRepresentationItem\.taskSlotWidth/,
 );
-assert.match(mainQml, /function canMoveTaskResult\(sourceIndex, targetIndex\)/);
+assert.match(mainQml, /\bTaskMoveAdapter\s*\{/);
+assert.match(mainQml, /normalEntries:\s*root\.normalTaskEntries/);
 assert.match(
   mainQml,
-  /return TaskModelLogic\.canMoveTaskResult\(normalTaskEntries, sourceIndex, targetIndex, \(sourceEntry, targetEntry\) => canMovePinnedLauncher\(sourceEntry, targetEntry\)\);/,
+  /onActionResult:\s*result => \{[\s\S]*?root\.logActionResult\(result\);[\s\S]*?\}/,
 );
 assert.match(
   mainQml,
-  /function canMoveTask\(sourceIndex, targetIndex\)\s*\{[\s\S]*?return canMoveTaskResult\(sourceIndex, targetIndex\)\.canMove;/,
+  /canDropTask:\s*\(sourceIndex, targetIndex\) => taskMover\.canMoveTaskResult\(sourceIndex, targetIndex\)\.canMove/,
 );
 assert.match(
   mainQml,
-  /const moveDecision = canMoveTaskResult\(sourceIndex, targetIndex\);[\s\S]*?if \(!moveDecision\.canMove\)/,
+  /if \(taskMover\.moveTask\(sourceIndex, targetIndex\)\) \{[\s\S]*?drop\.acceptProposedAction\(\);/,
 );
-assert.match(
+assert.doesNotMatch(
   mainQml,
-  /const rejection = TaskActionLogic\.dragMoveRejectionResult\(moveDecision, sourceIndex, targetIndex\);[\s\S]*?logActionResult\(rejection\);/,
+  /function canMoveTaskResult\(sourceIndex, targetIndex\)/,
 );
-assert.match(
-  mainQml,
-  /canDropTask:\s*\(sourceIndex, targetIndex\) => root\.canMoveTaskResult\(sourceIndex, targetIndex\)\.canMove/,
-);
+assert.doesNotMatch(mainQml, /function moveTask\(sourceIndex, targetIndex\)/);
+assert.doesNotMatch(mainQml, /TaskModelLogic\.canMoveTaskResult/);
 assert.doesNotMatch(
   mainQml,
   /canDropTask:\s*\(sourceIndex, targetIndex\) => root\.canMoveTask\(sourceIndex, targetIndex\)/,

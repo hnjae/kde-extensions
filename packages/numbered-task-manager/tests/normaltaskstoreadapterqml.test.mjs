@@ -20,10 +20,6 @@ const sourceQml = readFileSync(sourceUrl, "utf8");
 assert.match(mainQml, /\bNormalTaskStoreAdapter\s*\{/);
 assert.match(mainQml, /id:\s*normalTaskStore/);
 assert.match(mainQml, /normalTaskStore\.entries/);
-assert.match(
-  mainQml,
-  /normalTaskStore\.moveManualTask\(sourceEntry\.entryKey, targetEntry\.entryKey\)/,
-);
 assert.match(mainQml, /normalTaskStore\.allocatePublicationKey\(\)/);
 assert.match(
   mainQml,
@@ -37,6 +33,7 @@ assert.doesNotMatch(mainQml, /function publishNormalTask\(/);
 assert.doesNotMatch(mainQml, /function removeNormalTask\(/);
 assert.doesNotMatch(mainQml, /function applyNormalTaskStore\(/);
 assert.doesNotMatch(mainQml, /function recomputeNormalTaskEntries\(/);
+assert.doesNotMatch(mainQml, /function moveManualTask\(/);
 assert.doesNotMatch(mainQml, /NormalTaskStoreLogic\./);
 
 assert.match(

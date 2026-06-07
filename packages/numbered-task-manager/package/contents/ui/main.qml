@@ -13,7 +13,6 @@ import "ActivityScopeLogic.js" as ActivityScopeLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
-import "TaskModelLogic.js" as TaskModelLogic
 import "TaskScopeLogic.js" as TaskScopeLogic
 import "TaskActionLogic.js" as TaskActionLogic
 import "VisibleTaskItemsLogic.js" as VisibleTaskItemsLogic
@@ -66,52 +65,6 @@ PlasmoidItem {
         }
 
         console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
-    }
-
-    function moveTask(sourceIndex, targetIndex) {
-        const moveDecision = canMoveTaskResult(sourceIndex, targetIndex);
-        if (!moveDecision.canMove) {
-            const rejection = TaskActionLogic.dragMoveRejectionResult(moveDecision, sourceIndex, targetIndex);
-            logActionResult(rejection);
-            return false;
-        }
-
-        const sourceEntry = normalTaskEntryForSourceIndex(sourceIndex);
-        const targetEntry = normalTaskEntryForSourceIndex(targetIndex);
-        if (!sourceEntry || !targetEntry) {
-            return false;
-        }
-
-        if (!sourceEntry.launcherBacked) {
-            return normalTaskStore.moveManualTask(sourceEntry.entryKey, targetEntry.entryKey);
-        }
-
-        return movePinnedLauncher(sourceEntry, targetEntry);
-    }
-
-    function movePinnedLauncher(sourceEntry, targetEntry) {
-        const result = LauncherListLogic.movePinnedLauncher(tasksModel.launcherList, sourceEntry, targetEntry, launcherUrl => tasksModel.launcherPosition(launcherUrl));
-        if (!result.moved) {
-            return false;
-        }
-
-        return launcherSync.applyLauncherList(result.launchers);
-    }
-
-    function canMovePinnedLauncher(sourceEntry, targetEntry) {
-        return LauncherListLogic.canMovePinnedLauncher(tasksModel.launcherList, sourceEntry, targetEntry, launcherUrl => tasksModel.launcherPosition(launcherUrl));
-    }
-
-    function canMoveTaskResult(sourceIndex, targetIndex) {
-        return TaskModelLogic.canMoveTaskResult(normalTaskEntries, sourceIndex, targetIndex, (sourceEntry, targetEntry) => canMovePinnedLauncher(sourceEntry, targetEntry));
-    }
-
-    function canMoveTask(sourceIndex, targetIndex) {
-        return canMoveTaskResult(sourceIndex, targetIndex).canMove;
-    }
-
-    function normalTaskEntryForSourceIndex(sourceIndex) {
-        return TaskModelLogic.normalTaskEntryForSourceIndex(normalTaskEntries, sourceIndex);
     }
 
     function visibleLauncherPosition(launcherUrl, launcherRevisionToken) {
@@ -201,6 +154,19 @@ PlasmoidItem {
         id: normalTaskStore
 
         visibleLauncherPosition: launcherUrl => root.visibleLauncherPosition(launcherUrl)
+    }
+
+    TaskMoveAdapter {
+        id: taskMover
+
+        launcherSync: launcherSync
+        normalEntries: root.normalTaskEntries
+        normalTaskStore: normalTaskStore
+        taskModel: tasksModel
+
+        onActionResult: result => {
+            root.logActionResult(result);
+        }
     }
 
     TaskManager.TasksModel {
@@ -322,7 +288,7 @@ PlasmoidItem {
                     launcher: entry.isLauncher || false
                     demandingAttention: entry.demandingAttention || false
                     dragMimeType: root.taskDragMimeType
-                    canDropTask: (sourceIndex, targetIndex) => root.canMoveTaskResult(sourceIndex, targetIndex).canMove
+                    canDropTask: (sourceIndex, targetIndex) => taskMover.canMoveTaskResult(sourceIndex, targetIndex).canMove
 
                     onActivated: {
                         root.activateTaskEntry(entry);
@@ -335,7 +301,7 @@ PlasmoidItem {
                     }
 
                     onTaskDropped: (sourceIndex, targetIndex, drop) => {
-                        if (root.moveTask(sourceIndex, targetIndex)) {
+                        if (taskMover.moveTask(sourceIndex, targetIndex)) {
                             drop.acceptProposedAction();
                         }
                     }

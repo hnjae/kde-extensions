@@ -8,6 +8,10 @@ const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
   "utf8",
 );
+const moveAdapterQml = readFileSync(
+  new URL("../package/contents/ui/TaskMoveAdapter.qml", import.meta.url),
+  "utf8",
+);
 const sourceUrl = new URL(
   "../package/contents/ui/LauncherSyncAdapter.qml",
   import.meta.url,
@@ -23,7 +27,10 @@ assert.match(
   mainQml,
   /launcherSync\.persistLaunchers\(tasksModel\.launcherList\)/,
 );
-assert.match(mainQml, /launcherSync\.applyLauncherList\(result\.launchers\)/);
+assert.match(
+  moveAdapterQml,
+  /launcherSync\.applyLauncherList\(result\.launchers\)/,
+);
 assert.match(mainQml, /if \(!launcherSync\.updatingLauncherConfig\)/);
 assert.match(
   mainQml,
