@@ -101,10 +101,10 @@ in `SPEC.md`.
   count/target snapshots in `RemoteAttentionLogic.js` so the separate attention
   model remains testable independently from normal task composition.
   `RemoteAttentionSource.qml` owns observation of the attention `TasksModel`
-  rows and emits explicit publication/removal events into the root-owned state.
-  Root QML should bind to one remote-attention state instead of owning hidden
-  attention publication delegates or separate entry-map, order, count, entries,
-  and target properties.
+  rows and owns one remote-attention state snapshot. Root QML should consume the
+  source's count/target snapshot instead of owning hidden attention publication
+  delegates, publication callbacks, or separate entry-map, order, count,
+  entries, and target properties.
 - Keep remote-attention projection dependencies explicit. `RemoteAttentionLogic.js` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
 - Keep composed visible item order, slot labels, `Meta+0` target selection, item source metadata, and item count in a visible-item composer instead of reconstructing those policies independently in root activation, layout sizing, and delegates.
 - Route activation decisions for rendered task-like items through composed visible item descriptors where practical. Root QML still executes the unavoidable `TasksModel.requestActivate(...)` side effect, but normal shortcut activation, `Meta+0`, and remote-attention item activation should share the same visible-item metadata contract.
