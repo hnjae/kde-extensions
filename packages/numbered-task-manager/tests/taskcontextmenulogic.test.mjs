@@ -2480,8 +2480,12 @@ assert.equal(
   ),
   false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.keepAboveAction"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.keepBelowAction"), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.keepAboveBelowActionsSection({"),
+  true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.keepAboveAction"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.keepBelowAction"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.keepAboveCommand"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.keepBelowCommand"), false);
 assert.equal(menuQml.includes('text: "Keep Above Others"'), false);

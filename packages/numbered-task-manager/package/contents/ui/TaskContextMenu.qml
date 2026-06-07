@@ -40,6 +40,12 @@ PlasmaExtras.Menu {
     readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
     readonly property var fullscreenShadeBorderRoles: TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var keepAboveBelowActionsSection: TaskContextMenuLogic.keepAboveBelowActionsSection({
+        hasWindowTask: hasWindowTask,
+        isKeepAbove: keepAboveBelowRoles.isKeepAbove,
+        isKeepBelow: keepAboveBelowRoles.isKeepBelow,
+        isWindow: taskRoles.isWindow
+    })
     readonly property var minimizeMaximizeRoles: TaskContextMenuLogic.minimizeMaximizeRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var minimizeMaximizeActionsSection: TaskContextMenuLogic.minimizeMaximizeActionsSection({
         hasWindowTask: hasWindowTask,
@@ -355,11 +361,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.keepAboveAction({
-            checked: root.keepAboveBelowRoles.isKeepAbove,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.keepAboveBelowActionsSection.keepAbove
 
         checkable: true
         checked: actionState.checked
@@ -373,11 +375,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.keepBelowAction({
-            checked: root.keepAboveBelowRoles.isKeepBelow,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.keepAboveBelowActionsSection.keepBelow
 
         checkable: true
         checked: actionState.checked

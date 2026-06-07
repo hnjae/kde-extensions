@@ -237,6 +237,23 @@ function keepBelowAction(taskState) {
   });
 }
 
+function keepAboveBelowActionsSection(sectionState) {
+  const state = sectionState || {};
+
+  return {
+    keepAbove: keepAboveAction({
+      checked: state.isKeepAbove,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+    keepBelow: keepBelowAction({
+      checked: state.isKeepBelow,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+  };
+}
+
 function fullscreenCommand() {
   return contextMenuTaskCommand("requestToggleFullScreen");
 }
