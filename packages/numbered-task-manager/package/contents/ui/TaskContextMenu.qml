@@ -39,10 +39,10 @@ PlasmaExtras.Menu {
         isWindow: taskRoles.isWindow,
         keepAboveBelowRoles: keepAboveBelowRoles,
         launcherActivities: launcherActivityList,
-        launcherList: launcherModel ? launcherModel.launcherList : [],
-        launcherPosition: launcherPosition(),
+        launcherList: launcherState.launcherList,
+        launcherPosition: launcherState.launcherPosition,
         minimizeMaximizeRoles: minimizeMaximizeRoles,
-        pinState: launcherPinState(),
+        pinState: launcherState.pinState,
         taskRoles: taskRoles,
         virtualDesktopRoles: virtualDesktopRoles
     })
@@ -82,20 +82,6 @@ PlasmaExtras.Menu {
         console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
     }
 
-    function launcherPinState() {
-        const url = taskRoles.launcherUrl;
-        return TaskContextMenuLogic.launcherPinStateSnapshot(launcherModel ? launcherModel.launcherList : [], url, platformState.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
-    }
-
-    function launcherPosition() {
-        const url = taskRoles.launcherUrl;
-        if (!launcherModel || !url) {
-            return -1;
-        }
-
-        return launcherModel.launcherPosition(url);
-    }
-
     onStatusChanged: {
         if (status === PlasmaExtras.Menu.Closed) {
             closed();
@@ -113,6 +99,14 @@ PlasmaExtras.Menu {
         modelIndex: root.modelIndex
         task: root.task
         taskModel: root.taskModel
+    }
+
+    readonly property TaskContextMenuLauncherState _launcherState: TaskContextMenuLauncherState {
+        id: launcherState
+
+        currentActivity: platformState.currentActivity
+        launcherModel: root.launcherModel
+        launcherUrl: root.taskRoles.launcherUrl
     }
 
     readonly property TaskContextMenuLauncherActivityAdapter _launcherActivityAdapter: TaskContextMenuLauncherActivityAdapter {
