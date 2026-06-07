@@ -24,9 +24,14 @@ const sourceQml = readFileSync(sourceUrl, "utf8");
 assert.match(mainQml, /\bTaskContextMenuAdapter\s*\{/);
 assert.match(mainQml, /id:\s*contextMenuAdapter/);
 assert.match(mainQml, /launcherModel:\s*tasksModel/);
+assert.match(mainQml, /taskModel:\s*tasksModel/);
 assert.match(
   mainQml,
-  /contextMenuAdapter\.openTaskContextMenu\(Object\.assign\(/,
+  /onContextMenuRequested:\s*request\s*=>\s*\{[\s\S]*?contextMenuAdapter\.openTaskContextMenu\(request\);[\s\S]*?\}/,
+);
+assert.doesNotMatch(
+  mainQml,
+  /contextMenuAdapter\.openTaskContextMenu\(Object\.assign\(\{\s*taskModel:\s*tasksModel\s*\}/,
 );
 assert.match(mainQml, /root\.logActionResult\(result\)/);
 assert.match(mainQml, /launcherCommands\.dispatchLauncherCommand\(command\)/);
@@ -39,10 +44,19 @@ assert.doesNotMatch(mainQml, /TaskActionLogic\.contextMenuCreationResult/);
 assert.match(sourceQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
 assert.match(sourceQml, /QtQuick\.Item\s*\{/);
 assert.match(sourceQml, /property var launcherModel/);
+assert.match(sourceQml, /property var taskModel/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /signal launcherCommandRequested\(var command\)/);
+assert.match(sourceQml, /function contextMenuRequest\(request\)/);
+assert.match(
+  sourceQml,
+  /Object\.assign\(\{\s*taskModel:\s*root\.taskModel\s*\},\s*request \|\| \(\{\}\)\)/,
+);
 assert.match(sourceQml, /function openTaskContextMenu\(request\)/);
-assert.match(sourceQml, /TaskActionLogic\.contextMenuRequestResult\(request\)/);
+assert.match(
+  sourceQml,
+  /TaskActionLogic\.contextMenuRequestResult\(contextMenuRequest\(request\)\)/,
+);
 assert.match(sourceQml, /contextMenuComponent\.createObject\(visualParent/);
 assert.match(
   sourceQml,
