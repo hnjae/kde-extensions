@@ -164,7 +164,7 @@ PlasmaExtras.Menu {
             return false;
         }
 
-        root.launcherCommandRequested(TaskActionLogic.contextMenuLauncherCommand("replaceLauncherList", update.launchers));
+        root.launcherCommandRequested(TaskContextMenuLogic.replaceLauncherListCommand(update.launchers));
         return true;
     }
 

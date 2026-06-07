@@ -74,6 +74,10 @@ function pinLauncherCommand(pinState) {
   );
 }
 
+function replaceLauncherListCommand(launchers) {
+  return contextMenuLauncherCommand("replaceLauncherList", launchers);
+}
+
 function newInstanceActionState(taskState) {
   const state = taskState || {};
 
