@@ -227,6 +227,57 @@ function contextMenuCreationResult(menu, requestResult) {
   );
 }
 
+function launcherMutationContext(launcherUrl) {
+  const url = String(launcherUrl || "");
+  return url ? { launcherUrl: url } : {};
+}
+
+function launcherMutationRequest(action, launcherUrl) {
+  const requestAction = action || "launcherMutation";
+  const context = launcherMutationContext(launcherUrl);
+
+  if (!context.launcherUrl) {
+    return actionResult(
+      requestAction,
+      "missing-launcher-url",
+      false,
+      false,
+      context,
+    );
+  }
+
+  return Object.assign(
+    actionResult(requestAction, "ready", true, false, context),
+    {
+      launcherUrl: context.launcherUrl,
+    },
+  );
+}
+
+function launcherMutationResult(requestResult, accepted) {
+  const request = requestResult || {};
+  if (!request.ok) {
+    return request;
+  }
+
+  const context = launcherMutationContext(
+    request.launcherUrl || request.context?.launcherUrl,
+  );
+  const code = accepted ? "accepted" : "request-rejected";
+  return Object.assign(
+    actionResult(
+      request.action || "launcherMutation",
+      code,
+      accepted,
+      !accepted,
+      context,
+    ),
+    {
+      launcherUrl: context.launcherUrl || "",
+    },
+  );
+}
+
 function shouldLogActionResult(result) {
   return Boolean(result && !result.ok && result.diagnostic);
 }

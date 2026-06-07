@@ -135,23 +135,28 @@ PlasmoidItem {
     }
 
     function pinLauncher(launcherUrl) {
-        if (!launcherUrl) {
-            return;
-        }
-
-        if (tasksModel.requestAddLauncher(launcherUrl)) {
-            persistLaunchers(tasksModel.launcherList);
-        }
+        requestLauncherMutation("pinLauncher", launcherUrl, url => tasksModel.requestAddLauncher(url));
     }
 
     function unpinLauncher(launcherUrl) {
-        if (!launcherUrl) {
-            return;
+        requestLauncherMutation("unpinLauncher", launcherUrl, url => tasksModel.requestRemoveLauncher(url));
+    }
+
+    function requestLauncherMutation(action, launcherUrl, requestLauncher) {
+        const request = TaskActionLogic.launcherMutationRequest(action, launcherUrl);
+        if (!request.ok) {
+            logActionResult(request);
+            return false;
         }
 
-        if (tasksModel.requestRemoveLauncher(launcherUrl)) {
-            persistLaunchers(tasksModel.launcherList);
+        const result = TaskActionLogic.launcherMutationResult(request, requestLauncher(request.launcherUrl));
+        if (!result.ok) {
+            logActionResult(result);
+            return false;
         }
+
+        persistLaunchers(tasksModel.launcherList);
+        return true;
     }
 
     function moveTask(sourceIndex, targetIndex) {
