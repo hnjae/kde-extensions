@@ -910,6 +910,26 @@ function boolRoleData(roleSource, role, fallback) {
   return Boolean(roleData(roleSource, role, fallback || false));
 }
 
+function contextMenuRoleSnapshots(roleSource, roles, task) {
+  return {
+    basicActionRoles: basicActionRoleSnapshot(roleSource, roles, task),
+    captureCloseRoles: captureCloseRoleSnapshot(roleSource, roles, task),
+    fullscreenShadeBorderRoles: fullscreenShadeBorderRoleSnapshot(
+      roleSource,
+      roles,
+      task,
+    ),
+    keepAboveBelowRoles: keepAboveBelowRoleSnapshot(roleSource, roles, task),
+    minimizeMaximizeRoles: minimizeMaximizeRoleSnapshot(
+      roleSource,
+      roles,
+      task,
+    ),
+    taskRoles: taskRoleSnapshot(roleSource, roles, task),
+    virtualDesktopRoles: virtualDesktopRoleSnapshot(roleSource, roles, task),
+  };
+}
+
 function basicActionRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};

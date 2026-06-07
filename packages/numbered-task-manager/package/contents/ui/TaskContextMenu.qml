@@ -18,16 +18,17 @@ PlasmaExtras.Menu {
 
     readonly property var atm: TaskManager.AbstractTasksModel
     readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(modelIndex)
-    readonly property var taskRoles: TaskContextMenuLogic.taskRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var roleSnapshots: TaskContextMenuLogic.contextMenuRoleSnapshots(roleSource(), roleIds(), task)
+    readonly property var taskRoles: roleSnapshots.taskRoles
     readonly property bool hasWindowTask: hasTask && taskRoles.isWindow
-    readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var captureCloseRoles: TaskContextMenuLogic.captureCloseRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var basicActionRoles: roleSnapshots.basicActionRoles
+    readonly property var captureCloseRoles: roleSnapshots.captureCloseRoles
     readonly property var activityEntries: platformState.activityEntries
     readonly property var desktopEntries: platformState.desktopEntries
-    readonly property var fullscreenShadeBorderRoles: TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var minimizeMaximizeRoles: TaskContextMenuLogic.minimizeMaximizeRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var virtualDesktopRoles: TaskContextMenuLogic.virtualDesktopRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var fullscreenShadeBorderRoles: roleSnapshots.fullscreenShadeBorderRoles
+    readonly property var keepAboveBelowRoles: roleSnapshots.keepAboveBelowRoles
+    readonly property var minimizeMaximizeRoles: roleSnapshots.minimizeMaximizeRoles
+    readonly property var virtualDesktopRoles: roleSnapshots.virtualDesktopRoles
     readonly property var actionSections: TaskContextMenuLogic.contextMenuActionSections({
         activityEntryCount: activityEntries.length,
         basicActionRoles: basicActionRoles,
