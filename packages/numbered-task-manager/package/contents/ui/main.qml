@@ -378,85 +378,20 @@ PlasmoidItem {
         virtualDesktop: virtualDesktopInfo.currentDesktop
     }
 
-    QtQuick.Repeater {
-        model: tasksModel
+    NormalTaskSource {
+        taskModel: tasksModel
+        currentActivity: activityInfo.currentActivity
+        currentDesktop: virtualDesktopInfo.currentDesktop
+        launcherRevision: root.launcherRevision
+        createPublicationKey: () => root.createNormalTaskPublicationKey()
+        isInCurrentActivity: activities => root.isInCurrentActivity(activities)
+        visibleLauncherPosition: (launcherUrl, launcherRevisionToken) => root.visibleLauncherPosition(launcherUrl, launcherRevisionToken)
 
-        delegate: QtQuick.Item {
-            required property int index
-            required property var model
-
-            property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
-            property int launcherRevisionToken: root.launcherRevision
-            property var launcherPinState: LauncherListLogic.launcherPinState(tasksModel.launcherList, launcherUrl, activityInfo.currentActivity, url => tasksModel.launcherPosition(url), launcherRevisionToken)
-            property int launcherPosition: launcherPinState.pinnedLauncherPosition
-            property bool launcherPinned: launcherPinState.isPinned
-            property string publishedKey: ""
-            property var taskInfo: TaskModelLogic.createNormalTaskEntry({
-                activities: model.Activities,
-                active: model.IsActive,
-                appName: model.AppName,
-                canLaunchNewInstance: model.CanLaunchNewInstance,
-                canSetNoBorder: model.CanSetNoBorder,
-                closable: model.IsClosable,
-                demandingAttention: model.IsDemandingAttention,
-                display: model.display,
-                entryKey: publishedKey,
-                fullScreenable: model.IsFullScreenable,
-                hasLauncher: model.HasLauncher,
-                hasNoBorder: model.HasNoBorder,
-                iconSource: model.decoration,
-                index,
-                isExcludedFromCapture: model.IsExcludedFromCapture,
-                isFullScreen: model.IsFullScreen,
-                isKeepAbove: model.IsKeepAbove,
-                isKeepBelow: model.IsKeepBelow,
-                isLauncher: model.IsLauncher,
-                isMaximizable: model.IsMaximizable,
-                isMaximized: model.IsMaximized,
-                isMinimizable: model.IsMinimizable,
-                isMinimized: model.IsMinimized,
-                isMovable: model.IsMovable,
-                isOnAllVirtualDesktops: model.IsOnAllVirtualDesktops,
-                isResizable: model.IsResizable,
-                isShadeable: model.IsShadeable,
-                isShaded: model.IsShaded,
-                isStartup: model.IsStartup,
-                isVirtualDesktopsChangeable: model.IsVirtualDesktopsChangeable,
-                isWindow: model.IsWindow,
-                launcherPinned,
-                launcherPosition,
-                launcherUrl,
-                modelIndex: tasksModel.makePersistentModelIndex(index),
-                virtualDesktops: model.VirtualDesktops
-            }, TaskEntryLogic)
-            property bool qualifies: TaskModelLogic.qualifiesNormalTask(taskInfo, activities => root.isInCurrentActivity(activities), virtualDesktopInfo.currentDesktop, TaskEntryLogic)
-
-            height: 0
-            visible: false
-            width: 0
-
-            function syncTask() {
-                if (!publishedKey) {
-                    return;
-                }
-
-                const task = Object.assign({}, taskInfo);
-                task.entryKey = publishedKey;
-                root.publishNormalTask(publishedKey, qualifies, task);
-            }
-
-            QtQuick.Component.onCompleted: {
-                publishedKey = root.createNormalTaskPublicationKey();
-                syncTask();
-            }
-            QtQuick.Component.onDestruction: {
-                root.removeNormalTask(publishedKey);
-            }
-            onIndexChanged: syncTask()
-            onLauncherPinnedChanged: syncTask()
-            onLauncherPositionChanged: syncTask()
-            onQualifiesChanged: syncTask()
-            onTaskInfoChanged: syncTask()
+        onTaskPublished: (key, qualifies, task) => {
+            root.publishNormalTask(key, qualifies, task);
+        }
+        onTaskRemoved: key => {
+            root.removeNormalTask(key);
         }
     }
 

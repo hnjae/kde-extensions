@@ -145,9 +145,17 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because `closeActionState` did not exist; after implementation, `node tests/taskcontextmenulogic.test.mjs`; source guards for direct root task availability predicates and obsolete inline virtual-desktop/activity/close predicates; `node tests/taskactionlogic.test.mjs`; `node tests/taskactivitylogic.test.mjs`; `node tests/taskentrylogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 18: Normal Task Source Component
+
+- Status: completed.
+- What changed: declared `NormalTaskSource.qml` as the normal `TasksModel` row observation boundary, added a source-structure guard, and moved the hidden normal publication repeater out of `main.qml` into the new source component.
+- Behavior that must remain unchanged: `main.qml` still owns the normal `TasksModel`, launcher writes, store state, drag/drop, context-menu wiring, and visible rendering; normal task qualification, publication keys, launcher pin-state derivation, model indexes, pinned prefix composition, unpinned manual order, and context-menu task data remain unchanged.
+- Verification: `node tests/normaltasksourceqml.test.mjs` failed before implementation because `NormalTaskSource.qml` did not exist; after implementation, `node tests/normaltasksourceqml.test.mjs`; `node tests/normaltaskstorelogic.test.mjs`; `node tests/taskmodellogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `tests/normaltasksourceqml.test.mjs`, `package/contents/ui/NormalTaskSource.qml`, `package/contents/ui/main.qml`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Launcher sync: add bounded retry or next-change reconciliation for logged model/config mismatches.
-- Root/model ownership: extract normal and remote hidden model repeaters into named source components in later checkpoints.
+- Root/model ownership: extract the remote hidden model repeater into a named source component in a later checkpoint.
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers, then simplify menu effect dispatch into typed commands where practical.
 - Observability: extend structured action results beyond activation, menu creation, and launcher mutations to context-menu window/task requests.
