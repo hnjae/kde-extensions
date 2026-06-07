@@ -22,6 +22,7 @@ const logic = loadQmlJsModule(
     "closeCommand",
     "closeActionState",
     "contextMenuActionSections",
+    "contextMenuActionRoute",
     "contextMenuRoleSnapshots",
     "activityEntriesSnapshot",
     "allTaskActivitiesAction",
@@ -331,6 +332,78 @@ assert.deepEqual(
     },
   },
 );
+assert.deepEqual(
+  plain(
+    logic.contextMenuActionRoute({
+      command: logic.contextMenuLauncherCommand("pinLauncher", "app.desktop"),
+    }),
+  ),
+  {
+    command: {
+      action: "pinLauncher",
+      kind: "launcher-command",
+      launcherUrl: "app.desktop",
+      launchers: [],
+    },
+    kind: "launcher-command",
+    update: null,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.contextMenuActionRoute({
+      command: logic.contextMenuTaskCommand("requestMove"),
+    }),
+  ),
+  {
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestMove",
+    },
+    kind: "task-model-request",
+    update: null,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.contextMenuActionRoute({
+      command: {
+        requestMethod: "requestResize",
+      },
+    }),
+  ),
+  {
+    command: {
+      requestMethod: "requestResize",
+    },
+    kind: "task-model-request",
+    update: null,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.contextMenuActionRoute({
+      update: {
+        changed: true,
+        ok: true,
+      },
+    }),
+  ),
+  {
+    command: null,
+    kind: "launcher-activity-update",
+    update: {
+      changed: true,
+      ok: true,
+    },
+  },
+);
+assert.deepEqual(plain(logic.contextMenuActionRoute(null)), {
+  command: null,
+  kind: "none",
+  update: null,
+});
 assert.deepEqual(
   plain(
     logic.launcherPinStateSnapshot(
@@ -2949,6 +3022,10 @@ assert.equal(
   menuQml.includes(
     "launcherActivityAdapter.applyLauncherActivityAction(actionState.update)",
   ),
+  false,
+);
+assert.equal(
+  menuQml.includes("actionDispatcher.triggerAction(actionState)"),
   true,
 );
 assert.equal(
@@ -3195,6 +3272,10 @@ assert.equal(
   menuQml.includes(
     "taskCommandAdapter.requestTaskModelCommand(actionState.command",
   ),
+  false,
+);
+assert.equal(
+  menuQml.includes("actionDispatcher.triggerAction(pinAction)"),
   true,
 );
 assert.equal(
@@ -3409,6 +3490,11 @@ assert.equal(menuQml.includes("function requestTaskModelCommand"), false);
 assert.equal(menuQml.includes("signal pinRequested"), false);
 assert.equal(menuQml.includes("signal unpinRequested"), false);
 assert.equal(menuQml.includes("signal launcherListChangeRequested"), false);
+assert.equal(menuQml.includes("TaskContextMenuActionDispatcher {"), true);
+assert.equal(
+  menuQml.includes("root.launcherCommandRequested(pinAction.command)"),
+  false,
+);
 assert.equal(/\b(?:root\.)?taskModel\.request[A-Z]/.test(menuQml), false);
 
 const platformStateQml = readFileSync(
@@ -3609,6 +3695,35 @@ assert.equal(
 );
 assert.equal(
   launcherStateQml.includes('property string currentActivity: ""'),
+  true,
+);
+
+const actionDispatcherQml = readFileSync(
+  new URL(
+    "../package/contents/ui/TaskContextMenuActionDispatcher.qml",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.equal(
+  actionDispatcherQml.includes("TaskContextMenuLogic.contextMenuActionRoute"),
+  true,
+);
+assert.equal(actionDispatcherQml.includes("function triggerAction"), true);
+assert.equal(
+  actionDispatcherQml.includes(
+    "taskCommandAdapter.requestTaskModelCommand(route.command)",
+  ),
+  true,
+);
+assert.equal(
+  actionDispatcherQml.includes(
+    "launcherActivityAdapter.applyLauncherActivityAction(route.update)",
+  ),
+  true,
+);
+assert.equal(
+  actionDispatcherQml.includes("launcherCommandRequested(route.command)"),
   true,
 );
 
