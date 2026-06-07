@@ -356,7 +356,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleMinimized"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.minimizeCommand());
         }
     }
 
@@ -375,7 +375,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleMaximized"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.maximizeCommand());
         }
     }
 

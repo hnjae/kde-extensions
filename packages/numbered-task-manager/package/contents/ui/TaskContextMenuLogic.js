@@ -86,6 +86,14 @@ function resizeCommand() {
   return contextMenuTaskCommand("requestResize");
 }
 
+function minimizeCommand() {
+  return contextMenuTaskCommand("requestToggleMinimized");
+}
+
+function maximizeCommand() {
+  return contextMenuTaskCommand("requestToggleMaximized");
+}
+
 function windowCapabilityActionState(taskState) {
   const state = taskState || {};
   const capable = Boolean(state.capable);
