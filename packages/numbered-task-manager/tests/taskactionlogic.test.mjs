@@ -9,6 +9,7 @@ const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskActionLogic.js", import.meta.url),
   [
     "contextMenuCreationResult",
+    "contextMenuLauncherCommand",
     "contextMenuRequestResult",
     "contextMenuTaskCommand",
     "contextMenuTaskRequest",
@@ -180,6 +181,30 @@ assert.equal(logic.shouldLogActionResult(creationFailure), true);
 assert.equal(
   logic.contextMenuCreationResult({ objectName: "menu" }, {}).ok,
   true,
+);
+
+assert.deepEqual(
+  plain(logic.contextMenuLauncherCommand("pinLauncher", "app.desktop")),
+  {
+    action: "pinLauncher",
+    kind: "launcher-command",
+    launcherUrl: "app.desktop",
+    launchers: [],
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.contextMenuLauncherCommand("replaceLauncherList", [
+      "",
+      "app.desktop",
+    ]),
+  ),
+  {
+    action: "replaceLauncherList",
+    kind: "launcher-command",
+    launcherUrl: "",
+    launchers: ["app.desktop"],
+  },
 );
 
 const taskRequestModel = {

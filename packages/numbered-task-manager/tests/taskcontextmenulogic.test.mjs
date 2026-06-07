@@ -647,7 +647,14 @@ assert.equal(
 );
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), true);
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskCommand"), true);
+assert.equal(
+  menuQml.includes("TaskActionLogic.contextMenuLauncherCommand"),
+  true,
+);
 assert.equal(menuQml.includes("function requestTaskModelAction"), false);
+assert.equal(menuQml.includes("signal pinRequested"), false);
+assert.equal(menuQml.includes("signal unpinRequested"), false);
+assert.equal(menuQml.includes("signal launcherListChangeRequested"), false);
 assert.equal(/\b(?:root\.)?taskModel\.request[A-Z]/.test(menuQml), false);
 
 function directMenuContentObjectViolations(qml) {
