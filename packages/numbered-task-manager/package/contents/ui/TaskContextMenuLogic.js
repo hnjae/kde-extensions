@@ -144,6 +144,36 @@ function basicResizeAction(taskState) {
   });
 }
 
+function basicActionsSection(sectionState) {
+  const state = sectionState || {};
+  const newInstance = newInstanceAction({
+    canLaunchNewInstance: state.canLaunchNewInstance,
+    hasTask: state.hasTask,
+    isLauncher: state.isLauncher,
+  });
+  const move = basicMoveAction({
+    capable: state.isMovable,
+    hasWindowTask: state.hasWindowTask,
+    isWindow: state.isWindow,
+  });
+  const resize = basicResizeAction({
+    capable: state.isResizable,
+    hasWindowTask: state.hasWindowTask,
+    isWindow: state.isWindow,
+  });
+
+  return {
+    move,
+    newInstance,
+    resize,
+    separator: menuActionSection({
+      hasWindowTask: state.hasWindowTask,
+      launcherActivitiesVisible: state.launcherActivitiesVisible,
+      newInstanceVisible: newInstance.visible,
+    }),
+  };
+}
+
 function minimizeCommand() {
   return contextMenuTaskCommand("requestToggleMinimized");
 }

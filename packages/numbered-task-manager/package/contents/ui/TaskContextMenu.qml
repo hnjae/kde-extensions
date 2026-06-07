@@ -21,6 +21,16 @@ PlasmaExtras.Menu {
     readonly property var taskRoles: TaskContextMenuLogic.taskRoleSnapshot(roleSource(), roleIds(), task)
     readonly property bool hasWindowTask: hasTask && taskRoles.isWindow
     readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var basicActionsSection: TaskContextMenuLogic.basicActionsSection({
+        canLaunchNewInstance: basicActionRoles.canLaunchNewInstance,
+        hasTask: hasTask,
+        hasWindowTask: hasWindowTask,
+        isLauncher: basicActionRoles.isLauncher,
+        isMovable: basicActionRoles.isMovable,
+        isResizable: basicActionRoles.isResizable,
+        isWindow: taskRoles.isWindow,
+        launcherActivitiesVisible: launcherActivitiesItem.visible
+    })
     readonly property var captureCloseRoles: TaskContextMenuLogic.captureCloseRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var closeAction: TaskContextMenuLogic.closeAction({
         closable: captureCloseRoles.closable,
@@ -264,11 +274,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var sectionState: TaskContextMenuLogic.menuActionSection({
-            hasWindowTask: root.hasWindowTask,
-            launcherActivitiesVisible: launcherActivitiesItem.visible,
-            newInstanceVisible: newInstanceItem.visible
-        })
+        readonly property var sectionState: root.basicActionsSection.separator
 
         separator: true
         visible: sectionState.visible
@@ -277,11 +283,7 @@ PlasmaExtras.Menu {
     PlasmaExtras.MenuItem {
         id: newInstanceItem
 
-        readonly property var actionState: TaskContextMenuLogic.newInstanceAction({
-            canLaunchNewInstance: root.basicActionRoles.canLaunchNewInstance,
-            hasTask: root.hasTask,
-            isLauncher: root.basicActionRoles.isLauncher
-        })
+        readonly property var actionState: root.basicActionsSection.newInstance
 
         enabled: actionState.enabled
         text: actionState.text
@@ -293,11 +295,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.basicMoveAction({
-            capable: root.basicActionRoles.isMovable,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.basicActionsSection.move
 
         enabled: actionState.enabled
         text: actionState.text
@@ -309,11 +307,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.basicResizeAction({
-            capable: root.basicActionRoles.isResizable,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.basicActionsSection.resize
 
         enabled: actionState.enabled
         text: actionState.text

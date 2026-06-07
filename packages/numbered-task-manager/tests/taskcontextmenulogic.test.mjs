@@ -2302,12 +2302,16 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.newInstanceActionState"),
   false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.newInstanceAction"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.basicMoveAction"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.basicResizeAction"), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.basicActionsSection({"),
+  true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.newInstanceAction"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.basicMoveAction"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.basicResizeAction"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.menuActionSection({"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.menuActionSectionVisible({"),
