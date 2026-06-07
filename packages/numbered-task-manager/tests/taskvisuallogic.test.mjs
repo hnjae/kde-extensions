@@ -227,9 +227,28 @@ assert.match(
   taskItemQml,
   /TaskInteractionLogic\.canAcceptTaskDrop\(sourceIndex, root\.taskIndex, root\.canDropTask\)/,
 );
+assert.match(taskItemQml, /\bTaskLikeInteraction\s*\{/);
 assert.match(
   taskItemQml,
-  /root\.contextMenuRequested\(TaskInteractionLogic\.taskContextMenuRequest\(root\.modelIndex, root\.taskData, root\)\)/,
+  /readonly property bool visualHighlighted:\s*taskLikeInteraction\.highlighted/,
+);
+assert.doesNotMatch(
+  taskItemQml,
+  /root\.contextMenuRequested\(TaskInteractionLogic\.taskContextMenuRequest/,
+);
+assert.doesNotMatch(
+  taskItemQml,
+  /QtQuick\.Timer\s*\{[\s\S]*?id:\s*contextMenuTimer/,
+);
+assert.doesNotMatch(taskItemQml, /QtQuick\.Keys\.onMenuPressed/);
+assert.doesNotMatch(taskItemQml, /QtQuick\.HoverHandler\s*\{/);
+assert.doesNotMatch(
+  taskItemQml,
+  /QtQuick\.TapHandler\s*\{[\s\S]*?acceptedButtons:\s*QtQuick\.Qt\.RightButton/,
+);
+assert.match(
+  taskItemQml,
+  /onActivated:\s*\{[\s\S]*?root\.activated\(root\.taskIndex\);[\s\S]*?\}/,
 );
 assert.doesNotMatch(taskItemQml, /function sourceIndexFromDrop/);
 assert.doesNotMatch(taskItemQml, /function acceptsDrop/);
@@ -244,20 +263,73 @@ const attentionItemQml = readFileSync(
   new URL("../package/contents/ui/AttentionItem.qml", import.meta.url),
   "utf8",
 );
-assert.match(
+assert.doesNotMatch(
   attentionItemQml,
   /import "TaskInteractionLogic\.js" as TaskInteractionLogic/,
 );
 assert.match(attentionItemQml, /\bTaskFrame\s*\{/);
-assert.match(attentionItemQml, /readonly property bool visualHighlighted:/);
-assert.match(attentionItemQml, /readonly property bool titleVisible:/);
-assert.match(attentionItemQml, /TaskVisualLogic\.iconActive\(\{/);
 assert.match(
   attentionItemQml,
-  /root\.contextMenuRequested\(TaskInteractionLogic\.taskContextMenuRequest\(root\.modelIndex, root\.taskData, root\)\)/,
+  /readonly property bool visualHighlighted:\s*taskLikeInteraction\.highlighted/,
+);
+assert.match(attentionItemQml, /readonly property bool titleVisible:/);
+assert.match(attentionItemQml, /TaskVisualLogic\.iconActive\(\{/);
+assert.match(attentionItemQml, /\bTaskLikeInteraction\s*\{/);
+assert.doesNotMatch(
+  attentionItemQml,
+  /root\.contextMenuRequested\(TaskInteractionLogic\.taskContextMenuRequest/,
+);
+assert.doesNotMatch(
+  attentionItemQml,
+  /QtQuick\.Timer\s*\{[\s\S]*?id:\s*contextMenuTimer/,
+);
+assert.doesNotMatch(attentionItemQml, /QtQuick\.Keys\.onMenuPressed/);
+assert.doesNotMatch(attentionItemQml, /QtQuick\.HoverHandler\s*\{/);
+assert.doesNotMatch(
+  attentionItemQml,
+  /QtQuick\.TapHandler\s*\{[\s\S]*?acceptedButtons:\s*QtQuick\.Qt\.RightButton/,
+);
+assert.match(
+  attentionItemQml,
+  /onActivated:\s*\{[\s\S]*?root\.activated\(\);[\s\S]*?\}/,
 );
 assert.match(
   attentionItemQml,
   /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible/,
 );
 assert.doesNotMatch(attentionItemQml, /QtQuick\.Rectangle\s*\{/);
+
+const taskLikeInteractionQml = readFileSync(
+  new URL("../package/contents/ui/TaskLikeInteraction.qml", import.meta.url),
+  "utf8",
+);
+assert.match(
+  taskLikeInteractionQml,
+  /import "TaskInteractionLogic\.js" as TaskInteractionLogic/,
+);
+assert.match(
+  taskLikeInteractionQml,
+  /readonly property bool highlighted:\s*pointerHandler\.hovered \|\| root\.focusTarget\.activeFocus \|\| root\.contextMenuOpen/,
+);
+assert.match(taskLikeInteractionQml, /signal activated/);
+assert.match(
+  taskLikeInteractionQml,
+  /signal contextMenuRequested\(var request\)/,
+);
+assert.match(
+  taskLikeInteractionQml,
+  /QtQuick\.Keys\.onMenuPressed:\s*contextMenuTimer\.start\(\)/,
+);
+assert.match(taskLikeInteractionQml, /QtQuick\.HoverHandler\s*\{/);
+assert.match(
+  taskLikeInteractionQml,
+  /QtQuick\.TapHandler\s*\{[\s\S]*?acceptedButtons:\s*QtQuick\.Qt\.RightButton[\s\S]*?contextMenuTimer\.start\(\);[\s\S]*?\}/,
+);
+assert.match(
+  taskLikeInteractionQml,
+  /QtQuick\.TapHandler\s*\{[\s\S]*?acceptedButtons:\s*QtQuick\.Qt\.LeftButton[\s\S]*?root\.activated\(\);[\s\S]*?\}/,
+);
+assert.match(
+  taskLikeInteractionQml,
+  /QtQuick\.Timer\s*\{[\s\S]*?id:\s*contextMenuTimer[\s\S]*?interval:\s*0[\s\S]*?root\.focusTarget\.forceActiveFocus\(QtQuick\.Qt\.MouseFocusReason\);[\s\S]*?root\.contextMenuRequested\(TaskInteractionLogic\.taskContextMenuRequest\(root\.modelIndex, root\.taskData, root\.visualParent\)\);[\s\S]*?\}/,
+);
