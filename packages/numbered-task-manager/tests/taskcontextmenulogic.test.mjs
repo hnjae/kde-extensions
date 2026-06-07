@@ -648,6 +648,14 @@ assert.equal(
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), true);
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskCommand"), true);
 assert.equal(
+  menuQml.includes("TaskActionLogic.contextMenuTaskExecutionResult"),
+  true,
+);
+assert.equal(
+  /try\s*\{[\s\S]*?taskModel\[result\.requestMethod\]/.test(menuQml),
+  true,
+);
+assert.equal(
   menuQml.includes("TaskActionLogic.contextMenuLauncherCommand"),
   true,
 );

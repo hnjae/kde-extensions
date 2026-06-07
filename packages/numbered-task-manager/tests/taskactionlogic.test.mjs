@@ -12,6 +12,7 @@ const logic = loadQmlJsModule(
     "contextMenuLauncherCommand",
     "contextMenuRequestResult",
     "contextMenuTaskCommand",
+    "contextMenuTaskExecutionResult",
     "contextMenuTaskRequest",
     "launcherMutationRequest",
     "launcherMutationResult",
@@ -272,6 +273,46 @@ assert.deepEqual(
     requestMethod: "requestVirtualDesktops",
   },
 );
+const readyMoveRequest = logic.contextMenuTaskRequest(
+  logic.contextMenuTaskCommand("requestMove"),
+  taskRequestModel,
+  validModelIndex,
+  normalTask,
+);
+assert.deepEqual(
+  plain(logic.contextMenuTaskExecutionResult(readyMoveRequest)),
+  {
+    action: "requestMove",
+    code: "executed",
+    context: {
+      entryKey: "normal-task",
+      modelIndexValid: true,
+      title: "Normal Task",
+    },
+    diagnostic: false,
+    ok: true,
+    requestMethod: "requestMove",
+  },
+);
+const thrownMoveRequest = logic.contextMenuTaskExecutionResult(
+  readyMoveRequest,
+  new Error("request failed"),
+);
+assert.deepEqual(plain(thrownMoveRequest), {
+  action: "requestMove",
+  code: "request-threw",
+  context: {
+    entryKey: "normal-task",
+    error: "request failed",
+    modelIndexValid: true,
+    requestMethod: "requestMove",
+    title: "Normal Task",
+  },
+  diagnostic: true,
+  ok: false,
+  requestMethod: "requestMove",
+});
+assert.equal(logic.shouldLogActionResult(thrownMoveRequest), true);
 
 const missingTaskModelRequest = logic.contextMenuTaskRequest(
   "requestMove",
