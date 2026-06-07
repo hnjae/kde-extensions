@@ -3619,7 +3619,7 @@ const mainQml = readFileSync(
 assert.equal(mainQml.includes("TaskContextMenuAdapter {"), true);
 assert.equal(
   mainQml.includes("TaskActionLogic.contextMenuLauncherCommandDispatchResult"),
-  true,
+  false,
 );
 assert.equal(
   mainQml.includes(

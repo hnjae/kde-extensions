@@ -70,54 +70,6 @@ PlasmoidItem {
         console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
     }
 
-    function pinLauncher(launcherUrl) {
-        requestLauncherMutation("pinLauncher", launcherUrl, url => tasksModel.requestAddLauncher(url));
-    }
-
-    function unpinLauncher(launcherUrl) {
-        requestLauncherMutation("unpinLauncher", launcherUrl, url => tasksModel.requestRemoveLauncher(url));
-    }
-
-    function requestLauncherMutation(action, launcherUrl, requestLauncher) {
-        const request = TaskActionLogic.launcherMutationRequest(action, launcherUrl);
-        if (!request.ok) {
-            logActionResult(request);
-            return false;
-        }
-
-        const result = TaskActionLogic.launcherMutationResult(request, requestLauncher(request.launcherUrl));
-        if (!result.ok) {
-            logActionResult(result);
-            return false;
-        }
-
-        launcherSync.persistLaunchers(tasksModel.launcherList);
-        return true;
-    }
-
-    function dispatchLauncherCommand(command) {
-        const result = TaskActionLogic.contextMenuLauncherCommandDispatchResult(command);
-        if (!result.ok) {
-            logActionResult(result);
-            return result;
-        }
-
-        if (result.action === "pinLauncher") {
-            pinLauncher(result.launcherUrl);
-            return result;
-        }
-
-        if (result.action === "unpinLauncher") {
-            unpinLauncher(result.launcherUrl);
-            return result;
-        }
-
-        if (result.action === "replaceLauncherList") {
-            launcherSync.applyLauncherList(result.launchers);
-        }
-        return result;
-    }
-
     function moveTask(sourceIndex, targetIndex) {
         const moveDecision = canMoveTaskResult(sourceIndex, targetIndex);
         if (!moveDecision.canMove) {
@@ -265,6 +217,17 @@ PlasmoidItem {
         taskModel: tasksModel
     }
 
+    LauncherCommandAdapter {
+        id: launcherCommands
+
+        launcherSync: launcherSync
+        taskModel: tasksModel
+
+        onActionResult: result => {
+            root.logActionResult(result);
+        }
+    }
+
     TaskContextMenuAdapter {
         id: contextMenuAdapter
 
@@ -275,7 +238,7 @@ PlasmoidItem {
         }
 
         onLauncherCommandRequested: command => {
-            root.dispatchLauncherCommand(command);
+            launcherCommands.dispatchLauncherCommand(command);
         }
     }
 

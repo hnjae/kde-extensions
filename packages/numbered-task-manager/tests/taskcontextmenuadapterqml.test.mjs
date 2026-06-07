@@ -29,7 +29,7 @@ assert.match(
   /contextMenuAdapter\.openTaskContextMenu\(Object\.assign\(/,
 );
 assert.match(mainQml, /root\.logActionResult\(result\)/);
-assert.match(mainQml, /root\.dispatchLauncherCommand\(command\)/);
+assert.match(mainQml, /launcherCommands\.dispatchLauncherCommand\(command\)/);
 assert.doesNotMatch(mainQml, /function openTaskContextMenu\(/);
 assert.doesNotMatch(mainQml, /id:\s*contextMenuComponent/);
 assert.doesNotMatch(mainQml, /contextMenuComponent\.createObject/);
