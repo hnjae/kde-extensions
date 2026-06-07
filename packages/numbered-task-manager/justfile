@@ -9,7 +9,7 @@ system := `nix eval --raw --impure --expr builtins.currentSystem`
 
 root := "path:../.."
 check_prefix := root + "#checks." + system + "."
-dev_shell := root + "#numbered-task-manager"
+dev_shell := root + "#default"
 
 _:
     @just --list
@@ -20,7 +20,7 @@ build:
 
 [group('build')]
 build-kpackage:
-    nix develop "{{ dev_shell }}" -c build-kpackage
+    nix develop "{{ dev_shell }}" -c numbered-task-manager-build-kpackage
 
 [group('ci')]
 check:
@@ -43,7 +43,7 @@ lint-host: lint-js-host
 
 [group('lint')]
 lint-js:
-    nix develop "{{ dev_shell }}" -c lint-js
+    nix develop "{{ dev_shell }}" -c numbered-task-manager-lint-js
 
 [group('lint')]
 lint-js-host:
@@ -55,4 +55,4 @@ lint-js-host:
 
 [group('lint')]
 lint-qml:
-    nix develop "{{ dev_shell }}" -c lint-qml
+    nix develop "{{ dev_shell }}" -c numbered-task-manager-lint-qml

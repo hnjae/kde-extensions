@@ -9,6 +9,7 @@ system := `nix eval --raw --impure --expr builtins.currentSystem`
 
 root := "path:../.."
 check_prefix := root + "#checks." + system + "."
+dev_shell := root + "#default"
 
 _:
     @just --list
@@ -23,20 +24,20 @@ check:
 
 [group('lint')]
 lint:
-    nix develop "{{ root }}#tab-pager" -c tab-pager-lint
+    nix develop "{{ dev_shell }}" -c tab-pager-lint
 
 [group('lint')]
 lint-qml:
-    nix develop "{{ root }}#tab-pager" -c lint-qml
+    nix develop "{{ dev_shell }}" -c tab-pager-lint-qml
 
 [group('lint')]
 lint-clang-tidy:
-    nix develop "{{ root }}#tab-pager" -c lint-clang-tidy
+    nix develop "{{ dev_shell }}" -c tab-pager-lint-clang-tidy
 
 [group('lint')]
 lint-clazy:
-    nix develop "{{ root }}#tab-pager" -c lint-clazy
+    nix develop "{{ dev_shell }}" -c tab-pager-lint-clazy
 
 [group('test')]
 test:
-    nix develop "{{ root }}#tab-pager" -c tab-pager-test
+    nix develop "{{ dev_shell }}" -c tab-pager-test

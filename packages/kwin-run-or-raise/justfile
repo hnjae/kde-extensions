@@ -9,7 +9,7 @@ system := `nix eval --raw --impure --expr builtins.currentSystem`
 
 package := "kwin-run-or-raise"
 root := "path:../.."
-dev_shell := root + "#" + package
+dev_shell := root + "#default"
 check_attr := root + "#checks." + system + "." + package + "-check"
 
 _:
@@ -30,7 +30,7 @@ build-source:
 
 [group('build')]
 build-kpackage:
-    nix develop "{{ dev_shell }}" -c build-kpackage
+    nix develop "{{ dev_shell }}" -c kwin-run-or-raise-build-kpackage
 
 [group('build')]
 check-kpackage: build-source

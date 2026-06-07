@@ -3,7 +3,7 @@
 {
   imports = [
     ./nix/module/checks.nix
-    ./nix/module/devshell.nix
+    ./nix/module/dev-tools.nix
     ./nix/module/package.nix
   ];
 }

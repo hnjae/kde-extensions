@@ -19,13 +19,13 @@
           "${pkgs.kdePackages.libplasma}/lib/qt-6/qml"
           "${pkgs.kdePackages.plasma-workspace}/lib/qt-6/qml"
         ];
-        qmlImportPath = lib.concatStringsSep ":" qmlImportPaths;
         qmlImportFlags = lib.concatMapStringsSep " " (path: "-I ${lib.escapeShellArg path}") qmlImportPaths;
         buildKPackage = pkgs.writeShellApplication {
-          name = "build-kpackage";
+          name = "numbered-task-manager-build-kpackage";
           runtimeInputs = [
             pkgs.coreutils
             pkgs.kdePackages.kpackage
+            pkgs.nix
             pkgs.zip
           ];
           text = ''
@@ -130,10 +130,17 @@
             text = localProjectPreamble + text;
           };
         qmllsWrapper = pkgs.writeShellApplication {
-          name = "qmlls";
+          name = "numbered-task-manager-qmlls";
           runtimeInputs = runtimeInputs;
           text = ''
-            project_dir="''${NUMBERED_TASK_MANAGER_PROJECT_DIR:-$PWD}"
+            set -euo pipefail
+
+            repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+            project_dir="$repo_root"
+            if [ -d "$repo_root/packages/numbered-task-manager" ]; then
+              project_dir="$repo_root/packages/numbered-task-manager"
+            fi
+
             exec ${pkgs.kdePackages.qtdeclarative}/bin/qmlls \
               -I "$project_dir/package/contents/ui" \
               ${qmlImportFlags} \
@@ -142,57 +149,44 @@
         };
       in
       {
-        devShells.numbered-task-manager = pkgs.mkShellNoCC {
-          packages = [
-            buildKPackage
-            qmllsWrapper
-            (mkDevCommand "numbered-task-manager-lint" ''
-              biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
-              find package/contents/ui -name '*.qml' -print0 \
-                | sort -z \
-                | xargs -0 qmllint \
-                    --ignore-settings \
-                    --max-warnings 0 \
-                    --unqualified disable \
-                    ${qmlImportFlags}
-            '')
-            (mkDevCommand "numbered-task-manager-test" ''
-              for test_file in tests/*.test.mjs
-              do
-                node "$test_file"
-              done
-            '')
-            (mkDevCommand "lint-js" ''
-              biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
-            '')
-            (mkDevCommand "lint-qml" ''
-              find package/contents/ui -name '*.qml' -print0 \
-                | sort -z \
-                | xargs -0 qmllint \
-                    --ignore-settings \
-                    --max-warnings 0 \
-                    --unqualified disable \
-                    ${qmlImportFlags}
-            '')
-          ]
-          ++ runtimeInputs
-          ++ config.plasmaExtensions.devShell.commonPackages;
+        plasmaExtensions.devShell.packages = [
+          buildKPackage
+          qmllsWrapper
+          (mkDevCommand "numbered-task-manager-lint" ''
+            biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
+            find package/contents/ui -name '*.qml' -print0 \
+              | sort -z \
+              | xargs -0 qmllint \
+                  --ignore-settings \
+                  --max-warnings 0 \
+                  --unqualified disable \
+                  ${qmlImportFlags}
+          '')
+          (mkDevCommand "numbered-task-manager-test" ''
+            for test_file in tests/*.test.mjs
+            do
+              node "$test_file"
+            done
+          '')
+          (mkDevCommand "numbered-task-manager-lint-js" ''
+            biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
+          '')
+          (mkDevCommand "numbered-task-manager-lint-qml" ''
+            find package/contents/ui -name '*.qml' -print0 \
+              | sort -z \
+              | xargs -0 qmllint \
+                  --ignore-settings \
+                  --max-warnings 0 \
+                  --unqualified disable \
+                  ${qmlImportFlags}
+          '')
+        ]
+        ++ runtimeInputs;
 
-          shellHook = # sh
-            ''
-              ${config.pre-commit.installationScript}
-
-              numbered_task_manager_project_dir="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-              if [ -d "$numbered_task_manager_project_dir/packages/numbered-task-manager" ]; then
-                numbered_task_manager_project_dir="$numbered_task_manager_project_dir/packages/numbered-task-manager"
-              fi
-
-              export QML_IMPORT_PATH="${qmlImportPath}''${QML_IMPORT_PATH:+:$QML_IMPORT_PATH}"
-              export QML2_IMPORT_PATH="$QML_IMPORT_PATH"
-              export QT_PLUGIN_PATH="${pkgs.kdePackages.libplasma}/lib/qt-6/plugins''${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
-              export NUMBERED_TASK_MANAGER_PROJECT_DIR="$numbered_task_manager_project_dir"
-            '';
-        };
+        plasmaExtensions.devShell.qmlImportPaths = qmlImportPaths;
+        plasmaExtensions.devShell.qtPluginPaths = [
+          "${pkgs.kdePackages.libplasma}/lib/qt-6/plugins"
+        ];
       };
   };
 }

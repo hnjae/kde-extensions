@@ -60,5 +60,4 @@ just lint
 just check
 ```
 
-The development shell exposes helper commands such as `tabpager-test`,
-`tabpager-lint`, `lint-qml`, `lint-clang-tidy`, and `lint-clazy`.
+The development shell exposes helper commands such as `tab-pager-test`, `tab-pager-lint`, `tab-pager-lint-qml`, `tab-pager-lint-clang-tidy`, and `tab-pager-lint-clazy`.

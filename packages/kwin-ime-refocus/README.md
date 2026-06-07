@@ -17,7 +17,7 @@ just build-kpackage
 
 # or
 
-nix develop 'path:../..#kwin-ime-refocus' -c build-kpackage
+nix develop 'path:../..#default' -c just build-kpackage
 ```
 
 The archive is written to `dist/<package-name>-<version>.kwinscript`.

@@ -59,6 +59,15 @@
               source
               version
               ;
+            kpackageCheckFiles = [
+              "metadata.json"
+              "contents/code/main.js"
+              "contents/config/main.xml"
+              "contents/ui/config.ui"
+            ];
+            kwinScriptInstallPath = "share/kwin/scripts/${pluginId}";
+            mainScriptRelativePath = "code/main.js";
+            packageName = "kwin-run-or-raise";
           };
 
           meta = {

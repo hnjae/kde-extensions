@@ -20,16 +20,9 @@
         };
       in
       {
-        devShells.tab-pager = pkgs.mkShellNoCC {
-          packages =
-            ci.lspDevShellPackages ++ config.plasmaExtensions.devShell.commonPackages ++ ci.devShellPackages;
-
-          shellHook = # sh
-            ''
-              ${config.pre-commit.installationScript}
-              ${ci.devShellHook}
-            '';
-        };
+        plasmaExtensions.devShell.packages = ci.lspDevShellPackages ++ ci.devShellPackages;
+        plasmaExtensions.devShell.qmlImportPaths = ci.qmlImportPaths;
+        plasmaExtensions.devShell.qtPluginPaths = ci.qtPluginPaths;
       };
   };
 }

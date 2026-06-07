@@ -3,16 +3,15 @@ SPDX-PackageName = "kde-plasma-extensions"
 
 [[annotations]]
 path = [
-  "**/.biome.json",
   "**/.clang-tidy",
   "**/.editorconfig",
   "**/.envrc",
   "**/.gitignore",
-  "**/.gitlint",
-  "**/.rumdl.toml",
-  "**/.taplo.toml",
-  "**/.typos.toml",
-  "**/.yamlfmt.yaml",
+  "**/biome.json",
+  "**/rumdl.toml",
+  "**/taplo.toml",
+  "**/typos.toml",
+  "**/yamlfmt.yaml",
   "**/README.*",
   "**/*.md",
   "**/flake.lock",

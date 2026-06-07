@@ -14,7 +14,7 @@ just build-kpackage
 
 # or
 
-nix develop 'path:../..#kwin-run-or-raise' -c build-kpackage
+nix develop 'path:../..#default' -c just build-kpackage
 ```
 
 The archive is written to `dist/kwin-run-or-raise-0.1.0.kwinscript`.

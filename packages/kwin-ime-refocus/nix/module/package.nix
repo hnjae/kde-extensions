@@ -63,6 +63,11 @@
               source
               version
               ;
+            kpackageCheckFiles = [
+              "metadata.json"
+              "contents/${mainScriptRelativePath}"
+            ];
+            kwinScriptInstallPath = "share/kwin/scripts/${pluginId}";
             packageName = packageJson.name;
           };
 
