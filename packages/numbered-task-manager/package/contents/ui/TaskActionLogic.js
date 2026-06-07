@@ -22,6 +22,14 @@ function actionResult(action, code, ok, diagnostic, context) {
   };
 }
 
+function actionErrorMessage(error) {
+  if (error?.message) {
+    return String(error.message);
+  }
+
+  return String(error);
+}
+
 function taskContext(task, options) {
   const entry = task || {};
   const requestOptions = options || {};
@@ -337,6 +345,47 @@ function contextMenuTaskRequest(command, taskModel, modelIndex, task) {
       modelIndex,
       requestArguments: taskCommand.arguments,
       requestMethod: requestAction,
+    },
+  );
+}
+
+function contextMenuTaskExecutionResult(requestResult, error) {
+  const request = requestResult || {};
+  const requestMethod =
+    request.requestMethod || request.action || "taskRequest";
+  const context = Object.assign({}, request.context || {});
+
+  if (!request.ok) {
+    return request;
+  }
+
+  if (error !== undefined && error !== null) {
+    context.error = actionErrorMessage(error);
+    context.requestMethod = requestMethod;
+    return Object.assign(
+      actionResult(
+        request.action || requestMethod,
+        "request-threw",
+        false,
+        true,
+        context,
+      ),
+      {
+        requestMethod,
+      },
+    );
+  }
+
+  return Object.assign(
+    actionResult(
+      request.action || requestMethod,
+      "executed",
+      true,
+      false,
+      context,
+    ),
+    {
+      requestMethod,
     },
   );
 }

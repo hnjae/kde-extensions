@@ -68,12 +68,19 @@ PlasmaExtras.Menu {
             return result;
         }
 
-        if (result.requestArguments.length === 0) {
-            taskModel[result.requestMethod](modelIndex);
-        } else {
-            taskModel[result.requestMethod](modelIndex, result.requestArguments[0]);
+        try {
+            if (result.requestArguments.length === 0) {
+                taskModel[result.requestMethod](modelIndex);
+            } else {
+                taskModel[result.requestMethod](modelIndex, result.requestArguments[0]);
+            }
+        } catch (error) {
+            const executionResult = TaskActionLogic.contextMenuTaskExecutionResult(result, error);
+            logActionResult(executionResult);
+            return executionResult;
         }
-        return result;
+
+        return TaskActionLogic.contextMenuTaskExecutionResult(result);
     }
 
     function roleData(role, fallback) {

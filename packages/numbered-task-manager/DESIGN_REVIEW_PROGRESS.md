@@ -185,7 +185,15 @@
 - Verification: `node tests/taskactionlogic.test.mjs` failed before implementation because `contextMenuLauncherCommand` did not exist; after implementation, `node tests/taskactionlogic.test.mjs`; `node tests/taskcontextmenulogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `package/contents/ui/main.qml`, `tests/taskactionlogic.test.mjs`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 23: Context-Menu Task Execution Diagnostics
+
+- Status: completed.
+- What changed: declared context-menu task execution diagnostics, added `TaskActionLogic.contextMenuTaskExecutionResult(...)`, and wrapped `TaskContextMenu.qml` task command execution in a structured success/error result path.
+- Behavior that must remain unchanged: successful context-menu task commands still call the same `TasksModel.request*` method with the same model index and optional payload; failed validation still returns before execution; user-visible menu behavior remains unchanged.
+- Verification: `node tests/taskactionlogic.test.mjs` failed before implementation because `contextMenuTaskExecutionResult` did not exist; after implementation, `node tests/taskactionlogic.test.mjs`; `node tests/taskcontextmenulogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskactionlogic.test.mjs`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.
-- Observability: extend structured action results beyond activation, menu creation, and launcher mutations to context-menu window/task requests.
+- Observability: extend structured action results to unexpected root-level command dispatch cases where practical.
