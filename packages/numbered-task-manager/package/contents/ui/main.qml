@@ -37,26 +37,7 @@ PlasmoidItem {
     QtQuickLayouts.Layout.fillHeight: true
 
     function activateTaskAtIndex(index) {
-        const result = TaskActionLogic.shortcutActivationRequest(visibleTaskItems, index);
-        if (!result.ok) {
-            logActionResult(result);
-            return;
-        }
-
-        taskActivation.requestActivation(result);
-    }
-
-    function activateTaskEntry(task) {
-        const result = TaskActionLogic.taskActivationRequest("activateTask", task, {
-            requireSourceIndex: true,
-            sourceModel: "normal"
-        });
-        if (!result.ok) {
-            logActionResult(result);
-            return;
-        }
-
-        taskActivation.requestActivation(result);
+        taskActivation.activateTaskAtIndex(index);
     }
 
     function logActionResult(result) {
@@ -84,21 +65,6 @@ PlasmoidItem {
         return ActivityScopeLogic.isInCurrentActivity(activities, activityInfo.currentActivity);
     }
 
-    function activateRemoteAttention() {
-        const visibleItem = remoteAttentionVisibleItem;
-        const result = TaskActionLogic.taskActivationRequest("activateRemoteAttention", visibleItem ? visibleItem.entry : null, {
-            requireSourceIndex: false,
-            sourceModel: visibleItem ? visibleItem.sourceModel : "remoteAttention",
-            targetKind: visibleItem ? visibleItem.kind : "remoteAttention"
-        });
-        if (!result.ok) {
-            logActionResult(result);
-            return;
-        }
-
-        taskActivation.requestActivation(result);
-    }
-
     TaskManager.ActivityInfo {
         id: activityInfo
 
@@ -123,6 +89,11 @@ PlasmoidItem {
 
         remoteAttentionSource: remoteAttentionSource
         taskModel: tasksModel
+        visibleTaskItems: root.visibleTaskItems
+
+        onActionResult: result => {
+            root.logActionResult(result);
+        }
     }
 
     LauncherCommandAdapter {
@@ -291,7 +262,7 @@ PlasmoidItem {
                     canDropTask: (sourceIndex, targetIndex) => taskMover.canMoveTaskResult(sourceIndex, targetIndex).canMove
 
                     onActivated: {
-                        root.activateTaskEntry(entry);
+                        taskActivation.activateTaskEntry(entry);
                     }
 
                     onContextMenuRequested: request => {
@@ -330,7 +301,7 @@ PlasmoidItem {
                 visible: Boolean(root.remoteAttentionVisibleItem)
 
                 onActivated: {
-                    root.activateRemoteAttention();
+                    taskActivation.activateRemoteAttention(root.remoteAttentionVisibleItem);
                 }
 
                 onContextMenuRequested: request => {
