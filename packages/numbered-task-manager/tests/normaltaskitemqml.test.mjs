@@ -8,6 +8,10 @@ const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
   "utf8",
 );
+const taskListRepresentationQml = readFileSync(
+  new URL("../package/contents/ui/TaskListRepresentation.qml", import.meta.url),
+  "utf8",
+);
 const sourceUrl = new URL(
   "../package/contents/ui/NormalTaskItem.qml",
   import.meta.url,
@@ -17,16 +21,32 @@ assert.equal(existsSync(sourceUrl), true);
 
 const sourceQml = readFileSync(sourceUrl, "utf8");
 
-assert.match(mainQml, /delegate:\s*NormalTaskItem\s*\{/);
-assert.match(mainQml, /visibleItem:\s*modelData/);
+assert.match(mainQml, /fullRepresentation:\s*TaskListRepresentation\s*\{/);
 assert.match(mainQml, /activationAdapter:\s*taskActivation/);
 assert.match(mainQml, /contextMenuAdapter:\s*contextMenuAdapter/);
 assert.match(mainQml, /moveAdapter:\s*taskMover/);
+assert.match(mainQml, /normalVisibleTaskItems:\s*root\.normalVisibleTaskItems/);
 assert.match(mainQml, /taskDragMimeType:\s*root\.taskDragMimeType/);
-assert.match(mainQml, /taskListHeight:\s*taskList\.height/);
-assert.match(mainQml, /taskListWidth:\s*taskList\.width/);
-assert.match(mainQml, /taskSlotWidth:\s*fullRepresentationItem\.taskSlotWidth/);
 assert.match(mainQml, /vertical:\s*root\.vertical/);
+assert.match(taskListRepresentationQml, /delegate:\s*NormalTaskItem\s*\{/);
+assert.match(taskListRepresentationQml, /visibleItem:\s*modelData/);
+assert.match(
+  taskListRepresentationQml,
+  /activationAdapter:\s*root\.activationAdapter/,
+);
+assert.match(
+  taskListRepresentationQml,
+  /contextMenuAdapter:\s*root\.contextMenuAdapter/,
+);
+assert.match(taskListRepresentationQml, /moveAdapter:\s*root\.moveAdapter/);
+assert.match(
+  taskListRepresentationQml,
+  /taskDragMimeType:\s*root\.taskDragMimeType/,
+);
+assert.match(taskListRepresentationQml, /taskListHeight:\s*taskList\.height/);
+assert.match(taskListRepresentationQml, /taskListWidth:\s*taskList\.width/);
+assert.match(taskListRepresentationQml, /taskSlotWidth:\s*root\.taskSlotWidth/);
+assert.match(taskListRepresentationQml, /vertical:\s*root\.vertical/);
 assert.doesNotMatch(mainQml, /delegate:\s*TaskItem\s*\{/);
 assert.doesNotMatch(
   mainQml,

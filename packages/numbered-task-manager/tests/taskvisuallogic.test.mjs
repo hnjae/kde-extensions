@@ -136,6 +136,10 @@ const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
   "utf8",
 );
+const taskListRepresentationQml = readFileSync(
+  new URL("../package/contents/ui/TaskListRepresentation.qml", import.meta.url),
+  "utf8",
+);
 const normalTaskItemQml = readFileSync(
   new URL("../package/contents/ui/NormalTaskItem.qml", import.meta.url),
   "utf8",
@@ -148,14 +152,14 @@ assert.match(
 assert.match(mainQml, /Plasmoid\.constraintHints:\s*Plasmoid\.CanFillArea/);
 assert.match(
   mainQml,
-  /preferredRepresentation:\s*root\.fullRepresentation[\s\S]*?QtQuickLayouts\.Layout\.fillWidth:\s*true[\s\S]*?QtQuickLayouts\.Layout\.fillHeight:\s*true/,
+  /preferredRepresentation:\s*root\.fullRepresentation[\s\S]*?fullRepresentation:\s*TaskListRepresentation\s*\{/,
 );
 assert.match(
-  mainQml,
-  /fullRepresentation:\s*QtQuick\.Item\s*\{[\s\S]*?QtQuickLayouts\.Layout\.fillWidth:\s*true[\s\S]*?QtQuickLayouts\.Layout\.fillHeight:\s*true[\s\S]*?QtQuickLayouts\.Layout\.minimumWidth:\s*0[\s\S]*?QtQuickLayouts\.Layout\.minimumHeight:\s*0/,
+  taskListRepresentationQml,
+  /^QtQuick\.Item\s*\{[\s\S]*?QtQuickLayouts\.Layout\.fillWidth:\s*true[\s\S]*?QtQuickLayouts\.Layout\.fillHeight:\s*true[\s\S]*?QtQuickLayouts\.Layout\.minimumWidth:\s*0[\s\S]*?QtQuickLayouts\.Layout\.minimumHeight:\s*0/m,
 );
 assert.match(
-  mainQml,
+  taskListRepresentationQml,
   /orientation:\s*root\.vertical\s*\?\s*QtQuick\.ListView\.Vertical\s*:\s*QtQuick\.ListView\.Horizontal/,
 );
 assert.match(
@@ -166,7 +170,10 @@ assert.match(
   normalTaskItemQml,
   /width:\s*root\.vertical\s*\?\s*root\.taskListWidth\s*:\s*root\.taskSlotWidth/,
 );
-assert.match(mainQml, /visibleItemCount:\s*root\.visibleTaskItems\.length/);
+assert.match(
+  taskListRepresentationQml,
+  /visibleItemCount:\s*root\.visibleTaskItems\.length/,
+);
 assert.match(
   mainQml,
   /VisibleTaskItemsLogic\.composeVisibleTaskItems\(normalTaskEntries,\s*remoteAttentionSource\.snapshot\)/,
@@ -178,10 +185,13 @@ assert.doesNotMatch(
   /readonly property var remoteAttentionVisibleItem:/,
 );
 assert.match(mainQml, /visibleTaskItems:\s*root\.visibleTaskItems/);
-assert.match(mainQml, /\bRemoteAttentionItem\s*\{/);
-assert.match(mainQml, /source:\s*remoteAttentionSource/);
-assert.match(mainQml, /vertical:\s*root\.vertical/);
-assert.match(mainQml, /taskSlotWidth:\s*fullRepresentationItem\.taskSlotWidth/);
+assert.match(taskListRepresentationQml, /\bRemoteAttentionItem\s*\{/);
+assert.match(
+  taskListRepresentationQml,
+  /source:\s*root\.remoteAttentionSource/,
+);
+assert.match(taskListRepresentationQml, /vertical:\s*root\.vertical/);
+assert.match(taskListRepresentationQml, /taskSlotWidth:\s*root\.taskSlotWidth/);
 assert.doesNotMatch(mainQml, /count:\s*remoteAttentionSource\.itemCount/);
 assert.doesNotMatch(
   mainQml,
@@ -214,13 +224,22 @@ assert.match(
   mainQml,
   /readonly property var normalVisibleTaskItems:\s*VisibleTaskItemsLogic\.normalVisibleTaskItems\(root\.visibleTaskItems\)/,
 );
-assert.match(mainQml, /model:\s*root\.normalVisibleTaskItems/);
+assert.match(
+  taskListRepresentationQml,
+  /model:\s*root\.normalVisibleTaskItems/,
+);
 assert.doesNotMatch(mainQml, /model:\s*root\.normalTaskEntries/);
-assert.match(mainQml, /delegate:\s*NormalTaskItem\s*\{/);
-assert.match(mainQml, /visibleItem:\s*modelData/);
-assert.match(mainQml, /activationAdapter:\s*taskActivation/);
-assert.match(mainQml, /contextMenuAdapter:\s*contextMenuAdapter/);
-assert.match(mainQml, /moveAdapter:\s*taskMover/);
+assert.match(taskListRepresentationQml, /delegate:\s*NormalTaskItem\s*\{/);
+assert.match(taskListRepresentationQml, /visibleItem:\s*modelData/);
+assert.match(
+  taskListRepresentationQml,
+  /activationAdapter:\s*root\.activationAdapter/,
+);
+assert.match(
+  taskListRepresentationQml,
+  /contextMenuAdapter:\s*root\.contextMenuAdapter/,
+);
+assert.match(taskListRepresentationQml, /moveAdapter:\s*root\.moveAdapter/);
 assert.doesNotMatch(mainQml, /delegate:\s*TaskItem\s*\{/);
 assert.doesNotMatch(
   mainQml,
@@ -261,9 +280,9 @@ assert.doesNotMatch(
   mainQml,
   /canDropTask:\s*\(sourceIndex, targetIndex\) => root\.canMoveTask\(sourceIndex, targetIndex\)/,
 );
-assert.match(mainQml, /columnSpacing:\s*0/);
-assert.match(mainQml, /rowSpacing:\s*0/);
-assert.match(mainQml, /^\s*spacing:\s*0$/m);
+assert.match(taskListRepresentationQml, /columnSpacing:\s*0/);
+assert.match(taskListRepresentationQml, /rowSpacing:\s*0/);
+assert.match(taskListRepresentationQml, /^\s*spacing:\s*0$/m);
 
 const taskItemQml = readFileSync(
   new URL("../package/contents/ui/TaskItem.qml", import.meta.url),

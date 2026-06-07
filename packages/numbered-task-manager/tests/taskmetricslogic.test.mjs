@@ -83,22 +83,31 @@ const presentationLogicJs = readFileSync(
 assert.match(presentationLogicJs, /Qt\.include\("TaskMetricsLogic\.js"\)/);
 assert.match(presentationLogicJs, /iconExtentForTaskFrame\(/);
 
-const mainQml = readFileSync(
-  new URL("../package/contents/ui/main.qml", import.meta.url),
+const taskListRepresentationQml = readFileSync(
+  new URL("../package/contents/ui/TaskListRepresentation.qml", import.meta.url),
   "utf8",
 );
-assert.match(mainQml, /import "TaskMetricsLogic\.js" as TaskMetricsLogic/);
-assert.match(mainQml, /taskExtent:\s*TaskMetricsLogic\.taskExtent\(\)/);
 assert.match(
-  mainQml,
+  taskListRepresentationQml,
+  /import "TaskMetricsLogic\.js" as TaskMetricsLogic/,
+);
+assert.match(
+  taskListRepresentationQml,
+  /taskExtent:\s*TaskMetricsLogic\.taskExtent\(\)/,
+);
+assert.match(
+  taskListRepresentationQml,
   /titleVisibilityThreshold:\s*TaskMetricsLogic\.titleVisibilityThreshold\(\)/,
 );
 assert.match(
-  mainQml,
+  taskListRepresentationQml,
   /minimumReadableSlotWidth:\s*TaskMetricsLogic\.minimumReadableSlotWidth\(taskExtent, Kirigami\.Units\.smallSpacing\)/,
 );
-assert.match(mainQml, /TaskMetricsLogic\.maximumSlotWidth\(\)/);
-assert.match(mainQml, /TaskMetricsLogic\.taskSlotWidth\(/);
+assert.match(
+  taskListRepresentationQml,
+  /TaskMetricsLogic\.maximumSlotWidth\(\)/,
+);
+assert.match(taskListRepresentationQml, /TaskMetricsLogic\.taskSlotWidth\(/);
 
 const taskItemQml = readFileSync(
   new URL("../package/contents/ui/TaskItem.qml", import.meta.url),
@@ -120,12 +129,15 @@ assert.doesNotMatch(
   attentionItemQml,
   /property int titleVisibilityThreshold:\s*96/,
 );
-assert.doesNotMatch(mainQml, /readonly property int taskExtent:\s*40/);
 assert.doesNotMatch(
-  mainQml,
+  taskListRepresentationQml,
+  /readonly property int taskExtent:\s*40/,
+);
+assert.doesNotMatch(
+  taskListRepresentationQml,
   /readonly property int titleVisibilityThreshold:\s*96/,
 );
 assert.doesNotMatch(
-  mainQml,
+  taskListRepresentationQml,
   /TaskMetricsLogic\.taskSlotWidth\(width, visibleItemCount, minimumReadableSlotWidth, 220\)/,
 );

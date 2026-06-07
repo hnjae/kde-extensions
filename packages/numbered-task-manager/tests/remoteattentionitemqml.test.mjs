@@ -8,6 +8,10 @@ const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
   "utf8",
 );
+const taskListRepresentationQml = readFileSync(
+  new URL("../package/contents/ui/TaskListRepresentation.qml", import.meta.url),
+  "utf8",
+);
 const sourceUrl = new URL(
   "../package/contents/ui/RemoteAttentionItem.qml",
   import.meta.url,
@@ -17,14 +21,19 @@ assert.equal(existsSync(sourceUrl), true);
 
 const sourceQml = readFileSync(sourceUrl, "utf8");
 
-assert.match(mainQml, /\bRemoteAttentionItem\s*\{/);
-assert.match(mainQml, /id:\s*attentionItem/);
-assert.match(mainQml, /source:\s*remoteAttentionSource/);
-assert.match(mainQml, /vertical:\s*root\.vertical/);
-assert.match(mainQml, /taskSlotWidth:\s*fullRepresentationItem\.taskSlotWidth/);
+assert.match(mainQml, /fullRepresentation:\s*TaskListRepresentation\s*\{/);
+assert.match(mainQml, /remoteAttentionSource:\s*remoteAttentionSource/);
+assert.match(taskListRepresentationQml, /\bRemoteAttentionItem\s*\{/);
+assert.match(taskListRepresentationQml, /id:\s*attentionItem/);
 assert.match(
-  mainQml,
-  /titleVisibilityThreshold:\s*fullRepresentationItem\.titleVisibilityThreshold/,
+  taskListRepresentationQml,
+  /source:\s*root\.remoteAttentionSource/,
+);
+assert.match(taskListRepresentationQml, /vertical:\s*root\.vertical/);
+assert.match(taskListRepresentationQml, /taskSlotWidth:\s*root\.taskSlotWidth/);
+assert.match(
+  taskListRepresentationQml,
+  /titleVisibilityThreshold:\s*root\.titleVisibilityThreshold/,
 );
 assert.doesNotMatch(
   mainQml,
