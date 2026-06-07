@@ -3,10 +3,6 @@
 
 Qt.include("ActivityScopeLogic.js");
 
-function stringListContains(list, value) {
-  return ActivityScopeLogic.stringListContains(list, value);
-}
-
 function normalizedLauncherList(value) {
   if (!value) {
     return [];
@@ -230,18 +226,6 @@ function launcherReconciliationDecision(
   };
 }
 
-function uniqueStringList(list) {
-  return ActivityScopeLogic.uniqueStringList(list);
-}
-
-function activitiesAreAll(activities) {
-  return ActivityScopeLogic.activitiesAreAll(activities);
-}
-
-function normalizedActivityList(activities) {
-  return ActivityScopeLogic.normalizedActivityList(activities);
-}
-
 function parseSerializedLauncher(serializedLauncher) {
   const launcher = String(serializedLauncher || "");
   if (!launcher.startsWith("[")) {
@@ -273,20 +257,16 @@ function serializedLauncherActivities(serializedLauncher) {
 }
 
 function effectiveSerializedLauncherActivities(serializedLauncher) {
-  return normalizedActivityList(
+  return ActivityScopeLogic.normalizedActivityList(
     serializedLauncherActivities(serializedLauncher),
   );
-}
-
-function isInCurrentActivity(activities, currentActivity) {
-  return ActivityScopeLogic.isInCurrentActivity(activities, currentActivity);
 }
 
 function serializedLauncherVisibleInActivity(
   serializedLauncher,
   currentActivity,
 ) {
-  return isInCurrentActivity(
+  return ActivityScopeLogic.isInCurrentActivity(
     serializedLauncherActivities(serializedLauncher),
     currentActivity,
   );
@@ -294,8 +274,8 @@ function serializedLauncherVisibleInActivity(
 
 function serializeLauncherWithActivities(serializedLauncher, activities) {
   const parsed = parseSerializedLauncher(serializedLauncher);
-  const activityList = normalizedActivityList(activities);
-  if (activitiesAreAll(activityList)) {
+  const activityList = ActivityScopeLogic.normalizedActivityList(activities);
+  if (ActivityScopeLogic.activitiesAreAll(activityList)) {
     return parsed.url;
   }
 
@@ -303,7 +283,7 @@ function serializeLauncherWithActivities(serializedLauncher, activities) {
 }
 
 function launcherActivitiesAfterAllToggle(launcherActivities, currentActivity) {
-  if (activitiesAreAll(launcherActivities)) {
+  if (ActivityScopeLogic.activitiesAreAll(launcherActivities)) {
     const current = String(currentActivity || "");
     return current ? [current] : null;
   }
@@ -324,11 +304,11 @@ function launcherActivitiesAfterToggle(
   const activityList = Array.from(launcherActivities || []).map((entry) =>
     String(entry),
   );
-  if (activitiesAreAll(activityList)) {
+  if (ActivityScopeLogic.activitiesAreAll(activityList)) {
     return [activity];
   }
 
-  if (stringListContains(activityList, activity)) {
+  if (ActivityScopeLogic.stringListContains(activityList, activity)) {
     const nextActivities = activityList.filter((entry) => entry !== activity);
     if (nextActivities.length > 0) {
       return nextActivities;
