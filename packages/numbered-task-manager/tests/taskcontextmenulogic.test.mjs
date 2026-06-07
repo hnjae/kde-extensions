@@ -15,6 +15,7 @@ const logic = loadQmlJsModule(
     "checkableWindowActionState",
     "checkableWindowCapabilityActionState",
     "closeAction",
+    "closeActionSection",
     "closeCommand",
     "closeActionState",
     "activityEntriesSnapshot",
@@ -716,6 +717,12 @@ assert.deepEqual(
     visible: true,
   },
 );
+assert.deepEqual(plain(logic.closeActionSection({ visible: false })), {
+  visible: false,
+});
+assert.deepEqual(plain(logic.closeActionSection({ visible: true })), {
+  visible: true,
+});
 assert.deepEqual(plain(logic.allTaskActivitiesCommand()), {
   arguments: [[]],
   kind: "task-model-request",
