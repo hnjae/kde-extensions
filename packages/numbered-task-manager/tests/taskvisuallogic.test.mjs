@@ -124,7 +124,15 @@ assert.match(
 );
 assert.match(
   mainQml,
-  /width:\s*root\.vertical\s*\?\s*taskList\.width\s*:\s*implicitWidth/,
+  /width:\s*root\.vertical\s*\?\s*taskList\.width\s*:\s*fullRepresentationItem\.taskSlotWidth/,
+);
+assert.match(
+  mainQml,
+  /visibleItemCount:\s*root\.normalTaskEntries\.length \+ \(attentionItem\.visible \? 1 : 0\)/,
+);
+assert.match(
+  mainQml,
+  /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*fullRepresentationItem\.taskSlotWidth/,
 );
 assert.match(mainQml, /columnSpacing:\s*0/);
 assert.match(mainQml, /rowSpacing:\s*0/);
@@ -137,6 +145,8 @@ for (const fileName of ["TaskItem.qml", "AttentionItem.qml"]) {
   );
   assert.match(qml, /\bTaskFrame\s*\{/);
   assert.match(qml, /readonly property bool visualHighlighted:/);
+  assert.match(qml, /readonly property bool titleVisible:/);
   assert.match(qml, /TaskVisualLogic\.iconActive\(\{/);
+  assert.match(qml, /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible/);
   assert.doesNotMatch(qml, /QtQuick\.Rectangle\s*\{/);
 }

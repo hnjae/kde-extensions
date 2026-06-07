@@ -90,9 +90,19 @@ const taskItemQml = readFileSync(
   "utf8",
 );
 assert.match(taskItemQml, /id:\s*iconOverlayContainer/);
+assert.match(taskItemQml, /property real slotWidth:\s*0/);
 assert.match(taskItemQml, /property bool showTitle:\s*true/);
+assert.match(taskItemQml, /property int titleVisibilityThreshold:\s*96/);
 assert.match(taskItemQml, /root\.showTitle \? 96 : 0/);
-assert.match(taskItemQml, /visible:\s*root\.showTitle/);
+assert.match(
+  taskItemQml,
+  /root\.showTitle && \(root\.slotWidth <= 0 \|\| root\.slotWidth >= root\.titleVisibilityThreshold\)/,
+);
+assert.match(taskItemQml, /visible:\s*root\.titleVisible/);
+assert.match(
+  taskItemQml,
+  /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible/,
+);
 assert.match(taskItemQml, /z:\s*1/);
 assert.match(
   taskItemQml,
@@ -108,4 +118,8 @@ const mainQml = readFileSync(
 assert.match(
   mainQml,
   /showTitle:\s*!\(entry\.launcherBacked && entry\.isLauncher\)/,
+);
+assert.match(
+  mainQml,
+  /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*fullRepresentationItem\.taskSlotWidth/,
 );
