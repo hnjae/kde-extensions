@@ -31,6 +31,9 @@ in `SPEC.md`.
 - Read task context-menu data from live `TasksModel` roles through the menu's
   model index when invoking task actions. Snapshot data may describe the
   visible delegate, but menu mutations should target the current model entry.
+- Keep context-menu live role access and menu-facing role snapshots in
+  `TaskContextMenuLogic.js`. `TaskContextMenu.qml` should render menu sections
+  from helper output and must not call `taskModel.data(...)` directly.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
