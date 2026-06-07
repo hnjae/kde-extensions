@@ -233,6 +233,14 @@
 - Verification: `node tests/taskmodellogic.test.mjs` failed before implementation because `hasAnyLauncher` was still present on normal task entries; after implementation, `node tests/taskmodellogic.test.mjs`; `node tests/normaltasksourceqml.test.mjs`; `rg -n "hasAnyLauncher" package tests docs DESIGN_REVIEW_PROGRESS.md`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskModelLogic.js`, `package/contents/ui/NormalTaskSource.qml`, `tests/taskmodellogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 29: Launcher Activity Menu State Bindings
+
+- Status: completed.
+- What changed: declared that launcher-activity menu items should consume checked-state helper output directly; removed the menu-local launcher activity checked-state wrapper functions; bound the All Activities and per-activity launcher menu items directly to `TaskContextMenuLogic.launcherActivityMenuState(...)`.
+- Behavior that must remain unchanged: launcher activity lists still normalize through the shared all-activities semantics; All Activities and per-activity checked states, labels, ordering, visibility, and click handlers remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the launcher activity wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "launcherPinnedToAllActivities|launcherPinnedToActivity|function launcherActivityMenuState|TaskContextMenuLogic\\.launcherActivityMenuState" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.

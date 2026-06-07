@@ -258,18 +258,6 @@ PlasmaExtras.Menu {
         requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestActivities", TaskActivityLogic.taskActivitiesAfterToggle(activities(), activityId)));
     }
 
-    function launcherPinnedToAllActivities() {
-        return launcherActivityMenuState("").allActivitiesChecked;
-    }
-
-    function launcherPinnedToActivity(activityId) {
-        return launcherActivityMenuState(activityId).activityChecked;
-    }
-
-    function launcherActivityMenuState(activityId) {
-        return TaskContextMenuLogic.launcherActivityMenuState(launcherActivityList, activityId);
-    }
-
     function launcherPosition() {
         const url = launcherUrl();
         if (!launcherModel || !url) {
@@ -374,7 +362,7 @@ PlasmaExtras.Menu {
 
             PlasmaExtras.MenuItem {
                 checkable: true
-                checked: root.launcherPinnedToAllActivities()
+                checked: TaskContextMenuLogic.launcherActivityMenuState(root.launcherActivityList, "").allActivitiesChecked
                 text: "All Activities"
 
                 onClicked: {
@@ -390,7 +378,7 @@ PlasmaExtras.Menu {
                     required property var modelData
 
                     checkable: true
-                    checked: root.launcherPinnedToActivity(modelData.id)
+                    checked: TaskContextMenuLogic.launcherActivityMenuState(root.launcherActivityList, modelData.id).activityChecked
                     text: modelData.name
 
                     onClicked: {
