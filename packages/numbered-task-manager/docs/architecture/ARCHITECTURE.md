@@ -55,6 +55,10 @@ in `SPEC.md`.
   Maximize, Keep Above, Keep Below, Full Screen, Shade, No Border, and Exclude
   From Capture should be derived by tested helpers while QML keeps labels and
   effect dispatch.
+- Keep context-menu section and terminal action availability in
+  `TaskContextMenuLogic.js`. Section visibility and enabled/visible predicates
+  for Virtual Desktops, Activities, New Desktop, and Close should be derived by
+  tested helpers while QML keeps submenu composition and effect dispatch.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
