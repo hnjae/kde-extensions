@@ -9,8 +9,6 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
-import "ActivityScopeLogic.js" as ActivityScopeLogic
-import "LauncherListLogic.js" as LauncherListLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskScopeLogic.js" as TaskScopeLogic
 import "TaskActionLogic.js" as TaskActionLogic
@@ -24,7 +22,6 @@ PlasmoidItem {
     readonly property var normalTaskEntries: normalTaskStore.entries
     readonly property var visibleTaskItems: VisibleTaskItemsLogic.composeVisibleTaskItems(normalTaskEntries, remoteAttentionSource.snapshot)
     readonly property var normalVisibleTaskItems: VisibleTaskItemsLogic.normalVisibleTaskItems(root.visibleTaskItems)
-    property int launcherRevision: 0
 
     Plasmoid.icon: "preferences-system-windows"
     Plasmoid.constraintHints: Plasmoid.CanFillArea
@@ -46,33 +43,10 @@ PlasmoidItem {
         console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
     }
 
-    function visibleLauncherPosition(launcherUrl, launcherRevisionToken) {
-        const revision = launcherRevisionToken === undefined ? launcherRevision : launcherRevisionToken;
-        if (!launcherUrl) {
-            return -1;
-        }
+    TaskPlatformState {
+        id: taskPlatformState
 
-        if (revision < 0) {
-            return -1;
-        }
-
-        return LauncherListLogic.visibleLauncherPosition(tasksModel.launcherList, launcherUrl, activityInfo.currentActivity, url => tasksModel.launcherPosition(url));
-    }
-
-    function isInCurrentActivity(activities) {
-        return ActivityScopeLogic.isInCurrentActivity(activities, activityInfo.currentActivity);
-    }
-
-    TaskManager.ActivityInfo {
-        id: activityInfo
-
-        onCurrentActivityChanged: {
-            root.launcherRevision += 1;
-        }
-    }
-
-    TaskManager.VirtualDesktopInfo {
-        id: virtualDesktopInfo
+        taskModel: tasksModel
     }
 
     LauncherSyncAdapter {
@@ -123,7 +97,7 @@ PlasmoidItem {
     NormalTaskStoreAdapter {
         id: normalTaskStore
 
-        visibleLauncherPosition: launcherUrl => root.visibleLauncherPosition(launcherUrl)
+        visibleLauncherPosition: launcherUrl => taskPlatformState.visibleLauncherPosition(launcherUrl)
     }
 
     TaskMoveAdapter {
@@ -142,7 +116,7 @@ PlasmoidItem {
     TaskManager.TasksModel {
         id: tasksModel
 
-        activity: activityInfo.currentActivity
+        activity: taskPlatformState.currentActivity
         filterByActivity: TaskScopeLogic.normalTaskModelFilterSettings().filterByActivity
         filterByScreen: TaskScopeLogic.normalTaskModelFilterSettings().filterByScreen
         filterByVirtualDesktop: TaskScopeLogic.normalTaskModelFilterSettings().filterByVirtualDesktop
@@ -153,10 +127,10 @@ PlasmoidItem {
         separateLaunchers: true
         sortMode: TaskManager.TasksModel.SortManual
         taskReorderingEnabled: true
-        virtualDesktop: virtualDesktopInfo.currentDesktop
+        virtualDesktop: taskPlatformState.currentDesktop
 
         onLauncherListChanged: {
-            root.launcherRevision += 1;
+            taskPlatformState.noteLauncherListChanged();
             if (!launcherSync.updatingLauncherConfig) {
                 if (launcherSync.reconcileLauncherListChange(launcherList)) {
                     return;
@@ -168,12 +142,12 @@ PlasmoidItem {
 
     NormalTaskSource {
         taskModel: tasksModel
-        currentActivity: activityInfo.currentActivity
-        currentDesktop: virtualDesktopInfo.currentDesktop
-        launcherRevision: root.launcherRevision
+        currentActivity: taskPlatformState.currentActivity
+        currentDesktop: taskPlatformState.currentDesktop
+        launcherRevision: taskPlatformState.launcherRevision
         createPublicationKey: () => normalTaskStore.allocatePublicationKey()
-        isInCurrentActivity: activities => root.isInCurrentActivity(activities)
-        visibleLauncherPosition: (launcherUrl, launcherRevisionToken) => root.visibleLauncherPosition(launcherUrl, launcherRevisionToken)
+        isInCurrentActivity: activities => taskPlatformState.isInCurrentActivity(activities)
+        visibleLauncherPosition: (launcherUrl, launcherRevisionToken) => taskPlatformState.visibleLauncherPosition(launcherUrl, launcherRevisionToken)
 
         onTaskPublished: (key, qualifies, task) => {
             normalTaskStore.publishNormalTask(key, qualifies, task);
@@ -186,9 +160,9 @@ PlasmoidItem {
     RemoteAttentionSource {
         id: remoteAttentionSource
 
-        currentActivity: activityInfo.currentActivity
-        currentDesktop: virtualDesktopInfo.currentDesktop
-        isInCurrentActivity: activities => root.isInCurrentActivity(activities)
+        currentActivity: taskPlatformState.currentActivity
+        currentDesktop: taskPlatformState.currentDesktop
+        isInCurrentActivity: activities => taskPlatformState.isInCurrentActivity(activities)
         visibleTaskItems: root.visibleTaskItems
 
         onActivationRequested: visibleItem => {

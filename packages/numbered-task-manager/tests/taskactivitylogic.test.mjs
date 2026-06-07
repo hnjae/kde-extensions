@@ -36,6 +36,10 @@ const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
   "utf8",
 );
+const platformStateQml = readFileSync(
+  new URL("../package/contents/ui/TaskPlatformState.qml", import.meta.url),
+  "utf8",
+);
 
 assert.doesNotMatch(taskActivityLogic, /function allActivitiesId\b/);
 assert.doesNotMatch(taskActivityLogic, /function stringListContains\b/);
@@ -43,10 +47,17 @@ assert.doesNotMatch(taskActivityLogic, /function uniqueStringList\b/);
 assert.doesNotMatch(taskActivityLogic, /function activitiesAreAll\b/);
 assert.doesNotMatch(taskActivityLogic, /function normalizedActivityList\b/);
 assert.doesNotMatch(taskActivityLogic, /function isInCurrentActivity\b/);
-assert.match(mainQml, /import "ActivityScopeLogic\.js" as ActivityScopeLogic/);
-assert.match(
+assert.doesNotMatch(
   mainQml,
-  /return ActivityScopeLogic\.isInCurrentActivity\(activities, activityInfo\.currentActivity\);/,
+  /import "ActivityScopeLogic\.js" as ActivityScopeLogic/,
+);
+assert.match(
+  platformStateQml,
+  /import "ActivityScopeLogic\.js" as ActivityScopeLogic/,
+);
+assert.match(
+  platformStateQml,
+  /return ActivityScopeLogic\.isInCurrentActivity\(activities, root\.currentActivity\);/,
 );
 assert.doesNotMatch(
   mainQml,
