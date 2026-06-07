@@ -97,11 +97,8 @@ in `SPEC.md`.
   may translate Qt drag/drop events, but MIME payload creation, source-index
   parsing, self-drop rejection, missing-callback rejection, and callback
   projection should be covered by pure tests.
-- Keep task-like context-menu request payload construction in the interaction
-  helper so normal and remote-attention delegates emit the same
-  `{ modelIndex, task, visualParent }` shape. The delegates may retain the
-  zero-delay timer and focus handoff until that QML interaction pattern can be
-  extracted without changing key-event delivery.
+- Keep task-like context-menu request payload construction in the interaction helper so normal and remote-attention delegates emit the same `{ modelIndex, task, visualParent }` shape.
+- Keep shared task-like activation and context-menu trigger wiring in a QML interaction component once it can preserve key-event delivery. Normal and remote-attention delegates should consume that component for hover state, menu-key/right-click zero-delay context-menu requests, focus handoff, and left-click activation while variant delegates keep their own task data, badges, drag/drop, and visual layout.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
   coercion, launcher URL precedence, title/icon fallback, model-index validity,
   and virtual-desktop membership should not be duplicated between normal task
