@@ -55,6 +55,7 @@ const logic = loadQmlJsModule(
     "keepBelowAction",
     "maximizeCommand",
     "maximizeAction",
+    "minimizeMaximizeActionsSection",
     "minimizeMaximizeRoleSnapshot",
     "minimizeCommand",
     "minimizeAction",
@@ -637,6 +638,42 @@ assert.deepEqual(
     enabled: false,
     text: "Maximize",
     visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.minimizeMaximizeActionsSection({
+      hasWindowTask: true,
+      isMaximizable: false,
+      isMaximized: true,
+      isMinimizable: true,
+      isMinimized: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    maximize: {
+      checked: true,
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestToggleMaximized",
+      },
+      enabled: false,
+      text: "Maximize",
+      visible: false,
+    },
+    minimize: {
+      checked: true,
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestToggleMinimized",
+      },
+      enabled: true,
+      text: "Minimize",
+      visible: true,
+    },
   },
 );
 assert.deepEqual(plain(logic.keepAboveCommand()), {
