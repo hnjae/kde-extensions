@@ -141,6 +141,95 @@ function runLauncherListUpdateTransaction(state, action) {
   }
 }
 
+function createLauncherReconciliationState(values) {
+  const state = values || {};
+  return {
+    attempts: Math.max(0, Number(state.attempts || 0)),
+    launchers: normalizedLauncherList(state.launchers),
+    maxAttempts: Math.max(0, Number(state.maxAttempts ?? 1)),
+    pending: Boolean(state.pending),
+  };
+}
+
+function clearLauncherReconciliationState(state) {
+  const current = createLauncherReconciliationState(state);
+  return {
+    attempts: current.attempts,
+    launchers: [],
+    maxAttempts: current.maxAttempts,
+    pending: false,
+  };
+}
+
+function launcherReconciliationAfterResult(state, result) {
+  const current = createLauncherReconciliationState(state);
+  const syncResult = result || {};
+  if (syncResult.ok || syncResult.code !== "write-mismatch") {
+    return clearLauncherReconciliationState(current);
+  }
+
+  if (current.pending && current.attempts >= current.maxAttempts) {
+    return clearLauncherReconciliationState(current);
+  }
+
+  return {
+    attempts: current.pending ? current.attempts : 0,
+    launchers: normalizedLauncherList(syncResult.launchers),
+    maxAttempts: current.maxAttempts,
+    pending: true,
+  };
+}
+
+function launcherReconciliationDecision(
+  state,
+  observedModelLaunchers,
+  observedConfigLaunchers,
+) {
+  const current = createLauncherReconciliationState(state);
+  if (!current.pending) {
+    return {
+      action: "none",
+      launchers: [],
+      state: current,
+    };
+  }
+
+  const modelConverged = launcherListsEqual(
+    current.launchers,
+    observedModelLaunchers,
+  );
+  const configConverged = launcherListsEqual(
+    current.launchers,
+    observedConfigLaunchers,
+  );
+  if (modelConverged && configConverged) {
+    return {
+      action: "clear",
+      launchers: [],
+      state: clearLauncherReconciliationState(current),
+    };
+  }
+
+  if (current.attempts >= current.maxAttempts) {
+    return {
+      action: "expired",
+      launchers: current.launchers,
+      state: clearLauncherReconciliationState(current),
+    };
+  }
+
+  return {
+    action: "retry",
+    launchers: current.launchers,
+    state: {
+      attempts: current.attempts + 1,
+      launchers: current.launchers,
+      maxAttempts: current.maxAttempts,
+      pending: true,
+    },
+  };
+}
+
 function uniqueStringList(list) {
   return ActivityScopeLogic.uniqueStringList(list);
 }

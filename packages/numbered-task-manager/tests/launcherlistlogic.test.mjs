@@ -10,6 +10,7 @@ const helpers = loadQmlJsModule(
   [
     "canMovePinnedLauncher",
     "effectiveSerializedLauncherActivities",
+    "createLauncherReconciliationState",
     "launcherActivityUpdate",
     "launcherActivitiesAfterAllToggle",
     "launcherActivitiesAfterToggle",
@@ -201,6 +202,13 @@ assert.deepEqual(
   },
 );
 
+assert.deepEqual(plain(helpers.createLauncherReconciliationState()), {
+  attempts: 0,
+  launchers: [],
+  maxAttempts: 1,
+  pending: false,
+});
+
 const pendingReconciliation = helpers.launcherReconciliationAfterResult(
   null,
   helpers.launcherModelConvergence(
@@ -289,6 +297,51 @@ assert.deepEqual(
       maxAttempts: 1,
       pending: false,
     },
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherReconciliationAfterResult(
+      {
+        attempts: 1,
+        launchers: ["b.desktop"],
+        maxAttempts: 1,
+        pending: true,
+      },
+      helpers.launcherModelConvergence(
+        helpers.launcherModelUpdate(
+          ["a.desktop"],
+          ["old.desktop"],
+          ["b.desktop"],
+        ),
+        ["a.desktop"],
+        ["old.desktop"],
+      ),
+    ),
+  ),
+  {
+    attempts: 1,
+    launchers: [],
+    maxAttempts: 1,
+    pending: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherReconciliationAfterResult(
+      null,
+      helpers.launcherModelConvergence(
+        helpers.launcherModelUpdate(["a.desktop"], ["a.desktop"], []),
+        ["a.desktop"],
+        ["a.desktop"],
+      ),
+    ),
+  ),
+  {
+    attempts: 0,
+    launchers: [],
+    maxAttempts: 1,
+    pending: true,
   },
 );
 

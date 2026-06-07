@@ -161,8 +161,15 @@
 - Verification: `node tests/remoteattentionsourceqml.test.mjs` failed before implementation because `RemoteAttentionSource.qml` did not exist; after implementation, `node tests/remoteattentionsourceqml.test.mjs`; `node tests/remoteattentionlogic.test.mjs`; `node tests/launcherlistlogic.test.mjs`; `node tests/visibletaskitemslogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `tests/remoteattentionsourceqml.test.mjs`, `package/contents/ui/RemoteAttentionSource.qml`, `package/contents/ui/main.qml`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 20: Launcher Sync Reconciliation
+
+- Status: completed.
+- What changed: declared launcher reconciliation ownership, added tested pending reconciliation helpers in `LauncherListLogic.js`, and routed `main.qml` launcher-list changes through one bounded next-change retry before ordinary persistence.
+- Behavior that must remain unchanged: successful launcher-list writes still clear without retry; unchanged launcher lists still no-op; assignment failures still reset `updatingLauncherConfig`; pin/unpin, context-menu launcher-activity writes, and pinned-launcher drag writes still apply the same requested launcher list.
+- Verification: `node tests/launcherlistlogic.test.mjs` failed before implementation because reconciliation helpers did not exist; after implementation, `node tests/launcherlistlogic.test.mjs`; `node tests/taskactionlogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/LauncherListLogic.js`, `package/contents/ui/main.qml`, `tests/launcherlistlogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
-- Launcher sync: add bounded retry or next-change reconciliation for logged model/config mismatches.
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers, then simplify menu effect dispatch into typed commands where practical.
 - Observability: extend structured action results beyond activation, menu creation, and launcher mutations to context-menu window/task requests.

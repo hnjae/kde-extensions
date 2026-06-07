@@ -31,6 +31,7 @@ PlasmoidItem {
         target: remoteAttentionState.target || null
     })
     property int launcherRevision: 0
+    property var launcherReconciliationState: LauncherListLogic.createLauncherReconciliationState()
     property bool updatingLauncherConfig: false
 
     Plasmoid.icon: "preferences-system-windows"
@@ -91,7 +92,7 @@ PlasmoidItem {
             Plasmoid.configuration.launchers = update.launchers;
             return LauncherListLogic.launcherConfigConvergence(update, Plasmoid.configuration.launchers);
         });
-        logLauncherSyncResult("persistLaunchers", result);
+        recordLauncherSyncResult("persistLaunchers", result);
         return result;
     }
 
@@ -110,8 +111,39 @@ PlasmoidItem {
             }
             return LauncherListLogic.launcherModelConvergence(update, tasksModel.launcherList, Plasmoid.configuration.launchers);
         });
-        logLauncherSyncResult("applyLauncherList", result);
+        recordLauncherSyncResult("applyLauncherList", result);
         return Boolean(result && result.changed);
+    }
+
+    function recordLauncherSyncResult(action, result) {
+        launcherReconciliationState = LauncherListLogic.launcherReconciliationAfterResult(launcherReconciliationState, result);
+        logLauncherSyncResult(action, result);
+    }
+
+    function reconcileLauncherListChange(modelLaunchers) {
+        const decision = LauncherListLogic.launcherReconciliationDecision(launcherReconciliationState, modelLaunchers, Plasmoid.configuration.launchers);
+        launcherReconciliationState = decision.state;
+        if (decision.action === "none") {
+            return false;
+        }
+
+        if (decision.action === "retry") {
+            applyLauncherList(decision.launchers);
+            return true;
+        }
+
+        if (decision.action === "expired") {
+            const expiredResult = LauncherListLogic.launcherModelConvergence({
+                changed: true,
+                launchers: decision.launchers || []
+            }, modelLaunchers, Plasmoid.configuration.launchers);
+            logLauncherSyncResult("reconcileLauncherList", Object.assign({}, expiredResult, {
+                code: "reconciliation-expired",
+                ok: false
+            }));
+        }
+
+        return true;
     }
 
     function logLauncherSyncResult(action, result) {
@@ -356,6 +388,9 @@ PlasmoidItem {
         onLauncherListChanged: {
             root.launcherRevision += 1;
             if (!root.updatingLauncherConfig) {
+                if (root.reconcileLauncherListChange(launcherList)) {
+                    return;
+                }
                 root.persistLaunchers(launcherList);
             }
         }
