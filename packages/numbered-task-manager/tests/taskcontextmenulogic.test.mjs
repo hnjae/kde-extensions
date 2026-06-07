@@ -2199,6 +2199,14 @@ assert.equal(
 assert.equal(menuQml.includes("TaskContextMenuLogic.newInstanceAction"), true);
 assert.equal(menuQml.includes("TaskContextMenuLogic.basicMoveAction"), true);
 assert.equal(menuQml.includes("TaskContextMenuLogic.basicResizeAction"), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.menuActionSection({"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.menuActionSectionVisible({"),
+  false,
+);
 assert.equal(menuQml.includes('text: "New Instance"'), false);
 assert.equal(menuQml.includes('text: "Move"'), false);
 assert.equal(menuQml.includes('text: "Resize"'), false);

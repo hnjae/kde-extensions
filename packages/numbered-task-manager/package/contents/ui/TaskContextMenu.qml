@@ -259,12 +259,14 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        separator: true
-        visible: TaskContextMenuLogic.menuActionSectionVisible({
+        readonly property var sectionState: TaskContextMenuLogic.menuActionSection({
             hasWindowTask: root.hasWindowTask,
             launcherActivitiesVisible: launcherActivitiesItem.visible,
             newInstanceVisible: newInstanceItem.visible
         })
+
+        separator: true
+        visible: sectionState.visible
     }
 
     PlasmaExtras.MenuItem {

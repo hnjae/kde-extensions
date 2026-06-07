@@ -285,6 +285,12 @@ function menuActionSectionVisible(sectionState) {
   );
 }
 
+function menuActionSection(sectionState) {
+  return {
+    visible: menuActionSectionVisible(sectionState),
+  };
+}
+
 function virtualDesktopsActionState(taskState) {
   const state = taskState || {};
   return windowCapabilityActionState(
