@@ -51,6 +51,7 @@ in `SPEC.md`.
   `RemoteAttentionLogic.js` so the separate attention model remains testable
   independently from normal task composition.
 - Keep composed visible item order, slot labels, `Meta+0` target selection, item source metadata, and item count in a visible-item composer instead of reconstructing those policies independently in root activation, layout sizing, and delegates.
+- Keep shortcut activation and context-menu creation outcomes in a small action-result helper. Root QML should still execute Plasma side effects, but invalid requests, stale model indexes, missing targets, and creation failures should be classified before deciding whether to log a diagnostic.
 - Do not claim support for upstream task-manager private backend behavior, such
   as file-open drops onto task delegates, unless that backend integration is
   actually added.
