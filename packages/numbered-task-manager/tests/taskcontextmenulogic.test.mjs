@@ -29,6 +29,7 @@ const logic = loadQmlJsModule(
     "launcherActivityListSnapshot",
     "launcherActivityMenuState",
     "launcherActivityUpdateCommand",
+    "launcherAllActivitiesUpdateCommand",
     "launcherActivitiesVisible",
     "keepAboveCommand",
     "keepAboveBelowRoleSnapshot",
@@ -677,6 +678,70 @@ assert.deepEqual(
     reason: "invalid-position",
   },
 );
+assert.deepEqual(
+  plain(
+    logic.launcherAllActivitiesUpdateCommand(
+      ["one.desktop", "two.desktop"],
+      1,
+      [nullActivityId],
+      "work",
+    ),
+  ),
+  {
+    activities: ["work"],
+    changed: true,
+    command: {
+      action: "replaceLauncherList",
+      kind: "launcher-command",
+      launcherUrl: "",
+      launchers: ["one.desktop", "[work]\ntwo.desktop"],
+    },
+    launchers: ["one.desktop", "[work]\ntwo.desktop"],
+    ok: true,
+    reason: "updated",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherAllActivitiesUpdateCommand(
+      ["one.desktop", "[work]\ntwo.desktop"],
+      1,
+      ["work"],
+      "work",
+    ),
+  ),
+  {
+    activities: [nullActivityId],
+    changed: true,
+    command: {
+      action: "replaceLauncherList",
+      kind: "launcher-command",
+      launcherUrl: "",
+      launchers: ["one.desktop", "two.desktop"],
+    },
+    launchers: ["one.desktop", "two.desktop"],
+    ok: true,
+    reason: "updated",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherAllActivitiesUpdateCommand(
+      ["one.desktop", "two.desktop"],
+      1,
+      [nullActivityId],
+      "",
+    ),
+  ),
+  {
+    activities: [nullActivityId],
+    changed: false,
+    command: null,
+    launchers: ["one.desktop", "two.desktop"],
+    ok: false,
+    reason: "missing-current-activity",
+  },
+);
 assert.deepEqual(plain(logic.taskActivityMenuState([], "work")), {
   activityChecked: true,
   allActivitiesChecked: true,
@@ -1223,6 +1288,14 @@ assert.equal(
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivityUpdateCommand"),
   true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.launcherAllActivitiesUpdateCommand"),
+  true,
+);
+assert.equal(
+  menuQml.includes("LauncherListLogic.launcherActivitiesAfterAllToggle"),
+  false,
 );
 assert.equal(
   menuQml.includes("LauncherListLogic.launcherActivityUpdate"),
