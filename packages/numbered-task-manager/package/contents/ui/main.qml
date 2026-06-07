@@ -26,10 +26,7 @@ PlasmoidItem {
     readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
     property var normalTaskStoreState: NormalTaskStoreLogic.createNormalTaskStore()
     readonly property var normalTaskEntries: normalTaskStoreState.entries || []
-    readonly property var visibleTaskItems: VisibleTaskItemsLogic.composeVisibleTaskItems(normalTaskEntries, {
-        count: remoteAttentionSource.count || 0,
-        target: remoteAttentionSource.target || null
-    })
+    readonly property var visibleTaskItems: VisibleTaskItemsLogic.composeVisibleTaskItems(normalTaskEntries, remoteAttentionSource.snapshot)
     readonly property var normalVisibleTaskItems: VisibleTaskItemsLogic.normalVisibleTaskItems(root.visibleTaskItems)
     readonly property var remoteAttentionVisibleItem: VisibleTaskItemsLogic.visibleRemoteAttentionItem(root.visibleTaskItems)
     property int launcherRevision: 0

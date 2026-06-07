@@ -19,6 +19,10 @@ QtQuick.Item {
     property var attentionState: RemoteAttentionLogic.createRemoteAttentionState()
     readonly property int count: attentionState.count || 0
     readonly property var target: attentionState.target || null
+    readonly property var snapshot: ({
+            count: root.count,
+            target: root.target
+        })
 
     signal attentionPublished(string previousKey, string key, bool qualifies, var task, bool becameQualified)
     signal attentionRemoved(string key)
