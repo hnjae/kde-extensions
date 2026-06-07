@@ -10,6 +10,7 @@ const logic = loadQmlJsModule(
   [
     "contextMenuCreationResult",
     "contextMenuRequestResult",
+    "contextMenuTaskCommand",
     "contextMenuTaskRequest",
     "launcherMutationRequest",
     "launcherMutationResult",
@@ -183,11 +184,25 @@ assert.equal(
 
 const taskRequestModel = {
   requestMove() {},
+  requestVirtualDesktops() {},
 };
+assert.deepEqual(plain(logic.contextMenuTaskCommand("requestMove")), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestMove",
+});
+assert.deepEqual(
+  plain(logic.contextMenuTaskCommand("requestVirtualDesktops", ["desktop-a"])),
+  {
+    arguments: [["desktop-a"]],
+    kind: "task-model-request",
+    requestMethod: "requestVirtualDesktops",
+  },
+);
 assert.deepEqual(
   plain(
     logic.contextMenuTaskRequest(
-      "requestMove",
+      logic.contextMenuTaskCommand("requestMove"),
       taskRequestModel,
       validModelIndex,
       normalTask,
@@ -204,7 +219,32 @@ assert.deepEqual(
     diagnostic: false,
     modelIndex: validModelIndex,
     ok: true,
+    requestArguments: [],
     requestMethod: "requestMove",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.contextMenuTaskRequest(
+      logic.contextMenuTaskCommand("requestVirtualDesktops", ["desktop-a"]),
+      taskRequestModel,
+      validModelIndex,
+      normalTask,
+    ),
+  ),
+  {
+    action: "requestVirtualDesktops",
+    code: "ready",
+    context: {
+      entryKey: "normal-task",
+      modelIndexValid: true,
+      title: "Normal Task",
+    },
+    diagnostic: false,
+    modelIndex: validModelIndex,
+    ok: true,
+    requestArguments: [["desktop-a"]],
+    requestMethod: "requestVirtualDesktops",
   },
 );
 
