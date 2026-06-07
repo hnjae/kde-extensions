@@ -2759,9 +2759,14 @@ const menuQml = readFileSync(
 );
 
 assert.equal(menuQml.includes("TaskContextMenuPlatformState {"), true);
+assert.equal(menuQml.includes("TaskContextMenuRoleState {"), true);
 assert.equal(menuQml.includes("TaskManager.ActivityInfo"), false);
 assert.equal(menuQml.includes("TaskManager.VirtualDesktopInfo"), false);
+assert.equal(menuQml.includes("TaskManager.AbstractTasksModel"), false);
+assert.equal(menuQml.includes('import "TaskEntryLogic.js"'), false);
 assert.equal(menuQml.includes("function refreshActivities()"), false);
+assert.equal(menuQml.includes("function roleIds()"), false);
+assert.equal(menuQml.includes("function roleSource()"), false);
 assert.equal(menuQml.includes("activityInfo.currentActivity"), false);
 assert.equal(menuQml.includes("_activityInfo.currentActivity"), false);
 assert.equal(menuQml.includes("virtualDesktopInfo.desktopIds"), false);
@@ -2770,13 +2775,11 @@ assert.equal(menuQml.includes("atm.HasLauncher"), false);
 assert.equal(menuQml.includes("taskModel.data"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.contextMenuRoleSnapshots("),
-  true,
+  false,
 );
 assert.equal(menuQml.includes("TaskContextMenuLogic.taskRoleSnapshot"), false);
 assert.equal(
-  menuQml.includes(
-    "readonly property var roleSnapshots: TaskContextMenuLogic.contextMenuRoleSnapshots",
-  ),
+  menuQml.includes("readonly property var roleSnapshots: roleState.snapshots"),
   true,
 );
 assert.equal(
@@ -3399,6 +3402,29 @@ assert.equal(
   ),
   true,
 );
+
+const roleStateQml = readFileSync(
+  new URL(
+    "../package/contents/ui/TaskContextMenuRoleState.qml",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.equal(roleStateQml.includes("TaskManager.AbstractTasksModel"), true);
+assert.equal(roleStateQml.includes('import "TaskEntryLogic.js"'), true);
+assert.equal(
+  roleStateQml.includes("TaskEntryLogic.hasValidModelIndex(modelIndex)"),
+  true,
+);
+assert.equal(
+  roleStateQml.includes("TaskContextMenuLogic.contextMenuRoleSnapshots"),
+  true,
+);
+assert.equal(roleStateQml.includes("function roleIds()"), true);
+assert.equal(roleStateQml.includes("function roleSource()"), true);
+assert.equal(roleStateQml.includes("property var modelIndex"), true);
+assert.equal(roleStateQml.includes("property var task: ({})"), true);
+assert.equal(roleStateQml.includes("property var taskModel"), true);
 
 const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
