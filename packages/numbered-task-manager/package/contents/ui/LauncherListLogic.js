@@ -336,19 +336,29 @@ function launcherListWithActivitiesAt(launcherList, position, activities) {
 }
 
 function launcherActivityUpdate(launcherList, position, activities) {
+  const currentLaunchers = normalizedLauncherList(launcherList);
   const nextLaunchers = launcherListWithActivitiesAt(
-    launcherList,
+    currentLaunchers,
     position,
     activities,
   );
   if (!nextLaunchers) {
-    return null;
+    return {
+      activities: [],
+      changed: false,
+      launchers: currentLaunchers,
+      ok: false,
+      reason: "invalid-position",
+    };
   }
 
+  const changed = !launcherListsEqual(nextLaunchers, currentLaunchers);
   return {
     activities: effectiveSerializedLauncherActivities(nextLaunchers[position]),
-    changed: !launcherListsEqual(nextLaunchers, launcherList),
+    changed,
     launchers: nextLaunchers,
+    ok: true,
+    reason: changed ? "updated" : "unchanged",
   };
 }
 

@@ -163,7 +163,7 @@ PlasmaExtras.Menu {
     function applyLauncherActivities(activities) {
         const position = launcherPosition();
         const update = LauncherListLogic.launcherActivityUpdate(launcherModel.launcherList, position, activities);
-        if (!update) {
+        if (!update.ok) {
             return false;
         }
 
