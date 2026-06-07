@@ -13,16 +13,12 @@ const logic = loadQmlJsModule(
     "createNormalTaskEntry",
     "moveManualTaskOrder",
     "normalTaskEntryForSourceIndex",
-    "qualifiesNormalTask",
   ],
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const createNormalTaskEntry = (roles) => logic.createNormalTaskEntry(roles);
-const qualifiesNormalTask = (task, isInCurrentActivity, currentDesktop) =>
-  logic.qualifiesNormalTask(task, isInCurrentActivity, currentDesktop);
 
 assert.equal(logic.createNormalTaskEntry.length, 1);
-assert.equal(logic.qualifiesNormalTask.length, 3);
 
 const modelIndex = { valid: true };
 const normalTask = createNormalTaskEntry({
@@ -57,44 +53,6 @@ assert.equal(normalTask.moveIndex, 7);
 assert.equal(normalTask.sourceIndex, 7);
 assert.equal(normalTask.title, "Fallback App");
 assert.deepEqual(plain(normalTask.virtualDesktops), ["desktop-a"]);
-
-assert.equal(
-  qualifiesNormalTask(
-    normalTask,
-    (activities) => activities.includes("work"),
-    "desktop-b",
-  ),
-  true,
-);
-assert.equal(
-  qualifiesNormalTask(
-    { ...normalTask, isLauncher: false, isWindow: true },
-    (activities) => activities.includes("work"),
-    "desktop-b",
-  ),
-  false,
-);
-assert.equal(
-  qualifiesNormalTask(
-    {
-      ...normalTask,
-      isLauncher: false,
-      isOnAllVirtualDesktops: false,
-      isWindow: true,
-    },
-    (activities) => activities.includes("work"),
-    "desktop-a",
-  ),
-  true,
-);
-assert.equal(
-  qualifiesNormalTask(
-    { ...normalTask, isLauncher: false, isStartup: true },
-    () => false,
-    "desktop-a",
-  ),
-  false,
-);
 
 const normalEntryMap = {
   hiddenLauncher: {

@@ -12,7 +12,6 @@ const logic = loadQmlJsModule(
     "createRemoteAttentionEntry",
     "publishRemoteAttention",
     "publishRemoteAttentionState",
-    "qualifiesRemoteAttention",
     "remoteAttentionKey",
     "remoteAttentionSnapshot",
     "removeRemoteAttention",
@@ -23,11 +22,8 @@ const logic = loadQmlJsModule(
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const createRemoteAttentionEntry = (roles) =>
   logic.createRemoteAttentionEntry(roles);
-const qualifiesRemoteAttention = (task, isInCurrentActivity, currentDesktop) =>
-  logic.qualifiesRemoteAttention(task, isInCurrentActivity, currentDesktop);
 
 assert.equal(logic.createRemoteAttentionEntry.length, 1);
-assert.equal(logic.qualifiesRemoteAttention.length, 3);
 
 const modelIndex = { valid: true };
 const remoteTask = createRemoteAttentionEntry({
@@ -53,30 +49,6 @@ assert.equal(remoteTask.modelIndex, modelIndex);
 assert.equal(remoteTask.title, "Remote App");
 assert.deepEqual(plain(remoteTask.virtualDesktops), ["desktop-b"]);
 assert.deepEqual(plain(remoteTask.winIds), [42]);
-assert.equal(
-  qualifiesRemoteAttention(
-    remoteTask,
-    (activities) => activities.includes("work"),
-    "desktop-a",
-  ),
-  true,
-);
-assert.equal(
-  qualifiesRemoteAttention(
-    { ...remoteTask, demandingAttention: false },
-    (activities) => activities.includes("work"),
-    "desktop-a",
-  ),
-  false,
-);
-assert.equal(
-  qualifiesRemoteAttention(
-    { ...remoteTask, virtualDesktops: ["desktop-a"] },
-    (activities) => activities.includes("work"),
-    "desktop-a",
-  ),
-  false,
-);
 
 assert.equal(
   logic.remoteAttentionKey([123, 456], "app.desktop", "Title", 4),

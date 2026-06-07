@@ -120,8 +120,16 @@ const normalTaskSourceQml = readFileSync(
   new URL("../package/contents/ui/NormalTaskSource.qml", import.meta.url),
   "utf8",
 );
+const taskModelLogic = readFileSync(
+  new URL("../package/contents/ui/TaskModelLogic.js", import.meta.url),
+  "utf8",
+);
 const remoteAttentionSourceQml = readFileSync(
   new URL("../package/contents/ui/RemoteAttentionSource.qml", import.meta.url),
+  "utf8",
+);
+const remoteAttentionLogic = readFileSync(
+  new URL("../package/contents/ui/RemoteAttentionLogic.js", import.meta.url),
   "utf8",
 );
 
@@ -165,4 +173,14 @@ assert.match(
 assert.match(
   remoteAttentionSourceQml,
   /property bool qualifies:\s*TaskScopeLogic\.remoteAttentionQualifies\(taskInfo, activities => root\.taskIsInCurrentActivity\(activities\), root\.currentDesktop\)/,
+);
+assert.doesNotMatch(taskModelLogic, /Qt\.include\("TaskScopeLogic\.js"\)/);
+assert.doesNotMatch(taskModelLogic, /function qualifiesNormalTask\b/);
+assert.doesNotMatch(
+  remoteAttentionLogic,
+  /Qt\.include\("TaskScopeLogic\.js"\)/,
+);
+assert.doesNotMatch(
+  remoteAttentionLogic,
+  /function qualifiesRemoteAttention\b/,
 );
