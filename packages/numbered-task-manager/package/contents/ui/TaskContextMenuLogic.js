@@ -325,6 +325,12 @@ function taskActivitiesActionState(taskState) {
   };
 }
 
+function taskActivitiesAction(taskState) {
+  return Object.assign({}, taskActivitiesActionState(taskState), {
+    text: "Activities",
+  });
+}
+
 function closeActionState(taskState) {
   const state = taskState || {};
 
@@ -441,6 +447,27 @@ function taskActivityToggleCommand(taskActivities, activityId) {
     "requestActivities",
     taskActivitiesAfterToggle(taskActivities, activityId),
   );
+}
+
+function allTaskActivitiesAction(taskActivities) {
+  const activityState = taskActivityMenuState(taskActivities, "");
+
+  return {
+    checked: activityState.allActivitiesChecked,
+    command: allTaskActivitiesCommand(),
+    text: "All Activities",
+  };
+}
+
+function taskActivityAction(taskActivities, activity) {
+  const entry = activity || {};
+  const activityState = taskActivityMenuState(taskActivities, entry.id);
+
+  return {
+    checked: activityState.activityChecked,
+    command: taskActivityToggleCommand(taskActivities, entry.id),
+    text: entry.name,
+  };
 }
 
 function virtualDesktopId(desktop) {

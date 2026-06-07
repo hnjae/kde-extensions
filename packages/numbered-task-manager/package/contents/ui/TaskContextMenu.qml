@@ -134,14 +134,6 @@ PlasmaExtras.Menu {
         launcherActivityList = TaskContextMenuLogic.launcherActivityListSnapshot(launcherModel.launcherActivities(url));
     }
 
-    function toggleTaskActivity(activityId) {
-        if (!hasWindowTask) {
-            return;
-        }
-
-        requestTaskModelCommand(TaskContextMenuLogic.taskActivityToggleCommand(taskRoles.activities, activityId));
-    }
-
     function launcherPosition() {
         const url = taskRoles.launcherUrl;
         if (!launcherModel || !url) {
@@ -552,14 +544,14 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: activitiesItem
-        readonly property var actionState: TaskContextMenuLogic.taskActivitiesActionState({
+        readonly property var actionState: TaskContextMenuLogic.taskActivitiesAction({
             activityEntryCount: root.activityEntries.length,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.taskRoles.isWindow
         })
 
         enabled: actionState.enabled
-        text: "Activities"
+        text: actionState.text
         visible: actionState.visible
 
         readonly property PlasmaExtras.Menu _activitiesMenu: PlasmaExtras.Menu {
@@ -569,12 +561,14 @@ PlasmaExtras.Menu {
             visualParent: activitiesItem.action
 
             PlasmaExtras.MenuItem {
+                readonly property var actionState: TaskContextMenuLogic.allTaskActivitiesAction(root.taskRoles.activities)
+
                 checkable: true
-                checked: TaskContextMenuLogic.taskActivityMenuState(root.taskRoles.activities, "").allActivitiesChecked
-                text: "All Activities"
+                checked: actionState.checked
+                text: actionState.text
 
                 onClicked: {
-                    root.requestTaskModelCommand(TaskContextMenuLogic.allTaskActivitiesCommand());
+                    root.requestTaskModelCommand(actionState.command);
                 }
             }
 
@@ -585,12 +579,14 @@ PlasmaExtras.Menu {
                 delegate: PlasmaExtras.MenuItem {
                     required property var modelData
 
+                    readonly property var actionState: TaskContextMenuLogic.taskActivityAction(root.taskRoles.activities, modelData)
+
                     checkable: true
-                    checked: TaskContextMenuLogic.taskActivityMenuState(root.taskRoles.activities, modelData.id).activityChecked
-                    text: modelData.name
+                    checked: actionState.checked
+                    text: actionState.text
 
                     onClicked: {
-                        root.toggleTaskActivity(modelData.id);
+                        root.requestTaskModelCommand(actionState.command);
                     }
                 }
 
