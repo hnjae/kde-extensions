@@ -9,6 +9,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
 import "TaskEntryLogic.js" as TaskEntryLogic
+import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskItemPresentationLogic.js" as TaskItemPresentationLogic
 import "TaskVisualLogic.js" as TaskVisualLogic
 
@@ -26,7 +27,7 @@ QtQuick.Item {
     property string title: ""
     property real slotWidth: 0
     property bool showTitle: true
-    property int titleVisibilityThreshold: 96
+    property int titleVisibilityThreshold: TaskMetricsLogic.titleVisibilityThreshold()
     property var iconSource: TaskEntryLogic.normalTaskIconFallback()
     property var modelIndex
     property var taskData: ({})
@@ -42,7 +43,7 @@ QtQuick.Item {
         slotNumber: root.slotNumber
     })
     readonly property int iconExtent: itemPresentation.iconExtent
-    readonly property real naturalImplicitWidth: Math.max(root.showTitle ? 96 : 0, Math.min(220, contentRow.implicitWidth + contentHorizontalPadding))
+    readonly property real naturalImplicitWidth: Math.max(TaskMetricsLogic.normalNaturalWidthMinimum(root.showTitle), Math.min(TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth + contentHorizontalPadding))
     readonly property string numberMode: itemPresentation.numberMode
     readonly property string slotLabel: itemPresentation.slotLabel
     readonly property bool titleVisible: root.showTitle && (root.slotWidth <= 0 || root.slotWidth >= root.titleVisibilityThreshold)
@@ -53,7 +54,7 @@ QtQuick.Item {
     signal taskDropped(int sourceIndex, int targetIndex, var drop)
 
     implicitWidth: root.slotWidth > 0 ? root.slotWidth : naturalImplicitWidth
-    implicitHeight: 40
+    implicitHeight: TaskMetricsLogic.taskExtent()
     width: implicitWidth
     activeFocusOnTab: true
 

@@ -431,11 +431,11 @@ PlasmoidItem {
     fullRepresentation: QtQuick.Item {
         id: fullRepresentationItem
 
-        readonly property int taskExtent: 40
-        readonly property int titleVisibilityThreshold: 96
-        readonly property real minimumReadableSlotWidth: taskExtent + 2 * Kirigami.Units.smallSpacing
+        readonly property int taskExtent: TaskMetricsLogic.taskExtent()
+        readonly property int titleVisibilityThreshold: TaskMetricsLogic.titleVisibilityThreshold()
+        readonly property real minimumReadableSlotWidth: TaskMetricsLogic.minimumReadableSlotWidth(taskExtent, Kirigami.Units.smallSpacing)
         readonly property int visibleItemCount: root.visibleTaskItems.length
-        readonly property real taskSlotWidth: root.vertical ? taskExtent : TaskMetricsLogic.taskSlotWidth(width, visibleItemCount, minimumReadableSlotWidth, 220)
+        readonly property real taskSlotWidth: root.vertical ? taskExtent : TaskMetricsLogic.taskSlotWidth(width, visibleItemCount, minimumReadableSlotWidth, TaskMetricsLogic.maximumSlotWidth())
         readonly property real attentionLongExtent: attentionItem.visible ? (root.vertical ? attentionItem.implicitHeight + taskLayout.rowSpacing : attentionItem.implicitWidth + taskLayout.columnSpacing) : 0
 
         implicitWidth: root.vertical ? Math.max(titleVisibilityThreshold, Math.max(taskList.contentWidth, attentionItem.visible ? attentionItem.implicitWidth : 0)) : Math.max(160, taskList.contentWidth + attentionLongExtent)

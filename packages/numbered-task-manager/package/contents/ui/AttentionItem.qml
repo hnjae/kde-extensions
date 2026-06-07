@@ -19,14 +19,14 @@ QtQuick.Item {
     property string title: ""
     property real slotWidth: 0
     property bool showTitle: true
-    property int titleVisibilityThreshold: 96
+    property int titleVisibilityThreshold: TaskMetricsLogic.titleVisibilityThreshold()
     property var iconSource: TaskEntryLogic.remoteAttentionIconFallback()
     property var modelIndex
     property var taskData: ({})
     property bool contextMenuOpen: false
     readonly property real contentHorizontalPadding: taskFrame.contentLeftMargin + taskFrame.contentRightMargin + Kirigami.Units.smallSpacing * 2
     readonly property int iconExtent: TaskMetricsLogic.iconExtentForTaskFrame(height, taskFrame.contentTopMargin, taskFrame.contentBottomMargin, Kirigami.Units.iconSizes.small)
-    readonly property real naturalImplicitWidth: Math.max(112, Math.min(220, contentRow.implicitWidth + contentHorizontalPadding))
+    readonly property real naturalImplicitWidth: Math.max(TaskMetricsLogic.attentionNaturalWidthMinimum(), Math.min(TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth + contentHorizontalPadding))
     readonly property bool titleVisible: root.showTitle && (root.slotWidth <= 0 || root.slotWidth >= root.titleVisibilityThreshold)
     readonly property bool visualHighlighted: pointerHandler.hovered || root.activeFocus || root.contextMenuOpen
 
@@ -34,7 +34,7 @@ QtQuick.Item {
     signal contextMenuRequested(var request)
 
     implicitWidth: root.slotWidth > 0 ? root.slotWidth : naturalImplicitWidth
-    implicitHeight: 40
+    implicitHeight: TaskMetricsLogic.taskExtent()
     width: implicitWidth
     activeFocusOnTab: true
 

@@ -1,6 +1,30 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+function taskExtent() {
+  return 40;
+}
+
+function titleVisibilityThreshold() {
+  return 96;
+}
+
+function maximumSlotWidth() {
+  return 220;
+}
+
+function normalNaturalWidthMinimum(showTitle) {
+  return showTitle ? titleVisibilityThreshold() : 0;
+}
+
+function attentionNaturalWidthMinimum() {
+  return 112;
+}
+
+function minimumReadableSlotWidth(extent, spacing) {
+  return Number(extent || 0) + 2 * Number(spacing || 0);
+}
+
 function adjustedFrameMargin(
   frameExtent,
   occupiedMargins,
