@@ -48,6 +48,7 @@ in `SPEC.md`.
 - Keep remote-attention qualification, keying, and ordering in
   `RemoteAttentionLogic.js` so the separate attention model remains testable
   independently from normal task composition.
+- Keep composed visible item order, slot labels, `Meta+0` target selection, item source metadata, and item count in a visible-item composer instead of reconstructing those policies independently in root activation, layout sizing, and delegates.
 - Do not claim support for upstream task-manager private backend behavior, such
   as file-open drops onto task delegates, unless that backend integration is
   actually added.
