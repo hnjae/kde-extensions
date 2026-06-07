@@ -37,7 +37,7 @@ PlasmaExtras.Menu {
         isExcludedFromCapture: captureCloseRoles.isExcludedFromCapture,
         isWindow: taskRoles.isWindow
     })
-    readonly property var closeAction: TaskContextMenuLogic.closeAction({
+    readonly property var closeActionsSection: TaskContextMenuLogic.closeActionsSection({
         closable: captureCloseRoles.closable,
         hasTask: hasTask,
         isWindow: taskRoles.isWindow
@@ -603,7 +603,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var sectionState: TaskContextMenuLogic.closeActionSection(root.closeAction)
+        readonly property var sectionState: root.closeActionsSection.separator
 
         separator: true
         visible: sectionState.visible
@@ -611,7 +611,7 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: closeItem
-        readonly property var actionState: root.closeAction
+        readonly property var actionState: root.closeActionsSection.close
 
         enabled: actionState.enabled
         text: actionState.text

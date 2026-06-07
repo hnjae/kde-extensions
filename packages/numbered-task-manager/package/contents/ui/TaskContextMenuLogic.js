@@ -359,6 +359,15 @@ function closeActionSection(closeActionState) {
   };
 }
 
+function closeActionsSection(sectionState) {
+  const close = closeAction(sectionState);
+
+  return {
+    close,
+    separator: closeActionSection(close),
+  };
+}
+
 function allTaskActivitiesCommand() {
   return contextMenuTaskCommand("requestActivities", []);
 }
