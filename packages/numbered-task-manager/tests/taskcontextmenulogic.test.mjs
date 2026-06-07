@@ -22,6 +22,7 @@ const logic = loadQmlJsModule(
     "closeCommand",
     "closeActionState",
     "contextMenuActionSections",
+    "contextMenuRoleSnapshots",
     "activityEntriesSnapshot",
     "allTaskActivitiesAction",
     "allTaskActivitiesCommand",
@@ -2677,6 +2678,76 @@ assert.deepEqual(
     isExcludedFromCapture: true,
   },
 );
+assert.deepEqual(
+  plain(
+    logic.contextMenuRoleSnapshots(roleSource, roles, {
+      activities: ["fallback-activity"],
+      canLaunchNewInstance: false,
+      canSetNoBorder: false,
+      closable: false,
+      fullScreenable: true,
+      hasNoBorder: true,
+      isExcludedFromCapture: true,
+      isFullScreen: false,
+      isKeepAbove: false,
+      isKeepBelow: true,
+      isLauncher: false,
+      isMaximizable: false,
+      isMaximized: true,
+      isMinimizable: true,
+      isMinimized: false,
+      isMovable: true,
+      isResizable: false,
+      isShadeable: false,
+      isShaded: true,
+      isVirtualDesktopsChangeable: true,
+      isWindow: false,
+      launcherUrl: "fallback.desktop",
+      virtualDesktops: ["fallback-desktop"],
+    }),
+  ),
+  {
+    basicActionRoles: {
+      canLaunchNewInstance: true,
+      isLauncher: true,
+      isMovable: false,
+      isResizable: true,
+    },
+    captureCloseRoles: {
+      closable: true,
+      isExcludedFromCapture: false,
+    },
+    fullscreenShadeBorderRoles: {
+      canSetNoBorder: true,
+      fullScreenable: false,
+      hasNoBorder: false,
+      isFullScreen: true,
+      isShadeable: true,
+      isShaded: false,
+    },
+    keepAboveBelowRoles: {
+      isKeepAbove: true,
+      isKeepBelow: false,
+    },
+    minimizeMaximizeRoles: {
+      isMaximizable: true,
+      isMaximized: false,
+      isMinimizable: false,
+      isMinimized: true,
+    },
+    taskRoles: {
+      activities: ["live-activity"],
+      isLauncher: true,
+      isWindow: true,
+      launcherUrl: "launcher-without-icon.desktop",
+      virtualDesktops: ["live-desktop"],
+    },
+    virtualDesktopRoles: {
+      isOnAllVirtualDesktops: true,
+      isVirtualDesktopsChangeable: false,
+    },
+  },
+);
 assert.deepEqual(plain(roleCalls.map((call) => call.role).slice(0, 2)), [
   "LauncherUrl",
   "Missing",
@@ -2697,10 +2768,14 @@ assert.equal(menuQml.includes("virtualDesktopInfo.desktopIds"), false);
 assert.equal(menuQml.includes("virtualDesktopInfo.desktopNames"), false);
 assert.equal(menuQml.includes("atm.HasLauncher"), false);
 assert.equal(menuQml.includes("taskModel.data"), false);
-assert.equal(menuQml.includes("TaskContextMenuLogic.taskRoleSnapshot"), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.contextMenuRoleSnapshots("),
+  true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.taskRoleSnapshot"), false);
 assert.equal(
   menuQml.includes(
-    "readonly property var taskRoles: TaskContextMenuLogic.taskRoleSnapshot",
+    "readonly property var roleSnapshots: TaskContextMenuLogic.contextMenuRoleSnapshots",
   ),
   true,
 );
@@ -2714,27 +2789,27 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.basicActionRoleSnapshot"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.minimizeMaximizeRoleSnapshot"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.keepAboveBelowRoleSnapshot"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopRoleSnapshot"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.captureCloseRoleSnapshot"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.contextMenuActionSections({"),
