@@ -32,6 +32,11 @@ PlasmaExtras.Menu {
         launcherActivitiesVisible: launcherActivitiesItem.visible
     })
     readonly property var captureCloseRoles: TaskContextMenuLogic.captureCloseRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var captureActionsSection: TaskContextMenuLogic.captureActionsSection({
+        hasWindowTask: hasWindowTask,
+        isExcludedFromCapture: captureCloseRoles.isExcludedFromCapture,
+        isWindow: taskRoles.isWindow
+    })
     readonly property var closeAction: TaskContextMenuLogic.closeAction({
         closable: captureCloseRoles.closable,
         hasTask: hasTask,
@@ -441,11 +446,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.excludeFromCaptureAction({
-            checked: root.captureCloseRoles.isExcludedFromCapture,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.captureActionsSection.excludeFromCapture
 
         checkable: true
         checked: actionState.checked

@@ -327,6 +327,18 @@ function excludeFromCaptureAction(taskState) {
   });
 }
 
+function captureActionsSection(sectionState) {
+  const state = sectionState || {};
+
+  return {
+    excludeFromCapture: excludeFromCaptureAction({
+      checked: state.isExcludedFromCapture,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+  };
+}
+
 function closeAction(taskState) {
   return Object.assign({}, closeActionState(taskState), {
     command: closeCommand(),
