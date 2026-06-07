@@ -14,6 +14,7 @@ const logic = loadQmlJsModule(
     "captureCloseRoleSnapshot",
     "checkableWindowActionState",
     "checkableWindowCapabilityActionState",
+    "closeAction",
     "closeCommand",
     "closeActionState",
     "activityEntriesSnapshot",
@@ -21,6 +22,7 @@ const logic = loadQmlJsModule(
     "allVirtualDesktopsCommand",
     "basicMoveAction",
     "basicResizeAction",
+    "excludeFromCaptureAction",
     "excludeFromCaptureCommand",
     "fullscreenAction",
     "fullscreenCommand",
@@ -664,6 +666,45 @@ assert.deepEqual(plain(logic.closeCommand()), {
   kind: "task-model-request",
   requestMethod: "requestClose",
 });
+assert.deepEqual(
+  plain(
+    logic.excludeFromCaptureAction({
+      checked: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: true,
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestToggleExcludeFromCapture",
+    },
+    enabled: true,
+    text: "Hide from Screencasts",
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.closeAction({
+      closable: true,
+      hasTask: false,
+      isWindow: true,
+    }),
+  ),
+  {
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestClose",
+    },
+    enabled: false,
+    text: "Close",
+    visible: true,
+  },
+);
 assert.deepEqual(plain(logic.allTaskActivitiesCommand()), {
   arguments: [[]],
   kind: "task-model-request",
@@ -2029,10 +2070,17 @@ assert.equal(
 assert.equal(menuQml.includes("function taskActivitiesActionState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.excludeFromCaptureCommand"),
+  false,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.excludeFromCaptureAction"),
   true,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.closeActionState"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.closeCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.closeAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.closeActionState"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.closeCommand"), false);
+assert.equal(menuQml.includes('text: "Hide from Screencasts"'), false);
+assert.equal(menuQml.includes('text: "Close"'), false);
 assert.equal(
   menuQml.includes(
     'TaskActionLogic.contextMenuTaskCommand("requestToggleExcludeFromCapture"',
@@ -2045,6 +2093,12 @@ assert.equal(
 );
 assert.equal(menuQml.includes("function newVirtualDesktopActionState"), false);
 assert.equal(menuQml.includes("function closeActionState"), false);
+assert.equal(
+  menuQml.includes(
+    "TaskContextMenuLogic.checkableWindowActionState({\n            checked: root.captureCloseRoles",
+  ),
+  false,
+);
 assert.equal(
   /checked: root\.boolRole\(root\.atm\.(?:IsKeepAbove|IsKeepBelow|IsFullScreen|IsShaded|HasNoBorder|IsExcludedFromCapture)\b/.test(
     menuQml,
