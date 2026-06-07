@@ -30,8 +30,6 @@ PlasmoidItem {
     readonly property var normalVisibleTaskItems: VisibleTaskItemsLogic.normalVisibleTaskItems(root.visibleTaskItems)
     readonly property var remoteAttentionVisibleItem: VisibleTaskItemsLogic.visibleRemoteAttentionItem(root.visibleTaskItems)
     property int launcherRevision: 0
-    property var launcherReconciliationState: LauncherListLogic.createLauncherReconciliationState()
-    property bool updatingLauncherConfig: false
 
     Plasmoid.icon: "preferences-system-windows"
     Plasmoid.constraintHints: Plasmoid.CanFillArea
@@ -81,84 +79,6 @@ PlasmoidItem {
         console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
     }
 
-    function persistLaunchers(launchers) {
-        const update = LauncherListLogic.launcherConfigUpdate(Plasmoid.configuration.launchers, launchers);
-        if (!update.changed) {
-            return LauncherListLogic.launcherConfigConvergence(update, Plasmoid.configuration.launchers);
-        }
-
-        const result = LauncherListLogic.runLauncherListUpdateTransaction(root, () => {
-            Plasmoid.configuration.launchers = update.launchers;
-            return LauncherListLogic.launcherConfigConvergence(update, Plasmoid.configuration.launchers);
-        });
-        recordLauncherSyncResult("persistLaunchers", result);
-        return result;
-    }
-
-    function applyLauncherList(launchers) {
-        const update = LauncherListLogic.launcherModelUpdate(tasksModel.launcherList, Plasmoid.configuration.launchers, launchers);
-        if (!update.changed) {
-            return false;
-        }
-
-        const result = LauncherListLogic.runLauncherListUpdateTransaction(root, () => {
-            if (update.modelChanged) {
-                tasksModel.launcherList = update.launchers;
-            }
-            if (update.configChanged) {
-                Plasmoid.configuration.launchers = update.launchers;
-            }
-            return LauncherListLogic.launcherModelConvergence(update, tasksModel.launcherList, Plasmoid.configuration.launchers);
-        });
-        recordLauncherSyncResult("applyLauncherList", result);
-        return Boolean(result && result.changed);
-    }
-
-    function recordLauncherSyncResult(action, result) {
-        launcherReconciliationState = LauncherListLogic.launcherReconciliationAfterResult(launcherReconciliationState, result);
-        logLauncherSyncResult(action, result);
-    }
-
-    function reconcileLauncherListChange(modelLaunchers) {
-        const decision = LauncherListLogic.launcherReconciliationDecision(launcherReconciliationState, modelLaunchers, Plasmoid.configuration.launchers);
-        launcherReconciliationState = decision.state;
-        if (decision.action === "none") {
-            return false;
-        }
-
-        if (decision.action === "retry") {
-            applyLauncherList(decision.launchers);
-            return true;
-        }
-
-        if (decision.action === "expired") {
-            const expiredResult = LauncherListLogic.launcherModelConvergence({
-                changed: true,
-                launchers: decision.launchers || []
-            }, modelLaunchers, Plasmoid.configuration.launchers);
-            logLauncherSyncResult("reconcileLauncherList", Object.assign({}, expiredResult, {
-                code: "reconciliation-expired",
-                ok: false
-            }));
-        }
-
-        return true;
-    }
-
-    function logLauncherSyncResult(action, result) {
-        if (!result || result.ok) {
-            return;
-        }
-
-        console.warn("Numbered Task Manager launcher sync " + action + " " + result.code + ": " + JSON.stringify({
-            configLaunchers: result.configLaunchers || [],
-            error: result.error || "",
-            failedTargets: result.failedTargets || [],
-            launchers: result.launchers || [],
-            modelLaunchers: result.modelLaunchers || []
-        }));
-    }
-
     function pinLauncher(launcherUrl) {
         requestLauncherMutation("pinLauncher", launcherUrl, url => tasksModel.requestAddLauncher(url));
     }
@@ -180,7 +100,7 @@ PlasmoidItem {
             return false;
         }
 
-        persistLaunchers(tasksModel.launcherList);
+        launcherSync.persistLaunchers(tasksModel.launcherList);
         return true;
     }
 
@@ -202,7 +122,7 @@ PlasmoidItem {
         }
 
         if (result.action === "replaceLauncherList") {
-            applyLauncherList(result.launchers);
+            launcherSync.applyLauncherList(result.launchers);
         }
         return result;
     }
@@ -247,7 +167,7 @@ PlasmoidItem {
             return false;
         }
 
-        return applyLauncherList(result.launchers);
+        return launcherSync.applyLauncherList(result.launchers);
     }
 
     function canMovePinnedLauncher(sourceEntry, targetEntry) {
@@ -381,6 +301,13 @@ PlasmoidItem {
         TaskContextMenu {}
     }
 
+    LauncherSyncAdapter {
+        id: launcherSync
+
+        configuration: Plasmoid.configuration
+        taskModel: tasksModel
+    }
+
     TaskManager.TasksModel {
         id: tasksModel
 
@@ -399,11 +326,11 @@ PlasmoidItem {
 
         onLauncherListChanged: {
             root.launcherRevision += 1;
-            if (!root.updatingLauncherConfig) {
-                if (root.reconcileLauncherListChange(launcherList)) {
+            if (!launcherSync.updatingLauncherConfig) {
+                if (launcherSync.reconcileLauncherListChange(launcherList)) {
                     return;
                 }
-                root.persistLaunchers(launcherList);
+                launcherSync.persistLaunchers(tasksModel.launcherList);
             }
         }
     }

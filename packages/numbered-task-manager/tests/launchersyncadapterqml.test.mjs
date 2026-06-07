@@ -24,7 +24,6 @@ assert.match(
   /launcherSync\.persistLaunchers\(tasksModel\.launcherList\)/,
 );
 assert.match(mainQml, /launcherSync\.applyLauncherList\(result\.launchers\)/);
-assert.match(mainQml, /launcherSync\.applyLauncherList\(decision\.launchers\)/);
 assert.match(mainQml, /if \(!launcherSync\.updatingLauncherConfig\)/);
 assert.match(
   mainQml,
@@ -58,6 +57,7 @@ assert.match(
   /function reconcileLauncherListChange\(modelLaunchers\)/,
 );
 assert.match(sourceQml, /function logLauncherSyncResult\(action, result\)/);
+assert.match(sourceQml, /applyLauncherList\(decision\.launchers\)/);
 assert.match(
   sourceQml,
   /LauncherListLogic\.runLauncherListUpdateTransaction\(root/,
