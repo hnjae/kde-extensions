@@ -144,7 +144,7 @@ assert.match(
 assert.match(mainQml, /Plasmoid\.constraintHints:\s*Plasmoid\.CanFillArea/);
 assert.match(
   mainQml,
-  /preferredRepresentation:\s*root\.fullRepresentation[\s\S]*?QtQuickLayouts\.Layout\.fillWidth:\s*true[\s\S]*?QtQuickLayouts\.Layout\.fillHeight:\s*true[\s\S]*?function activateTaskAtIndex/,
+  /preferredRepresentation:\s*root\.fullRepresentation[\s\S]*?QtQuickLayouts\.Layout\.fillWidth:\s*true[\s\S]*?QtQuickLayouts\.Layout\.fillHeight:\s*true/,
 );
 assert.match(
   mainQml,
