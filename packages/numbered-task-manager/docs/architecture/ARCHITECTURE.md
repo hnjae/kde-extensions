@@ -82,6 +82,9 @@ in `SPEC.md`.
 - Keep launcher-list mutation decisions in `LauncherListLogic.js`. QML code may
   apply returned writes to Plasma objects, but normalization, equality checks,
   and derived launcher activity lists should stay in tested helper functions.
+  Mutation results should include stable `reason` codes while preserving
+  existing transition fields during migration, so invalid launcher activity
+  positions are distinguishable from unchanged activity lists.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
   coercion, launcher URL precedence, title/icon fallback, model-index validity,
   and virtual-desktop membership should not be duplicated between normal task
