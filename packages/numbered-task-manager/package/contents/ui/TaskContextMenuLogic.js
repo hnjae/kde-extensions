@@ -277,6 +277,24 @@ function basicActionRoleSnapshot(roleSource, roles, task) {
   };
 }
 
+function captureCloseRoleSnapshot(roleSource, roles, task) {
+  const roleIds = roles || {};
+  const fallback = task || {};
+
+  return {
+    closable: boolRoleData(
+      roleSource,
+      roleIds.IsClosable,
+      fallback.closable || false,
+    ),
+    isExcludedFromCapture: boolRoleData(
+      roleSource,
+      roleIds.IsExcludedFromCapture,
+      fallback.isExcludedFromCapture || false,
+    ),
+  };
+}
+
 function minimizeMaximizeRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};

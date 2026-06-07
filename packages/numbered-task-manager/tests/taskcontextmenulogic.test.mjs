@@ -1003,6 +1003,8 @@ assert.equal(
 );
 assert.equal(menuQml.includes('names[i] || "Desktop "'), false);
 assert.equal(menuQml.includes("activityInfo.activityName(id) || id"), false);
+assert.equal(menuQml.includes("function roleData"), false);
+assert.equal(menuQml.includes("function boolRole"), false);
 assert.equal(menuQml.includes("function isWindow"), false);
 assert.equal(menuQml.includes("function isLauncher"), false);
 assert.equal(menuQml.includes("function launcherUrl"), false);

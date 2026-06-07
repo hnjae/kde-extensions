@@ -22,6 +22,7 @@ PlasmaExtras.Menu {
     readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(modelIndex)
     readonly property bool hasWindowTask: hasTask && roleSnapshot().isWindow
     readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var captureCloseRoles: TaskContextMenuLogic.captureCloseRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
     readonly property var fullscreenShadeBorderRoles: TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
@@ -77,20 +78,14 @@ PlasmaExtras.Menu {
         return TaskActionLogic.contextMenuTaskExecutionResult(result);
     }
 
-    function roleData(role, fallback) {
-        return TaskContextMenuLogic.roleData(roleSource(), role, fallback);
-    }
-
-    function boolRole(role, fallback) {
-        return TaskContextMenuLogic.boolRoleData(roleSource(), role, fallback || false);
-    }
-
     function roleIds() {
         return {
             Activities: atm.Activities,
             CanSetNoBorder: atm.CanSetNoBorder,
             CanLaunchNewInstance: atm.CanLaunchNewInstance,
             HasNoBorder: atm.HasNoBorder,
+            IsClosable: atm.IsClosable,
+            IsExcludedFromCapture: atm.IsExcludedFromCapture,
             IsFullScreen: atm.IsFullScreen,
             IsFullScreenable: atm.IsFullScreenable,
             IsKeepAbove: atm.IsKeepAbove,
@@ -482,9 +477,8 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property bool roleChecked: root.boolRole(root.atm.IsExcludedFromCapture, root.task.isExcludedFromCapture || false)
         readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
-            checked: roleChecked,
+            checked: root.captureCloseRoles.isExcludedFromCapture,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })
@@ -635,7 +629,7 @@ PlasmaExtras.Menu {
     PlasmaExtras.MenuItem {
         id: closeItem
         readonly property var actionState: TaskContextMenuLogic.closeActionState({
-            closable: root.boolRole(root.atm.IsClosable, root.task.closable || false),
+            closable: root.captureCloseRoles.closable,
             hasTask: root.hasTask,
             isWindow: root.roleSnapshot().isWindow
         })
