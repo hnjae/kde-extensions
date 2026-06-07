@@ -40,6 +40,10 @@ assert.match(
   sourceQml,
   /readonly property real frameTopMargin:\s*frame \? frame\.contentTopMargin : 0/,
 );
+assert.match(
+  sourceQml,
+  /readonly property real horizontalPadding:\s*root\.frameLeftMargin \+ root\.frameRightMargin \+ Kirigami\.Units\.smallSpacing \* 2/,
+);
 assert.match(sourceQml, /anchors\.fill:\s*parent/);
 assert.match(sourceQml, /anchors\.bottomMargin:\s*root\.frameBottomMargin/);
 assert.match(
@@ -59,7 +63,19 @@ assert.match(taskItemQml, /id:\s*contentRow/);
 assert.match(taskItemQml, /frame:\s*taskFrame/);
 assert.match(
   taskItemQml,
+  /contentRow\.implicitWidth \+ contentRow\.horizontalPadding/,
+);
+assert.match(
+  taskItemQml,
   /contentOpacity:\s*TaskVisualLogic\.contentOpacity\(\{/,
+);
+assert.doesNotMatch(
+  taskItemQml,
+  /readonly property real contentHorizontalPadding/,
+);
+assert.doesNotMatch(
+  taskItemQml,
+  /taskFrame\.contentLeftMargin \+ taskFrame\.contentRightMargin \+ Kirigami\.Units\.smallSpacing \* 2/,
 );
 assert.doesNotMatch(taskItemQml, /QtQuickLayouts\.RowLayout\s*\{/);
 assert.doesNotMatch(
@@ -71,6 +87,18 @@ assert.doesNotMatch(taskItemQml, /spacing:\s*Kirigami\.Units\.smallSpacing/);
 assert.match(attentionItemQml, /\bTaskLikeContentRow\s*\{/);
 assert.match(attentionItemQml, /id:\s*contentRow/);
 assert.match(attentionItemQml, /frame:\s*taskFrame/);
+assert.match(
+  attentionItemQml,
+  /contentRow\.implicitWidth \+ contentRow\.horizontalPadding/,
+);
+assert.doesNotMatch(
+  attentionItemQml,
+  /readonly property real contentHorizontalPadding/,
+);
+assert.doesNotMatch(
+  attentionItemQml,
+  /taskFrame\.contentLeftMargin \+ taskFrame\.contentRightMargin \+ Kirigami\.Units\.smallSpacing \* 2/,
+);
 assert.doesNotMatch(
   attentionItemQml,
   /contentOpacity:\s*TaskVisualLogic\.contentOpacity/,

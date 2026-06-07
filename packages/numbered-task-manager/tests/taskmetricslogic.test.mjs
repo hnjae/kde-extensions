@@ -69,7 +69,7 @@ assert.match(
 );
 assert.match(
   attentionItemQml,
-  /Math\.max\(TaskMetricsLogic\.attentionNaturalWidthMinimum\(\), Math\.min\(TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth \+ contentHorizontalPadding\)\)/,
+  /Math\.max\(TaskMetricsLogic\.attentionNaturalWidthMinimum\(\), Math\.min\(TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth \+ contentRow\.horizontalPadding\)\)/,
 );
 assert.match(
   attentionItemQml,
@@ -127,7 +127,7 @@ assert.match(
 );
 assert.match(
   taskItemQml,
-  /Math\.max\(TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\), Math\.min\(TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth \+ contentHorizontalPadding\)\)/,
+  /Math\.max\(TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\), Math\.min\(TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth \+ contentRow\.horizontalPadding\)\)/,
 );
 assert.match(taskItemQml, /implicitHeight:\s*TaskMetricsLogic\.taskExtent\(\)/);
 assert.match(
@@ -143,6 +143,14 @@ assert.doesNotMatch(taskItemQml, /root\.showTitle \? 96 : 0/);
 assert.doesNotMatch(
   attentionItemQml,
   /property int titleVisibilityThreshold:\s*96/,
+);
+assert.doesNotMatch(
+  taskItemQml,
+  /readonly property real contentHorizontalPadding/,
+);
+assert.doesNotMatch(
+  attentionItemQml,
+  /readonly property real contentHorizontalPadding/,
 );
 assert.doesNotMatch(
   attentionItemQml,
