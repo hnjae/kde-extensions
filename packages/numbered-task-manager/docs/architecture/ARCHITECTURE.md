@@ -46,6 +46,10 @@ in `SPEC.md`.
   `TaskContextMenuLogic.js`. The menu may still request `TasksModel`
   virtual-desktop mutations directly, but all-desktops and per-desktop checked
   predicates should be derived by a tested helper.
+- Keep context-menu basic action availability in `TaskContextMenuLogic.js`.
+  Simple item visible/enabled predicates such as New Instance, Move, and Resize
+  should be derived by tested helpers while QML keeps rendering order and Plasma
+  request dispatch.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
