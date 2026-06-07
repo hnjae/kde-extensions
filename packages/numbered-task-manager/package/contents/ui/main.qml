@@ -289,29 +289,13 @@ PlasmoidItem {
                 }
             }
 
-            AttentionItem {
+            RemoteAttentionItem {
                 id: attentionItem
 
-                QtQuickLayouts.Layout.fillHeight: !root.vertical
-                QtQuickLayouts.Layout.fillWidth: root.vertical
-                QtQuickLayouts.Layout.preferredWidth: root.vertical ? implicitWidth : fullRepresentationItem.taskSlotWidth
-
-                count: remoteAttentionSource.itemCount
-                iconSource: remoteAttentionSource.itemIconSource
-                modelIndex: remoteAttentionSource.itemModelIndex
-                slotWidth: root.vertical ? 0 : fullRepresentationItem.taskSlotWidth
-                taskData: remoteAttentionSource.itemTaskData
-                title: remoteAttentionSource.itemTitle
+                source: remoteAttentionSource
+                taskSlotWidth: fullRepresentationItem.taskSlotWidth
                 titleVisibilityThreshold: fullRepresentationItem.titleVisibilityThreshold
-                visible: remoteAttentionSource.itemVisible
-
-                onActivated: {
-                    remoteAttentionSource.requestVisibleActivation();
-                }
-
-                onContextMenuRequested: request => {
-                    remoteAttentionSource.requestVisibleContextMenu(request);
-                }
+                vertical: root.vertical
             }
         }
     }
