@@ -170,6 +170,10 @@ PlasmaExtras.Menu {
         return TaskContextMenuLogic.taskActivityMenuState(activities(), activityId);
     }
 
+    function virtualDesktopMenuState(desktop) {
+        return TaskContextMenuLogic.virtualDesktopMenuState(virtualDesktops(), boolRole(atm.IsOnAllVirtualDesktops, task.isOnAllVirtualDesktops || false), desktop);
+    }
+
     function toggleTaskActivity(activityId) {
         if (!hasWindowTask) {
             return;
@@ -477,7 +481,7 @@ PlasmaExtras.Menu {
 
             PlasmaExtras.MenuItem {
                 checkable: true
-                checked: root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false)
+                checked: root.virtualDesktopMenuState("").allDesktopsChecked
                 text: "All Desktops"
 
                 onClicked: {
@@ -493,7 +497,7 @@ PlasmaExtras.Menu {
                     required property var modelData
 
                     checkable: true
-                    checked: root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false) || TaskEntryLogic.desktopListContains(root.virtualDesktops(), modelData.id)
+                    checked: root.virtualDesktopMenuState(modelData.id).desktopChecked
                     text: modelData.name
 
                     onClicked: {

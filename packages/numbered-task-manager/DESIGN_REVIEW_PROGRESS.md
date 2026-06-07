@@ -105,13 +105,13 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs`; `node tests/taskactivitylogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
-## Planned Checkpoint 13: Context-Menu Virtual Desktop State
+## Completed Checkpoint 13: Context-Menu Virtual Desktop State
 
-- Status: planned.
-- What will change: add tested virtual-desktop menu state helpers in `TaskContextMenuLogic.js` and route `TaskContextMenu.qml` all-desktops and per-desktop checked-state predicates through those helpers.
+- Status: completed.
+- What changed: added tested virtual-desktop menu state helpers in `TaskContextMenuLogic.js` and routed `TaskContextMenu.qml` all-desktops and per-desktop checked-state predicates through those helpers.
 - Behavior that must remain unchanged: virtual-desktop submenu order, labels, visibility, all-desktops checked behavior, per-desktop checked behavior, and `requestVirtualDesktops` payloads remain unchanged.
 - Verification: `node tests/taskcontextmenulogic.test.mjs`; `node tests/taskentrylogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
-- Files likely changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
 ## Remaining Follow-Up Work
 

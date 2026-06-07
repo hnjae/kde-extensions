@@ -67,6 +67,49 @@ function taskActivityMenuState(taskActivities, activityId) {
   };
 }
 
+function virtualDesktopId(desktop) {
+  if (!desktop) {
+    return "";
+  }
+
+  if (typeof desktop === "string") {
+    return desktop;
+  }
+
+  if (desktop.id) {
+    return String(desktop.id);
+  }
+
+  return String(desktop);
+}
+
+function virtualDesktopListContains(desktops, desktop) {
+  const id = virtualDesktopId(desktop);
+  if (!id) {
+    return false;
+  }
+
+  const desktopList = Array.from(desktops || []);
+  for (let i = 0; i < desktopList.length; ++i) {
+    if (virtualDesktopId(desktopList[i]) === id) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function virtualDesktopMenuState(virtualDesktops, isOnAllDesktops, desktop) {
+  const allDesktopsChecked = Boolean(isOnAllDesktops);
+
+  return {
+    allDesktopsChecked,
+    desktopChecked:
+      allDesktopsChecked ||
+      virtualDesktopListContains(virtualDesktops, desktop),
+  };
+}
+
 function roleData(roleSource, role, fallback) {
   const source = roleSource || {};
   if (
