@@ -207,13 +207,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var pinAction: TaskContextMenuLogic.pinActionState(root.launcherPinState())
+        readonly property var pinAction: TaskContextMenuLogic.pinLauncherAction(root.launcherPinState())
 
         enabled: pinAction.enabled
         text: pinAction.text
 
         onClicked: {
-            root.launcherCommandRequested(TaskContextMenuLogic.pinLauncherCommand(root.launcherPinState()));
+            root.launcherCommandRequested(pinAction.command);
         }
     }
 

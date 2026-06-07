@@ -75,6 +75,15 @@ function pinLauncherCommand(pinState) {
   );
 }
 
+function pinLauncherAction(pinState) {
+  const state = pinState || {};
+  const action = pinActionState(state);
+
+  return Object.assign({}, action, {
+    command: pinLauncherCommand(state),
+  });
+}
+
 function launcherPinStateSnapshot(
   launcherList,
   launcherUrl,
