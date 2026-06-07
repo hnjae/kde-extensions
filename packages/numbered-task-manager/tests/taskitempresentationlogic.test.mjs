@@ -120,10 +120,6 @@ assert.match(
 assert.match(taskItemQml, /TaskItemPresentationLogic\.taskItemPresentation\(/);
 assert.doesNotMatch(taskItemQml, /BadgeDisplayLogic/);
 
-const mainQml = readFileSync(
-  new URL("../package/contents/ui/main.qml", import.meta.url),
-  "utf8",
-);
 const normalTaskItemQml = readFileSync(
   new URL("../package/contents/ui/NormalTaskItem.qml", import.meta.url),
   "utf8",
