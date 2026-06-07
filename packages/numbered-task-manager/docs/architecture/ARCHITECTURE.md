@@ -155,6 +155,7 @@ in `SPEC.md`.
   plasmoid configuration. Root dispatch of malformed or unknown launcher
   commands should produce structured diagnostic results instead of silent
   no-ops.
+- Keep context-menu item trigger routing in a menu-local dispatcher adapter. `TaskContextMenu.qml` should keep Plasma-native menu composition and submit helper-owned action/update descriptors, while the dispatcher chooses task-model command execution, launcher command emission, launcher-activity update application, or a no-op for empty descriptors.
 - Do not claim support for upstream task-manager private backend behavior, such
   as file-open drops onto task delegates, unless that backend integration is
   actually added.
