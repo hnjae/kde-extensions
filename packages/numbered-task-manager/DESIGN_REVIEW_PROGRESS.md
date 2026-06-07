@@ -489,9 +489,17 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because `fullscreenShadeBorderRoleSnapshot(...)` did not exist; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `tests/taskcontextmenulogic.test.mjs`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 61: Context-Menu Virtual Desktop Role Snapshot
+
+- Status: completed.
+- What changed: added `TaskContextMenuLogic.virtualDesktopRoleSnapshot(...)`; routed virtual-desktop submenu availability and all-desktops checked state through that snapshot instead of section-local `boolRole(...)` calls.
+- Behavior that must remain unchanged: Virtual Desktops and New Desktop labels, submenu ordering, desktop checked state, visible/enabled states, command descriptors, request method names, model indexes, and click payloads remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because `virtualDesktopRoleSnapshot(...)` did not exist; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `tests/taskcontextmenulogic.test.mjs`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
-- Context menu: direct role snapshot passthrough wrappers have been removed, activity/virtual-desktop entry construction now comes from tested helper snapshots, and New Instance/Move/Resize, Minimize/Maximize, Keep Above/Below, and Fullscreen/Shade/No Border consume tested live-role snapshots. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code. Remaining direct role-read slices include Exclude From Capture, virtual desktop availability/state, activity state, and Close.
+- Context menu: direct role snapshot passthrough wrappers have been removed, activity/virtual-desktop entry construction now comes from tested helper snapshots, and New Instance/Move/Resize, Minimize/Maximize, Keep Above/Below, Fullscreen/Shade/No Border, and virtual desktop state consume tested live-role snapshots. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code. Remaining direct role-read slices include Exclude From Capture, activity state, and Close.
 - Visible item composer / remote attention: rendered remote-attention activation and metadata now consume composed descriptors, and `RemoteAttentionSource.qml` owns the remote-attention model, state snapshot, and activation adapter. Full remote-attention removability still requires shrinking root's rendered binding and context-menu wiring to one source-owned item surface.
 - Scope policy: model filter settings and local qualifiers now have a named owner; task-specific qualifier re-export facades and generic activity facades in task and launcher modules have been removed.
 - Metrics: root layout, normal task, and attention task size constants now come from `TaskMetricsLogic.js`. Badge dimensions remain badge-local rendering policy.

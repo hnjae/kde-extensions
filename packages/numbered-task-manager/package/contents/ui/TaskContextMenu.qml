@@ -26,6 +26,7 @@ PlasmaExtras.Menu {
     readonly property var fullscreenShadeBorderRoles: TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var minimizeMaximizeRoles: TaskContextMenuLogic.minimizeMaximizeRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var virtualDesktopRoles: TaskContextMenuLogic.virtualDesktopRoleSnapshot(roleSource(), roleIds(), task)
     property var activityEntries: []
     property var launcherModel: taskModel
     property var launcherActivityList: []
@@ -100,9 +101,11 @@ PlasmaExtras.Menu {
             IsMinimizable: atm.IsMinimizable,
             IsMinimized: atm.IsMinimized,
             IsMovable: atm.IsMovable,
+            IsOnAllVirtualDesktops: atm.IsOnAllVirtualDesktops,
             IsResizable: atm.IsResizable,
             IsShadeable: atm.IsShadeable,
             IsShaded: atm.IsShaded,
+            IsVirtualDesktopsChangeable: atm.IsVirtualDesktopsChangeable,
             IsWindow: atm.IsWindow,
             LauncherUrl: atm.LauncherUrl,
             LauncherUrlWithoutIcon: atm.LauncherUrlWithoutIcon,
@@ -500,7 +503,7 @@ PlasmaExtras.Menu {
     PlasmaExtras.MenuItem {
         id: virtualDesktopsItem
         readonly property var actionState: TaskContextMenuLogic.virtualDesktopsActionState({
-            changeable: root.boolRole(root.atm.IsVirtualDesktopsChangeable, root.task.isVirtualDesktopsChangeable || false),
+            changeable: root.virtualDesktopRoles.isVirtualDesktopsChangeable,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })
@@ -516,7 +519,7 @@ PlasmaExtras.Menu {
             visualParent: virtualDesktopsItem.action
 
             PlasmaExtras.MenuItem {
-                readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.roleSnapshot().virtualDesktops, root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false), "")
+                readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.roleSnapshot().virtualDesktops, root.virtualDesktopRoles.isOnAllVirtualDesktops, "")
 
                 checkable: true
                 checked: desktopState.allDesktopsChecked
@@ -534,7 +537,7 @@ PlasmaExtras.Menu {
                 delegate: PlasmaExtras.MenuItem {
                     required property var modelData
 
-                    readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.roleSnapshot().virtualDesktops, root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false), modelData.id)
+                    readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.roleSnapshot().virtualDesktops, root.virtualDesktopRoles.isOnAllVirtualDesktops, modelData.id)
 
                     checkable: true
                     checked: desktopState.desktopChecked

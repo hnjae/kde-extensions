@@ -361,6 +361,24 @@ function fullscreenShadeBorderRoleSnapshot(roleSource, roles, task) {
   };
 }
 
+function virtualDesktopRoleSnapshot(roleSource, roles, task) {
+  const roleIds = roles || {};
+  const fallback = task || {};
+
+  return {
+    isOnAllVirtualDesktops: boolRoleData(
+      roleSource,
+      roleIds.IsOnAllVirtualDesktops,
+      fallback.isOnAllVirtualDesktops || false,
+    ),
+    isVirtualDesktopsChangeable: boolRoleData(
+      roleSource,
+      roleIds.IsVirtualDesktopsChangeable,
+      fallback.isVirtualDesktopsChangeable || false,
+    ),
+  };
+}
+
 function taskRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};
