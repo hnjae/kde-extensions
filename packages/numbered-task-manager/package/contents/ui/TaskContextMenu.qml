@@ -7,20 +7,17 @@ import QtQuick as QtQuick
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid
-import org.kde.taskmanager as TaskManager
 import "TaskActionLogic.js" as TaskActionLogic
 import "TaskContextMenuLogic.js" as TaskContextMenuLogic
-import "TaskEntryLogic.js" as TaskEntryLogic
 
 // qmllint disable incompatible-type
 PlasmaExtras.Menu {
     id: root
 
-    readonly property var atm: TaskManager.AbstractTasksModel
-    readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(modelIndex)
-    readonly property var roleSnapshots: TaskContextMenuLogic.contextMenuRoleSnapshots(roleSource(), roleIds(), task)
+    readonly property bool hasTask: roleState.hasTask
+    readonly property var roleSnapshots: roleState.snapshots
     readonly property var taskRoles: roleSnapshots.taskRoles
-    readonly property bool hasWindowTask: hasTask && taskRoles.isWindow
+    readonly property bool hasWindowTask: roleState.hasWindowTask
     readonly property var basicActionRoles: roleSnapshots.basicActionRoles
     readonly property var captureCloseRoles: roleSnapshots.captureCloseRoles
     readonly property var activityEntries: platformState.activityEntries
@@ -107,44 +104,6 @@ PlasmaExtras.Menu {
         return TaskActionLogic.contextMenuTaskExecutionResult(result);
     }
 
-    function roleIds() {
-        return {
-            Activities: atm.Activities,
-            CanSetNoBorder: atm.CanSetNoBorder,
-            CanLaunchNewInstance: atm.CanLaunchNewInstance,
-            HasNoBorder: atm.HasNoBorder,
-            IsClosable: atm.IsClosable,
-            IsExcludedFromCapture: atm.IsExcludedFromCapture,
-            IsFullScreen: atm.IsFullScreen,
-            IsFullScreenable: atm.IsFullScreenable,
-            IsKeepAbove: atm.IsKeepAbove,
-            IsKeepBelow: atm.IsKeepBelow,
-            IsLauncher: atm.IsLauncher,
-            IsMaximizable: atm.IsMaximizable,
-            IsMaximized: atm.IsMaximized,
-            IsMinimizable: atm.IsMinimizable,
-            IsMinimized: atm.IsMinimized,
-            IsMovable: atm.IsMovable,
-            IsOnAllVirtualDesktops: atm.IsOnAllVirtualDesktops,
-            IsResizable: atm.IsResizable,
-            IsShadeable: atm.IsShadeable,
-            IsShaded: atm.IsShaded,
-            IsVirtualDesktopsChangeable: atm.IsVirtualDesktopsChangeable,
-            IsWindow: atm.IsWindow,
-            LauncherUrl: atm.LauncherUrl,
-            LauncherUrlWithoutIcon: atm.LauncherUrlWithoutIcon,
-            VirtualDesktops: atm.VirtualDesktops
-        };
-    }
-
-    function roleSource() {
-        return {
-            hasTask: hasTask,
-            modelIndex: modelIndex,
-            taskModel: taskModel
-        };
-    }
-
     function launcherPinState() {
         const url = taskRoles.launcherUrl;
         return TaskContextMenuLogic.launcherPinStateSnapshot(launcherModel ? launcherModel.launcherList : [], url, platformState.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
@@ -192,6 +151,14 @@ PlasmaExtras.Menu {
 
     readonly property TaskContextMenuPlatformState _platformState: TaskContextMenuPlatformState {
         id: platformState
+    }
+
+    readonly property TaskContextMenuRoleState _roleState: TaskContextMenuRoleState {
+        id: roleState
+
+        modelIndex: root.modelIndex
+        task: root.task
+        taskModel: root.taskModel
     }
 
     PlasmaExtras.MenuItem {
