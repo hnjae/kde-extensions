@@ -39,6 +39,16 @@ PlasmaExtras.Menu {
     })
     readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
     readonly property var fullscreenShadeBorderRoles: TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var fullscreenShadeBorderActionsSection: TaskContextMenuLogic.fullscreenShadeBorderActionsSection({
+        canSetNoBorder: fullscreenShadeBorderRoles.canSetNoBorder,
+        fullScreenable: fullscreenShadeBorderRoles.fullScreenable,
+        hasNoBorder: fullscreenShadeBorderRoles.hasNoBorder,
+        hasWindowTask: hasWindowTask,
+        isFullScreen: fullscreenShadeBorderRoles.isFullScreen,
+        isShadeable: fullscreenShadeBorderRoles.isShadeable,
+        isShaded: fullscreenShadeBorderRoles.isShaded,
+        isWindow: taskRoles.isWindow
+    })
     readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var keepAboveBelowActionsSection: TaskContextMenuLogic.keepAboveBelowActionsSection({
         hasWindowTask: hasWindowTask,
@@ -389,12 +399,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.fullscreenAction({
-            capable: root.fullscreenShadeBorderRoles.fullScreenable,
-            checked: root.fullscreenShadeBorderRoles.isFullScreen,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.fullscreenShadeBorderActionsSection.fullscreen
 
         checkable: true
         checked: actionState.checked
@@ -408,12 +413,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.shadeAction({
-            capable: root.fullscreenShadeBorderRoles.isShadeable,
-            checked: root.fullscreenShadeBorderRoles.isShaded,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.fullscreenShadeBorderActionsSection.shade
 
         checkable: true
         checked: actionState.checked
@@ -427,12 +427,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.noBorderAction({
-            capable: root.fullscreenShadeBorderRoles.canSetNoBorder,
-            checked: root.fullscreenShadeBorderRoles.hasNoBorder,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.fullscreenShadeBorderActionsSection.noBorder
 
         checkable: true
         checked: actionState.checked

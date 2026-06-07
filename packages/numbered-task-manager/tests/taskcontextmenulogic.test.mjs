@@ -2471,9 +2471,15 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.checkableWindowCapabilityActionState"),
   false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.fullscreenAction"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.shadeAction"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.noBorderAction"), true);
+assert.equal(
+  menuQml.includes(
+    "TaskContextMenuLogic.fullscreenShadeBorderActionsSection({",
+  ),
+  true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.fullscreenAction"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.shadeAction"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.noBorderAction"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.fullscreenCommand"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.shadeCommand"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.noBorderCommand"), false);

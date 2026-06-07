@@ -287,6 +287,31 @@ function noBorderAction(taskState) {
   });
 }
 
+function fullscreenShadeBorderActionsSection(sectionState) {
+  const state = sectionState || {};
+
+  return {
+    fullscreen: fullscreenAction({
+      capable: state.fullScreenable,
+      checked: state.isFullScreen,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+    noBorder: noBorderAction({
+      capable: state.canSetNoBorder,
+      checked: state.hasNoBorder,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+    shade: shadeAction({
+      capable: state.isShadeable,
+      checked: state.isShaded,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+  };
+}
+
 function excludeFromCaptureCommand() {
   return contextMenuTaskCommand("requestToggleExcludeFromCapture");
 }
