@@ -20,7 +20,7 @@ item order with `Meta+0`.
 
 - The widget uses an icons-and-text task item layout and follows KDE task
   manager interaction patterns unless this spec says otherwise.
-- Task backgrounds and state indicators follow the active Plasma task-manager theme for normal, hover, active, minimized, demanding-attention, and drag-drop target states.
+- Task backgrounds and state indicators follow the active Plasma task-manager theme for normal, hover, active, minimized, demanding-attention, and drag-drop target states, with a muted presentation for closed pinned launchers.
 - Task backgrounds fill the panel cross-axis: the available height in horizontal panels and the available width in vertical panels.
 - The widget fills available panel space like KDE's task manager: horizontal panels expand the widget across available width, and vertical panels expand it across available height.
 - Adjacent task backgrounds do not add a fixed layout gap beyond the active Plasma task-manager theme geometry.
@@ -65,6 +65,8 @@ item order with `Meta+0`.
 - A pinned application appears as a launcher icon when it has no matching window
   in the normal task list.
 - A pinned launcher with no matching window shows only its slot number and icon; its text label is hidden.
+- A pinned launcher with no matching window is aligned to the start of its slot instead of centered.
+- A pinned launcher with no matching window uses a muted clickable background that is less prominent than an inactive window task and becomes fully highlighted for hover, keyboard focus, an open menu, or drag-drop target feedback.
 - A pinned launcher with no matching window participates in the same horizontal adaptive slot sizing as normal window tasks.
 - Activating a pinned launcher opens the application in that pinned slot instead
   of creating the first matching window at the far right.
