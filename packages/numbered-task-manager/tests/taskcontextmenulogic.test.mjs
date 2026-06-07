@@ -1374,7 +1374,7 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivityUpdateCommand"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherAllActivitiesUpdateCommand"),

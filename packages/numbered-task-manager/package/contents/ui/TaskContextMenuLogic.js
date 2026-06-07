@@ -273,6 +273,24 @@ function launcherAllActivitiesUpdateCommand(
   return launcherActivityUpdateCommand(launcherList, position, nextActivities);
 }
 
+function launcherActivityToggleUpdateCommand(
+  launcherList,
+  position,
+  launcherActivities,
+  activityId,
+  currentActivity,
+) {
+  return launcherActivityUpdateCommand(
+    launcherList,
+    position,
+    launcherActivitiesAfterToggle(
+      launcherActivities,
+      activityId,
+      currentActivity,
+    ),
+  );
+}
+
 function taskActivityMenuState(taskActivities, activityId) {
   const activities = Array.from(taskActivities || []);
   const allActivitiesChecked = ActivityScopeLogic.activitiesAreAll(activities);

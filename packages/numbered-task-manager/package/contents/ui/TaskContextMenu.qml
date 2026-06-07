@@ -152,11 +152,6 @@ PlasmaExtras.Menu {
         return launcherModel.launcherPosition(url);
     }
 
-    function applyLauncherActivities(activities) {
-        const position = launcherPosition();
-        return applyLauncherActivityUpdate(TaskContextMenuLogic.launcherActivityUpdateCommand(launcherModel.launcherList, position, activities));
-    }
-
     function applyLauncherActivityUpdate(update) {
         if (!update.ok) {
             return false;
@@ -187,7 +182,7 @@ PlasmaExtras.Menu {
             return;
         }
 
-        applyLauncherActivities(LauncherListLogic.launcherActivitiesAfterToggle(launcherActivityList, activityId, activityInfo.currentActivity));
+        applyLauncherActivityUpdate(TaskContextMenuLogic.launcherActivityToggleUpdateCommand(launcherModel.launcherList, launcherPosition(), launcherActivityList, activityId, activityInfo.currentActivity));
         refreshLauncherActivities();
     }
 
