@@ -19,6 +19,8 @@ const helpers = loadQmlJsModule(
     "launcherListsEqual",
     "launcherModelConvergence",
     "launcherModelUpdate",
+    "launcherReconciliationAfterResult",
+    "launcherReconciliationDecision",
     "launcherPinState",
     "movePinnedLauncher",
     "normalizedLauncherList",
@@ -196,6 +198,97 @@ assert.deepEqual(
     modelConverged: true,
     modelLaunchers: ["a.desktop"],
     ok: true,
+  },
+);
+
+const pendingReconciliation = helpers.launcherReconciliationAfterResult(
+  null,
+  helpers.launcherModelConvergence(
+    helpers.launcherModelUpdate(["a.desktop"], ["old.desktop"], ["b.desktop"]),
+    ["a.desktop"],
+    ["old.desktop"],
+  ),
+);
+assert.deepEqual(plain(pendingReconciliation), {
+  attempts: 0,
+  launchers: ["b.desktop"],
+  maxAttempts: 1,
+  pending: true,
+});
+assert.deepEqual(
+  plain(
+    helpers.launcherReconciliationAfterResult(pendingReconciliation, {
+      code: "converged",
+      ok: true,
+    }),
+  ),
+  {
+    attempts: 0,
+    launchers: [],
+    maxAttempts: 1,
+    pending: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherReconciliationDecision(
+      pendingReconciliation,
+      ["b.desktop"],
+      ["b.desktop"],
+    ),
+  ),
+  {
+    action: "clear",
+    launchers: [],
+    state: {
+      attempts: 0,
+      launchers: [],
+      maxAttempts: 1,
+      pending: false,
+    },
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherReconciliationDecision(
+      pendingReconciliation,
+      ["a.desktop"],
+      ["old.desktop"],
+    ),
+  ),
+  {
+    action: "retry",
+    launchers: ["b.desktop"],
+    state: {
+      attempts: 1,
+      launchers: ["b.desktop"],
+      maxAttempts: 1,
+      pending: true,
+    },
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherReconciliationDecision(
+      {
+        attempts: 1,
+        launchers: ["b.desktop"],
+        maxAttempts: 1,
+        pending: true,
+      },
+      ["a.desktop"],
+      ["old.desktop"],
+    ),
+  ),
+  {
+    action: "expired",
+    launchers: ["b.desktop"],
+    state: {
+      attempts: 1,
+      launchers: [],
+      maxAttempts: 1,
+      pending: false,
+    },
   },
 );
 
