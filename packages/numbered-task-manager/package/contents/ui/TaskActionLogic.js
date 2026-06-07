@@ -243,8 +243,36 @@ function contextMenuTaskRequestContext(modelIndex, task) {
   return context;
 }
 
-function contextMenuTaskRequest(action, taskModel, modelIndex, task) {
-  const requestAction = action || "taskRequest";
+function contextMenuTaskCommand(requestMethod, argument) {
+  const command = {
+    arguments: [],
+    kind: "task-model-request",
+    requestMethod: String(requestMethod || ""),
+  };
+
+  if (argument !== undefined) {
+    command.arguments = [argument];
+  }
+
+  return command;
+}
+
+function normalizedContextMenuTaskCommand(command) {
+  if (typeof command === "string") {
+    return contextMenuTaskCommand(command);
+  }
+
+  const taskCommand = command || {};
+  return {
+    arguments: Array.from(taskCommand.arguments || []),
+    kind: taskCommand.kind || "task-model-request",
+    requestMethod: String(taskCommand.requestMethod || ""),
+  };
+}
+
+function contextMenuTaskRequest(command, taskModel, modelIndex, task) {
+  const taskCommand = normalizedContextMenuTaskCommand(command);
+  const requestAction = taskCommand.requestMethod || "taskRequest";
   const context = contextMenuTaskRequestContext(modelIndex, task);
 
   if (!taskModel) {
@@ -281,6 +309,7 @@ function contextMenuTaskRequest(action, taskModel, modelIndex, task) {
     actionResult(requestAction, "ready", true, false, context),
     {
       modelIndex,
+      requestArguments: taskCommand.arguments,
       requestMethod: requestAction,
     },
   );

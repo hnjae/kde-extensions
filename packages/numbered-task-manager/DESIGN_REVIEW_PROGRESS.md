@@ -169,7 +169,15 @@
 - Verification: `node tests/launcherlistlogic.test.mjs` failed before implementation because reconciliation helpers did not exist; after implementation, `node tests/launcherlistlogic.test.mjs`; `node tests/taskactionlogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/LauncherListLogic.js`, `package/contents/ui/main.qml`, `tests/launcherlistlogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 21: Context-Menu Task Command Descriptors
+
+- Status: completed.
+- What changed: declared typed context-menu task command ownership, added `TaskActionLogic.contextMenuTaskCommand(...)`, extended context-menu task request validation to carry command arguments, and routed `TaskContextMenu.qml` task request click handlers through command descriptors.
+- Behavior that must remain unchanged: context-menu order, labels, visible/enabled/checked state, invoked `TasksModel.request*` methods, model indexes, and virtual-desktop/activity request payloads remain unchanged.
+- Verification: `node tests/taskactionlogic.test.mjs` failed before implementation because `contextMenuTaskCommand` did not exist; after implementation, `node tests/taskactionlogic.test.mjs`; `node tests/taskcontextmenulogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskactionlogic.test.mjs`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
-- Context menu: continue shrinking thin QML wrapper functions around checked-state helpers, then simplify menu effect dispatch into typed commands where practical.
+- Context menu: continue shrinking thin QML wrapper functions around checked-state helpers and move launcher-list command effects toward typed descriptors where practical.
 - Observability: extend structured action results beyond activation, menu creation, and launcher mutations to context-menu window/task requests.

@@ -63,17 +63,17 @@ PlasmaExtras.Menu {
         console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
     }
 
-    function requestTaskModelAction(requestMethod, argument) {
-        const result = TaskActionLogic.contextMenuTaskRequest(requestMethod, taskModel, modelIndex, task);
+    function requestTaskModelCommand(command) {
+        const result = TaskActionLogic.contextMenuTaskRequest(command, taskModel, modelIndex, task);
         if (!result.ok) {
             logActionResult(result);
             return result;
         }
 
-        if (argument === undefined) {
-            taskModel[requestMethod](modelIndex);
+        if (result.requestArguments.length === 0) {
+            taskModel[result.requestMethod](modelIndex);
         } else {
-            taskModel[requestMethod](modelIndex, argument);
+            taskModel[result.requestMethod](modelIndex, result.requestArguments[0]);
         }
         return result;
     }
@@ -250,7 +250,7 @@ PlasmaExtras.Menu {
             return;
         }
 
-        requestTaskModelAction("requestActivities", TaskActivityLogic.taskActivitiesAfterToggle(activities(), activityId));
+        requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestActivities", TaskActivityLogic.taskActivitiesAfterToggle(activities(), activityId)));
     }
 
     function launcherPinnedToAllActivities() {
@@ -419,7 +419,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestNewInstance");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestNewInstance"));
         }
     }
 
@@ -431,7 +431,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestMove");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestMove"));
         }
     }
 
@@ -443,7 +443,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestResize");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestResize"));
         }
     }
 
@@ -457,7 +457,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestToggleMinimized");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleMinimized"));
         }
     }
 
@@ -471,7 +471,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestToggleMaximized");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleMaximized"));
         }
     }
 
@@ -485,7 +485,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestToggleKeepAbove");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleKeepAbove"));
         }
     }
 
@@ -499,7 +499,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestToggleKeepBelow");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleKeepBelow"));
         }
     }
 
@@ -513,7 +513,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestToggleFullScreen");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleFullScreen"));
         }
     }
 
@@ -527,7 +527,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestToggleShaded");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleShaded"));
         }
     }
 
@@ -541,7 +541,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestToggleNoBorder");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleNoBorder"));
         }
     }
 
@@ -555,7 +555,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestToggleExcludeFromCapture");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleExcludeFromCapture"));
         }
     }
 
@@ -579,7 +579,7 @@ PlasmaExtras.Menu {
                 text: "All Desktops"
 
                 onClicked: {
-                    root.requestTaskModelAction("requestVirtualDesktops", []);
+                    root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestVirtualDesktops", []));
                 }
             }
 
@@ -595,7 +595,7 @@ PlasmaExtras.Menu {
                     text: modelData.name
 
                     onClicked: {
-                        root.requestTaskModelAction("requestVirtualDesktops", [modelData.id]);
+                        root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestVirtualDesktops", [modelData.id]));
                     }
                 }
 
@@ -615,7 +615,7 @@ PlasmaExtras.Menu {
                 text: "New Desktop"
 
                 onClicked: {
-                    root.requestTaskModelAction("requestNewVirtualDesktop");
+                    root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestNewVirtualDesktop"));
                 }
             }
         }
@@ -641,7 +641,7 @@ PlasmaExtras.Menu {
                 text: "All Activities"
 
                 onClicked: {
-                    root.requestTaskModelAction("requestActivities", []);
+                    root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestActivities", []));
                 }
             }
 
@@ -686,7 +686,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelAction("requestClose");
+            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestClose"));
         }
     }
 }
