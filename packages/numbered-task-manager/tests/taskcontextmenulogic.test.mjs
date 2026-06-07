@@ -631,9 +631,14 @@ assert.equal(
   true,
 );
 assert.equal(
+  menuQml.includes("function checkableWindowCapabilityActionState"),
+  false,
+);
+assert.equal(
   menuQml.includes("TaskContextMenuLogic.checkableWindowActionState"),
   true,
 );
+assert.equal(menuQml.includes("function checkableWindowActionState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopsActionState"),
   true,
