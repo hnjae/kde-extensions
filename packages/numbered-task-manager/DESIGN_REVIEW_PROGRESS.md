@@ -417,10 +417,18 @@
 - Verification: `node tests/taskvisuallogic.test.mjs` failed before implementation because `main.qml` did not expose `canMoveTaskResult(...)`; after implementation, `node tests/taskvisuallogic.test.mjs`; `node tests/taskmodellogic.test.mjs`; `rg -n "canMoveTaskResult|function canMoveTask\\(|TaskModelLogic\\.canMoveTask\\(|TaskModelLogic\\.canMoveTaskResult|canDropTask:" package/contents/ui/main.qml tests/taskvisuallogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/main.qml`, `tests/taskvisuallogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 52: Drag Rejection Diagnostics
+
+- Status: completed.
+- What changed: declared drag rejection logging as an action/effect-boundary responsibility; added `TaskActionLogic.dragMoveRejectionResult(...)`; changed root drag handling to log rejected typed move decisions through the existing action diagnostic path.
+- Behavior that must remain unchanged: accepted drags still move exactly as before; expected same-index, pinned/unpinned boundary, and pinned-launcher policy rejections remain quiet no-ops; stale or invalid drag/drop indexes now produce internal diagnostics.
+- Verification: `node tests/taskactionlogic.test.mjs` failed before implementation because `dragMoveRejectionResult(...)` did not exist; `node tests/taskvisuallogic.test.mjs` failed because root did not log the rejection result; after implementation, `node tests/taskactionlogic.test.mjs`; `node tests/taskvisuallogic.test.mjs`; `node tests/taskmodellogic.test.mjs`; `rg -n "dragMoveRejectionResult|moveDecision\\.reason|missing-source|pinned-launcher-denied|boundary-crossing|logActionResult\\(rejection\\)" package/contents/ui/main.qml package/contents/ui/TaskActionLogic.js tests/taskactionlogic.test.mjs tests/taskvisuallogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/main.qml`, `tests/taskactionlogic.test.mjs`, `tests/taskvisuallogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: direct role snapshot passthrough wrappers have been removed. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code.
 - Visible item composer / remote attention: rendered remote-attention activation and metadata now consume composed descriptors, and `RemoteAttentionSource.qml` owns the remote-attention model, state snapshot, and activation adapter. Full remote-attention removability still requires shrinking root's rendered binding and context-menu wiring to one source-owned item surface.
 - Scope policy: model filter settings and local qualifiers now have a named owner; task-specific qualifier re-export facades and generic activity facades in task and launcher modules have been removed.
 - Metrics: root layout, normal task, and attention task size constants now come from `TaskMetricsLogic.js`. Badge dimensions remain badge-local rendering policy.
-- Mutation results: launcher activity updates and normal-task move decisions now expose reason-coded results, and root drag/drop consumes the typed move result before projecting booleans to delegates. Remaining mutation-result work is logging or otherwise surfacing unexpected drag/drop rejection reasons where useful.
+- Mutation results: launcher activity updates and normal-task move decisions now expose reason-coded results, and root drag/drop consumes typed move results before projecting booleans to delegates. Unexpected or stale drag/drop rejections now produce structured internal diagnostics while expected policy no-ops remain quiet.

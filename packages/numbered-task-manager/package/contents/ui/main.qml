@@ -212,6 +212,8 @@ PlasmoidItem {
     function moveTask(sourceIndex, targetIndex) {
         const moveDecision = canMoveTaskResult(sourceIndex, targetIndex);
         if (!moveDecision.canMove) {
+            const rejection = TaskActionLogic.dragMoveRejectionResult(moveDecision, sourceIndex, targetIndex);
+            logActionResult(rejection);
             return false;
         }
 
