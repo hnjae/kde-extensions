@@ -32,6 +32,7 @@ const logic = loadQmlJsModule(
     "taskActivitiesActionState",
     "virtualDesktopEntriesSnapshot",
     "virtualDesktopMenuState",
+    "virtualDesktopRoleSnapshot",
     "virtualDesktopsActionState",
     "windowCapabilityActionState",
   ],
@@ -577,9 +578,11 @@ const liveRoles = {
   IsMinimizable: false,
   IsMinimized: true,
   IsMovable: false,
+  IsOnAllVirtualDesktops: true,
   IsResizable: true,
   IsShadeable: true,
   IsShaded: false,
+  IsVirtualDesktopsChangeable: false,
   IsWindow: true,
   LauncherUrl: "launcher.desktop",
   LauncherUrlWithoutIcon: "launcher-without-icon.desktop",
@@ -611,9 +614,11 @@ const roles = {
   IsMinimizable: "IsMinimizable",
   IsMinimized: "IsMinimized",
   IsMovable: "IsMovable",
+  IsOnAllVirtualDesktops: "IsOnAllVirtualDesktops",
   IsResizable: "IsResizable",
   IsShadeable: "IsShadeable",
   IsShaded: "IsShaded",
+  IsVirtualDesktopsChangeable: "IsVirtualDesktopsChangeable",
   IsWindow: "IsWindow",
   LauncherUrl: "LauncherUrl",
   LauncherUrlWithoutIcon: "LauncherUrlWithoutIcon",
@@ -802,6 +807,30 @@ assert.deepEqual(
     isShaded: true,
   },
 );
+assert.deepEqual(
+  plain(
+    logic.virtualDesktopRoleSnapshot(roleSource, roles, {
+      isOnAllVirtualDesktops: false,
+      isVirtualDesktopsChangeable: true,
+    }),
+  ),
+  {
+    isOnAllVirtualDesktops: true,
+    isVirtualDesktopsChangeable: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.virtualDesktopRoleSnapshot({ ...roleSource, hasTask: false }, roles, {
+      isOnAllVirtualDesktops: false,
+      isVirtualDesktopsChangeable: true,
+    }),
+  ),
+  {
+    isOnAllVirtualDesktops: false,
+    isVirtualDesktopsChangeable: true,
+  },
+);
 assert.deepEqual(plain(roleCalls.map((call) => call.role).slice(0, 2)), [
   "LauncherUrl",
   "Missing",
@@ -837,6 +866,10 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.virtualDesktopRoleSnapshot"),
   true,
 );
 assert.equal(
@@ -913,6 +946,16 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("capable: root.boolRole(root.atm.CanSetNoBorder"),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "changeable: root.boolRole(root.atm.IsVirtualDesktopsChangeable",
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes("root.boolRole(root.atm.IsOnAllVirtualDesktops"),
   false,
 );
 assert.equal(menuQml.includes('names[i] || "Desktop "'), false);
