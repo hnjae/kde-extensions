@@ -10,7 +10,6 @@ import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
 import "ActivityScopeLogic.js" as ActivityScopeLogic
-import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskScopeLogic.js" as TaskScopeLogic
@@ -245,46 +244,19 @@ PlasmoidItem {
                 orientation: root.vertical ? QtQuick.ListView.Vertical : QtQuick.ListView.Horizontal
                 spacing: 0
 
-                delegate: TaskItem {
-                    required property int index
+                delegate: NormalTaskItem {
                     required property var modelData
 
-                    readonly property var visibleItem: modelData || ({})
-                    readonly property var entry: visibleItem.entry || ({})
-
-                    height: root.vertical ? implicitHeight : taskList.height
-                    width: root.vertical ? taskList.width : fullRepresentationItem.taskSlotWidth
-                    slotWidth: root.vertical ? 0 : fullRepresentationItem.taskSlotWidth
-                    taskIndex: entry.moveIndex ?? entry.sourceIndex ?? -1
-                    modelIndex: entry.modelIndex
-                    slotNumber: visibleItem.slotNumber || 0
-                    title: entry.title || ""
-                    showTitle: !(entry.launcherBacked && entry.isLauncher)
-                    titleVisibilityThreshold: fullRepresentationItem.titleVisibilityThreshold
-                    iconSource: entry.iconSource || TaskEntryLogic.normalTaskIconFallback()
-                    active: entry.active || false
-                    minimized: entry.isMinimized || false
-                    pinnedLauncherOnly: entry.launcherBacked && entry.isLauncher
-                    launcher: entry.isLauncher || false
-                    demandingAttention: entry.demandingAttention || false
-                    dragMimeType: root.taskDragMimeType
-                    canDropTask: (sourceIndex, targetIndex) => taskMover.canMoveTaskResult(sourceIndex, targetIndex).canMove
-
-                    onActivated: {
-                        taskActivation.activateTaskEntry(entry);
-                    }
-
-                    onContextMenuRequested: request => {
-                        contextMenuAdapter.openTaskContextMenu(request);
-                    }
-
-                    onTaskDropped: (sourceIndex, targetIndex, drop) => {
-                        if (taskMover.moveTask(sourceIndex, targetIndex)) {
-                            drop.acceptProposedAction();
-                        }
-                    }
-
-                    taskData: entry
+                    activationAdapter: taskActivation
+                    contextMenuAdapter: contextMenuAdapter
+                    moveAdapter: taskMover
+                    taskDragMimeType: root.taskDragMimeType
+                    taskListHeight: taskList.height
+                    taskListWidth: taskList.width
+                    taskSlotWidth: fullRepresentationItem.taskSlotWidth
+                    taskTitleVisibilityThreshold: fullRepresentationItem.titleVisibilityThreshold
+                    vertical: root.vertical
+                    visibleItem: modelData
                 }
             }
 
