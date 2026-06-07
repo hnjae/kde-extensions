@@ -8,8 +8,26 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskMetricsLogic.js", import.meta.url),
-  ["adjustedFrameMargin", "iconExtentForTaskFrame", "taskSlotWidth"],
+  [
+    "adjustedFrameMargin",
+    "attentionNaturalWidthMinimum",
+    "iconExtentForTaskFrame",
+    "maximumSlotWidth",
+    "minimumReadableSlotWidth",
+    "normalNaturalWidthMinimum",
+    "taskExtent",
+    "taskSlotWidth",
+    "titleVisibilityThreshold",
+  ],
 );
+
+assert.equal(logic.taskExtent(), 40);
+assert.equal(logic.titleVisibilityThreshold(), 96);
+assert.equal(logic.maximumSlotWidth(), 220);
+assert.equal(logic.normalNaturalWidthMinimum(true), 96);
+assert.equal(logic.normalNaturalWidthMinimum(false), 0);
+assert.equal(logic.attentionNaturalWidthMinimum(), 112);
+assert.equal(logic.minimumReadableSlotWidth(40, 4), 48);
 
 assert.equal(logic.adjustedFrameMargin(56, 8, 4, 16), 4);
 assert.equal(logic.adjustedFrameMargin(18, 8, 4, 16), 2);
@@ -38,7 +56,18 @@ assert.match(
 assert.match(attentionItemQml, /iconExtentForTaskFrame\(/);
 assert.match(attentionItemQml, /property real slotWidth:\s*0/);
 assert.match(attentionItemQml, /property bool showTitle:\s*true/);
-assert.match(attentionItemQml, /property int titleVisibilityThreshold:\s*96/);
+assert.match(
+  attentionItemQml,
+  /property int titleVisibilityThreshold:\s*TaskMetricsLogic\.titleVisibilityThreshold\(\)/,
+);
+assert.match(
+  attentionItemQml,
+  /Math\.max\(TaskMetricsLogic\.attentionNaturalWidthMinimum\(\), Math\.min\(TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth \+ contentHorizontalPadding\)\)/,
+);
+assert.match(
+  attentionItemQml,
+  /implicitHeight:\s*TaskMetricsLogic\.taskExtent\(\)/,
+);
 assert.match(
   attentionItemQml,
   /root\.showTitle && \(root\.slotWidth <= 0 \|\| root\.slotWidth >= root\.titleVisibilityThreshold\)/,
@@ -59,8 +88,44 @@ const mainQml = readFileSync(
   "utf8",
 );
 assert.match(mainQml, /import "TaskMetricsLogic\.js" as TaskMetricsLogic/);
+assert.match(mainQml, /taskExtent:\s*TaskMetricsLogic\.taskExtent\(\)/);
 assert.match(
   mainQml,
-  /minimumReadableSlotWidth:\s*taskExtent \+ 2 \* Kirigami\.Units\.smallSpacing/,
+  /titleVisibilityThreshold:\s*TaskMetricsLogic\.titleVisibilityThreshold\(\)/,
 );
+assert.match(
+  mainQml,
+  /minimumReadableSlotWidth:\s*TaskMetricsLogic\.minimumReadableSlotWidth\(taskExtent, Kirigami\.Units\.smallSpacing\)/,
+);
+assert.match(mainQml, /TaskMetricsLogic\.maximumSlotWidth\(\)/);
 assert.match(mainQml, /TaskMetricsLogic\.taskSlotWidth\(/);
+
+const taskItemQml = readFileSync(
+  new URL("../package/contents/ui/TaskItem.qml", import.meta.url),
+  "utf8",
+);
+assert.match(taskItemQml, /import "TaskMetricsLogic\.js" as TaskMetricsLogic/);
+assert.match(
+  taskItemQml,
+  /property int titleVisibilityThreshold:\s*TaskMetricsLogic\.titleVisibilityThreshold\(\)/,
+);
+assert.match(
+  taskItemQml,
+  /Math\.max\(TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\), Math\.min\(TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth \+ contentHorizontalPadding\)\)/,
+);
+assert.match(taskItemQml, /implicitHeight:\s*TaskMetricsLogic\.taskExtent\(\)/);
+assert.doesNotMatch(taskItemQml, /property int titleVisibilityThreshold:\s*96/);
+assert.doesNotMatch(taskItemQml, /root\.showTitle \? 96 : 0/);
+assert.doesNotMatch(
+  attentionItemQml,
+  /property int titleVisibilityThreshold:\s*96/,
+);
+assert.doesNotMatch(mainQml, /readonly property int taskExtent:\s*40/);
+assert.doesNotMatch(
+  mainQml,
+  /readonly property int titleVisibilityThreshold:\s*96/,
+);
+assert.doesNotMatch(
+  mainQml,
+  /TaskMetricsLogic\.taskSlotWidth\(width, visibleItemCount, minimumReadableSlotWidth, 220\)/,
+);

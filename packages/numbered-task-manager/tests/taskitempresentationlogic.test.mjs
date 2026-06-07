@@ -93,8 +93,15 @@ assert.match(taskItemQml, /id:\s*iconOverlayContainer/);
 assert.match(taskItemQml, /property real slotWidth:\s*0/);
 assert.match(taskItemQml, /property bool showTitle:\s*true/);
 assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
-assert.match(taskItemQml, /property int titleVisibilityThreshold:\s*96/);
-assert.match(taskItemQml, /root\.showTitle \? 96 : 0/);
+assert.match(taskItemQml, /import "TaskMetricsLogic\.js" as TaskMetricsLogic/);
+assert.match(
+  taskItemQml,
+  /property int titleVisibilityThreshold:\s*TaskMetricsLogic\.titleVisibilityThreshold\(\)/,
+);
+assert.match(
+  taskItemQml,
+  /TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\)/,
+);
 assert.match(
   taskItemQml,
   /root\.showTitle && \(root\.slotWidth <= 0 \|\| root\.slotWidth >= root\.titleVisibilityThreshold\)/,
