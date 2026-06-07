@@ -22,6 +22,18 @@ assert.doesNotMatch(
   mainQml,
   /QtQuick\.Repeater\s*\{[\s\S]*?model:\s*attentionTasksModel[\s\S]*?publishRemoteAttention/,
 );
+assert.doesNotMatch(mainQml, /\bid:\s*attentionTasksModel\b/);
+assert.doesNotMatch(mainQml, /taskModel:\s*attentionTasksModel/);
+assert.match(
+  sourceQml,
+  /TaskManager\.TasksModel\s*\{[\s\S]*?id:\s*attentionTasksModel/,
+);
+assert.match(
+  sourceQml,
+  /readonly property var taskModel:\s*attentionTasksModel/,
+);
+assert.match(sourceQml, /function requestActivate\(modelIndex\)/);
+assert.match(sourceQml, /attentionTasksModel\.requestActivate\(modelIndex\)/);
 assert.match(
   sourceQml,
   /QtQuick\.Repeater\s*\{[\s\S]*?model:\s*root\.taskModel/,
