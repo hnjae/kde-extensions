@@ -13,15 +13,18 @@ const helpers = loadQmlJsModule(
     "launcherActivityUpdate",
     "launcherActivitiesAfterAllToggle",
     "launcherActivitiesAfterToggle",
+    "launcherConfigConvergence",
     "launcherConfigUpdate",
     "launcherListWithActivitiesAt",
     "launcherListsEqual",
+    "launcherModelConvergence",
     "launcherModelUpdate",
     "launcherPinState",
     "movePinnedLauncher",
     "normalizedLauncherList",
     "parseSerializedLauncher",
     "pinnedLauncherGlobalPosition",
+    "runLauncherListUpdateTransaction",
     "serializeLauncherWithActivities",
     "serializedLauncherVisibleInActivity",
     "visibleLauncherPosition",
@@ -54,6 +57,57 @@ assert.deepEqual(
 );
 assert.deepEqual(
   plain(
+    helpers.launcherConfigConvergence(
+      helpers.launcherConfigUpdate(["a.desktop"], ["a.desktop"]),
+      ["a.desktop"],
+    ),
+  ),
+  {
+    changed: false,
+    code: "unchanged",
+    configConverged: true,
+    configLaunchers: ["a.desktop"],
+    failedTargets: [],
+    launchers: ["a.desktop"],
+    ok: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherConfigConvergence(
+      helpers.launcherConfigUpdate(["a.desktop"], ["b.desktop"]),
+      ["b.desktop"],
+    ),
+  ),
+  {
+    changed: true,
+    code: "converged",
+    configConverged: true,
+    configLaunchers: ["b.desktop"],
+    failedTargets: [],
+    launchers: ["b.desktop"],
+    ok: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherConfigConvergence(
+      helpers.launcherConfigUpdate(["a.desktop"], ["b.desktop"]),
+      ["a.desktop"],
+    ),
+  ),
+  {
+    changed: true,
+    code: "write-mismatch",
+    configConverged: false,
+    configLaunchers: ["a.desktop"],
+    failedTargets: ["config"],
+    launchers: ["b.desktop"],
+    ok: false,
+  },
+);
+assert.deepEqual(
+  plain(
     helpers.launcherModelUpdate(
       ["a.desktop"],
       ["old.desktop"],
@@ -76,6 +130,103 @@ assert.deepEqual(
     modelChanged: true,
   },
 );
+assert.deepEqual(
+  plain(
+    helpers.launcherModelConvergence(
+      helpers.launcherModelUpdate(
+        ["a.desktop"],
+        ["old.desktop"],
+        ["b.desktop"],
+      ),
+      ["b.desktop"],
+      ["b.desktop"],
+    ),
+  ),
+  {
+    changed: true,
+    code: "converged",
+    configConverged: true,
+    configLaunchers: ["b.desktop"],
+    failedTargets: [],
+    launchers: ["b.desktop"],
+    modelConverged: true,
+    modelLaunchers: ["b.desktop"],
+    ok: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherModelConvergence(
+      helpers.launcherModelUpdate(
+        ["a.desktop"],
+        ["old.desktop"],
+        ["b.desktop"],
+      ),
+      ["b.desktop"],
+      ["old.desktop"],
+    ),
+  ),
+  {
+    changed: true,
+    code: "write-mismatch",
+    configConverged: false,
+    configLaunchers: ["old.desktop"],
+    failedTargets: ["config"],
+    launchers: ["b.desktop"],
+    modelConverged: true,
+    modelLaunchers: ["b.desktop"],
+    ok: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    helpers.launcherModelConvergence(
+      helpers.launcherModelUpdate(["a.desktop"], ["a.desktop"], ["a.desktop"]),
+      ["a.desktop"],
+      ["a.desktop"],
+    ),
+  ),
+  {
+    changed: false,
+    code: "unchanged",
+    configConverged: true,
+    configLaunchers: ["a.desktop"],
+    failedTargets: [],
+    launchers: ["a.desktop"],
+    modelConverged: true,
+    modelLaunchers: ["a.desktop"],
+    ok: true,
+  },
+);
+
+const launcherUpdateState = { updatingLauncherConfig: false };
+assert.deepEqual(
+  plain(
+    helpers.runLauncherListUpdateTransaction(launcherUpdateState, () => {
+      assert.equal(launcherUpdateState.updatingLauncherConfig, true);
+      return { code: "converged", ok: true };
+    }),
+  ),
+  { code: "converged", ok: true },
+);
+assert.equal(launcherUpdateState.updatingLauncherConfig, false);
+
+const failingLauncherUpdateState = { updatingLauncherConfig: false };
+assert.deepEqual(
+  plain(
+    helpers.runLauncherListUpdateTransaction(failingLauncherUpdateState, () => {
+      assert.equal(failingLauncherUpdateState.updatingLauncherConfig, true);
+      throw new Error("assignment denied");
+    }),
+  ),
+  {
+    changed: false,
+    code: "write-failed",
+    error: "assignment denied",
+    ok: false,
+  },
+);
+assert.equal(failingLauncherUpdateState.updatingLauncherConfig, false);
 
 assert.deepEqual(
   plain(helpers.parseSerializedLauncher("org.example.App.desktop")),
