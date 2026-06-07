@@ -20,6 +20,7 @@ const logic = loadQmlJsModule(
     "launcherActivityListSnapshot",
     "launcherActivityMenuState",
     "launcherActivitiesVisible",
+    "keepAboveBelowRoleSnapshot",
     "minimizeMaximizeRoleSnapshot",
     "newInstanceActionState",
     "panelMenuPlacement",
@@ -563,6 +564,8 @@ assert.equal(
 const liveRoles = {
   Activities: ["live-activity"],
   CanLaunchNewInstance: true,
+  IsKeepAbove: true,
+  IsKeepBelow: false,
   IsLauncher: 1,
   IsMaximizable: true,
   IsMaximized: false,
@@ -589,6 +592,8 @@ const roleSource = {
 const roles = {
   Activities: "Activities",
   CanLaunchNewInstance: "CanLaunchNewInstance",
+  IsKeepAbove: "IsKeepAbove",
+  IsKeepBelow: "IsKeepBelow",
   IsLauncher: "IsLauncher",
   IsMaximizable: "IsMaximizable",
   IsMaximized: "IsMaximized",
@@ -716,6 +721,30 @@ assert.deepEqual(
     isMinimized: false,
   },
 );
+assert.deepEqual(
+  plain(
+    logic.keepAboveBelowRoleSnapshot(roleSource, roles, {
+      isKeepAbove: false,
+      isKeepBelow: true,
+    }),
+  ),
+  {
+    isKeepAbove: true,
+    isKeepBelow: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.keepAboveBelowRoleSnapshot({ ...roleSource, hasTask: false }, roles, {
+      isKeepAbove: false,
+      isKeepBelow: true,
+    }),
+  ),
+  {
+    isKeepAbove: false,
+    isKeepBelow: true,
+  },
+);
 assert.deepEqual(plain(roleCalls.map((call) => call.role).slice(0, 2)), [
   "LauncherUrl",
   "Missing",
@@ -743,6 +772,10 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.minimizeMaximizeRoleSnapshot"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.keepAboveBelowRoleSnapshot"),
   true,
 );
 assert.equal(
@@ -777,6 +810,18 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("capable: root.boolRole(root.atm.IsMaximizable"),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "readonly property bool roleChecked: root.boolRole(root.atm.IsKeepAbove",
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "readonly property bool roleChecked: root.boolRole(root.atm.IsKeepBelow",
+  ),
   false,
 );
 assert.equal(menuQml.includes('names[i] || "Desktop "'), false);
