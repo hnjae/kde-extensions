@@ -71,6 +71,7 @@ in `SPEC.md`.
   and virtual-desktop membership should not be duplicated between normal task
   composition, remote attention, context menu code, and task-like delegates.
 - Keep normal-task projection dependencies explicit. `TaskModelLogic.js` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
+- Keep normal-task entry schema limited to fields with production consumers or documented purpose. Raw upstream launcher association should not be carried as a separate `hasAnyLauncher` field unless a production consumer is added.
 - Keep normal task publication state transitions in `NormalTaskStoreLogic.js`.
   `NormalTaskSource.qml` owns observation of the normal `TasksModel` rows and
   emits explicit publication/removal events into the root-owned store.
