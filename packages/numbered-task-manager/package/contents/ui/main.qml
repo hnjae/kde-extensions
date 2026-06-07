@@ -30,6 +30,7 @@ PlasmoidItem {
         count: remoteAttentionSource.count || 0,
         target: remoteAttentionSource.target || null
     })
+    readonly property var normalVisibleTaskItems: VisibleTaskItemsLogic.normalVisibleTaskItems(root.visibleTaskItems)
     readonly property var remoteAttentionVisibleItem: VisibleTaskItemsLogic.visibleRemoteAttentionItem(root.visibleTaskItems)
     property int launcherRevision: 0
     property var launcherReconciliationState: LauncherListLogic.createLauncherReconciliationState()
@@ -475,7 +476,7 @@ PlasmoidItem {
                 boundsBehavior: QtQuick.Flickable.StopAtBounds
                 clip: true
                 interactive: root.vertical ? contentHeight > height : contentWidth > width
-                model: root.normalTaskEntries
+                model: root.normalVisibleTaskItems
                 orientation: root.vertical ? QtQuick.ListView.Vertical : QtQuick.ListView.Horizontal
                 spacing: 0
 
@@ -483,8 +484,8 @@ PlasmoidItem {
                     required property int index
                     required property var modelData
 
-                    readonly property var entry: modelData || ({})
-                    readonly property var visibleItem: VisibleTaskItemsLogic.visibleItemForNormalIndex(root.visibleTaskItems, index) || ({})
+                    readonly property var visibleItem: modelData || ({})
+                    readonly property var entry: visibleItem.entry || ({})
 
                     height: root.vertical ? implicitHeight : taskList.height
                     width: root.vertical ? taskList.width : fullRepresentationItem.taskSlotWidth

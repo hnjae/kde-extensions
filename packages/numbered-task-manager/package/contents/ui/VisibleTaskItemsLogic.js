@@ -82,6 +82,11 @@ function visibleItemForNormalIndex(visibleItems, normalIndex) {
   return null;
 }
 
+function normalVisibleTaskItems(visibleItems) {
+  const items = Array.from(visibleItems || []);
+  return items.filter((item) => item?.kind === "normal");
+}
+
 function visibleRemoteAttentionItem(visibleItems) {
   const items = Array.from(visibleItems || []);
   for (let index = 0; index < items.length; ++index) {
