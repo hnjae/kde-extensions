@@ -37,8 +37,10 @@ const logic = loadQmlJsModule(
     "launcherActivitiesVisible",
     "launcherPinStateSnapshot",
     "keepAboveCommand",
+    "keepAboveAction",
     "keepAboveBelowRoleSnapshot",
     "keepBelowCommand",
+    "keepBelowAction",
     "maximizeCommand",
     "maximizeAction",
     "minimizeMaximizeRoleSnapshot",
@@ -531,6 +533,46 @@ assert.deepEqual(plain(logic.keepBelowCommand()), {
   kind: "task-model-request",
   requestMethod: "requestToggleKeepBelow",
 });
+assert.deepEqual(
+  plain(
+    logic.keepAboveAction({
+      checked: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: true,
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestToggleKeepAbove",
+    },
+    enabled: true,
+    text: "Keep Above Others",
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.keepBelowAction({
+      checked: false,
+      hasWindowTask: false,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: false,
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestToggleKeepBelow",
+    },
+    enabled: false,
+    text: "Keep Below Others",
+    visible: true,
+  },
+);
 assert.deepEqual(plain(logic.fullscreenCommand()), {
   arguments: [],
   kind: "task-model-request",
@@ -1870,10 +1912,14 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.checkableWindowActionState"),
-  true,
+  false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.keepAboveCommand"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.keepBelowCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.keepAboveAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.keepBelowAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.keepAboveCommand"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.keepBelowCommand"), false);
+assert.equal(menuQml.includes('text: "Keep Above Others"'), false);
+assert.equal(menuQml.includes('text: "Keep Below Others"'), false);
 assert.equal(
   menuQml.includes(
     'TaskActionLogic.contextMenuTaskCommand("requestToggleKeepAbove"',
