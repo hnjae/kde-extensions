@@ -68,6 +68,51 @@ function checkableWindowActionState(taskState) {
   };
 }
 
+function menuActionSectionVisible(sectionState) {
+  const state = sectionState || {};
+  return Boolean(
+    state.launcherActivitiesVisible ||
+      state.newInstanceVisible ||
+      state.hasWindowTask,
+  );
+}
+
+function virtualDesktopsActionState(taskState) {
+  const state = taskState || {};
+  return windowCapabilityActionState(
+    Object.assign({}, state, {
+      capable: state.changeable,
+    }),
+  );
+}
+
+function newVirtualDesktopActionState(taskState) {
+  const state = taskState || {};
+
+  return {
+    enabled: Boolean(state.hasWindowTask),
+  };
+}
+
+function taskActivitiesActionState(taskState) {
+  const state = taskState || {};
+  const activityEntryCount = Number(state.activityEntryCount || 0);
+
+  return {
+    enabled: Boolean(state.hasWindowTask),
+    visible: Boolean(state.isWindow && activityEntryCount > 1),
+  };
+}
+
+function closeActionState(taskState) {
+  const state = taskState || {};
+
+  return {
+    enabled: Boolean(state.hasTask),
+    visible: Boolean(state.isWindow && state.closable),
+  };
+}
+
 function launcherActivitiesVisible(pinState, activityEntryCount) {
   const state = pinState || {};
   const count = Number(activityEntryCount || 0);

@@ -151,6 +151,44 @@ PlasmaExtras.Menu {
         });
     }
 
+    function menuActionSectionVisible(launcherActivitiesVisible, newInstanceVisible) {
+        return TaskContextMenuLogic.menuActionSectionVisible({
+            hasWindowTask: hasWindowTask,
+            launcherActivitiesVisible: launcherActivitiesVisible,
+            newInstanceVisible: newInstanceVisible
+        });
+    }
+
+    function virtualDesktopsActionState() {
+        return TaskContextMenuLogic.virtualDesktopsActionState({
+            changeable: boolRole(atm.IsVirtualDesktopsChangeable, task.isVirtualDesktopsChangeable || false),
+            hasWindowTask: hasWindowTask,
+            isWindow: isWindow()
+        });
+    }
+
+    function newVirtualDesktopActionState() {
+        return TaskContextMenuLogic.newVirtualDesktopActionState({
+            hasWindowTask: hasWindowTask
+        });
+    }
+
+    function taskActivitiesActionState() {
+        return TaskContextMenuLogic.taskActivitiesActionState({
+            activityEntryCount: activityEntries.length,
+            hasWindowTask: hasWindowTask,
+            isWindow: isWindow()
+        });
+    }
+
+    function closeActionState() {
+        return TaskContextMenuLogic.closeActionState({
+            closable: boolRole(atm.IsClosable, task.closable || false),
+            hasTask: hasTask,
+            isWindow: isWindow()
+        });
+    }
+
     function activities() {
         return roleSnapshot().activities;
     }
@@ -368,7 +406,7 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         separator: true
-        visible: launcherActivitiesItem.visible || newInstanceItem.visible || root.hasWindowTask
+        visible: root.menuActionSectionVisible(launcherActivitiesItem.visible, newInstanceItem.visible)
     }
 
     PlasmaExtras.MenuItem {
@@ -523,10 +561,11 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: virtualDesktopsItem
+        readonly property var actionState: root.virtualDesktopsActionState()
 
-        enabled: root.hasWindowTask && root.boolRole(root.atm.IsVirtualDesktopsChangeable, root.task.isVirtualDesktopsChangeable || false)
+        enabled: actionState.enabled
         text: "Virtual Desktops"
-        visible: root.isWindow() && root.boolRole(root.atm.IsVirtualDesktopsChangeable, root.task.isVirtualDesktopsChangeable || false)
+        visible: actionState.visible
 
         readonly property PlasmaExtras.Menu _virtualDesktopsMenu: PlasmaExtras.Menu {
             id: virtualDesktopsMenu
@@ -570,7 +609,9 @@ PlasmaExtras.Menu {
             }
 
             PlasmaExtras.MenuItem {
-                enabled: root.hasWindowTask
+                readonly property var actionState: root.newVirtualDesktopActionState()
+
+                enabled: actionState.enabled
                 text: "New Desktop"
 
                 onClicked: {
@@ -582,10 +623,11 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: activitiesItem
+        readonly property var actionState: root.taskActivitiesActionState()
 
-        enabled: root.hasWindowTask
+        enabled: actionState.enabled
         text: "Activities"
-        visible: root.isWindow() && root.activityEntries.length > 1
+        visible: actionState.visible
 
         readonly property PlasmaExtras.Menu _activitiesMenu: PlasmaExtras.Menu {
             id: activitiesMenu
@@ -637,10 +679,11 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: closeItem
+        readonly property var actionState: root.closeActionState()
 
-        enabled: root.hasTask
+        enabled: actionState.enabled
         text: "Close"
-        visible: root.isWindow() && root.boolRole(root.atm.IsClosable, root.task.closable || false)
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestClose");
