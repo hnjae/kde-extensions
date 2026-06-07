@@ -8,7 +8,6 @@ import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
 import "TaskScopeLogic.js" as TaskScopeLogic
-import "TaskActionLogic.js" as TaskActionLogic
 import "VisibleTaskItemsLogic.js" as VisibleTaskItemsLogic
 
 PlasmoidItem {
@@ -32,18 +31,14 @@ PlasmoidItem {
         taskActivation.activateTaskAtIndex(index);
     }
 
-    function logActionResult(result) {
-        if (!TaskActionLogic.shouldLogActionResult(result)) {
-            return;
-        }
-
-        console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
-    }
-
     TaskPlatformState {
         id: taskPlatformState
 
         taskModel: tasksModel
+    }
+
+    TaskActionResultLogger {
+        id: actionLogger
     }
 
     LauncherSyncAdapter {
@@ -61,7 +56,7 @@ PlasmoidItem {
         visibleTaskItems: root.visibleTaskItems
 
         onActionResult: result => {
-            root.logActionResult(result);
+            actionLogger.logActionResult(result);
         }
     }
 
@@ -72,7 +67,7 @@ PlasmoidItem {
         taskModel: tasksModel
 
         onActionResult: result => {
-            root.logActionResult(result);
+            actionLogger.logActionResult(result);
         }
     }
 
@@ -83,7 +78,7 @@ PlasmoidItem {
         taskModel: tasksModel
 
         onActionResult: result => {
-            root.logActionResult(result);
+            actionLogger.logActionResult(result);
         }
 
         onLauncherCommandRequested: command => {
@@ -106,7 +101,7 @@ PlasmoidItem {
         taskModel: tasksModel
 
         onActionResult: result => {
-            root.logActionResult(result);
+            actionLogger.logActionResult(result);
         }
     }
 
