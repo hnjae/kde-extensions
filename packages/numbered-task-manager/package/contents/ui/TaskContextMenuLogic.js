@@ -249,6 +249,34 @@ function boolRoleData(roleSource, role, fallback) {
   return Boolean(roleData(roleSource, role, fallback || false));
 }
 
+function basicActionRoleSnapshot(roleSource, roles, task) {
+  const roleIds = roles || {};
+  const fallback = task || {};
+
+  return {
+    canLaunchNewInstance: boolRoleData(
+      roleSource,
+      roleIds.CanLaunchNewInstance,
+      fallback.canLaunchNewInstance || false,
+    ),
+    isLauncher: boolRoleData(
+      roleSource,
+      roleIds.IsLauncher,
+      fallback.isLauncher || false,
+    ),
+    isMovable: boolRoleData(
+      roleSource,
+      roleIds.IsMovable,
+      fallback.isMovable || false,
+    ),
+    isResizable: boolRoleData(
+      roleSource,
+      roleIds.IsResizable,
+      fallback.isResizable || false,
+    ),
+  };
+}
+
 function taskRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};

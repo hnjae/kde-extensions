@@ -21,6 +21,7 @@ PlasmaExtras.Menu {
     readonly property var atm: TaskManager.AbstractTasksModel
     readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(modelIndex)
     readonly property bool hasWindowTask: hasTask && roleSnapshot().isWindow
+    readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
     property var activityEntries: []
     property var launcherModel: taskModel
@@ -83,7 +84,10 @@ PlasmaExtras.Menu {
     function roleIds() {
         return {
             Activities: atm.Activities,
+            CanLaunchNewInstance: atm.CanLaunchNewInstance,
             IsLauncher: atm.IsLauncher,
+            IsMovable: atm.IsMovable,
+            IsResizable: atm.IsResizable,
             IsWindow: atm.IsWindow,
             LauncherUrl: atm.LauncherUrl,
             LauncherUrlWithoutIcon: atm.LauncherUrlWithoutIcon,
@@ -282,9 +286,9 @@ PlasmaExtras.Menu {
         id: newInstanceItem
 
         readonly property var actionState: TaskContextMenuLogic.newInstanceActionState({
-            canLaunchNewInstance: root.boolRole(root.atm.CanLaunchNewInstance, root.task.canLaunchNewInstance || false),
+            canLaunchNewInstance: root.basicActionRoles.canLaunchNewInstance,
             hasTask: root.hasTask,
-            isLauncher: root.roleSnapshot().isLauncher
+            isLauncher: root.basicActionRoles.isLauncher
         })
 
         enabled: actionState.enabled
@@ -298,7 +302,7 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         readonly property var actionState: TaskContextMenuLogic.windowCapabilityActionState({
-            capable: root.boolRole(root.atm.IsMovable, root.task.isMovable || false),
+            capable: root.basicActionRoles.isMovable,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })
@@ -314,7 +318,7 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         readonly property var actionState: TaskContextMenuLogic.windowCapabilityActionState({
-            capable: root.boolRole(root.atm.IsResizable, root.task.isResizable || false),
+            capable: root.basicActionRoles.isResizable,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })
