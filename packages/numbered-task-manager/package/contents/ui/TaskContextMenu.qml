@@ -404,7 +404,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
+        readonly property var actionState: TaskContextMenuLogic.fullscreenAction({
             capable: root.fullscreenShadeBorderRoles.fullScreenable,
             checked: root.fullscreenShadeBorderRoles.isFullScreen,
             hasWindowTask: root.hasWindowTask,
@@ -414,16 +414,16 @@ PlasmaExtras.Menu {
         checkable: true
         checked: actionState.checked
         enabled: actionState.enabled
-        text: "Fullscreen"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.fullscreenCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
+        readonly property var actionState: TaskContextMenuLogic.shadeAction({
             capable: root.fullscreenShadeBorderRoles.isShadeable,
             checked: root.fullscreenShadeBorderRoles.isShaded,
             hasWindowTask: root.hasWindowTask,
@@ -433,16 +433,16 @@ PlasmaExtras.Menu {
         checkable: true
         checked: actionState.checked
         enabled: actionState.enabled
-        text: "Shade"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.shadeCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
+        readonly property var actionState: TaskContextMenuLogic.noBorderAction({
             capable: root.fullscreenShadeBorderRoles.canSetNoBorder,
             checked: root.fullscreenShadeBorderRoles.hasNoBorder,
             hasWindowTask: root.hasWindowTask,
@@ -452,11 +452,11 @@ PlasmaExtras.Menu {
         checkable: true
         checked: actionState.checked
         enabled: actionState.enabled
-        text: "No Border"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.noBorderCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 

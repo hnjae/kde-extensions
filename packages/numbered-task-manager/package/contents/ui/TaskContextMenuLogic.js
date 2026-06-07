@@ -200,6 +200,27 @@ function noBorderCommand() {
   return contextMenuTaskCommand("requestToggleNoBorder");
 }
 
+function fullscreenAction(taskState) {
+  return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
+    command: fullscreenCommand(),
+    text: "Fullscreen",
+  });
+}
+
+function shadeAction(taskState) {
+  return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
+    command: shadeCommand(),
+    text: "Shade",
+  });
+}
+
+function noBorderAction(taskState) {
+  return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
+    command: noBorderCommand(),
+    text: "No Border",
+  });
+}
+
 function excludeFromCaptureCommand() {
   return contextMenuTaskCommand("requestToggleExcludeFromCapture");
 }
