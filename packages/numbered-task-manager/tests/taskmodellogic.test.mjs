@@ -28,15 +28,12 @@ const logic = loadQmlJsModule(
   ],
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
-const createNormalTaskEntry = (roles) =>
-  logic.createNormalTaskEntry(roles, taskEntryLogic);
+const createNormalTaskEntry = (roles) => logic.createNormalTaskEntry(roles);
 const qualifiesNormalTask = (task, isInCurrentActivity, currentDesktop) =>
-  logic.qualifiesNormalTask(
-    task,
-    isInCurrentActivity,
-    currentDesktop,
-    taskEntryLogic,
-  );
+  logic.qualifiesNormalTask(task, isInCurrentActivity, currentDesktop);
+
+assert.equal(logic.createNormalTaskEntry.length, 1);
+assert.equal(logic.qualifiesNormalTask.length, 3);
 
 const modelIndex = { valid: true };
 const normalTask = createNormalTaskEntry({
