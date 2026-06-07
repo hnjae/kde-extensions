@@ -18,6 +18,7 @@ const logic = loadQmlJsModule(
     "closeCommand",
     "closeActionState",
     "activityEntriesSnapshot",
+    "allTaskActivitiesAction",
     "allTaskActivitiesCommand",
     "allVirtualDesktopsAction",
     "allVirtualDesktopsCommand",
@@ -65,6 +66,8 @@ const logic = loadQmlJsModule(
     "resizeCommand",
     "shadeAction",
     "shadeCommand",
+    "taskActivitiesAction",
+    "taskActivityAction",
     "taskActivityMenuState",
     "taskActivityToggleCommand",
     "taskRoleSnapshot",
@@ -969,6 +972,20 @@ assert.deepEqual(
 );
 assert.deepEqual(
   plain(
+    logic.taskActivitiesAction({
+      activityEntryCount: 2,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: true,
+    text: "Activities",
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
     logic.closeActionState({
       closable: true,
       hasTask: true,
@@ -1312,6 +1329,15 @@ assert.deepEqual(plain(logic.taskActivityMenuState(["chat"], "chat")), {
   activityChecked: true,
   allActivitiesChecked: false,
 });
+assert.deepEqual(plain(logic.allTaskActivitiesAction([nullActivityId])), {
+  checked: true,
+  command: {
+    arguments: [[]],
+    kind: "task-model-request",
+    requestMethod: "requestActivities",
+  },
+  text: "All Activities",
+});
 assert.deepEqual(
   plain(logic.taskActivityToggleCommand([nullActivityId], "work")),
   {
@@ -1325,6 +1351,23 @@ assert.deepEqual(plain(logic.taskActivityToggleCommand(["work"], "chat")), {
   kind: "task-model-request",
   requestMethod: "requestActivities",
 });
+assert.deepEqual(
+  plain(
+    logic.taskActivityAction(["work"], {
+      id: "chat",
+      name: "Chat",
+    }),
+  ),
+  {
+    checked: false,
+    command: {
+      arguments: [["work", "chat"]],
+      kind: "task-model-request",
+      requestMethod: "requestActivities",
+    },
+    text: "Chat",
+  },
+);
 assert.deepEqual(plain(logic.virtualDesktopMenuState([], true, "desktop-a")), {
   allDesktopsChecked: true,
   desktopChecked: true,
@@ -1945,12 +1988,24 @@ assert.equal(menuQml.includes("function launcherPinnedToActivity"), false);
 assert.equal(menuQml.includes("function launcherActivityMenuState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivityMenuState"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivityToggleCommand"),
+  false,
+);
+assert.equal(menuQml.includes("function toggleTaskActivity"), false);
+assert.equal(menuQml.includes("root.toggleTaskActivity"), false);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.taskActivitiesAction({"),
   true,
 );
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.allTaskActivitiesAction"),
+  true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.taskActivityAction"), true);
+assert.equal(menuQml.includes('text: "Activities"'), false);
 assert.equal(
   menuQml.includes('import "TaskActivityLogic.js" as TaskActivityLogic'),
   false,
@@ -2134,11 +2189,11 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivitiesActionState"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.allTaskActivitiesCommand"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes(
