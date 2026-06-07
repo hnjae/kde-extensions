@@ -17,6 +17,7 @@ const logic = loadQmlJsModule(
     "closeActionState",
     "activityEntriesSnapshot",
     "allVirtualDesktopsCommand",
+    "fullscreenCommand",
     "fullscreenShadeBorderRoleSnapshot",
     "menuActionSectionVisible",
     "moveCommand",
@@ -33,10 +34,12 @@ const logic = loadQmlJsModule(
     "minimizeCommand",
     "newInstanceCommand",
     "newInstanceActionState",
+    "noBorderCommand",
     "panelMenuPlacement",
     "pinActionState",
     "roleData",
     "resizeCommand",
+    "shadeCommand",
     "taskActivityMenuState",
     "taskActivityToggleCommand",
     "taskRoleSnapshot",
@@ -250,6 +253,21 @@ assert.deepEqual(plain(logic.keepBelowCommand()), {
   arguments: [],
   kind: "task-model-request",
   requestMethod: "requestToggleKeepBelow",
+});
+assert.deepEqual(plain(logic.fullscreenCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestToggleFullScreen",
+});
+assert.deepEqual(plain(logic.shadeCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestToggleShaded",
+});
+assert.deepEqual(plain(logic.noBorderCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestToggleNoBorder",
 });
 assert.deepEqual(
   plain(
@@ -1184,6 +1202,27 @@ assert.equal(menuQml.includes("function menuActionSectionVisible"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.checkableWindowCapabilityActionState"),
   true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.fullscreenCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.shadeCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.noBorderCommand"), true);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuTaskCommand("requestToggleFullScreen"',
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuTaskCommand("requestToggleShaded"',
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuTaskCommand("requestToggleNoBorder"',
+  ),
+  false,
 );
 assert.equal(menuQml.includes("TaskContextMenuLogic.minimizeCommand"), true);
 assert.equal(menuQml.includes("TaskContextMenuLogic.maximizeCommand"), true);
