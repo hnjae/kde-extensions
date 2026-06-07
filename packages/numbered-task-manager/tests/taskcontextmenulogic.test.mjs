@@ -78,6 +78,7 @@ const logic = loadQmlJsModule(
     "shadeAction",
     "shadeCommand",
     "taskActivitiesAction",
+    "taskActivityActionsSection",
     "taskActivityAction",
     "taskActivityMenuState",
     "taskActivityToggleCommand",
@@ -1807,6 +1808,50 @@ assert.deepEqual(
     text: "Chat",
   },
 );
+{
+  const taskActivitySection = logic.taskActivityActionsSection({
+    activities: ["work"],
+    activityEntryCount: 2,
+    hasWindowTask: false,
+    isWindow: true,
+  });
+  assert.equal(typeof taskActivitySection.activityAction, "function");
+  assert.deepEqual(
+    plain({
+      allTaskActivities: taskActivitySection.allTaskActivities,
+      taskActivities: taskActivitySection.taskActivities,
+      taskActivity: taskActivitySection.activityAction({
+        id: "chat",
+        name: "Chat",
+      }),
+    }),
+    {
+      allTaskActivities: {
+        checked: false,
+        command: {
+          arguments: [[]],
+          kind: "task-model-request",
+          requestMethod: "requestActivities",
+        },
+        text: "All Activities",
+      },
+      taskActivities: {
+        enabled: false,
+        text: "Activities",
+        visible: true,
+      },
+      taskActivity: {
+        checked: false,
+        command: {
+          arguments: [["work", "chat"]],
+          kind: "task-model-request",
+          requestMethod: "requestActivities",
+        },
+        text: "Chat",
+      },
+    },
+  );
+}
 assert.deepEqual(plain(logic.virtualDesktopMenuState([], true, "desktop-a")), {
   allDesktopsChecked: true,
   desktopChecked: true,
@@ -2455,14 +2500,21 @@ assert.equal(
 assert.equal(menuQml.includes("function toggleTaskActivity"), false);
 assert.equal(menuQml.includes("root.toggleTaskActivity"), false);
 assert.equal(
-  menuQml.includes("TaskContextMenuLogic.taskActivitiesAction({"),
+  menuQml.includes("TaskContextMenuLogic.taskActivityActionsSection({"),
   true,
 );
 assert.equal(
-  menuQml.includes("TaskContextMenuLogic.allTaskActivitiesAction"),
-  true,
+  menuQml.includes("TaskContextMenuLogic.taskActivitiesAction({"),
+  false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.taskActivityAction"), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.allTaskActivitiesAction"),
+  false,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.taskActivityAction("),
+  false,
+);
 assert.equal(menuQml.includes('text: "Activities"'), false);
 assert.equal(
   menuQml.includes('import "TaskActivityLogic.js" as TaskActivityLogic'),
