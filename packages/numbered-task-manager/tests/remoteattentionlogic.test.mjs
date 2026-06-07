@@ -12,12 +12,16 @@ const taskEntryLogic = loadQmlJsModule(
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/RemoteAttentionLogic.js", import.meta.url),
   [
+    "createRemoteAttentionState",
     "createRemoteAttentionEntry",
     "publishRemoteAttention",
+    "publishRemoteAttentionState",
     "qualifiesRemoteAttention",
     "remoteAttentionKey",
     "remoteAttentionSnapshot",
     "removeRemoteAttention",
+    "removeRemoteAttentionState",
+    "recomputeRemoteAttentionState",
   ],
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
@@ -88,6 +92,100 @@ assert.equal(
   logic.remoteAttentionKey([], "app.desktop", "Title", 4),
   "row:4:app.desktop:Title",
 );
+
+assert.deepEqual(plain(logic.createRemoteAttentionState()), {
+  count: 0,
+  entries: [],
+  entryMap: {},
+  order: [],
+  target: null,
+});
+
+let attentionState = logic.createRemoteAttentionState();
+let stateResult = logic.publishRemoteAttentionState(
+  attentionState,
+  "",
+  "state-a",
+  true,
+  { title: "State A" },
+  false,
+);
+assert.equal(stateResult.publishedKey, "state-a");
+assert.deepEqual(plain(attentionState), {
+  count: 0,
+  entries: [],
+  entryMap: {},
+  order: [],
+  target: null,
+});
+attentionState = stateResult.state;
+assert.deepEqual(plain(attentionState.order), ["state-a"]);
+assert.equal(attentionState.count, 1);
+assert.equal(attentionState.target.title, "State A");
+
+stateResult = logic.publishRemoteAttentionState(
+  attentionState,
+  "",
+  "state-b",
+  true,
+  { title: "State B" },
+  false,
+);
+attentionState = stateResult.state;
+assert.deepEqual(plain(attentionState.order), ["state-a", "state-b"]);
+assert.deepEqual(plain(attentionState.entries.map((entry) => entry.title)), [
+  "State A",
+  "State B",
+]);
+assert.equal(attentionState.target.title, "State B");
+
+stateResult = logic.publishRemoteAttentionState(
+  attentionState,
+  "state-a",
+  "state-a",
+  true,
+  { title: "State A later" },
+  true,
+);
+attentionState = stateResult.state;
+assert.deepEqual(plain(attentionState.order), ["state-b", "state-a"]);
+assert.equal(attentionState.target.title, "State A later");
+
+stateResult = logic.publishRemoteAttentionState(
+  attentionState,
+  "state-b",
+  "state-c",
+  true,
+  { title: "State C replaced" },
+  false,
+);
+attentionState = stateResult.state;
+assert.deepEqual(plain(attentionState.order), ["state-c", "state-a"]);
+assert.equal(attentionState.target.title, "State A later");
+
+const recomputedState = logic.recomputeRemoteAttentionState({
+  entryMap: attentionState.entryMap,
+  order: ["missing", "state-c"],
+});
+assert.equal(recomputedState.count, 1);
+assert.equal(recomputedState.target.title, "State C replaced");
+assert.deepEqual(plain(recomputedState.entries.map((entry) => entry.title)), [
+  "State C replaced",
+]);
+
+attentionState = logic.removeRemoteAttentionState(
+  attentionState,
+  "state-a",
+).state;
+assert.deepEqual(plain(attentionState.order), ["state-c"]);
+assert.equal(attentionState.count, 1);
+assert.equal(attentionState.target.title, "State C replaced");
+
+const missingStateRemoval = logic.removeRemoteAttentionState(
+  attentionState,
+  "not-present",
+);
+assert.equal(missingStateRemoval.state, attentionState);
 
 let attentionEntryMap = {};
 let attentionOrder = [];
