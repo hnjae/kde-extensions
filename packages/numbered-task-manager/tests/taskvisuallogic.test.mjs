@@ -212,6 +212,12 @@ assert.match(
 );
 assert.match(mainQml, /model:\s*root\.normalVisibleTaskItems/);
 assert.doesNotMatch(mainQml, /model:\s*root\.normalTaskEntries/);
+assert.match(mainQml, /delegate:\s*NormalTaskItem\s*\{/);
+assert.match(mainQml, /visibleItem:\s*modelData/);
+assert.match(mainQml, /activationAdapter:\s*taskActivation/);
+assert.match(mainQml, /contextMenuAdapter:\s*contextMenuAdapter/);
+assert.match(mainQml, /moveAdapter:\s*taskMover/);
+assert.doesNotMatch(mainQml, /delegate:\s*TaskItem\s*\{/);
 assert.doesNotMatch(
   mainQml,
   /VisibleTaskItemsLogic\.visibleItemForNormalIndex/,
@@ -221,6 +227,12 @@ assert.match(
   mainQml,
   /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*fullRepresentationItem\.taskSlotWidth/,
 );
+assert.doesNotMatch(mainQml, /taskActivation\.activateTaskEntry\(entry\)/);
+assert.doesNotMatch(
+  mainQml,
+  /taskMover\.canMoveTaskResult\(sourceIndex, targetIndex\)\.canMove/,
+);
+assert.doesNotMatch(mainQml, /taskMover\.moveTask\(sourceIndex, targetIndex\)/);
 assert.match(mainQml, /\bTaskMoveAdapter\s*\{/);
 assert.match(mainQml, /normalEntries:\s*root\.normalTaskEntries/);
 assert.match(
