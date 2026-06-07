@@ -58,6 +58,89 @@ function launcherModelUpdate(
   };
 }
 
+function launcherSyncCode(changed, failedTargets) {
+  if (failedTargets.length > 0) {
+    return "write-mismatch";
+  }
+
+  return changed ? "converged" : "unchanged";
+}
+
+function launcherConfigConvergence(update, observedConfigLaunchers) {
+  const launcherUpdate = update || {};
+  const launchers = normalizedLauncherList(launcherUpdate.launchers);
+  const configLaunchers = normalizedLauncherList(observedConfigLaunchers);
+  const configConverged = launcherListsEqual(launchers, configLaunchers);
+  const failedTargets = configConverged ? [] : ["config"];
+
+  return {
+    changed: Boolean(launcherUpdate.changed),
+    code: launcherSyncCode(Boolean(launcherUpdate.changed), failedTargets),
+    configConverged,
+    configLaunchers,
+    failedTargets,
+    launchers,
+    ok: failedTargets.length === 0,
+  };
+}
+
+function launcherModelConvergence(
+  update,
+  observedModelLaunchers,
+  observedConfigLaunchers,
+) {
+  const launcherUpdate = update || {};
+  const launchers = normalizedLauncherList(launcherUpdate.launchers);
+  const modelLaunchers = normalizedLauncherList(observedModelLaunchers);
+  const configLaunchers = normalizedLauncherList(observedConfigLaunchers);
+  const modelConverged = launcherListsEqual(launchers, modelLaunchers);
+  const configConverged = launcherListsEqual(launchers, configLaunchers);
+  const failedTargets = [];
+  if (!modelConverged) {
+    failedTargets.push("model");
+  }
+  if (!configConverged) {
+    failedTargets.push("config");
+  }
+
+  return {
+    changed: Boolean(launcherUpdate.changed),
+    code: launcherSyncCode(Boolean(launcherUpdate.changed), failedTargets),
+    configConverged,
+    configLaunchers,
+    failedTargets,
+    launchers,
+    modelConverged,
+    modelLaunchers,
+    ok: failedTargets.length === 0,
+  };
+}
+
+function launcherWriteErrorMessage(error) {
+  if (error?.message) {
+    return String(error.message);
+  }
+
+  return String(error);
+}
+
+function runLauncherListUpdateTransaction(state, action) {
+  const updateState = state || {};
+  updateState.updatingLauncherConfig = true;
+  try {
+    return action();
+  } catch (error) {
+    return {
+      changed: false,
+      code: "write-failed",
+      error: launcherWriteErrorMessage(error),
+      ok: false,
+    };
+  } finally {
+    updateState.updatingLauncherConfig = false;
+  }
+}
+
 function uniqueStringList(list) {
   return ActivityScopeLogic.uniqueStringList(list);
 }

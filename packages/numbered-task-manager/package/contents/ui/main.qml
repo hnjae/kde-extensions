@@ -71,12 +71,15 @@ PlasmoidItem {
     function persistLaunchers(launchers) {
         const update = LauncherListLogic.launcherConfigUpdate(Plasmoid.configuration.launchers, launchers);
         if (!update.changed) {
-            return;
+            return LauncherListLogic.launcherConfigConvergence(update, Plasmoid.configuration.launchers);
         }
 
-        updatingLauncherConfig = true;
-        Plasmoid.configuration.launchers = update.launchers;
-        updatingLauncherConfig = false;
+        const result = LauncherListLogic.runLauncherListUpdateTransaction(root, () => {
+            Plasmoid.configuration.launchers = update.launchers;
+            return LauncherListLogic.launcherConfigConvergence(update, Plasmoid.configuration.launchers);
+        });
+        logLauncherSyncResult("persistLaunchers", result);
+        return result;
     }
 
     function applyLauncherList(launchers) {
@@ -85,15 +88,31 @@ PlasmoidItem {
             return false;
         }
 
-        updatingLauncherConfig = true;
-        if (update.modelChanged) {
-            tasksModel.launcherList = update.launchers;
+        const result = LauncherListLogic.runLauncherListUpdateTransaction(root, () => {
+            if (update.modelChanged) {
+                tasksModel.launcherList = update.launchers;
+            }
+            if (update.configChanged) {
+                Plasmoid.configuration.launchers = update.launchers;
+            }
+            return LauncherListLogic.launcherModelConvergence(update, tasksModel.launcherList, Plasmoid.configuration.launchers);
+        });
+        logLauncherSyncResult("applyLauncherList", result);
+        return Boolean(result && result.changed);
+    }
+
+    function logLauncherSyncResult(action, result) {
+        if (!result || result.ok) {
+            return;
         }
-        if (update.configChanged) {
-            Plasmoid.configuration.launchers = update.launchers;
-        }
-        updatingLauncherConfig = false;
-        return true;
+
+        console.warn("Numbered Task Manager launcher sync " + action + " " + result.code + ": " + JSON.stringify({
+            configLaunchers: result.configLaunchers || [],
+            error: result.error || "",
+            failedTargets: result.failedTargets || [],
+            launchers: result.launchers || [],
+            modelLaunchers: result.modelLaunchers || []
+        }));
     }
 
     function pinLauncher(launcherUrl) {
