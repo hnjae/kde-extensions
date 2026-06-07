@@ -16,6 +16,7 @@ QtQuickLayouts.RowLayout {
     readonly property real frameLeftMargin: frame ? frame.contentLeftMargin : 0
     readonly property real frameRightMargin: frame ? frame.contentRightMargin : 0
     readonly property real frameTopMargin: frame ? frame.contentTopMargin : 0
+    readonly property real horizontalPadding: root.frameLeftMargin + root.frameRightMargin + Kirigami.Units.smallSpacing * 2
 
     anchors.fill: parent
     anchors.bottomMargin: root.frameBottomMargin

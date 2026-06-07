@@ -22,9 +22,8 @@ QtQuick.Item {
     property var modelIndex
     property var taskData: ({})
     property bool contextMenuOpen: false
-    readonly property real contentHorizontalPadding: taskFrame.contentLeftMargin + taskFrame.contentRightMargin + Kirigami.Units.smallSpacing * 2
     readonly property int iconExtent: TaskMetricsLogic.iconExtentForTaskFrame(height, taskFrame.contentTopMargin, taskFrame.contentBottomMargin, Kirigami.Units.iconSizes.small)
-    readonly property real naturalImplicitWidth: Math.max(TaskMetricsLogic.attentionNaturalWidthMinimum(), Math.min(TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth + contentHorizontalPadding))
+    readonly property real naturalImplicitWidth: Math.max(TaskMetricsLogic.attentionNaturalWidthMinimum(), Math.min(TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth + contentRow.horizontalPadding))
     readonly property bool titleVisible: TaskMetricsLogic.taskTitleVisible(root.showTitle, root.slotWidth, root.titleVisibilityThreshold)
     readonly property bool visualHighlighted: taskLikeInteraction.highlighted
 

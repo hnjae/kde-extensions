@@ -34,7 +34,6 @@ QtQuick.Item {
     property var canDropTask
     property bool dropHover: false
     property bool contextMenuOpen: false
-    readonly property real contentHorizontalPadding: taskFrame.contentLeftMargin + taskFrame.contentRightMargin + Kirigami.Units.smallSpacing * 2
     readonly property var itemPresentation: TaskItemPresentationLogic.taskItemPresentation({
         contentEndMargin: taskFrame.contentBottomMargin,
         contentStartMargin: taskFrame.contentTopMargin,
@@ -43,7 +42,7 @@ QtQuick.Item {
         slotNumber: root.slotNumber
     })
     readonly property int iconExtent: itemPresentation.iconExtent
-    readonly property real naturalImplicitWidth: Math.max(TaskMetricsLogic.normalNaturalWidthMinimum(root.showTitle), Math.min(TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth + contentHorizontalPadding))
+    readonly property real naturalImplicitWidth: Math.max(TaskMetricsLogic.normalNaturalWidthMinimum(root.showTitle), Math.min(TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth + contentRow.horizontalPadding))
     readonly property string numberMode: itemPresentation.numberMode
     readonly property string slotLabel: itemPresentation.slotLabel
     readonly property bool titleVisible: TaskMetricsLogic.taskTitleVisible(root.showTitle, root.slotWidth, root.titleVisibilityThreshold)
