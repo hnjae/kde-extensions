@@ -321,7 +321,15 @@
 - Verification: `node tests/visibletaskitemslogic.test.mjs` failed before implementation because `visibleRemoteAttentionItem` did not exist; after implementation, `node tests/visibletaskitemslogic.test.mjs`; `node tests/taskactionlogic.test.mjs`; `rg -n "visibleRemoteAttentionItem|taskActivationRequest\\(\\\"activateRemoteAttention\\\"|remoteAttentionState\\.target" package/contents/ui/main.qml package/contents/ui/VisibleTaskItemsLogic.js tests/visibletaskitemslogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/VisibleTaskItemsLogic.js`, `package/contents/ui/main.qml`, `tests/visibletaskitemslogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 40: Remote Attention Visible-Item Rendering
+
+- Status: completed.
+- What changed: declared that rendered remote-attention metadata should come from the composed visible item descriptor; added a root `remoteAttentionVisibleItem` binding; changed `AttentionItem` count, icon, model index, task data, title, visibility, and activation lookup to consume that descriptor instead of separately reconstructing target fields from `remoteAttentionState`.
+- Behavior that must remain unchanged: remote-attention visibility, count, icon fallback, title, context-menu payload, activation target, and `Meta+0` shortcut behavior remain unchanged.
+- Verification: `node tests/taskvisuallogic.test.mjs` failed before implementation because `main.qml` did not expose `remoteAttentionVisibleItem`; after implementation, `node tests/taskvisuallogic.test.mjs`; `node tests/visibletaskitemslogic.test.mjs`; `rg -n "remoteAttentionVisibleItem|remoteAttentionState\\.target|visibleItem\\.entry|count: visibleItem|taskData: entry|title: entry" package/contents/ui/main.qml tests/taskvisuallogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/main.qml`, `tests/taskvisuallogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: direct role snapshot passthrough wrappers have been removed. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code.
-- Visible item composer: continue migrating rendered-item activation and rendering metadata toward composed item descriptors; full remote-attention removability still requires reducing root-owned remote attention functions and binding the rendered attention item from the composed descriptor.
+- Visible item composer / remote attention: rendered remote-attention activation and metadata now consume composed descriptors. Full remote-attention removability still requires reducing root-owned remote attention functions and moving more source/controller ownership behind `RemoteAttentionSource`.

@@ -31,6 +31,7 @@ PlasmoidItem {
         count: remoteAttentionState.count || 0,
         target: remoteAttentionState.target || null
     })
+    readonly property var remoteAttentionVisibleItem: VisibleTaskItemsLogic.visibleRemoteAttentionItem(root.visibleTaskItems)
     property int launcherRevision: 0
     property var launcherReconciliationState: LauncherListLogic.createLauncherReconciliationState()
     property bool updatingLauncherConfig: false
@@ -326,7 +327,7 @@ PlasmoidItem {
     }
 
     function activateRemoteAttention() {
-        const visibleItem = VisibleTaskItemsLogic.visibleRemoteAttentionItem(visibleTaskItems);
+        const visibleItem = remoteAttentionVisibleItem;
         const result = TaskActionLogic.taskActivationRequest("activateRemoteAttention", visibleItem ? visibleItem.entry : null, {
             requireSourceIndex: false,
             sourceModel: visibleItem ? visibleItem.sourceModel : "remoteAttention",
@@ -549,18 +550,21 @@ PlasmoidItem {
             AttentionItem {
                 id: attentionItem
 
+                readonly property var visibleItem: root.remoteAttentionVisibleItem || ({})
+                readonly property var entry: visibleItem.entry || ({})
+
                 QtQuickLayouts.Layout.fillHeight: !root.vertical
                 QtQuickLayouts.Layout.fillWidth: root.vertical
                 QtQuickLayouts.Layout.preferredWidth: root.vertical ? implicitWidth : fullRepresentationItem.taskSlotWidth
 
-                count: root.remoteAttentionState.count || 0
-                iconSource: root.remoteAttentionState.target ? root.remoteAttentionState.target.iconSource : TaskEntryLogic.remoteAttentionIconFallback()
-                modelIndex: root.remoteAttentionState.target ? root.remoteAttentionState.target.modelIndex : undefined
+                count: visibleItem.count || 0
+                iconSource: entry.iconSource || TaskEntryLogic.remoteAttentionIconFallback()
+                modelIndex: entry.modelIndex
                 slotWidth: root.vertical ? 0 : fullRepresentationItem.taskSlotWidth
-                taskData: root.remoteAttentionState.target || {}
-                title: root.remoteAttentionState.target ? root.remoteAttentionState.target.title : ""
+                taskData: entry
+                title: entry.title || ""
                 titleVisibilityThreshold: fullRepresentationItem.titleVisibilityThreshold
-                visible: root.remoteAttentionState.count > 0
+                visible: Boolean(root.remoteAttentionVisibleItem)
 
                 onActivated: {
                     root.activateRemoteAttention();
