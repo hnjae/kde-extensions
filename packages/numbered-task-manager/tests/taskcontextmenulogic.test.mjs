@@ -2413,8 +2413,12 @@ assert.equal(
   ),
   false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.minimizeAction"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.maximizeAction"), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.minimizeMaximizeActionsSection({"),
+  true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.minimizeAction"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.maximizeAction"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.minimizeCommand"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.maximizeCommand"), false);
 assert.equal(menuQml.includes('text: "Minimize"'), false);

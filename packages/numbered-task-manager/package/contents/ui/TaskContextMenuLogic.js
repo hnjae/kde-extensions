@@ -196,6 +196,25 @@ function maximizeAction(taskState) {
   });
 }
 
+function minimizeMaximizeActionsSection(sectionState) {
+  const state = sectionState || {};
+
+  return {
+    maximize: maximizeAction({
+      capable: state.isMaximizable,
+      checked: state.isMaximized,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+    minimize: minimizeAction({
+      capable: state.isMinimizable,
+      checked: state.isMinimized,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+  };
+}
+
 function keepAboveCommand() {
   return contextMenuTaskCommand("requestToggleKeepAbove");
 }

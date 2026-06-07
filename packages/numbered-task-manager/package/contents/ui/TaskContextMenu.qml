@@ -41,6 +41,14 @@ PlasmaExtras.Menu {
     readonly property var fullscreenShadeBorderRoles: TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var minimizeMaximizeRoles: TaskContextMenuLogic.minimizeMaximizeRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var minimizeMaximizeActionsSection: TaskContextMenuLogic.minimizeMaximizeActionsSection({
+        hasWindowTask: hasWindowTask,
+        isMaximizable: minimizeMaximizeRoles.isMaximizable,
+        isMaximized: minimizeMaximizeRoles.isMaximized,
+        isMinimizable: minimizeMaximizeRoles.isMinimizable,
+        isMinimized: minimizeMaximizeRoles.isMinimized,
+        isWindow: taskRoles.isWindow
+    })
     readonly property var virtualDesktopRoles: TaskContextMenuLogic.virtualDesktopRoleSnapshot(roleSource(), roleIds(), task)
     property var activityEntries: []
     property var launcherModel: taskModel
@@ -319,12 +327,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.minimizeAction({
-            capable: root.minimizeMaximizeRoles.isMinimizable,
-            checked: root.minimizeMaximizeRoles.isMinimized,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.minimizeMaximizeActionsSection.minimize
 
         checkable: true
         checked: actionState.checked
@@ -338,12 +341,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.maximizeAction({
-            capable: root.minimizeMaximizeRoles.isMaximizable,
-            checked: root.minimizeMaximizeRoles.isMaximized,
-            hasWindowTask: root.hasWindowTask,
-            isWindow: root.taskRoles.isWindow
-        })
+        readonly property var actionState: root.minimizeMaximizeActionsSection.maximize
 
         checkable: true
         checked: actionState.checked
