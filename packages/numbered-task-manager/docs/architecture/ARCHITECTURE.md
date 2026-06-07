@@ -93,6 +93,10 @@ in `SPEC.md`.
   only at the visual delegate boundary. Rejected drag moves should be converted
   to action results only at the effect/diagnostic boundary, logging stale or
   invalid state while keeping expected policy rejections quiet.
+- Keep task drag/drop event policy in a small interaction helper. `TaskItem.qml`
+  may translate Qt drag/drop events, but MIME payload creation, source-index
+  parsing, self-drop rejection, missing-callback rejection, and callback
+  projection should be covered by pure tests.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
   coercion, launcher URL precedence, title/icon fallback, model-index validity,
   and virtual-desktop membership should not be duplicated between normal task
