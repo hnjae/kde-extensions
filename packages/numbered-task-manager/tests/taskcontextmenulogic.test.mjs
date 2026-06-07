@@ -84,6 +84,7 @@ const logic = loadQmlJsModule(
     "taskRoleSnapshot",
     "taskActivitiesActionState",
     "virtualDesktopAction",
+    "virtualDesktopActionsSection",
     "virtualDesktopEntriesSnapshot",
     "virtualDesktopCommand",
     "virtualDesktopMenuState",
@@ -1258,6 +1259,61 @@ assert.deepEqual(
     text: "New Desktop",
   },
 );
+{
+  const virtualDesktopSection = logic.virtualDesktopActionsSection({
+    changeable: true,
+    hasWindowTask: false,
+    isOnAllVirtualDesktops: false,
+    isWindow: true,
+    virtualDesktops: ["desktop-a"],
+  });
+  assert.equal(typeof virtualDesktopSection.desktopAction, "function");
+  assert.deepEqual(
+    plain({
+      allVirtualDesktops: virtualDesktopSection.allVirtualDesktops,
+      newVirtualDesktop: virtualDesktopSection.newVirtualDesktop,
+      virtualDesktop: virtualDesktopSection.desktopAction({
+        id: "desktop-b",
+        name: "Desktop B",
+      }),
+      virtualDesktops: virtualDesktopSection.virtualDesktops,
+    }),
+    {
+      allVirtualDesktops: {
+        checked: false,
+        command: {
+          arguments: [[]],
+          kind: "task-model-request",
+          requestMethod: "requestVirtualDesktops",
+        },
+        text: "All Desktops",
+      },
+      newVirtualDesktop: {
+        command: {
+          arguments: [],
+          kind: "task-model-request",
+          requestMethod: "requestNewVirtualDesktop",
+        },
+        enabled: false,
+        text: "New Desktop",
+      },
+      virtualDesktop: {
+        checked: false,
+        command: {
+          arguments: [["desktop-b"]],
+          kind: "task-model-request",
+          requestMethod: "requestVirtualDesktops",
+        },
+        text: "Desktop B",
+      },
+      virtualDesktops: {
+        enabled: false,
+        text: "Virtual Desktops",
+        visible: true,
+      },
+    },
+  );
+}
 assert.deepEqual(
   plain(
     logic.taskActivitiesActionState({
@@ -2436,20 +2492,24 @@ assert.equal(
   false,
 );
 assert.equal(
-  menuQml.includes("TaskContextMenuLogic.virtualDesktopsAction({"),
+  menuQml.includes("TaskContextMenuLogic.virtualDesktopActionsSection({"),
   true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.virtualDesktopsAction({"),
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.allVirtualDesktopsAction"),
-  true,
+  false,
 );
 assert.equal(
-  menuQml.includes("TaskContextMenuLogic.virtualDesktopAction"),
-  true,
+  menuQml.includes("TaskContextMenuLogic.virtualDesktopAction("),
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.newVirtualDesktopAction({"),
-  true,
+  false,
 );
 assert.equal(menuQml.includes('text: "Virtual Desktops"'), false);
 assert.equal(menuQml.includes('text: "All Desktops"'), false);
