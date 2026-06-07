@@ -305,7 +305,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestNewInstance"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.newInstanceCommand());
         }
     }
 
@@ -321,7 +321,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestMove"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.moveCommand());
         }
     }
 
@@ -337,7 +337,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestResize"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.resizeCommand());
         }
     }
 

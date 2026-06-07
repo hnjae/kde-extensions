@@ -74,6 +74,18 @@ function newInstanceActionState(taskState) {
   };
 }
 
+function newInstanceCommand() {
+  return contextMenuTaskCommand("requestNewInstance");
+}
+
+function moveCommand() {
+  return contextMenuTaskCommand("requestMove");
+}
+
+function resizeCommand() {
+  return contextMenuTaskCommand("requestResize");
+}
+
 function windowCapabilityActionState(taskState) {
   const state = taskState || {};
   const capable = Boolean(state.capable);
