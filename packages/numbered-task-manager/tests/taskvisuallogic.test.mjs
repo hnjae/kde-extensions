@@ -174,14 +174,27 @@ assert.doesNotMatch(
   /readonly property var remoteAttentionVisibleItem:/,
 );
 assert.match(mainQml, /visibleTaskItems:\s*root\.visibleTaskItems/);
-assert.match(mainQml, /count:\s*remoteAttentionSource\.itemCount/);
-assert.match(mainQml, /iconSource:\s*remoteAttentionSource\.itemIconSource/);
-assert.match(mainQml, /modelIndex:\s*remoteAttentionSource\.itemModelIndex/);
-assert.match(mainQml, /taskData:\s*remoteAttentionSource\.itemTaskData/);
-assert.match(mainQml, /title:\s*remoteAttentionSource\.itemTitle/);
-assert.match(mainQml, /visible:\s*remoteAttentionSource\.itemVisible/);
-assert.match(mainQml, /remoteAttentionSource\.requestVisibleActivation\(\)/);
-assert.match(
+assert.match(mainQml, /\bRemoteAttentionItem\s*\{/);
+assert.match(mainQml, /source:\s*remoteAttentionSource/);
+assert.match(mainQml, /vertical:\s*root\.vertical/);
+assert.match(mainQml, /taskSlotWidth:\s*fullRepresentationItem\.taskSlotWidth/);
+assert.doesNotMatch(mainQml, /count:\s*remoteAttentionSource\.itemCount/);
+assert.doesNotMatch(
+  mainQml,
+  /iconSource:\s*remoteAttentionSource\.itemIconSource/,
+);
+assert.doesNotMatch(
+  mainQml,
+  /modelIndex:\s*remoteAttentionSource\.itemModelIndex/,
+);
+assert.doesNotMatch(mainQml, /taskData:\s*remoteAttentionSource\.itemTaskData/);
+assert.doesNotMatch(mainQml, /title:\s*remoteAttentionSource\.itemTitle/);
+assert.doesNotMatch(mainQml, /visible:\s*remoteAttentionSource\.itemVisible/);
+assert.doesNotMatch(
+  mainQml,
+  /remoteAttentionSource\.requestVisibleActivation\(\)/,
+);
+assert.doesNotMatch(
   mainQml,
   /remoteAttentionSource\.requestVisibleContextMenu\(request\)/,
 );
