@@ -87,14 +87,8 @@ QtQuick.Item {
             }
         }
 
-        QtQuick.Text {
-            QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
-            QtQuickLayouts.Layout.fillWidth: root.titleVisible
-            color: KirigamiPlatform.Theme.textColor
-            elide: QtQuick.Text.ElideRight
-            maximumLineCount: 1
-            text: root.title
-            verticalAlignment: QtQuick.Text.AlignVCenter
+        TaskLikeTitle {
+            title: root.title
             visible: root.titleVisible
         }
 
