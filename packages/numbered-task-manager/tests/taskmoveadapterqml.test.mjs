@@ -8,6 +8,10 @@ const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
   "utf8",
 );
+const normalTaskItemQml = readFileSync(
+  new URL("../package/contents/ui/NormalTaskItem.qml", import.meta.url),
+  "utf8",
+);
 const sourceUrl = new URL(
   "../package/contents/ui/TaskMoveAdapter.qml",
   import.meta.url,
@@ -23,11 +27,19 @@ assert.match(mainQml, /launcherSync:\s*launcherSync/);
 assert.match(mainQml, /normalEntries:\s*root\.normalTaskEntries/);
 assert.match(mainQml, /normalTaskStore:\s*normalTaskStore/);
 assert.match(mainQml, /taskModel:\s*tasksModel/);
-assert.match(
+assert.doesNotMatch(
   mainQml,
   /taskMover\.canMoveTaskResult\(sourceIndex, targetIndex\)/,
 );
-assert.match(mainQml, /taskMover\.moveTask\(sourceIndex, targetIndex\)/);
+assert.doesNotMatch(mainQml, /taskMover\.moveTask\(sourceIndex, targetIndex\)/);
+assert.match(
+  normalTaskItemQml,
+  /root\.moveAdapter\.canMoveTaskResult\(sourceIndex, targetIndex\)/,
+);
+assert.match(
+  normalTaskItemQml,
+  /root\.moveAdapter\.moveTask\(sourceIndex, targetIndex\)/,
+);
 assert.match(mainQml, /root\.logActionResult\(result\)/);
 assert.doesNotMatch(mainQml, /import "TaskModelLogic\.js" as TaskModelLogic/);
 assert.doesNotMatch(mainQml, /function moveTask\(/);

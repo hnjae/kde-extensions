@@ -136,6 +136,10 @@ const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
   "utf8",
 );
+const normalTaskItemQml = readFileSync(
+  new URL("../package/contents/ui/NormalTaskItem.qml", import.meta.url),
+  "utf8",
+);
 assert.match(mainQml, /import org\.kde\.plasma\.core as PlasmaCore/);
 assert.match(
   mainQml,
@@ -155,12 +159,12 @@ assert.match(
   /orientation:\s*root\.vertical\s*\?\s*QtQuick\.ListView\.Vertical\s*:\s*QtQuick\.ListView\.Horizontal/,
 );
 assert.match(
-  mainQml,
-  /height:\s*root\.vertical\s*\?\s*implicitHeight\s*:\s*taskList\.height/,
+  normalTaskItemQml,
+  /height:\s*root\.vertical\s*\?\s*implicitHeight\s*:\s*root\.taskListHeight/,
 );
 assert.match(
-  mainQml,
-  /width:\s*root\.vertical\s*\?\s*taskList\.width\s*:\s*fullRepresentationItem\.taskSlotWidth/,
+  normalTaskItemQml,
+  /width:\s*root\.vertical\s*\?\s*root\.taskListWidth\s*:\s*root\.taskSlotWidth/,
 );
 assert.match(mainQml, /visibleItemCount:\s*root\.visibleTaskItems\.length/);
 assert.match(
@@ -224,8 +228,8 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(mainQml, /root\.remoteAttentionState\.target\s*\?/);
 assert.match(
-  mainQml,
-  /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*fullRepresentationItem\.taskSlotWidth/,
+  normalTaskItemQml,
+  /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*root\.taskSlotWidth/,
 );
 assert.doesNotMatch(mainQml, /taskActivation\.activateTaskEntry\(entry\)/);
 assert.doesNotMatch(
@@ -240,12 +244,12 @@ assert.match(
   /onActionResult:\s*result => \{[\s\S]*?root\.logActionResult\(result\);[\s\S]*?\}/,
 );
 assert.match(
-  mainQml,
-  /canDropTask:\s*\(sourceIndex, targetIndex\) => taskMover\.canMoveTaskResult\(sourceIndex, targetIndex\)\.canMove/,
+  normalTaskItemQml,
+  /canDropTask:\s*\(sourceIndex, targetIndex\) => root\.moveAdapter\.canMoveTaskResult\(sourceIndex, targetIndex\)\.canMove/,
 );
 assert.match(
-  mainQml,
-  /if \(taskMover\.moveTask\(sourceIndex, targetIndex\)\) \{[\s\S]*?drop\.acceptProposedAction\(\);/,
+  normalTaskItemQml,
+  /if \(root\.moveAdapter\.moveTask\(sourceIndex, targetIndex\)\) \{[\s\S]*?drop\.acceptProposedAction\(\);/,
 );
 assert.doesNotMatch(
   mainQml,

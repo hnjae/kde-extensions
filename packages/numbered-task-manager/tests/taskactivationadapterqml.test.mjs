@@ -8,6 +8,10 @@ const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
   "utf8",
 );
+const normalTaskItemQml = readFileSync(
+  new URL("../package/contents/ui/NormalTaskItem.qml", import.meta.url),
+  "utf8",
+);
 const sourceUrl = new URL(
   "../package/contents/ui/TaskActivationAdapter.qml",
   import.meta.url,
@@ -27,7 +31,11 @@ assert.match(
   /onActionResult:\s*result\s*=>\s*\{[\s\S]*?root\.logActionResult\(result\);[\s\S]*?\}/,
 );
 assert.match(mainQml, /taskActivation\.activateTaskAtIndex\(/);
-assert.match(mainQml, /taskActivation\.activateTaskEntry\(entry\)/);
+assert.doesNotMatch(mainQml, /taskActivation\.activateTaskEntry\(entry\)/);
+assert.match(
+  normalTaskItemQml,
+  /root\.activationAdapter\.activateTaskEntry\(root\.entry\)/,
+);
 assert.match(
   mainQml,
   /onActivationRequested:\s*visibleItem\s*=>\s*\{[\s\S]*?taskActivation\.activateRemoteAttention\(visibleItem\);[\s\S]*?\}/,
