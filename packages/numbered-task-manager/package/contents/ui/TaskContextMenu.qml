@@ -119,10 +119,6 @@ PlasmaExtras.Menu {
         return LauncherListLogic.launcherPinState(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
-    function activities() {
-        return roleSnapshot().activities;
-    }
-
     function virtualDesktops() {
         return roleSnapshot().virtualDesktops;
     }
@@ -156,7 +152,7 @@ PlasmaExtras.Menu {
             return;
         }
 
-        requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestActivities", TaskActivityLogic.taskActivitiesAfterToggle(activities(), activityId)));
+        requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestActivities", TaskActivityLogic.taskActivitiesAfterToggle(roleSnapshot().activities, activityId)));
     }
 
     function launcherPosition() {
@@ -606,7 +602,7 @@ PlasmaExtras.Menu {
 
             PlasmaExtras.MenuItem {
                 checkable: true
-                checked: TaskContextMenuLogic.taskActivityMenuState(root.activities(), "").allActivitiesChecked
+                checked: TaskContextMenuLogic.taskActivityMenuState(root.roleSnapshot().activities, "").allActivitiesChecked
                 text: "All Activities"
 
                 onClicked: {
@@ -622,7 +618,7 @@ PlasmaExtras.Menu {
                     required property var modelData
 
                     checkable: true
-                    checked: TaskContextMenuLogic.taskActivityMenuState(root.activities(), modelData.id).activityChecked
+                    checked: TaskContextMenuLogic.taskActivityMenuState(root.roleSnapshot().activities, modelData.id).activityChecked
                     text: modelData.name
 
                     onClicked: {

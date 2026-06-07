@@ -297,6 +297,14 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the launcher URL snapshot wrapper function still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function launcherUrl|launcherUrl\\(\\)|roleSnapshot\\(\\)\\.launcherUrl" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 37: Activity Snapshot Binding
+
+- Status: completed.
+- What changed: declared that list role snapshot fields such as `activities` should be consumed directly from `TaskContextMenuLogic.taskRoleSnapshot(...)`; removed the menu-local `activities()` passthrough function; replaced task activity toggle and checked-state call sites with direct `roleSnapshot().activities` reads.
+- Behavior that must remain unchanged: task activity live role data and task fallback still flow through `TaskContextMenuLogic.taskRoleSnapshot(...)`; activity toggle payloads, All Activities checked state, per-activity checked state, labels, ordering, and command descriptors remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the activity snapshot wrapper function still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function activities|activities\\(\\)|roleSnapshot\\(\\)\\.activities" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue reducing remaining role snapshot convenience wrappers where practical without obscuring live-role fallback behavior.
