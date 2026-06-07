@@ -124,15 +124,19 @@ const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
   "utf8",
 );
-assert.match(
-  mainQml,
-  /showTitle:\s*!\(entry\.launcherBacked && entry\.isLauncher\)/,
+const normalTaskItemQml = readFileSync(
+  new URL("../package/contents/ui/NormalTaskItem.qml", import.meta.url),
+  "utf8",
 );
 assert.match(
-  mainQml,
-  /pinnedLauncherOnly:\s*entry\.launcherBacked && entry\.isLauncher/,
+  normalTaskItemQml,
+  /showTitle:\s*!\(root\.entry\.launcherBacked && root\.entry\.isLauncher\)/,
 );
 assert.match(
-  mainQml,
-  /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*fullRepresentationItem\.taskSlotWidth/,
+  normalTaskItemQml,
+  /pinnedLauncherOnly:\s*root\.entry\.launcherBacked && root\.entry\.isLauncher/,
+);
+assert.match(
+  normalTaskItemQml,
+  /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*root\.taskSlotWidth/,
 );
