@@ -13,6 +13,7 @@ import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskActivityLogic.js" as TaskActivityLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
+import "NormalTaskStoreLogic.js" as NormalTaskStoreLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskModelLogic.js" as TaskModelLogic
 import "TaskActionLogic.js" as TaskActionLogic
@@ -210,8 +211,9 @@ PlasmoidItem {
     }
 
     function createNormalTaskPublicationKey() {
-        nextNormalTaskPublicationId += 1;
-        return "normal:" + nextNormalTaskPublicationId.toString();
+        const publication = NormalTaskStoreLogic.createNormalTaskPublicationKey(nextNormalTaskPublicationId);
+        nextNormalTaskPublicationId = publication.nextPublicationId;
+        return publication.key;
     }
 
     function visibleLauncherPosition(launcherUrl, launcherRevisionToken) {
@@ -232,32 +234,37 @@ PlasmoidItem {
     }
 
     function publishNormalTask(key, qualifies, task) {
-        if (!qualifies) {
-            removeNormalTask(key);
-            return;
+        const store = normalTaskStore();
+        const nextStore = NormalTaskStoreLogic.publishNormalTask(store, key, qualifies, task, launcherUrl => visibleLauncherPosition(launcherUrl));
+        if (nextStore !== store) {
+            applyNormalTaskStore(nextStore);
         }
-
-        const entries = Object.assign({}, normalTaskEntryMap);
-        entries[key] = task;
-        normalTaskEntryMap = entries;
-        recomputeNormalTaskEntries();
     }
 
     function removeNormalTask(key) {
-        if (!key || !normalTaskEntryMap[key]) {
-            return;
+        const store = normalTaskStore();
+        const nextStore = NormalTaskStoreLogic.removeNormalTask(store, key, launcherUrl => visibleLauncherPosition(launcherUrl));
+        if (nextStore !== store) {
+            applyNormalTaskStore(nextStore);
         }
+    }
 
-        const entries = Object.assign({}, normalTaskEntryMap);
-        delete entries[key];
-        normalTaskEntryMap = entries;
-        recomputeNormalTaskEntries();
+    function normalTaskStore() {
+        return {
+            entries: normalTaskEntries,
+            entryMap: normalTaskEntryMap,
+            manualOrder: normalTaskManualOrder
+        };
+    }
+
+    function applyNormalTaskStore(store) {
+        normalTaskEntryMap = store.entryMap;
+        normalTaskManualOrder = store.manualOrder;
+        normalTaskEntries = store.entries;
     }
 
     function recomputeNormalTaskEntries() {
-        const result = TaskModelLogic.composeNormalTaskEntries(normalTaskEntryMap, normalTaskManualOrder, launcherUrl => visibleLauncherPosition(launcherUrl));
-        normalTaskManualOrder = result.manualOrder;
-        normalTaskEntries = result.entries;
+        applyNormalTaskStore(NormalTaskStoreLogic.recomputeNormalTaskStore(normalTaskStore(), launcherUrl => visibleLauncherPosition(launcherUrl)));
     }
 
     function remoteAttentionKey(winIds, launcherUrl, title, row) {
