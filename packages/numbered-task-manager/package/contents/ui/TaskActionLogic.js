@@ -261,6 +261,55 @@ function contextMenuLauncherCommand(action, value) {
   return command;
 }
 
+function normalizedContextMenuLauncherCommand(command) {
+  const launcherCommand = command || {};
+  if (launcherCommand.action === "replaceLauncherList") {
+    return contextMenuLauncherCommand(
+      launcherCommand.action,
+      launcherCommand.launchers,
+    );
+  }
+
+  return contextMenuLauncherCommand(
+    launcherCommand.action,
+    launcherCommand.launcherUrl,
+  );
+}
+
+function contextMenuLauncherCommandDispatchResult(command) {
+  const launcherCommand = normalizedContextMenuLauncherCommand(command);
+  const context = {};
+  if (launcherCommand.launcherUrl) {
+    context.launcherUrl = launcherCommand.launcherUrl;
+  }
+  if (launcherCommand.launchers.length > 0) {
+    context.launchers = launcherCommand.launchers;
+  }
+
+  if (
+    launcherCommand.action !== "pinLauncher" &&
+    launcherCommand.action !== "unpinLauncher" &&
+    launcherCommand.action !== "replaceLauncherList"
+  ) {
+    context.commandKind = launcherCommand.kind;
+    return Object.assign(
+      actionResult(
+        launcherCommand.action || "launcherCommand",
+        "unknown-launcher-command",
+        false,
+        true,
+        context,
+      ),
+      launcherCommand,
+    );
+  }
+
+  return Object.assign(
+    actionResult(launcherCommand.action, "ready", true, false, context),
+    launcherCommand,
+  );
+}
+
 function contextMenuTaskRequestContext(modelIndex, task) {
   const entry = task || {};
   const context = {

@@ -186,20 +186,26 @@ PlasmoidItem {
     }
 
     function dispatchLauncherCommand(command) {
-        const launcherCommand = command || {};
-        if (launcherCommand.action === "pinLauncher") {
-            pinLauncher(launcherCommand.launcherUrl);
-            return;
+        const result = TaskActionLogic.contextMenuLauncherCommandDispatchResult(command);
+        if (!result.ok) {
+            logActionResult(result);
+            return result;
         }
 
-        if (launcherCommand.action === "unpinLauncher") {
-            unpinLauncher(launcherCommand.launcherUrl);
-            return;
+        if (result.action === "pinLauncher") {
+            pinLauncher(result.launcherUrl);
+            return result;
         }
 
-        if (launcherCommand.action === "replaceLauncherList") {
-            applyLauncherList(launcherCommand.launchers);
+        if (result.action === "unpinLauncher") {
+            unpinLauncher(result.launcherUrl);
+            return result;
         }
+
+        if (result.action === "replaceLauncherList") {
+            applyLauncherList(result.launchers);
+        }
+        return result;
     }
 
     function moveTask(sourceIndex, targetIndex) {

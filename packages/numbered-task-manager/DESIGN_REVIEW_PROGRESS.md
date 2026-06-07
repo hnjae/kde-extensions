@@ -193,7 +193,14 @@
 - Verification: `node tests/taskactionlogic.test.mjs` failed before implementation because `contextMenuTaskExecutionResult` did not exist; after implementation, `node tests/taskactionlogic.test.mjs`; `node tests/taskcontextmenulogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskactionlogic.test.mjs`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 24: Launcher Command Dispatch Diagnostics
+
+- Status: completed.
+- What changed: declared root launcher command dispatch diagnostics, added `TaskActionLogic.contextMenuLauncherCommandDispatchResult(...)`, and routed `main.qml` launcher command dispatch through structured results before executing root side effects.
+- Behavior that must remain unchanged: valid `pinLauncher`, `unpinLauncher`, and `replaceLauncherList` descriptors still call the same root methods with the same launcher URL or launcher-list payload; malformed or unknown launcher commands now log a structured diagnostic instead of being silently ignored.
+- Verification: `node tests/taskactionlogic.test.mjs` failed before implementation because `contextMenuLauncherCommandDispatchResult` did not exist; after implementation, `node tests/taskactionlogic.test.mjs`; `node tests/taskcontextmenulogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/main.qml`, `tests/taskactionlogic.test.mjs`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.
-- Observability: extend structured action results to unexpected root-level command dispatch cases where practical.
