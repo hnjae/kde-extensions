@@ -102,7 +102,9 @@ in `SPEC.md`.
 - Keep context-menu launcher effects on typed command descriptors. The menu may
   request pin, unpin, and replacement launcher-list effects, but root QML should
   remain responsible for executing those effects against `TasksModel` and
-  plasmoid configuration.
+  plasmoid configuration. Root dispatch of malformed or unknown launcher
+  commands should produce structured diagnostic results instead of silent
+  no-ops.
 - Do not claim support for upstream task-manager private backend behavior, such
   as file-open drops onto task delegates, unless that backend integration is
   actually added.
