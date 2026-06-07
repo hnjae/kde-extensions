@@ -13,6 +13,7 @@ const logic = loadQmlJsModule(
     "checkableWindowActionState",
     "checkableWindowCapabilityActionState",
     "closeActionState",
+    "activityEntriesSnapshot",
     "menuActionSectionVisible",
     "newVirtualDesktopActionState",
     "launcherActivityListSnapshot",
@@ -25,6 +26,7 @@ const logic = loadQmlJsModule(
     "taskActivityMenuState",
     "taskRoleSnapshot",
     "taskActivitiesActionState",
+    "virtualDesktopEntriesSnapshot",
     "virtualDesktopMenuState",
     "virtualDesktopsActionState",
     "windowCapabilityActionState",
@@ -82,6 +84,56 @@ assert.equal(
 assert.equal(
   logic.panelMenuPlacement(undefined, plasmaCoreTypes, plasmaMenu),
   plasmaMenu.TopPosedLeftAlignedPopup,
+);
+assert.deepEqual(
+  plain(
+    logic.virtualDesktopEntriesSnapshot(["desktop-a", "desktop-b"], ["Work"]),
+  ),
+  [
+    {
+      id: "desktop-a",
+      name: "Work",
+    },
+    {
+      id: "desktop-b",
+      name: "Desktop 2",
+    },
+  ],
+);
+assert.deepEqual(
+  plain(logic.virtualDesktopEntriesSnapshot(null, ["Work"])),
+  [],
+);
+assert.deepEqual(
+  plain(
+    logic.activityEntriesSnapshot(
+      ["activity-a", 42],
+      (id) => (id === "activity-a" ? "Work" : ""),
+      (id) => "icon-" + id,
+    ),
+  ),
+  [
+    {
+      icon: "icon-activity-a",
+      id: "activity-a",
+      name: "Work",
+    },
+    {
+      icon: "icon-42",
+      id: "42",
+      name: "42",
+    },
+  ],
+);
+assert.deepEqual(
+  plain(logic.activityEntriesSnapshot(["activity-a"], null, null)),
+  [
+    {
+      icon: "",
+      id: "activity-a",
+      name: "activity-a",
+    },
+  ],
 );
 
 assert.deepEqual(
@@ -593,6 +645,16 @@ const menuQml = readFileSync(
 assert.equal(menuQml.includes("atm.HasLauncher"), false);
 assert.equal(menuQml.includes("taskModel.data"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.taskRoleSnapshot"), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.activityEntriesSnapshot"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.virtualDesktopEntriesSnapshot"),
+  true,
+);
+assert.equal(menuQml.includes('names[i] || "Desktop "'), false);
+assert.equal(menuQml.includes("activityInfo.activityName(id) || id"), false);
 assert.equal(menuQml.includes("function isWindow"), false);
 assert.equal(menuQml.includes("function isLauncher"), false);
 assert.equal(menuQml.includes("function launcherUrl"), false);
