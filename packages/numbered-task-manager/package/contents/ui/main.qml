@@ -67,7 +67,7 @@ PlasmoidItem {
 
     function requestActivation(result) {
         if (result.sourceModel === "remoteAttention") {
-            attentionTasksModel.requestActivate(result.modelIndex);
+            remoteAttentionSource.requestActivate(result.modelIndex);
             return;
         }
 
@@ -402,18 +402,6 @@ PlasmoidItem {
         }
     }
 
-    TaskManager.TasksModel {
-        id: attentionTasksModel
-
-        activity: activityInfo.currentActivity
-        filterByActivity: false
-        filterByScreen: false
-        filterByVirtualDesktop: false
-        groupMode: TaskManager.TasksModel.GroupDisabled
-        sortMode: TaskManager.TasksModel.SortManual
-        virtualDesktop: virtualDesktopInfo.currentDesktop
-    }
-
     NormalTaskSource {
         taskModel: tasksModel
         currentActivity: activityInfo.currentActivity
@@ -434,7 +422,7 @@ PlasmoidItem {
     RemoteAttentionSource {
         id: remoteAttentionSource
 
-        taskModel: attentionTasksModel
+        currentActivity: activityInfo.currentActivity
         currentDesktop: virtualDesktopInfo.currentDesktop
         isInCurrentActivity: activities => root.isInCurrentActivity(activities)
     }
@@ -553,7 +541,7 @@ PlasmoidItem {
 
                 onContextMenuRequested: request => {
                     root.openTaskContextMenu(Object.assign({
-                        taskModel: attentionTasksModel
+                        taskModel: remoteAttentionSource.taskModel
                     }, request));
                 }
             }

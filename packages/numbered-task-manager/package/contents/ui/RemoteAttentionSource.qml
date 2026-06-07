@@ -4,13 +4,15 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
+import org.kde.taskmanager as TaskManager
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 
 QtQuick.Item {
     id: root
 
-    property var taskModel: null
+    readonly property var taskModel: attentionTasksModel
+    property string currentActivity: ""
     property string currentDesktop: ""
     property var isInCurrentActivity: null
     property var attentionState: RemoteAttentionLogic.createRemoteAttentionState()
@@ -32,6 +34,10 @@ QtQuick.Item {
         return root.isInCurrentActivity(activities);
     }
 
+    function requestActivate(modelIndex) {
+        attentionTasksModel.requestActivate(modelIndex);
+    }
+
     function publishRemoteAttention(previousKey, key, qualifies, task, becameQualified) {
         const result = RemoteAttentionLogic.publishRemoteAttentionState(attentionState, previousKey, key, qualifies, task, becameQualified);
         attentionState = result.state;
@@ -45,6 +51,18 @@ QtQuick.Item {
             attentionState = result.state;
         }
         root.attentionRemoved(key);
+    }
+
+    TaskManager.TasksModel {
+        id: attentionTasksModel
+
+        activity: root.currentActivity
+        filterByActivity: false
+        filterByScreen: false
+        filterByVirtualDesktop: false
+        groupMode: TaskManager.TasksModel.GroupDisabled
+        sortMode: TaskManager.TasksModel.SortManual
+        virtualDesktop: root.currentDesktop
     }
 
     QtQuick.Repeater {
