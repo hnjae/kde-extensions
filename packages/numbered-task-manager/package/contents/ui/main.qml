@@ -110,6 +110,7 @@ PlasmoidItem {
         id: contextMenuAdapter
 
         launcherModel: tasksModel
+        taskModel: tasksModel
 
         onActionResult: result => {
             root.logActionResult(result);
@@ -274,9 +275,7 @@ PlasmoidItem {
                     }
 
                     onContextMenuRequested: request => {
-                        contextMenuAdapter.openTaskContextMenu(Object.assign({
-                            taskModel: tasksModel
-                        }, request));
+                        contextMenuAdapter.openTaskContextMenu(request);
                     }
 
                     onTaskDropped: (sourceIndex, targetIndex, drop) => {

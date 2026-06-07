@@ -10,6 +10,7 @@ QtQuick.Item {
     id: root
 
     property var launcherModel
+    property var taskModel
 
     signal actionResult(var result)
     signal launcherCommandRequested(var command)
@@ -18,8 +19,14 @@ QtQuick.Item {
     visible: false
     width: 0
 
+    function contextMenuRequest(request) {
+        return Object.assign({
+            taskModel: root.taskModel
+        }, request || ({}));
+    }
+
     function openTaskContextMenu(request) {
-        const menuRequest = TaskActionLogic.contextMenuRequestResult(request);
+        const menuRequest = TaskActionLogic.contextMenuRequestResult(contextMenuRequest(request));
         if (!menuRequest.ok) {
             actionResult(menuRequest);
             return;
