@@ -40,6 +40,7 @@ const logic = loadQmlJsModule(
     "noBorderCommand",
     "panelMenuPlacement",
     "pinActionState",
+    "pinLauncherCommand",
     "roleData",
     "resizeCommand",
     "shadeCommand",
@@ -181,6 +182,28 @@ assert.deepEqual(
     action: "unpin",
     enabled: false,
     text: "Unpin from Task Manager",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.pinLauncherCommand({ isPinned: false, launcherUrl: "app.desktop" }),
+  ),
+  {
+    action: "pinLauncher",
+    kind: "launcher-command",
+    launcherUrl: "app.desktop",
+    launchers: [],
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.pinLauncherCommand({ isPinned: true, launcherUrl: "app.desktop" }),
+  ),
+  {
+    action: "unpinLauncher",
+    kind: "launcher-command",
+    launcherUrl: "app.desktop",
+    launchers: [],
   },
 );
 assert.deepEqual(
@@ -1135,6 +1158,17 @@ assert.equal(
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivityMenuState"),
   true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.pinLauncherCommand"), true);
+assert.equal(
+  menuQml.includes('TaskActionLogic.contextMenuLauncherCommand("pinLauncher"'),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuLauncherCommand("unpinLauncher"',
+  ),
+  false,
 );
 assert.equal(menuQml.includes("if (!update.ok)"), true);
 assert.equal(menuQml.includes("if (!update)"), false);
