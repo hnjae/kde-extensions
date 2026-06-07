@@ -29,6 +29,7 @@ const logic = loadQmlJsModule(
     "fullscreenAction",
     "fullscreenCommand",
     "fullscreenShadeBorderRoleSnapshot",
+    "menuActionSection",
     "menuActionSectionVisible",
     "moveCommand",
     "newVirtualDesktopAction",
@@ -869,6 +870,42 @@ assert.equal(
     newInstanceVisible: false,
   }),
   true,
+);
+assert.deepEqual(
+  plain(
+    logic.menuActionSection({
+      hasWindowTask: false,
+      launcherActivitiesVisible: false,
+      newInstanceVisible: false,
+    }),
+  ),
+  {
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.menuActionSection({
+      hasWindowTask: false,
+      launcherActivitiesVisible: false,
+      newInstanceVisible: true,
+    }),
+  ),
+  {
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.menuActionSection({
+      hasWindowTask: true,
+      launcherActivitiesVisible: false,
+      newInstanceVisible: false,
+    }),
+  ),
+  {
+    visible: true,
+  },
 );
 assert.deepEqual(
   plain(
