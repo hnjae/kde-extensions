@@ -12,7 +12,6 @@ import org.kde.taskmanager as TaskManager
 import "ActivityScopeLogic.js" as ActivityScopeLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
-import "NormalTaskStoreLogic.js" as NormalTaskStoreLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskModelLogic.js" as TaskModelLogic
 import "TaskScopeLogic.js" as TaskScopeLogic
@@ -24,8 +23,7 @@ PlasmoidItem {
 
     readonly property string taskDragMimeType: "application/x-numbered-task-manager-row"
     readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
-    property var normalTaskStoreState: NormalTaskStoreLogic.createNormalTaskStore()
-    readonly property var normalTaskEntries: normalTaskStoreState.entries || []
+    readonly property var normalTaskEntries: normalTaskStore.entries
     readonly property var visibleTaskItems: VisibleTaskItemsLogic.composeVisibleTaskItems(normalTaskEntries, remoteAttentionSource.snapshot)
     readonly property var normalVisibleTaskItems: VisibleTaskItemsLogic.normalVisibleTaskItems(root.visibleTaskItems)
     readonly property var remoteAttentionVisibleItem: VisibleTaskItemsLogic.visibleRemoteAttentionItem(root.visibleTaskItems)
@@ -85,23 +83,10 @@ PlasmoidItem {
         }
 
         if (!sourceEntry.launcherBacked) {
-            return moveManualTask(sourceEntry.entryKey, targetEntry.entryKey);
+            return normalTaskStore.moveManualTask(sourceEntry.entryKey, targetEntry.entryKey);
         }
 
         return movePinnedLauncher(sourceEntry, targetEntry);
-    }
-
-    function moveManualTask(sourceKey, targetKey) {
-        const result = TaskModelLogic.moveManualTaskOrder(normalTaskEntries, sourceKey, targetKey);
-        if (!result.moved) {
-            return false;
-        }
-
-        normalTaskStoreState = Object.assign({}, normalTaskStoreState, {
-            manualOrder: result.order
-        });
-        recomputeNormalTaskEntries();
-        return true;
     }
 
     function movePinnedLauncher(sourceEntry, targetEntry) {
@@ -129,12 +114,6 @@ PlasmoidItem {
         return TaskModelLogic.normalTaskEntryForSourceIndex(normalTaskEntries, sourceIndex);
     }
 
-    function createNormalTaskPublicationKey() {
-        const publication = NormalTaskStoreLogic.allocateNormalTaskPublication(normalTaskStoreState);
-        normalTaskStoreState = publication.store;
-        return publication.key;
-    }
-
     function visibleLauncherPosition(launcherUrl, launcherRevisionToken) {
         const revision = launcherRevisionToken === undefined ? launcherRevision : launcherRevisionToken;
         if (!launcherUrl) {
@@ -150,30 +129,6 @@ PlasmoidItem {
 
     function isInCurrentActivity(activities) {
         return ActivityScopeLogic.isInCurrentActivity(activities, activityInfo.currentActivity);
-    }
-
-    function publishNormalTask(key, qualifies, task) {
-        const store = normalTaskStoreState;
-        const nextStore = NormalTaskStoreLogic.publishNormalTask(store, key, qualifies, task, launcherUrl => visibleLauncherPosition(launcherUrl));
-        if (nextStore !== store) {
-            applyNormalTaskStore(nextStore);
-        }
-    }
-
-    function removeNormalTask(key) {
-        const store = normalTaskStoreState;
-        const nextStore = NormalTaskStoreLogic.removeNormalTask(store, key, launcherUrl => visibleLauncherPosition(launcherUrl));
-        if (nextStore !== store) {
-            applyNormalTaskStore(nextStore);
-        }
-    }
-
-    function applyNormalTaskStore(store) {
-        normalTaskStoreState = store;
-    }
-
-    function recomputeNormalTaskEntries() {
-        applyNormalTaskStore(NormalTaskStoreLogic.recomputeNormalTaskStore(normalTaskStoreState, launcherUrl => visibleLauncherPosition(launcherUrl)));
     }
 
     function activateRemoteAttention() {
@@ -242,6 +197,12 @@ PlasmoidItem {
         }
     }
 
+    NormalTaskStoreAdapter {
+        id: normalTaskStore
+
+        visibleLauncherPosition: launcherUrl => root.visibleLauncherPosition(launcherUrl)
+    }
+
     TaskManager.TasksModel {
         id: tasksModel
 
@@ -274,15 +235,15 @@ PlasmoidItem {
         currentActivity: activityInfo.currentActivity
         currentDesktop: virtualDesktopInfo.currentDesktop
         launcherRevision: root.launcherRevision
-        createPublicationKey: () => root.createNormalTaskPublicationKey()
+        createPublicationKey: () => normalTaskStore.allocatePublicationKey()
         isInCurrentActivity: activities => root.isInCurrentActivity(activities)
         visibleLauncherPosition: (launcherUrl, launcherRevisionToken) => root.visibleLauncherPosition(launcherUrl, launcherRevisionToken)
 
         onTaskPublished: (key, qualifies, task) => {
-            root.publishNormalTask(key, qualifies, task);
+            normalTaskStore.publishNormalTask(key, qualifies, task);
         }
         onTaskRemoved: key => {
-            root.removeNormalTask(key);
+            normalTaskStore.removeNormalTask(key);
         }
     }
 

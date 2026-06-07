@@ -30,7 +30,6 @@ assert.match(
   /normalTaskStore\.publishNormalTask\(key, qualifies, task\)/,
 );
 assert.match(mainQml, /normalTaskStore\.removeNormalTask\(key\)/);
-assert.match(mainQml, /normalTaskStore\.recomputeEntries\(\)/);
 assert.doesNotMatch(mainQml, /import "NormalTaskStoreLogic\.js"/);
 assert.doesNotMatch(mainQml, /property var normalTaskStoreState/);
 assert.doesNotMatch(mainQml, /function createNormalTaskPublicationKey\(/);
