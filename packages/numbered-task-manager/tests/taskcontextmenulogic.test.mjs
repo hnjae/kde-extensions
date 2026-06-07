@@ -10,6 +10,8 @@ const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskContextMenuLogic.js", import.meta.url),
   [
     "boolRoleData",
+    "launcherActivityListSnapshot",
+    "launcherActivityMenuState",
     "launcherActivitiesVisible",
     "panelMenuPlacement",
     "pinActionState",
@@ -32,6 +34,7 @@ const plasmaMenu = {
   TopPosedLeftAlignedPopup: "open-up",
 };
 const plain = (value) => JSON.parse(JSON.stringify(value));
+const nullActivityId = "00000000-0000-0000-0000-000000000000";
 
 assert.equal(
   logic.panelMenuPlacement(
@@ -108,6 +111,32 @@ assert.equal(
   ),
   false,
 );
+
+assert.deepEqual(plain(logic.launcherActivityListSnapshot([])), [
+  nullActivityId,
+]);
+assert.deepEqual(plain(logic.launcherActivityListSnapshot([nullActivityId])), [
+  nullActivityId,
+]);
+assert.deepEqual(
+  plain(logic.launcherActivityListSnapshot(["work", "work", ""])),
+  ["work"],
+);
+assert.deepEqual(plain(logic.launcherActivityMenuState([], "work")), {
+  activities: [nullActivityId],
+  activityChecked: true,
+  allActivitiesChecked: true,
+});
+assert.deepEqual(plain(logic.launcherActivityMenuState(["chat"], "work")), {
+  activities: ["chat"],
+  activityChecked: false,
+  allActivitiesChecked: false,
+});
+assert.deepEqual(plain(logic.launcherActivityMenuState(["chat"], "chat")), {
+  activities: ["chat"],
+  activityChecked: true,
+  allActivitiesChecked: false,
+});
 assert.equal(
   logic.launcherActivitiesVisible(
     { canPin: true, isPinned: true, launcherUrl: "app.desktop" },
@@ -202,6 +231,14 @@ const menuQml = readFileSync(
 
 assert.equal(menuQml.includes("atm.HasLauncher"), false);
 assert.equal(menuQml.includes("taskModel.data"), false);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.launcherActivityListSnapshot"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.launcherActivityMenuState"),
+  true,
+);
 
 function directMenuContentObjectViolations(qml) {
   const violations = [];
