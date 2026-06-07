@@ -10,6 +10,8 @@ const logic = loadQmlJsModule(
   [
     "contextMenuCreationResult",
     "contextMenuRequestResult",
+    "launcherMutationRequest",
+    "launcherMutationResult",
     "shortcutActivationRequest",
     "shouldLogActionResult",
     "taskActivationRequest",
@@ -177,3 +179,46 @@ assert.equal(
   logic.contextMenuCreationResult({ objectName: "menu" }, {}).ok,
   true,
 );
+
+assert.deepEqual(
+  plain(logic.launcherMutationRequest("pinLauncher", "app.desktop")),
+  {
+    action: "pinLauncher",
+    code: "ready",
+    context: {
+      launcherUrl: "app.desktop",
+    },
+    diagnostic: false,
+    launcherUrl: "app.desktop",
+    ok: true,
+  },
+);
+
+const missingLauncherRequest = logic.launcherMutationRequest("pinLauncher", "");
+assert.equal(missingLauncherRequest.ok, false);
+assert.equal(missingLauncherRequest.code, "missing-launcher-url");
+assert.equal(logic.shouldLogActionResult(missingLauncherRequest), false);
+
+const acceptedLauncherMutation = logic.launcherMutationResult(
+  logic.launcherMutationRequest("unpinLauncher", "app.desktop"),
+  true,
+);
+assert.deepEqual(plain(acceptedLauncherMutation), {
+  action: "unpinLauncher",
+  code: "accepted",
+  context: {
+    launcherUrl: "app.desktop",
+  },
+  diagnostic: false,
+  launcherUrl: "app.desktop",
+  ok: true,
+});
+
+const rejectedLauncherMutation = logic.launcherMutationResult(
+  logic.launcherMutationRequest("unpinLauncher", "app.desktop"),
+  false,
+);
+assert.equal(rejectedLauncherMutation.ok, false);
+assert.equal(rejectedLauncherMutation.code, "request-rejected");
+assert.equal(rejectedLauncherMutation.context.launcherUrl, "app.desktop");
+assert.equal(logic.shouldLogActionResult(rejectedLauncherMutation), true);
