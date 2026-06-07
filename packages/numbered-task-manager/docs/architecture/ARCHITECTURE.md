@@ -97,7 +97,8 @@ in `SPEC.md`.
   `TaskContextMenu.qml` may execute `TasksModel.request*` effects directly from
   typed command descriptors, but missing task models, stale model indexes, and
   missing request methods should be classified before the Plasma request is
-  attempted.
+  attempted. Request execution failures should also be converted to structured
+  diagnostic results.
 - Keep context-menu launcher effects on typed command descriptors. The menu may
   request pin, unpin, and replacement launcher-list effects, but root QML should
   remain responsible for executing those effects against `TasksModel` and
