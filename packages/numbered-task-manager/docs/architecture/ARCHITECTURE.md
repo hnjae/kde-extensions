@@ -48,7 +48,9 @@ in `SPEC.md`.
 - Keep context-menu virtual-desktop checked-state policy in
   `TaskContextMenuLogic.js`. The menu may still request `TasksModel`
   virtual-desktop mutations directly, but all-desktops and per-desktop checked
-  predicates should be derived by a tested helper.
+  predicates should be derived by a tested helper. QML menu items should
+  consume that helper output directly instead of adding menu-local
+  checked-state wrapper functions.
 - Keep context-menu basic action availability in `TaskContextMenuLogic.js`.
   Simple item visible/enabled predicates such as New Instance, Move, and Resize
   should be derived by tested helpers while QML keeps rendering order and Plasma
