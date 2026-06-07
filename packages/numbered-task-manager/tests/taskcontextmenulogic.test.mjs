@@ -41,6 +41,7 @@ const logic = loadQmlJsModule(
     "panelMenuPlacement",
     "pinActionState",
     "pinLauncherCommand",
+    "replaceLauncherListCommand",
     "roleData",
     "resizeCommand",
     "shadeCommand",
@@ -204,6 +205,17 @@ assert.deepEqual(
     kind: "launcher-command",
     launcherUrl: "app.desktop",
     launchers: [],
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.replaceLauncherListCommand(["app.desktop", "", null, "chat.desktop"]),
+  ),
+  {
+    action: "replaceLauncherList",
+    kind: "launcher-command",
+    launcherUrl: "",
+    launchers: ["app.desktop", "chat.desktop"],
   },
 );
 assert.deepEqual(
@@ -1170,6 +1182,16 @@ assert.equal(
   ),
   false,
 );
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.replaceLauncherListCommand"),
+  true,
+);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuLauncherCommand("replaceLauncherList"',
+  ),
+  false,
+);
 assert.equal(menuQml.includes("if (!update.ok)"), true);
 assert.equal(menuQml.includes("if (!update)"), false);
 assert.equal(menuQml.includes("function launcherPinnedToAllActivities"), false);
@@ -1375,7 +1397,7 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskActionLogic.contextMenuLauncherCommand"),
-  true,
+  false,
 );
 assert.equal(menuQml.includes("function requestTaskModelAction"), false);
 assert.equal(menuQml.includes("signal pinRequested"), false);
