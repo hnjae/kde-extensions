@@ -8,6 +8,7 @@ import org.kde.taskmanager as TaskManager
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskScopeLogic.js" as TaskScopeLogic
+import "VisibleTaskItemsLogic.js" as VisibleTaskItemsLogic
 
 QtQuick.Item {
     id: root
@@ -16,6 +17,7 @@ QtQuick.Item {
     property string currentActivity: ""
     property string currentDesktop: ""
     property var isInCurrentActivity: null
+    property var visibleTaskItems: []
     property var attentionState: RemoteAttentionLogic.createRemoteAttentionState()
     readonly property int count: attentionState.count || 0
     readonly property var target: attentionState.target || null
@@ -23,9 +25,19 @@ QtQuick.Item {
             count: root.count,
             target: root.target
         })
+    readonly property var visibleItem: VisibleTaskItemsLogic.visibleRemoteAttentionItem(root.visibleTaskItems)
+    readonly property var itemEntry: root.visibleItem ? root.visibleItem.entry || ({}) : ({})
+    readonly property bool itemVisible: Boolean(root.visibleItem)
+    readonly property int itemCount: root.visibleItem ? root.visibleItem.count || 0 : 0
+    readonly property var itemIconSource: root.itemEntry.iconSource || TaskEntryLogic.remoteAttentionIconFallback()
+    readonly property var itemModelIndex: root.itemEntry.modelIndex
+    readonly property var itemTaskData: root.itemEntry
+    readonly property string itemTitle: root.itemEntry.title || ""
 
     signal attentionPublished(string previousKey, string key, bool qualifies, var task, bool becameQualified)
     signal attentionRemoved(string key)
+    signal activationRequested(var visibleItem)
+    signal contextMenuRequested(var request)
 
     height: 0
     visible: false
@@ -41,6 +53,16 @@ QtQuick.Item {
 
     function requestActivate(modelIndex) {
         attentionTasksModel.requestActivate(modelIndex);
+    }
+
+    function requestVisibleActivation() {
+        root.activationRequested(root.visibleItem);
+    }
+
+    function requestVisibleContextMenu(request) {
+        root.contextMenuRequested(Object.assign({
+            taskModel: root.taskModel
+        }, request));
     }
 
     function publishRemoteAttention(previousKey, key, qualifies, task, becameQualified) {

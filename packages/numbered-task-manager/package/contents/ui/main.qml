@@ -25,7 +25,6 @@ PlasmoidItem {
     readonly property var normalTaskEntries: normalTaskStore.entries
     readonly property var visibleTaskItems: VisibleTaskItemsLogic.composeVisibleTaskItems(normalTaskEntries, remoteAttentionSource.snapshot)
     readonly property var normalVisibleTaskItems: VisibleTaskItemsLogic.normalVisibleTaskItems(root.visibleTaskItems)
-    readonly property var remoteAttentionVisibleItem: VisibleTaskItemsLogic.visibleRemoteAttentionItem(root.visibleTaskItems)
     property int launcherRevision: 0
 
     Plasmoid.icon: "preferences-system-windows"
@@ -190,6 +189,15 @@ PlasmoidItem {
         currentActivity: activityInfo.currentActivity
         currentDesktop: virtualDesktopInfo.currentDesktop
         isInCurrentActivity: activities => root.isInCurrentActivity(activities)
+        visibleTaskItems: root.visibleTaskItems
+
+        onActivationRequested: visibleItem => {
+            taskActivation.activateRemoteAttention(visibleItem);
+        }
+
+        onContextMenuRequested: request => {
+            contextMenuAdapter.openTaskContextMenu(request);
+        }
     }
 
     fullRepresentation: QtQuick.Item {
@@ -284,30 +292,25 @@ PlasmoidItem {
             AttentionItem {
                 id: attentionItem
 
-                readonly property var visibleItem: root.remoteAttentionVisibleItem || ({})
-                readonly property var entry: visibleItem.entry || ({})
-
                 QtQuickLayouts.Layout.fillHeight: !root.vertical
                 QtQuickLayouts.Layout.fillWidth: root.vertical
                 QtQuickLayouts.Layout.preferredWidth: root.vertical ? implicitWidth : fullRepresentationItem.taskSlotWidth
 
-                count: visibleItem.count || 0
-                iconSource: entry.iconSource || TaskEntryLogic.remoteAttentionIconFallback()
-                modelIndex: entry.modelIndex
+                count: remoteAttentionSource.itemCount
+                iconSource: remoteAttentionSource.itemIconSource
+                modelIndex: remoteAttentionSource.itemModelIndex
                 slotWidth: root.vertical ? 0 : fullRepresentationItem.taskSlotWidth
-                taskData: entry
-                title: entry.title || ""
+                taskData: remoteAttentionSource.itemTaskData
+                title: remoteAttentionSource.itemTitle
                 titleVisibilityThreshold: fullRepresentationItem.titleVisibilityThreshold
-                visible: Boolean(root.remoteAttentionVisibleItem)
+                visible: remoteAttentionSource.itemVisible
 
                 onActivated: {
-                    taskActivation.activateRemoteAttention(root.remoteAttentionVisibleItem);
+                    remoteAttentionSource.requestVisibleActivation();
                 }
 
                 onContextMenuRequested: request => {
-                    contextMenuAdapter.openTaskContextMenu(Object.assign({
-                        taskModel: remoteAttentionSource.taskModel
-                    }, request));
+                    remoteAttentionSource.requestVisibleContextMenu(request);
                 }
             }
         }
