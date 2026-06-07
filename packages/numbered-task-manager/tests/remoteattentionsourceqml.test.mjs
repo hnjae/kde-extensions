@@ -28,3 +28,16 @@ assert.match(
 );
 assert.match(sourceQml, /signal attentionPublished\(/);
 assert.match(sourceQml, /signal attentionRemoved\(/);
+assert.match(
+  sourceQml,
+  /property var attentionState:\s*RemoteAttentionLogic\.createRemoteAttentionState\(\)/,
+);
+assert.match(sourceQml, /readonly property int count:/);
+assert.match(sourceQml, /readonly property var target:/);
+assert.doesNotMatch(sourceQml, /property var publishAttention:/);
+assert.doesNotMatch(sourceQml, /property var removeAttention:/);
+assert.doesNotMatch(mainQml, /property var remoteAttentionState:/);
+assert.doesNotMatch(mainQml, /function publishRemoteAttention\(/);
+assert.doesNotMatch(mainQml, /function removeRemoteAttention\(/);
+assert.doesNotMatch(mainQml, /publishAttention:/);
+assert.doesNotMatch(mainQml, /removeAttention:/);
