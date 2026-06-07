@@ -113,13 +113,13 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs`; `node tests/taskentrylogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
-## Planned Checkpoint 14: Context-Menu Basic Action State
+## Completed Checkpoint 14: Context-Menu Basic Action State
 
-- Status: planned.
-- What will change: add tested helpers for New Instance, Move, and Resize menu visible/enabled state in `TaskContextMenuLogic.js` and route those `TaskContextMenu.qml` bindings through helper output.
+- Status: completed.
+- What changed: added tested helpers for New Instance, Move, and Resize menu visible/enabled state in `TaskContextMenuLogic.js` and routed those `TaskContextMenu.qml` bindings through helper output.
 - Behavior that must remain unchanged: context-menu order, labels, visibility, enabled state, click effects, request method names, and request payloads remain unchanged.
-- Verification: `node tests/taskcontextmenulogic.test.mjs`; `rg "CanLaunchNewInstance|IsMovable|IsResizable" package/contents/ui/TaskContextMenu.qml`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
-- Files likely changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+- Verification: `node tests/taskcontextmenulogic.test.mjs`; `rg "visible: root\\.boolRole\\(root\\.atm\\.(CanLaunchNewInstance|IsMovable|IsResizable)|enabled: root\\.hasWindowTask && root\\.boolRole\\(root\\.atm\\.(IsMovable|IsResizable)" package/contents/ui/TaskContextMenu.qml`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
 ## Remaining Follow-Up Work
 

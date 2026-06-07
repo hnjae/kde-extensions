@@ -30,6 +30,25 @@ function pinActionState(pinState) {
   };
 }
 
+function newInstanceActionState(taskState) {
+  const state = taskState || {};
+
+  return {
+    enabled: Boolean(state.hasTask),
+    visible: Boolean(state.canLaunchNewInstance || state.isLauncher),
+  };
+}
+
+function windowCapabilityActionState(taskState) {
+  const state = taskState || {};
+  const capable = Boolean(state.capable);
+
+  return {
+    enabled: Boolean(state.hasWindowTask && capable),
+    visible: Boolean(state.isWindow && capable),
+  };
+}
+
 function launcherActivitiesVisible(pinState, activityEntryCount) {
   const state = pinState || {};
   const count = Number(activityEntryCount || 0);

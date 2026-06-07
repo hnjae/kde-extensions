@@ -118,6 +118,22 @@ PlasmaExtras.Menu {
         return LauncherListLogic.launcherPinState(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
+    function newInstanceActionState() {
+        return TaskContextMenuLogic.newInstanceActionState({
+            canLaunchNewInstance: boolRole(atm.CanLaunchNewInstance, task.canLaunchNewInstance || false),
+            hasTask: hasTask,
+            isLauncher: isLauncher()
+        });
+    }
+
+    function windowCapabilityActionState(role, fallback) {
+        return TaskContextMenuLogic.windowCapabilityActionState({
+            capable: boolRole(role, fallback || false),
+            hasWindowTask: hasWindowTask,
+            isWindow: isWindow()
+        });
+    }
+
     function activities() {
         return roleSnapshot().activities;
     }
@@ -341,9 +357,11 @@ PlasmaExtras.Menu {
     PlasmaExtras.MenuItem {
         id: newInstanceItem
 
-        enabled: root.hasTask
+        readonly property var actionState: root.newInstanceActionState()
+
+        enabled: actionState.enabled
         text: "New Instance"
-        visible: root.boolRole(root.atm.CanLaunchNewInstance, root.task.canLaunchNewInstance || false) || root.isLauncher()
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestNewInstance");
@@ -351,9 +369,11 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        enabled: root.hasWindowTask && root.boolRole(root.atm.IsMovable, root.task.isMovable || false)
+        readonly property var actionState: root.windowCapabilityActionState(root.atm.IsMovable, root.task.isMovable || false)
+
+        enabled: actionState.enabled
         text: "Move"
-        visible: root.isWindow() && root.boolRole(root.atm.IsMovable, root.task.isMovable || false)
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestMove");
@@ -361,9 +381,11 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        enabled: root.hasWindowTask && root.boolRole(root.atm.IsResizable, root.task.isResizable || false)
+        readonly property var actionState: root.windowCapabilityActionState(root.atm.IsResizable, root.task.isResizable || false)
+
+        enabled: actionState.enabled
         text: "Resize"
-        visible: root.isWindow() && root.boolRole(root.atm.IsResizable, root.task.isResizable || false)
+        visible: actionState.visible
 
         onClicked: {
             root.requestTaskModelAction("requestResize");
