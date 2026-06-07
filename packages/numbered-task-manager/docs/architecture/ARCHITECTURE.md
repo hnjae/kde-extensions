@@ -42,6 +42,10 @@ in `SPEC.md`.
   `TaskContextMenuLogic.js`. Task activity mutation decisions remain in
   `TaskActivityLogic.js`, but menu-facing all-activities and per-activity
   checked predicates should come from tested helper output.
+- Keep context-menu virtual-desktop checked-state policy in
+  `TaskContextMenuLogic.js`. The menu may still request `TasksModel`
+  virtual-desktop mutations directly, but all-desktops and per-desktop checked
+  predicates should be derived by a tested helper.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
