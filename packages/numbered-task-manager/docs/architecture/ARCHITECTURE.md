@@ -67,6 +67,10 @@ in `SPEC.md`.
   order, count, entries, and target properties.
 - Keep composed visible item order, slot labels, `Meta+0` target selection, item source metadata, and item count in a visible-item composer instead of reconstructing those policies independently in root activation, layout sizing, and delegates.
 - Keep shortcut activation, context-menu creation, and launcher pin/unpin request outcomes in a small action-result helper. Root QML should still execute Plasma side effects, but invalid requests, stale model indexes, missing targets, rejected launcher requests, and creation failures should be classified before deciding whether to log a diagnostic.
+- Keep context-menu task request outcomes in the same action-result helper.
+  `TaskContextMenu.qml` may execute `TasksModel.request*` effects directly, but
+  missing task models, stale model indexes, and missing request methods should be
+  classified before the Plasma request is attempted.
 - Do not claim support for upstream task-manager private backend behavior, such
   as file-open drops onto task delegates, unless that backend integration is
   actually added.
