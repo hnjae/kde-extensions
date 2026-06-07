@@ -2687,6 +2687,14 @@ const menuQml = readFileSync(
   "utf8",
 );
 
+assert.equal(menuQml.includes("TaskContextMenuPlatformState {"), true);
+assert.equal(menuQml.includes("TaskManager.ActivityInfo"), false);
+assert.equal(menuQml.includes("TaskManager.VirtualDesktopInfo"), false);
+assert.equal(menuQml.includes("function refreshActivities()"), false);
+assert.equal(menuQml.includes("activityInfo.currentActivity"), false);
+assert.equal(menuQml.includes("_activityInfo.currentActivity"), false);
+assert.equal(menuQml.includes("virtualDesktopInfo.desktopIds"), false);
+assert.equal(menuQml.includes("virtualDesktopInfo.desktopNames"), false);
 assert.equal(menuQml.includes("atm.HasLauncher"), false);
 assert.equal(menuQml.includes("taskModel.data"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.taskRoleSnapshot"), true);
@@ -2698,11 +2706,11 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.activityEntriesSnapshot"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopEntriesSnapshot"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.basicActionRoleSnapshot"),
@@ -3279,6 +3287,43 @@ assert.equal(menuQml.includes("signal pinRequested"), false);
 assert.equal(menuQml.includes("signal unpinRequested"), false);
 assert.equal(menuQml.includes("signal launcherListChangeRequested"), false);
 assert.equal(/\b(?:root\.)?taskModel\.request[A-Z]/.test(menuQml), false);
+
+const platformStateQml = readFileSync(
+  new URL(
+    "../package/contents/ui/TaskContextMenuPlatformState.qml",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.equal(platformStateQml.includes("TaskManager.ActivityInfo"), true);
+assert.equal(platformStateQml.includes("TaskManager.VirtualDesktopInfo"), true);
+assert.equal(
+  platformStateQml.includes(
+    "readonly property var currentActivity: activityInfo.currentActivity",
+  ),
+  true,
+);
+assert.equal(
+  platformStateQml.includes("property var activityEntries: []"),
+  true,
+);
+assert.equal(
+  platformStateQml.includes(
+    "readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot",
+  ),
+  true,
+);
+assert.equal(platformStateQml.includes("function refreshActivities()"), true);
+assert.equal(
+  platformStateQml.includes("TaskContextMenuLogic.activityEntriesSnapshot"),
+  true,
+);
+assert.equal(
+  platformStateQml.includes(
+    "TaskContextMenuLogic.virtualDesktopEntriesSnapshot",
+  ),
+  true,
+);
 
 const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
