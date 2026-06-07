@@ -2,8 +2,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
+
+const visibleTaskItemsLogicSource = readFileSync(
+  new URL("../package/contents/ui/VisibleTaskItemsLogic.js", import.meta.url),
+  "utf8",
+);
+assert.doesNotMatch(
+  visibleTaskItemsLogicSource,
+  /function visibleItemForNormalIndex\b/,
+);
 
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/VisibleTaskItemsLogic.js", import.meta.url),
