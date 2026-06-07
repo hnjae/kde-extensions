@@ -607,6 +607,9 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivityMenuState"),
   true,
 );
+assert.equal(menuQml.includes("function taskOnAllActivities"), false);
+assert.equal(menuQml.includes("function taskOnActivity"), false);
+assert.equal(menuQml.includes("function taskActivityMenuState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopMenuState"),
   true,
