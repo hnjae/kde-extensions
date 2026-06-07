@@ -9,7 +9,6 @@ import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
 import "TaskEntryLogic.js" as TaskEntryLogic
-import "TaskInteractionLogic.js" as TaskInteractionLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskVisualLogic.js" as TaskVisualLogic
 
@@ -29,7 +28,7 @@ QtQuick.Item {
     readonly property int iconExtent: TaskMetricsLogic.iconExtentForTaskFrame(height, taskFrame.contentTopMargin, taskFrame.contentBottomMargin, Kirigami.Units.iconSizes.small)
     readonly property real naturalImplicitWidth: Math.max(TaskMetricsLogic.attentionNaturalWidthMinimum(), Math.min(TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth + contentHorizontalPadding))
     readonly property bool titleVisible: root.showTitle && (root.slotWidth <= 0 || root.slotWidth >= root.titleVisibilityThreshold)
-    readonly property bool visualHighlighted: pointerHandler.hovered || root.activeFocus || root.contextMenuOpen
+    readonly property bool visualHighlighted: taskLikeInteraction.highlighted
 
     signal activated
     signal contextMenuRequested(var request)
@@ -38,6 +37,7 @@ QtQuick.Item {
     implicitHeight: TaskMetricsLogic.taskExtent()
     width: implicitWidth
     activeFocusOnTab: true
+    QtQuick.Keys.forwardTo: [taskLikeInteraction]
 
     KirigamiPlatform.Theme.colorSet: KirigamiPlatform.Theme.Button
 
@@ -109,40 +109,21 @@ QtQuick.Item {
         }
     }
 
-    QtQuick.Keys.onMenuPressed: contextMenuTimer.start()
+    TaskLikeInteraction {
+        id: taskLikeInteraction
 
-    QtQuick.HoverHandler {
-        id: pointerHandler
-    }
+        contextMenuOpen: root.contextMenuOpen
+        focusTarget: root
+        modelIndex: root.modelIndex
+        taskData: root.taskData
+        visualParent: root
 
-    QtQuick.TapHandler {
-        acceptedButtons: QtQuick.Qt.RightButton
-        acceptedDevices: QtQuick.PointerDevice.Mouse | QtQuick.PointerDevice.TouchPad | QtQuick.PointerDevice.Stylus
-        gesturePolicy: QtQuick.TapHandler.WithinBounds
-
-        onPressedChanged: {
-            if (pressed) {
-                contextMenuTimer.start();
-            }
-        }
-    }
-
-    QtQuick.TapHandler {
-        acceptedButtons: QtQuick.Qt.LeftButton
-
-        onTapped: {
+        onActivated: {
             root.activated();
         }
-    }
 
-    QtQuick.Timer {
-        id: contextMenuTimer
-
-        interval: 0
-
-        onTriggered: {
-            root.forceActiveFocus(QtQuick.Qt.MouseFocusReason);
-            root.contextMenuRequested(TaskInteractionLogic.taskContextMenuRequest(root.modelIndex, root.taskData, root));
+        onContextMenuRequested: request => {
+            root.contextMenuRequested(request);
         }
     }
 }

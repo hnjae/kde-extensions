@@ -48,7 +48,7 @@ QtQuick.Item {
     readonly property string numberMode: itemPresentation.numberMode
     readonly property string slotLabel: itemPresentation.slotLabel
     readonly property bool titleVisible: root.showTitle && (root.slotWidth <= 0 || root.slotWidth >= root.titleVisibilityThreshold)
-    readonly property bool visualHighlighted: pointerHandler.hovered || root.activeFocus || root.contextMenuOpen
+    readonly property bool visualHighlighted: taskLikeInteraction.highlighted
 
     signal activated(int taskIndex)
     signal contextMenuRequested(var request)
@@ -58,6 +58,7 @@ QtQuick.Item {
     implicitHeight: TaskMetricsLogic.taskExtent()
     width: implicitWidth
     activeFocusOnTab: true
+    QtQuick.Keys.forwardTo: [taskLikeInteraction]
 
     KirigamiPlatform.Theme.colorSet: KirigamiPlatform.Theme.Button
 
@@ -190,40 +191,21 @@ QtQuick.Item {
         enabled: root.taskIndex >= 0
     }
 
-    QtQuick.Keys.onMenuPressed: contextMenuTimer.start()
+    TaskLikeInteraction {
+        id: taskLikeInteraction
 
-    QtQuick.HoverHandler {
-        id: pointerHandler
-    }
+        contextMenuOpen: root.contextMenuOpen
+        focusTarget: root
+        modelIndex: root.modelIndex
+        taskData: root.taskData
+        visualParent: root
 
-    QtQuick.TapHandler {
-        acceptedButtons: QtQuick.Qt.RightButton
-        acceptedDevices: QtQuick.PointerDevice.Mouse | QtQuick.PointerDevice.TouchPad | QtQuick.PointerDevice.Stylus
-        gesturePolicy: QtQuick.TapHandler.WithinBounds
-
-        onPressedChanged: {
-            if (pressed) {
-                contextMenuTimer.start();
-            }
-        }
-    }
-
-    QtQuick.TapHandler {
-        acceptedButtons: QtQuick.Qt.LeftButton
-
-        onTapped: {
+        onActivated: {
             root.activated(root.taskIndex);
         }
-    }
 
-    QtQuick.Timer {
-        id: contextMenuTimer
-
-        interval: 0
-
-        onTriggered: {
-            root.forceActiveFocus(QtQuick.Qt.MouseFocusReason);
-            root.contextMenuRequested(TaskInteractionLogic.taskContextMenuRequest(root.modelIndex, root.taskData, root));
+        onContextMenuRequested: request => {
+            root.contextMenuRequested(request);
         }
     }
 }
