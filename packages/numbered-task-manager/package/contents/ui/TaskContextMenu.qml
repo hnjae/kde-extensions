@@ -330,7 +330,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
+        readonly property var actionState: TaskContextMenuLogic.minimizeAction({
             capable: root.minimizeMaximizeRoles.isMinimizable,
             checked: root.minimizeMaximizeRoles.isMinimized,
             hasWindowTask: root.hasWindowTask,
@@ -340,16 +340,16 @@ PlasmaExtras.Menu {
         checkable: true
         checked: actionState.checked
         enabled: actionState.enabled
-        text: "Minimize"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.minimizeCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
+        readonly property var actionState: TaskContextMenuLogic.maximizeAction({
             capable: root.minimizeMaximizeRoles.isMaximizable,
             checked: root.minimizeMaximizeRoles.isMaximized,
             hasWindowTask: root.hasWindowTask,
@@ -359,11 +359,11 @@ PlasmaExtras.Menu {
         checkable: true
         checked: actionState.checked
         enabled: actionState.enabled
-        text: "Maximize"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.maximizeCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 

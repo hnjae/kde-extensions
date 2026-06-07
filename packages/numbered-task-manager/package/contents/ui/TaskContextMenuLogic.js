@@ -152,6 +152,20 @@ function maximizeCommand() {
   return contextMenuTaskCommand("requestToggleMaximized");
 }
 
+function minimizeAction(taskState) {
+  return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
+    command: minimizeCommand(),
+    text: "Minimize",
+  });
+}
+
+function maximizeAction(taskState) {
+  return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
+    command: maximizeCommand(),
+    text: "Maximize",
+  });
+}
+
 function keepAboveCommand() {
   return contextMenuTaskCommand("requestToggleKeepAbove");
 }
