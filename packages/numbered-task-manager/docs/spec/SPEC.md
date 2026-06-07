@@ -24,6 +24,9 @@ item order with `Meta+0`.
 - Task backgrounds fill the panel cross-axis: the available height in horizontal panels and the available width in vertical panels.
 - The widget fills available panel space like KDE's task manager: horizontal panels expand the widget across available width, and vertical panels expand it across available height.
 - Adjacent task backgrounds do not add a fixed layout gap beyond the active Plasma task-manager theme geometry.
+- In horizontal panels, all visible normal task items use the same adaptive slot width, regardless of title length or whether the item is a window or a closed pinned launcher.
+- Horizontal slot width is based on the available widget width and the number of visible items, capped at a comfortable maximum and shrinking evenly as item count grows.
+- If the visible item count cannot fit at the minimum readable slot width, task items keep that minimum width and the existing horizontal overflow behavior is the physical limit.
 - Task icon size follows KDE Plasma 6.6's default icons-and-text task manager behavior for the same panel size and active Plasma theme.
 - The active window uses the Plasma task-manager active background state, but its icon is not rendered with the hover-active icon appearance unless the task itself is highlighted by hover, keyboard focus, or an open task menu.
 - The first nine normal visible task slots are numbered `1` through `9`.
@@ -62,6 +65,7 @@ item order with `Meta+0`.
 - A pinned application appears as a launcher icon when it has no matching window
   in the normal task list.
 - A pinned launcher with no matching window shows only its slot number and icon; its text label is hidden.
+- A pinned launcher with no matching window participates in the same horizontal adaptive slot sizing as normal window tasks.
 - Activating a pinned launcher opens the application in that pinned slot instead
   of creating the first matching window at the far right.
 - If a pinned application already has a window in its pinned slot, opening
@@ -100,6 +104,7 @@ item order with `Meta+0`.
 - When at least one remote attention task exists, the widget shows one distinct
   attention item at the far right of the widget.
 - The remote attention item uses the same Plasma task-manager attention styling as a demanding-attention task.
+- The remote attention item participates in the same horizontal adaptive slot sizing as normal task items when it is visible.
 - The attention item is the `Meta+0` target because it is the final item in the
   visible item order, not because remote attention has a dedicated shortcut.
 - The attention item does not show a `0` number badge.
