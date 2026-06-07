@@ -804,6 +804,90 @@ function virtualDesktopActionsSection(sectionState) {
   };
 }
 
+function contextMenuActionSections(menuState) {
+  const state = menuState || {};
+  const basicRoles = state.basicActionRoles || {};
+  const captureCloseRoles = state.captureCloseRoles || {};
+  const fullscreenShadeBorderRoles = state.fullscreenShadeBorderRoles || {};
+  const keepAboveBelowRoles = state.keepAboveBelowRoles || {};
+  const minimizeMaximizeRoles = state.minimizeMaximizeRoles || {};
+  const taskRoles = state.taskRoles || {};
+  const virtualDesktopRoles = state.virtualDesktopRoles || {};
+
+  const launcherActivityActions = launcherActivityActionsSection({
+    activityEntryCount: state.activityEntryCount,
+    currentActivity: state.currentActivity,
+    hasTaskModel: state.hasTaskModel,
+    launcherActivities: state.launcherActivities,
+    launcherList: state.launcherList,
+    launcherPosition: state.launcherPosition,
+    pinState: state.pinState,
+  });
+
+  return {
+    basicActions: basicActionsSection({
+      canLaunchNewInstance: basicRoles.canLaunchNewInstance,
+      hasTask: state.hasTask,
+      hasWindowTask: state.hasWindowTask,
+      isLauncher: basicRoles.isLauncher,
+      isMovable: basicRoles.isMovable,
+      isResizable: basicRoles.isResizable,
+      isWindow: state.isWindow,
+      launcherActivitiesVisible:
+        launcherActivityActions.launcherActivities.visible,
+    }),
+    captureActions: captureActionsSection({
+      hasWindowTask: state.hasWindowTask,
+      isExcludedFromCapture: captureCloseRoles.isExcludedFromCapture,
+      isWindow: state.isWindow,
+    }),
+    closeActions: closeActionsSection({
+      closable: captureCloseRoles.closable,
+      hasTask: state.hasTask,
+      isWindow: state.isWindow,
+    }),
+    fullscreenShadeBorderActions: fullscreenShadeBorderActionsSection({
+      canSetNoBorder: fullscreenShadeBorderRoles.canSetNoBorder,
+      fullScreenable: fullscreenShadeBorderRoles.fullScreenable,
+      hasNoBorder: fullscreenShadeBorderRoles.hasNoBorder,
+      hasWindowTask: state.hasWindowTask,
+      isFullScreen: fullscreenShadeBorderRoles.isFullScreen,
+      isShadeable: fullscreenShadeBorderRoles.isShadeable,
+      isShaded: fullscreenShadeBorderRoles.isShaded,
+      isWindow: state.isWindow,
+    }),
+    keepAboveBelowActions: keepAboveBelowActionsSection({
+      hasWindowTask: state.hasWindowTask,
+      isKeepAbove: keepAboveBelowRoles.isKeepAbove,
+      isKeepBelow: keepAboveBelowRoles.isKeepBelow,
+      isWindow: state.isWindow,
+    }),
+    launcherActivityActions,
+    minimizeMaximizeActions: minimizeMaximizeActionsSection({
+      hasWindowTask: state.hasWindowTask,
+      isMaximizable: minimizeMaximizeRoles.isMaximizable,
+      isMaximized: minimizeMaximizeRoles.isMaximized,
+      isMinimizable: minimizeMaximizeRoles.isMinimizable,
+      isMinimized: minimizeMaximizeRoles.isMinimized,
+      isWindow: state.isWindow,
+    }),
+    pinActions: pinActionsSection(state.pinState),
+    taskActivityActions: taskActivityActionsSection({
+      activities: taskRoles.activities,
+      activityEntryCount: state.activityEntryCount,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+    virtualDesktopActions: virtualDesktopActionsSection({
+      changeable: virtualDesktopRoles.isVirtualDesktopsChangeable,
+      hasWindowTask: state.hasWindowTask,
+      isOnAllVirtualDesktops: virtualDesktopRoles.isOnAllVirtualDesktops,
+      isWindow: state.isWindow,
+      virtualDesktops: taskRoles.virtualDesktops,
+    }),
+  };
+}
+
 function roleData(roleSource, role, fallback) {
   const source = roleSource || {};
   if (

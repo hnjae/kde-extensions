@@ -21,79 +21,41 @@ PlasmaExtras.Menu {
     readonly property var taskRoles: TaskContextMenuLogic.taskRoleSnapshot(roleSource(), roleIds(), task)
     readonly property bool hasWindowTask: hasTask && taskRoles.isWindow
     readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var basicActionsSection: TaskContextMenuLogic.basicActionsSection({
-        canLaunchNewInstance: basicActionRoles.canLaunchNewInstance,
-        hasTask: hasTask,
-        hasWindowTask: hasWindowTask,
-        isLauncher: basicActionRoles.isLauncher,
-        isMovable: basicActionRoles.isMovable,
-        isResizable: basicActionRoles.isResizable,
-        isWindow: taskRoles.isWindow,
-        launcherActivitiesVisible: launcherActivitiesItem.visible
-    })
     readonly property var captureCloseRoles: TaskContextMenuLogic.captureCloseRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var captureActionsSection: TaskContextMenuLogic.captureActionsSection({
-        hasWindowTask: hasWindowTask,
-        isExcludedFromCapture: captureCloseRoles.isExcludedFromCapture,
-        isWindow: taskRoles.isWindow
-    })
-    readonly property var closeActionsSection: TaskContextMenuLogic.closeActionsSection({
-        closable: captureCloseRoles.closable,
-        hasTask: hasTask,
-        isWindow: taskRoles.isWindow
-    })
     readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
     readonly property var fullscreenShadeBorderRoles: TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var fullscreenShadeBorderActionsSection: TaskContextMenuLogic.fullscreenShadeBorderActionsSection({
-        canSetNoBorder: fullscreenShadeBorderRoles.canSetNoBorder,
-        fullScreenable: fullscreenShadeBorderRoles.fullScreenable,
-        hasNoBorder: fullscreenShadeBorderRoles.hasNoBorder,
-        hasWindowTask: hasWindowTask,
-        isFullScreen: fullscreenShadeBorderRoles.isFullScreen,
-        isShadeable: fullscreenShadeBorderRoles.isShadeable,
-        isShaded: fullscreenShadeBorderRoles.isShaded,
-        isWindow: taskRoles.isWindow
-    })
     readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var keepAboveBelowActionsSection: TaskContextMenuLogic.keepAboveBelowActionsSection({
-        hasWindowTask: hasWindowTask,
-        isKeepAbove: keepAboveBelowRoles.isKeepAbove,
-        isKeepBelow: keepAboveBelowRoles.isKeepBelow,
-        isWindow: taskRoles.isWindow
-    })
     readonly property var minimizeMaximizeRoles: TaskContextMenuLogic.minimizeMaximizeRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var minimizeMaximizeActionsSection: TaskContextMenuLogic.minimizeMaximizeActionsSection({
-        hasWindowTask: hasWindowTask,
-        isMaximizable: minimizeMaximizeRoles.isMaximizable,
-        isMaximized: minimizeMaximizeRoles.isMaximized,
-        isMinimizable: minimizeMaximizeRoles.isMinimizable,
-        isMinimized: minimizeMaximizeRoles.isMinimized,
-        isWindow: taskRoles.isWindow
-    })
-    readonly property var pinActionsSection: TaskContextMenuLogic.pinActionsSection(launcherPinState())
-    readonly property var launcherActivityActionsSection: TaskContextMenuLogic.launcherActivityActionsSection({
+    readonly property var virtualDesktopRoles: TaskContextMenuLogic.virtualDesktopRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property var actionSections: TaskContextMenuLogic.contextMenuActionSections({
         activityEntryCount: activityEntries.length,
+        basicActionRoles: basicActionRoles,
+        captureCloseRoles: captureCloseRoles,
         currentActivity: _activityInfo.currentActivity,
+        fullscreenShadeBorderRoles: fullscreenShadeBorderRoles,
+        hasTask: hasTask,
         hasTaskModel: taskModel,
+        hasWindowTask: hasWindowTask,
+        isWindow: taskRoles.isWindow,
+        keepAboveBelowRoles: keepAboveBelowRoles,
         launcherActivities: launcherActivityList,
         launcherList: launcherModel ? launcherModel.launcherList : [],
         launcherPosition: launcherPosition(),
-        pinState: launcherPinState()
+        minimizeMaximizeRoles: minimizeMaximizeRoles,
+        pinState: launcherPinState(),
+        taskRoles: taskRoles,
+        virtualDesktopRoles: virtualDesktopRoles
     })
-    readonly property var virtualDesktopRoles: TaskContextMenuLogic.virtualDesktopRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var virtualDesktopActionsSection: TaskContextMenuLogic.virtualDesktopActionsSection({
-        changeable: virtualDesktopRoles.isVirtualDesktopsChangeable,
-        hasWindowTask: hasWindowTask,
-        isOnAllVirtualDesktops: virtualDesktopRoles.isOnAllVirtualDesktops,
-        isWindow: taskRoles.isWindow,
-        virtualDesktops: taskRoles.virtualDesktops
-    })
-    readonly property var taskActivityActionsSection: TaskContextMenuLogic.taskActivityActionsSection({
-        activities: taskRoles.activities,
-        activityEntryCount: activityEntries.length,
-        hasWindowTask: hasWindowTask,
-        isWindow: taskRoles.isWindow
-    })
+    readonly property var basicActionsSection: actionSections.basicActions
+    readonly property var captureActionsSection: actionSections.captureActions
+    readonly property var closeActionsSection: actionSections.closeActions
+    readonly property var fullscreenShadeBorderActionsSection: actionSections.fullscreenShadeBorderActions
+    readonly property var keepAboveBelowActionsSection: actionSections.keepAboveBelowActions
+    readonly property var launcherActivityActionsSection: actionSections.launcherActivityActions
+    readonly property var minimizeMaximizeActionsSection: actionSections.minimizeMaximizeActions
+    readonly property var pinActionsSection: actionSections.pinActions
+    readonly property var taskActivityActionsSection: actionSections.taskActivityActions
+    readonly property var virtualDesktopActionsSection: actionSections.virtualDesktopActions
     property var activityEntries: []
     property var launcherModel: taskModel
     property var launcherActivityList: []

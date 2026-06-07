@@ -1251,7 +1251,7 @@ assert.deepEqual(
             },
             launchers: ["[activity-b]\napp.desktop"],
             ok: true,
-            reason: "changed",
+            reason: "updated",
           },
         },
         allLauncherActivities: {
@@ -1268,7 +1268,7 @@ assert.deepEqual(
             },
             launchers: ["[activity-a]\napp.desktop"],
             ok: true,
-            reason: "changed",
+            reason: "updated",
           },
         },
         launcherActivities: {
@@ -2857,7 +2857,7 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivityActionsSection({"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivitiesAction("),
@@ -2911,7 +2911,10 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivitiesVisible(pinState"),
   false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.pinActionsSection("), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.pinActionsSection("),
+  false,
+);
 assert.equal(menuQml.includes("TaskContextMenuLogic.pinLauncherAction"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.pinActionState(root.launcherPinState"),
@@ -2960,7 +2963,7 @@ assert.equal(menuQml.includes("function toggleTaskActivity"), false);
 assert.equal(menuQml.includes("root.toggleTaskActivity"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivityActionsSection({"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivitiesAction({"),
@@ -3004,7 +3007,7 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopActionsSection({"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopsAction({"),
@@ -3044,7 +3047,7 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.basicActionsSection({"),
-  true,
+  false,
 );
 assert.equal(menuQml.includes("TaskContextMenuLogic.newInstanceAction"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.basicMoveAction"), false);
@@ -3093,7 +3096,7 @@ assert.equal(
   menuQml.includes(
     "TaskContextMenuLogic.fullscreenShadeBorderActionsSection({",
   ),
-  true,
+  false,
 );
 assert.equal(menuQml.includes("TaskContextMenuLogic.fullscreenAction"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.shadeAction"), false);
@@ -3124,7 +3127,7 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.minimizeMaximizeActionsSection({"),
-  true,
+  false,
 );
 assert.equal(menuQml.includes("TaskContextMenuLogic.minimizeAction"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.maximizeAction"), false);
@@ -3156,7 +3159,7 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.keepAboveBelowActionsSection({"),
-  true,
+  false,
 );
 assert.equal(menuQml.includes("TaskContextMenuLogic.keepAboveAction"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.keepBelowAction"), false);
@@ -3207,7 +3210,7 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.captureActionsSection({"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.excludeFromCaptureAction"),
@@ -3215,7 +3218,7 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.closeActionsSection({"),
-  true,
+  false,
 );
 assert.equal(menuQml.includes("TaskContextMenuLogic.closeAction({"), false);
 assert.equal(
