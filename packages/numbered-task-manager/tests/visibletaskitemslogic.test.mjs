@@ -11,6 +11,7 @@ const logic = loadQmlJsModule(
     "activationTargetForShortcutIndex",
     "composeVisibleTaskItems",
     "visibleItemForNormalIndex",
+    "visibleRemoteAttentionItem",
   ],
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
@@ -181,3 +182,8 @@ assert.equal(
   logic.activationTargetForShortcutIndex(attentionItems, 9).entry.entryKey,
   "attention-target",
 );
+assert.equal(
+  logic.visibleRemoteAttentionItem(attentionItems).entry.entryKey,
+  "attention-target",
+);
+assert.equal(logic.visibleRemoteAttentionItem(threeNormalItems), null);
