@@ -273,6 +273,14 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the checkable window action wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function checkableWindowCapabilityActionState|function checkableWindowActionState|root\\.(checkableWindowCapabilityActionState|checkableWindowActionState)|checked: root\\.boolRole|TaskContextMenuLogic\\.(checkableWindowCapabilityActionState|checkableWindowActionState)" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 34: Terminal Action State Bindings
+
+- Status: completed.
+- What changed: declared that terminal context-menu actions should consume helper output directly; removed the menu-local terminal action-state wrapper functions; bound Virtual Desktops, New Desktop, Activities, and Close directly to `TaskContextMenuLogic.virtualDesktopsActionState(...)`, `TaskContextMenuLogic.newVirtualDesktopActionState(...)`, `TaskContextMenuLogic.taskActivitiesActionState(...)`, and `TaskContextMenuLogic.closeActionState(...)`.
+- Behavior that must remain unchanged: submenu composition, labels, visible/enabled states, ordering, and virtual-desktop/activity/close command descriptors remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the terminal action wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function (virtualDesktopsActionState|newVirtualDesktopActionState|taskActivitiesActionState|closeActionState)|root\\.(virtualDesktopsActionState|newVirtualDesktopActionState|taskActivitiesActionState|closeActionState)|TaskContextMenuLogic\\.(virtualDesktopsActionState|newVirtualDesktopActionState|taskActivitiesActionState|closeActionState)" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
-- Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.
+- Context menu: continue reducing remaining role snapshot convenience wrappers where practical without obscuring live-role fallback behavior.

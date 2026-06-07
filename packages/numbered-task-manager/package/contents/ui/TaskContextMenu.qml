@@ -123,36 +123,6 @@ PlasmaExtras.Menu {
         return LauncherListLogic.launcherPinState(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
-    function virtualDesktopsActionState() {
-        return TaskContextMenuLogic.virtualDesktopsActionState({
-            changeable: boolRole(atm.IsVirtualDesktopsChangeable, task.isVirtualDesktopsChangeable || false),
-            hasWindowTask: hasWindowTask,
-            isWindow: isWindow()
-        });
-    }
-
-    function newVirtualDesktopActionState() {
-        return TaskContextMenuLogic.newVirtualDesktopActionState({
-            hasWindowTask: hasWindowTask
-        });
-    }
-
-    function taskActivitiesActionState() {
-        return TaskContextMenuLogic.taskActivitiesActionState({
-            activityEntryCount: activityEntries.length,
-            hasWindowTask: hasWindowTask,
-            isWindow: isWindow()
-        });
-    }
-
-    function closeActionState() {
-        return TaskContextMenuLogic.closeActionState({
-            closable: boolRole(atm.IsClosable, task.closable || false),
-            hasTask: hasTask,
-            isWindow: isWindow()
-        });
-    }
-
     function activities() {
         return roleSnapshot().activities;
     }
@@ -558,7 +528,11 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: virtualDesktopsItem
-        readonly property var actionState: root.virtualDesktopsActionState()
+        readonly property var actionState: TaskContextMenuLogic.virtualDesktopsActionState({
+            changeable: root.boolRole(root.atm.IsVirtualDesktopsChangeable, root.task.isVirtualDesktopsChangeable || false),
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         enabled: actionState.enabled
         text: "Virtual Desktops"
@@ -610,7 +584,9 @@ PlasmaExtras.Menu {
             }
 
             PlasmaExtras.MenuItem {
-                readonly property var actionState: root.newVirtualDesktopActionState()
+                readonly property var actionState: TaskContextMenuLogic.newVirtualDesktopActionState({
+                    hasWindowTask: root.hasWindowTask
+                })
 
                 enabled: actionState.enabled
                 text: "New Desktop"
@@ -624,7 +600,11 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: activitiesItem
-        readonly property var actionState: root.taskActivitiesActionState()
+        readonly property var actionState: TaskContextMenuLogic.taskActivitiesActionState({
+            activityEntryCount: root.activityEntries.length,
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         enabled: actionState.enabled
         text: "Activities"
@@ -680,7 +660,11 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: closeItem
-        readonly property var actionState: root.closeActionState()
+        readonly property var actionState: TaskContextMenuLogic.closeActionState({
+            closable: root.boolRole(root.atm.IsClosable, root.task.closable || false),
+            hasTask: root.hasTask,
+            isWindow: root.isWindow()
+        })
 
         enabled: actionState.enabled
         text: "Close"
