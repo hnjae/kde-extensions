@@ -249,6 +249,30 @@ function launcherActivityUpdateCommand(launcherList, position, activities) {
   });
 }
 
+function launcherAllActivitiesUpdateCommand(
+  launcherList,
+  position,
+  launcherActivities,
+  currentActivity,
+) {
+  const nextActivities = launcherActivitiesAfterAllToggle(
+    launcherActivities,
+    currentActivity,
+  );
+  if (!nextActivities) {
+    return {
+      activities: launcherActivityListSnapshot(launcherActivities),
+      changed: false,
+      command: null,
+      launchers: normalizedLauncherList(launcherList),
+      ok: false,
+      reason: "missing-current-activity",
+    };
+  }
+
+  return launcherActivityUpdateCommand(launcherList, position, nextActivities);
+}
+
 function taskActivityMenuState(taskActivities, activityId) {
   const activities = Array.from(taskActivities || []);
   const allActivitiesChecked = ActivityScopeLogic.activitiesAreAll(activities);
