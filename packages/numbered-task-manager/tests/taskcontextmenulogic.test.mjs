@@ -2765,6 +2765,7 @@ assert.equal(
   menuQml.includes("TaskContextMenuLauncherActivityAdapter {"),
   true,
 );
+assert.equal(menuQml.includes("TaskContextMenuLauncherState {"), true);
 assert.equal(menuQml.includes("TaskManager.ActivityInfo"), false);
 assert.equal(menuQml.includes("TaskManager.VirtualDesktopInfo"), false);
 assert.equal(menuQml.includes("TaskManager.AbstractTasksModel"), false);
@@ -3002,8 +3003,24 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherPinStateSnapshot"),
+  false,
+);
+assert.equal(menuQml.includes("function launcherPinState"), false);
+assert.equal(menuQml.includes("function launcherPosition"), false);
+assert.equal(
+  menuQml.includes("launcherModel ? launcherModel.launcherList"),
+  false,
+);
+assert.equal(menuQml.includes("launcherModel.launcherPosition("), false);
+assert.equal(
+  menuQml.includes("launcherList: launcherState.launcherList"),
   true,
 );
+assert.equal(
+  menuQml.includes("launcherPosition: launcherState.launcherPosition"),
+  true,
+);
+assert.equal(menuQml.includes("pinState: launcherState.pinState"), true);
 assert.equal(menuQml.includes('import "LauncherListLogic.js"'), false);
 assert.equal(menuQml.includes("LauncherListLogic.launcherPinState"), false);
 assert.equal(
@@ -3546,6 +3563,52 @@ assert.equal(
 );
 assert.equal(
   launcherActivityAdapterQml.includes('property string launcherUrl: ""'),
+  true,
+);
+
+const launcherStateQml = readFileSync(
+  new URL(
+    "../package/contents/ui/TaskContextMenuLauncherState.qml",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.equal(
+  launcherStateQml.includes("TaskContextMenuLogic.launcherPinStateSnapshot"),
+  true,
+);
+assert.equal(
+  launcherStateQml.includes("readonly property var launcherList"),
+  true,
+);
+assert.equal(
+  launcherStateQml.includes("readonly property int launcherPosition"),
+  true,
+);
+assert.equal(launcherStateQml.includes("readonly property var pinState"), true);
+assert.equal(
+  launcherStateQml.includes("function launcherPositionForUrl()"),
+  true,
+);
+assert.equal(
+  launcherStateQml.includes("function launcherPositionForPinnedUrl(pinnedUrl)"),
+  true,
+);
+assert.equal(
+  launcherStateQml.includes("launcherModel.launcherPosition(launcherUrl)"),
+  true,
+);
+assert.equal(
+  launcherStateQml.includes("launcherModel.launcherPosition(pinnedUrl)"),
+  true,
+);
+assert.equal(launcherStateQml.includes("property var launcherModel"), true);
+assert.equal(
+  launcherStateQml.includes('property string launcherUrl: ""'),
+  true,
+);
+assert.equal(
+  launcherStateQml.includes('property string currentActivity: ""'),
   true,
 );
 
