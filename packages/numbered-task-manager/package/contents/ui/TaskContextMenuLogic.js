@@ -75,6 +75,20 @@ function pinLauncherCommand(pinState) {
   );
 }
 
+function launcherPinStateSnapshot(
+  launcherList,
+  launcherUrl,
+  currentActivity,
+  launcherPosition,
+) {
+  return launcherPinState(
+    launcherList,
+    launcherUrl,
+    currentActivity,
+    launcherPosition,
+  );
+}
+
 function replaceLauncherListCommand(launchers) {
   return contextMenuLauncherCommand("replaceLauncherList", launchers);
 }

@@ -11,7 +11,6 @@ import org.kde.taskmanager as TaskManager
 import "TaskActionLogic.js" as TaskActionLogic
 import "TaskContextMenuLogic.js" as TaskContextMenuLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
-import "LauncherListLogic.js" as LauncherListLogic
 
 // qmllint disable incompatible-type
 PlasmaExtras.Menu {
@@ -118,7 +117,7 @@ PlasmaExtras.Menu {
 
     function launcherPinState() {
         const url = taskRoles.launcherUrl;
-        return LauncherListLogic.launcherPinState(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
+        return TaskContextMenuLogic.launcherPinStateSnapshot(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
     function refreshActivities() {
