@@ -643,11 +643,15 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopsActionState"),
   true,
 );
+assert.equal(menuQml.includes("function virtualDesktopsActionState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivitiesActionState"),
   true,
 );
+assert.equal(menuQml.includes("function taskActivitiesActionState"), false);
 assert.equal(menuQml.includes("TaskContextMenuLogic.closeActionState"), true);
+assert.equal(menuQml.includes("function newVirtualDesktopActionState"), false);
+assert.equal(menuQml.includes("function closeActionState"), false);
 assert.equal(
   /checked: root\.boolRole\(root\.atm\.(?:IsKeepAbove|IsKeepBelow|IsFullScreen|IsShaded|HasNoBorder|IsExcludedFromCapture)\b/.test(
     menuQml,
