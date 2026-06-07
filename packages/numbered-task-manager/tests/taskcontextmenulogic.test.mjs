@@ -17,6 +17,7 @@ const logic = loadQmlJsModule(
     "closeCommand",
     "closeActionState",
     "activityEntriesSnapshot",
+    "allTaskActivitiesCommand",
     "allVirtualDesktopsCommand",
     "excludeFromCaptureCommand",
     "fullscreenCommand",
@@ -280,6 +281,11 @@ assert.deepEqual(plain(logic.closeCommand()), {
   arguments: [],
   kind: "task-model-request",
   requestMethod: "requestClose",
+});
+assert.deepEqual(plain(logic.allTaskActivitiesCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestActivities",
 });
 assert.deepEqual(
   plain(
@@ -1282,6 +1288,16 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivitiesActionState"),
   true,
 );
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.allTaskActivitiesCommand"),
+  true,
+);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuTaskCommand("requestActivities"',
+  ),
+  false,
+);
 assert.equal(menuQml.includes("function taskActivitiesActionState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.excludeFromCaptureCommand"),
@@ -1314,7 +1330,7 @@ assert.equal(
   false,
 );
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), true);
-assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskCommand"), true);
+assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskCommand"), false);
 assert.equal(
   menuQml.includes("TaskActionLogic.contextMenuTaskExecutionResult"),
   true,
