@@ -323,6 +323,44 @@ function keepAboveBelowRoleSnapshot(roleSource, roles, task) {
   };
 }
 
+function fullscreenShadeBorderRoleSnapshot(roleSource, roles, task) {
+  const roleIds = roles || {};
+  const fallback = task || {};
+
+  return {
+    canSetNoBorder: boolRoleData(
+      roleSource,
+      roleIds.CanSetNoBorder,
+      fallback.canSetNoBorder || false,
+    ),
+    fullScreenable: boolRoleData(
+      roleSource,
+      roleIds.IsFullScreenable,
+      fallback.fullScreenable || false,
+    ),
+    hasNoBorder: boolRoleData(
+      roleSource,
+      roleIds.HasNoBorder,
+      fallback.hasNoBorder || false,
+    ),
+    isFullScreen: boolRoleData(
+      roleSource,
+      roleIds.IsFullScreen,
+      fallback.isFullScreen || false,
+    ),
+    isShadeable: boolRoleData(
+      roleSource,
+      roleIds.IsShadeable,
+      fallback.isShadeable || false,
+    ),
+    isShaded: boolRoleData(
+      roleSource,
+      roleIds.IsShaded,
+      fallback.isShaded || false,
+    ),
+  };
+}
+
 function taskRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};

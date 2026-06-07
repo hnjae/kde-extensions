@@ -23,6 +23,7 @@ PlasmaExtras.Menu {
     readonly property bool hasWindowTask: hasTask && roleSnapshot().isWindow
     readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
+    readonly property var fullscreenShadeBorderRoles: TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var minimizeMaximizeRoles: TaskContextMenuLogic.minimizeMaximizeRoleSnapshot(roleSource(), roleIds(), task)
     property var activityEntries: []
@@ -86,7 +87,11 @@ PlasmaExtras.Menu {
     function roleIds() {
         return {
             Activities: atm.Activities,
+            CanSetNoBorder: atm.CanSetNoBorder,
             CanLaunchNewInstance: atm.CanLaunchNewInstance,
+            HasNoBorder: atm.HasNoBorder,
+            IsFullScreen: atm.IsFullScreen,
+            IsFullScreenable: atm.IsFullScreenable,
             IsKeepAbove: atm.IsKeepAbove,
             IsKeepBelow: atm.IsKeepBelow,
             IsLauncher: atm.IsLauncher,
@@ -96,6 +101,8 @@ PlasmaExtras.Menu {
             IsMinimized: atm.IsMinimized,
             IsMovable: atm.IsMovable,
             IsResizable: atm.IsResizable,
+            IsShadeable: atm.IsShadeable,
+            IsShaded: atm.IsShaded,
             IsWindow: atm.IsWindow,
             LauncherUrl: atm.LauncherUrl,
             LauncherUrlWithoutIcon: atm.LauncherUrlWithoutIcon,
@@ -415,10 +422,9 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property bool roleChecked: root.boolRole(root.atm.IsFullScreen, root.task.isFullScreen || false)
         readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
-            capable: root.boolRole(root.atm.IsFullScreenable, root.task.fullScreenable || false),
-            checked: roleChecked,
+            capable: root.fullscreenShadeBorderRoles.fullScreenable,
+            checked: root.fullscreenShadeBorderRoles.isFullScreen,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })
@@ -435,10 +441,9 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property bool roleChecked: root.boolRole(root.atm.IsShaded, root.task.isShaded || false)
         readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
-            capable: root.boolRole(root.atm.IsShadeable, root.task.isShadeable || false),
-            checked: roleChecked,
+            capable: root.fullscreenShadeBorderRoles.isShadeable,
+            checked: root.fullscreenShadeBorderRoles.isShaded,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })
@@ -455,10 +460,9 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property bool roleChecked: root.boolRole(root.atm.HasNoBorder, root.task.hasNoBorder || false)
         readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
-            capable: root.boolRole(root.atm.CanSetNoBorder, root.task.canSetNoBorder || false),
-            checked: roleChecked,
+            capable: root.fullscreenShadeBorderRoles.canSetNoBorder,
+            checked: root.fullscreenShadeBorderRoles.hasNoBorder,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })
