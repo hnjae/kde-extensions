@@ -205,12 +205,30 @@ const taskItemQml = readFileSync(
   new URL("../package/contents/ui/TaskItem.qml", import.meta.url),
   "utf8",
 );
+assert.match(
+  taskItemQml,
+  /import "TaskInteractionLogic\.js" as TaskInteractionLogic/,
+);
 assert.match(taskItemQml, /\bTaskFrame\s*\{/);
 assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
 assert.match(taskItemQml, /mutedLauncher:\s*root\.pinnedLauncherOnly/);
 assert.match(taskItemQml, /readonly property bool visualHighlighted:/);
 assert.match(taskItemQml, /readonly property bool titleVisible:/);
 assert.match(taskItemQml, /TaskVisualLogic\.iconActive\(\{/);
+assert.match(
+  taskItemQml,
+  /QtQuick\.Drag\.mimeData:\s*TaskInteractionLogic\.taskDragMimeData\(root\.dragMimeType, root\.taskIndex\)/,
+);
+assert.match(
+  taskItemQml,
+  /TaskInteractionLogic\.taskDropSourceIndex\(drop\.getDataAsString\(root\.dragMimeType\)\)/,
+);
+assert.match(
+  taskItemQml,
+  /TaskInteractionLogic\.canAcceptTaskDrop\(sourceIndex, root\.taskIndex, root\.canDropTask\)/,
+);
+assert.doesNotMatch(taskItemQml, /function sourceIndexFromDrop/);
+assert.doesNotMatch(taskItemQml, /function acceptsDrop/);
 assert.match(
   taskItemQml,
   /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible && !root\.pinnedLauncherOnly/,
