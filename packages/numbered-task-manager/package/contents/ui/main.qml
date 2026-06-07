@@ -185,6 +185,23 @@ PlasmoidItem {
         return true;
     }
 
+    function dispatchLauncherCommand(command) {
+        const launcherCommand = command || {};
+        if (launcherCommand.action === "pinLauncher") {
+            pinLauncher(launcherCommand.launcherUrl);
+            return;
+        }
+
+        if (launcherCommand.action === "unpinLauncher") {
+            unpinLauncher(launcherCommand.launcherUrl);
+            return;
+        }
+
+        if (launcherCommand.action === "replaceLauncherList") {
+            applyLauncherList(launcherCommand.launchers);
+        }
+    }
+
     function moveTask(sourceIndex, targetIndex) {
         if (!canMoveTask(sourceIndex, targetIndex)) {
             return false;
@@ -345,9 +362,7 @@ PlasmoidItem {
             });
         }
 
-        menu.pinRequested.connect(root.pinLauncher);
-        menu.unpinRequested.connect(root.unpinLauncher);
-        menu.launcherListChangeRequested.connect(root.applyLauncherList);
+        menu.launcherCommandRequested.connect(root.dispatchLauncherCommand);
         menu.show();
     }
 

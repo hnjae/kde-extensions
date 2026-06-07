@@ -177,7 +177,15 @@
 - Verification: `node tests/taskactionlogic.test.mjs` failed before implementation because `contextMenuTaskCommand` did not exist; after implementation, `node tests/taskactionlogic.test.mjs`; `node tests/taskcontextmenulogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskactionlogic.test.mjs`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 22: Context-Menu Launcher Command Descriptors
+
+- Status: completed.
+- What changed: declared typed context-menu launcher command ownership, added `TaskActionLogic.contextMenuLauncherCommand(...)`, replaced the menu's pin/unpin/launcher-list signals with one launcher-command signal, and routed root through a dispatcher that calls the existing pin, unpin, and launcher-list replacement effects.
+- Behavior that must remain unchanged: Pin/Unpin menu state, labels, and visibility remain unchanged; successful pin/unpin still call the same root mutation paths; launcher activity updates still emit the same replacement launcher list into `applyLauncherList()`.
+- Verification: `node tests/taskactionlogic.test.mjs` failed before implementation because `contextMenuLauncherCommand` did not exist; after implementation, `node tests/taskactionlogic.test.mjs`; `node tests/taskcontextmenulogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `package/contents/ui/main.qml`, `tests/taskactionlogic.test.mjs`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
-- Context menu: continue shrinking thin QML wrapper functions around checked-state helpers and move launcher-list command effects toward typed descriptors where practical.
+- Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.
 - Observability: extend structured action results beyond activation, menu creation, and launcher mutations to context-menu window/task requests.

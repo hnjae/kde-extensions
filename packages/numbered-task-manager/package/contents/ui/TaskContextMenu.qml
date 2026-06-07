@@ -44,9 +44,7 @@ PlasmaExtras.Menu {
     minimumWidth: visualParentWidth
     placement: TaskContextMenuLogic.panelMenuPlacement(Plasmoid.location, PlasmaCore.Types, PlasmaExtras.Menu)
 
-    signal pinRequested(string launcherUrl)
-    signal unpinRequested(string launcherUrl)
-    signal launcherListChangeRequested(var launchers)
+    signal launcherCommandRequested(var command)
     signal closed
 
     function show() {
@@ -286,7 +284,7 @@ PlasmaExtras.Menu {
             return false;
         }
 
-        root.launcherListChangeRequested(update.launchers);
+        root.launcherCommandRequested(TaskActionLogic.contextMenuLauncherCommand("replaceLauncherList", update.launchers));
         return true;
     }
 
@@ -345,9 +343,9 @@ PlasmaExtras.Menu {
             const action = TaskContextMenuLogic.pinActionState(pinState);
             const url = pinState.launcherUrl;
             if (action.action === "unpin") {
-                root.unpinRequested(url);
+                root.launcherCommandRequested(TaskActionLogic.contextMenuLauncherCommand("unpinLauncher", url));
             } else {
-                root.pinRequested(url);
+                root.launcherCommandRequested(TaskActionLogic.contextMenuLauncherCommand("pinLauncher", url));
             }
         }
     }

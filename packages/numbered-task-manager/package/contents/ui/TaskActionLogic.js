@@ -4,6 +4,14 @@
 Qt.include("TaskEntryLogic.js");
 Qt.include("VisibleTaskItemsLogic.js");
 
+function normalizedStringList(value) {
+  if (!value) {
+    return [];
+  }
+
+  return Array.from(value).filter((entry) => entry && entry.length > 0);
+}
+
 function actionResult(action, code, ok, diagnostic, context) {
   return {
     action,
@@ -225,6 +233,24 @@ function contextMenuCreationResult(menu, requestResult) {
     true,
     result.context || {},
   );
+}
+
+function contextMenuLauncherCommand(action, value) {
+  const commandAction = String(action || "");
+  const command = {
+    action: commandAction,
+    kind: "launcher-command",
+    launcherUrl: "",
+    launchers: [],
+  };
+
+  if (commandAction === "replaceLauncherList") {
+    command.launchers = normalizedStringList(value);
+    return command;
+  }
+
+  command.launcherUrl = String(value || "");
+  return command;
 }
 
 function contextMenuTaskRequestContext(modelIndex, task) {

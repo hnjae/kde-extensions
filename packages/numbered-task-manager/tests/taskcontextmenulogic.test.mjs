@@ -657,6 +657,20 @@ assert.equal(menuQml.includes("signal unpinRequested"), false);
 assert.equal(menuQml.includes("signal launcherListChangeRequested"), false);
 assert.equal(/\b(?:root\.)?taskModel\.request[A-Z]/.test(menuQml), false);
 
+const mainQml = readFileSync(
+  new URL("../package/contents/ui/main.qml", import.meta.url),
+  "utf8",
+);
+assert.equal(
+  mainQml.includes(
+    "launcherCommandRequested.connect(root.dispatchLauncherCommand)",
+  ),
+  true,
+);
+assert.equal(mainQml.includes("pinRequested.connect"), false);
+assert.equal(mainQml.includes("unpinRequested.connect"), false);
+assert.equal(mainQml.includes("launcherListChangeRequested.connect"), false);
+
 function directMenuContentObjectViolations(qml) {
   const violations = [];
   const menuStack = [];
