@@ -1911,7 +1911,9 @@ assert.equal(
   false,
 );
 assert.equal(
-  menuQml.includes("TaskContextMenuLogic.checkableWindowActionState"),
+  menuQml.includes(
+    "TaskContextMenuLogic.checkableWindowActionState({\n            checked: root.keepAboveBelowRoles",
+  ),
   false,
 );
 assert.equal(menuQml.includes("TaskContextMenuLogic.keepAboveAction"), true);

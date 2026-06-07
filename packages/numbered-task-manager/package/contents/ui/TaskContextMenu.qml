@@ -368,7 +368,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
+        readonly property var actionState: TaskContextMenuLogic.keepAboveAction({
             checked: root.keepAboveBelowRoles.isKeepAbove,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.taskRoles.isWindow
@@ -377,16 +377,16 @@ PlasmaExtras.Menu {
         checkable: true
         checked: actionState.checked
         enabled: actionState.enabled
-        text: "Keep Above Others"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.keepAboveCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
+        readonly property var actionState: TaskContextMenuLogic.keepBelowAction({
             checked: root.keepAboveBelowRoles.isKeepBelow,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.taskRoles.isWindow
@@ -395,11 +395,11 @@ PlasmaExtras.Menu {
         checkable: true
         checked: actionState.checked
         enabled: actionState.enabled
-        text: "Keep Below Others"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.keepBelowCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 

@@ -174,6 +174,20 @@ function keepBelowCommand() {
   return contextMenuTaskCommand("requestToggleKeepBelow");
 }
 
+function keepAboveAction(taskState) {
+  return Object.assign({}, checkableWindowActionState(taskState), {
+    command: keepAboveCommand(),
+    text: "Keep Above Others",
+  });
+}
+
+function keepBelowAction(taskState) {
+  return Object.assign({}, checkableWindowActionState(taskState), {
+    command: keepBelowCommand(),
+    text: "Keep Below Others",
+  });
+}
+
 function fullscreenCommand() {
   return contextMenuTaskCommand("requestToggleFullScreen");
 }
