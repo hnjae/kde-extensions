@@ -298,8 +298,10 @@ assert.match(taskItemQml, /mutedLauncher:\s*root\.pinnedLauncherOnly/);
 assert.match(taskItemQml, /readonly property bool visualHighlighted:/);
 assert.match(taskItemQml, /readonly property bool titleVisible:/);
 assert.match(taskItemQml, /\bTaskLikeIcon\s*\{/);
+assert.match(taskItemQml, /\bTaskLikeTitle\s*\{/);
 assert.doesNotMatch(taskItemQml, /KirigamiPrimitives\.Icon\s*\{/);
 assert.doesNotMatch(taskItemQml, /TaskVisualLogic\.iconActive\(\{/);
+assert.doesNotMatch(taskItemQml, /font\.strikeout:\s*root\.minimized/);
 assert.match(
   taskItemQml,
   /QtQuick\.Drag\.mimeData:\s*TaskInteractionLogic\.taskDragMimeData\(root\.dragMimeType, root\.taskIndex\)/,
@@ -359,6 +361,7 @@ assert.match(
 );
 assert.match(attentionItemQml, /readonly property bool titleVisible:/);
 assert.match(attentionItemQml, /\bTaskLikeIcon\s*\{/);
+assert.match(attentionItemQml, /\bTaskLikeTitle\s*\{/);
 assert.doesNotMatch(attentionItemQml, /KirigamiPrimitives\.Icon\s*\{/);
 assert.doesNotMatch(attentionItemQml, /TaskVisualLogic\.iconActive\(\{/);
 assert.match(attentionItemQml, /\bTaskLikeInteraction\s*\{/);
