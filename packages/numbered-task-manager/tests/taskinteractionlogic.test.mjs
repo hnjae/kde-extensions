@@ -7,7 +7,12 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskInteractionLogic.js", import.meta.url),
-  ["canAcceptTaskDrop", "taskDragMimeData", "taskDropSourceIndex"],
+  [
+    "canAcceptTaskDrop",
+    "taskContextMenuRequest",
+    "taskDragMimeData",
+    "taskDropSourceIndex",
+  ],
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
@@ -46,4 +51,24 @@ assert.deepEqual(acceptedArgs, [1, 2]);
 assert.equal(
   logic.canAcceptTaskDrop(1, 2, () => false),
   false,
+);
+
+const modelIndex = { row: 5, valid: true };
+const taskData = { entryKey: "task-a", title: "Task A" };
+const visualParent = { width: 160 };
+assert.deepEqual(
+  plain(logic.taskContextMenuRequest(modelIndex, taskData, visualParent)),
+  {
+    modelIndex,
+    task: taskData,
+    visualParent,
+  },
+);
+assert.deepEqual(
+  plain(logic.taskContextMenuRequest(modelIndex, null, visualParent)),
+  {
+    modelIndex,
+    task: {},
+    visualParent,
+  },
 );

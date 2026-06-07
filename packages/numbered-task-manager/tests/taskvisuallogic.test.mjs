@@ -227,6 +227,10 @@ assert.match(
   taskItemQml,
   /TaskInteractionLogic\.canAcceptTaskDrop\(sourceIndex, root\.taskIndex, root\.canDropTask\)/,
 );
+assert.match(
+  taskItemQml,
+  /root\.contextMenuRequested\(TaskInteractionLogic\.taskContextMenuRequest\(root\.modelIndex, root\.taskData, root\)\)/,
+);
 assert.doesNotMatch(taskItemQml, /function sourceIndexFromDrop/);
 assert.doesNotMatch(taskItemQml, /function acceptsDrop/);
 assert.match(
@@ -240,10 +244,18 @@ const attentionItemQml = readFileSync(
   new URL("../package/contents/ui/AttentionItem.qml", import.meta.url),
   "utf8",
 );
+assert.match(
+  attentionItemQml,
+  /import "TaskInteractionLogic\.js" as TaskInteractionLogic/,
+);
 assert.match(attentionItemQml, /\bTaskFrame\s*\{/);
 assert.match(attentionItemQml, /readonly property bool visualHighlighted:/);
 assert.match(attentionItemQml, /readonly property bool titleVisible:/);
 assert.match(attentionItemQml, /TaskVisualLogic\.iconActive\(\{/);
+assert.match(
+  attentionItemQml,
+  /root\.contextMenuRequested\(TaskInteractionLogic\.taskContextMenuRequest\(root\.modelIndex, root\.taskData, root\)\)/,
+);
 assert.match(
   attentionItemQml,
   /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible/,
