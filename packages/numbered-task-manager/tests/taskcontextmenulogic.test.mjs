@@ -11,6 +11,7 @@ const logic = loadQmlJsModule(
   [
     "boolRoleData",
     "basicActionRoleSnapshot",
+    "basicActionsSection",
     "captureCloseRoleSnapshot",
     "checkableWindowActionState",
     "checkableWindowCapabilityActionState",
@@ -478,6 +479,104 @@ assert.deepEqual(plain(logic.newInstanceCommand()), {
   kind: "task-model-request",
   requestMethod: "requestNewInstance",
 });
+assert.deepEqual(
+  plain(
+    logic.basicActionsSection({
+      canLaunchNewInstance: true,
+      hasTask: true,
+      hasWindowTask: true,
+      isLauncher: false,
+      isMovable: true,
+      isResizable: true,
+      isWindow: true,
+      launcherActivitiesVisible: false,
+    }),
+  ),
+  {
+    move: {
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestMove",
+      },
+      enabled: true,
+      text: "Move",
+      visible: true,
+    },
+    newInstance: {
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestNewInstance",
+      },
+      enabled: true,
+      text: "New Instance",
+      visible: true,
+    },
+    resize: {
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestResize",
+      },
+      enabled: true,
+      text: "Resize",
+      visible: true,
+    },
+    separator: {
+      visible: true,
+    },
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.basicActionsSection({
+      canLaunchNewInstance: false,
+      hasTask: false,
+      hasWindowTask: false,
+      isLauncher: false,
+      isMovable: false,
+      isResizable: false,
+      isWindow: false,
+      launcherActivitiesVisible: false,
+    }),
+  ),
+  {
+    move: {
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestMove",
+      },
+      enabled: false,
+      text: "Move",
+      visible: false,
+    },
+    newInstance: {
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestNewInstance",
+      },
+      enabled: false,
+      text: "New Instance",
+      visible: false,
+    },
+    resize: {
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestResize",
+      },
+      enabled: false,
+      text: "Resize",
+      visible: false,
+    },
+    separator: {
+      visible: false,
+    },
+  },
+);
 assert.deepEqual(plain(logic.moveCommand()), {
   arguments: [],
   kind: "task-model-request",
