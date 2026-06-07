@@ -9,9 +9,11 @@ const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskModelLogic.js", import.meta.url),
   [
     "canMoveTask",
+    "canMoveTaskResult",
     "composeNormalTaskEntries",
     "createNormalTaskEntry",
     "moveManualTaskOrder",
+    "moveManualTaskOrderResult",
     "normalTaskEntryForSourceIndex",
   ],
 );
@@ -172,21 +174,77 @@ assert.equal(
   logic.canMoveTask(composed.entries, 10, 20, () => true),
   true,
 );
+assert.deepEqual(
+  plain(logic.canMoveTaskResult(composed.entries, 10, 20, () => true)),
+  {
+    canMove: true,
+    reason: "movable-pinned",
+  },
+);
 assert.equal(
   logic.canMoveTask(composed.entries, 10, 8, () => true),
   false,
+);
+assert.deepEqual(
+  plain(logic.canMoveTaskResult(composed.entries, 10, 8, () => true)),
+  {
+    canMove: false,
+    reason: "boundary-crossing",
+  },
 );
 assert.equal(
   logic.canMoveTask(composed.entries, 8, 6, () => false),
   true,
 );
+assert.deepEqual(
+  plain(logic.canMoveTaskResult(composed.entries, 8, 6, () => false)),
+  {
+    canMove: true,
+    reason: "movable-unpinned",
+  },
+);
 assert.equal(
   logic.canMoveTask(composed.entries, 10, 20, () => false),
   false,
 );
+assert.deepEqual(
+  plain(logic.canMoveTaskResult(composed.entries, 10, 20, () => false)),
+  {
+    canMove: false,
+    reason: "pinned-launcher-denied",
+  },
+);
 assert.equal(
   logic.canMoveTask(composed.entries, 10, 10, () => true),
   false,
+);
+assert.deepEqual(
+  plain(logic.canMoveTaskResult(composed.entries, -1, 10, () => true)),
+  {
+    canMove: false,
+    reason: "invalid-index",
+  },
+);
+assert.deepEqual(
+  plain(logic.canMoveTaskResult(composed.entries, 10, 10, () => true)),
+  {
+    canMove: false,
+    reason: "same-index",
+  },
+);
+assert.deepEqual(
+  plain(logic.canMoveTaskResult(composed.entries, 999, 10, () => true)),
+  {
+    canMove: false,
+    reason: "missing-source",
+  },
+);
+assert.deepEqual(
+  plain(logic.canMoveTaskResult(composed.entries, 10, 999, () => true)),
+  {
+    canMove: false,
+    reason: "missing-target",
+  },
 );
 
 assert.deepEqual(
@@ -197,9 +255,45 @@ assert.deepEqual(
   },
 );
 assert.deepEqual(
+  plain(
+    logic.moveManualTaskOrderResult(composed.entries, "windowC", "windowA2"),
+  ),
+  {
+    moved: true,
+    order: ["windowA2", "windowC"],
+    reason: "moved",
+  },
+);
+assert.deepEqual(
   plain(logic.moveManualTaskOrder(composed.entries, "windowC", "nope")),
   {
     moved: false,
     order: ["windowC", "windowA2"],
+  },
+);
+assert.deepEqual(
+  plain(logic.moveManualTaskOrderResult(composed.entries, "windowC", "nope")),
+  {
+    moved: false,
+    order: ["windowC", "windowA2"],
+    reason: "missing-target",
+  },
+);
+assert.deepEqual(
+  plain(logic.moveManualTaskOrderResult(composed.entries, "nope", "windowC")),
+  {
+    moved: false,
+    order: ["windowC", "windowA2"],
+    reason: "missing-source",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.moveManualTaskOrderResult(composed.entries, "windowC", "windowC"),
+  ),
+  {
+    moved: false,
+    order: ["windowC", "windowA2"],
+    reason: "same-position",
   },
 );
