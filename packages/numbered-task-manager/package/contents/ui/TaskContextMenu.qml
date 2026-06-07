@@ -282,50 +282,50 @@ PlasmaExtras.Menu {
     PlasmaExtras.MenuItem {
         id: newInstanceItem
 
-        readonly property var actionState: TaskContextMenuLogic.newInstanceActionState({
+        readonly property var actionState: TaskContextMenuLogic.newInstanceAction({
             canLaunchNewInstance: root.basicActionRoles.canLaunchNewInstance,
             hasTask: root.hasTask,
             isLauncher: root.basicActionRoles.isLauncher
         })
 
         enabled: actionState.enabled
-        text: "New Instance"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.newInstanceCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.windowCapabilityActionState({
+        readonly property var actionState: TaskContextMenuLogic.basicMoveAction({
             capable: root.basicActionRoles.isMovable,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.taskRoles.isWindow
         })
 
         enabled: actionState.enabled
-        text: "Move"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.moveCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.windowCapabilityActionState({
+        readonly property var actionState: TaskContextMenuLogic.basicResizeAction({
             capable: root.basicActionRoles.isResizable,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.taskRoles.isWindow
         })
 
         enabled: actionState.enabled
-        text: "Resize"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.resizeCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 

@@ -115,12 +115,33 @@ function newInstanceCommand() {
   return contextMenuTaskCommand("requestNewInstance");
 }
 
+function newInstanceAction(taskState) {
+  return Object.assign({}, newInstanceActionState(taskState), {
+    command: newInstanceCommand(),
+    text: "New Instance",
+  });
+}
+
 function moveCommand() {
   return contextMenuTaskCommand("requestMove");
 }
 
 function resizeCommand() {
   return contextMenuTaskCommand("requestResize");
+}
+
+function basicMoveAction(taskState) {
+  return Object.assign({}, windowCapabilityActionState(taskState), {
+    command: moveCommand(),
+    text: "Move",
+  });
+}
+
+function basicResizeAction(taskState) {
+  return Object.assign({}, windowCapabilityActionState(taskState), {
+    command: resizeCommand(),
+    text: "Resize",
+  });
 }
 
 function minimizeCommand() {
