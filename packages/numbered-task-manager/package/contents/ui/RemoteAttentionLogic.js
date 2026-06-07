@@ -36,10 +36,10 @@ function qualifiesRemoteAttention(
 function remoteAttentionKey(winIds, launcherUrl, title, row) {
   const windowIds = Array.from(winIds || []);
   if (windowIds.length > 0) {
-    return "window:" + windowIds.join(",");
+    return `window:${windowIds.join(",")}`;
   }
 
-  return "row:" + row.toString() + ":" + launcherUrl + ":" + title;
+  return `row:${row.toString()}:${launcherUrl}:${title}`;
 }
 
 function remoteAttentionSnapshot(entryMap, order) {

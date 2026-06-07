@@ -210,7 +210,7 @@ function serializeLauncherWithActivities(serializedLauncher, activities) {
     return parsed.url;
   }
 
-  return "[" + activityList.join(",") + "]\n" + parsed.url;
+  return `[${activityList.join(",")}]\n${parsed.url}`;
 }
 
 function launcherActivitiesAfterAllToggle(launcherActivities, currentActivity) {
