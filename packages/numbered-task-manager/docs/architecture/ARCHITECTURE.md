@@ -37,7 +37,8 @@ in `SPEC.md`.
 - Keep context-menu launcher-activity menu state in `TaskContextMenuLogic.js`.
   Raw launcher activity lists entering the menu should be normalized through the
   same all-activities semantics as launcher serialization before checked-state
-  predicates are evaluated.
+  predicates are evaluated. QML menu items should consume the helper output
+  directly instead of adding menu-local checked-state wrapper functions.
 - Keep context-menu task-activity checked-state policy in
   `TaskContextMenuLogic.js`. Task activity mutation decisions remain in
   `TaskActivityLogic.js`, but menu-facing all-activities and per-activity
