@@ -65,7 +65,9 @@ in `SPEC.md`.
 - Keep context-menu section and terminal action availability in
   `TaskContextMenuLogic.js`. Section visibility and enabled/visible predicates
   for Virtual Desktops, Activities, New Desktop, and Close should be derived by
-  tested helpers while QML keeps submenu composition and effect dispatch.
+  tested helpers while QML keeps submenu composition and effect dispatch. QML
+  menu items should consume the helper output directly instead of adding
+  menu-local action-state wrapper functions.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
