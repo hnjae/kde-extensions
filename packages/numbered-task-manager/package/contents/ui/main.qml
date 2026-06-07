@@ -9,7 +9,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
-import "TaskActivityLogic.js" as TaskActivityLogic
+import "ActivityScopeLogic.js" as ActivityScopeLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
 import "NormalTaskStoreLogic.js" as NormalTaskStoreLogic
@@ -281,7 +281,7 @@ PlasmoidItem {
     }
 
     function isInCurrentActivity(activities) {
-        return TaskActivityLogic.isInCurrentActivity(activities, activityInfo.currentActivity);
+        return ActivityScopeLogic.isInCurrentActivity(activities, activityInfo.currentActivity);
     }
 
     function publishNormalTask(key, qualifies, task) {

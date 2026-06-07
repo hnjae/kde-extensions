@@ -3,30 +3,6 @@
 
 Qt.include("ActivityScopeLogic.js");
 
-function allActivitiesId() {
-  return ActivityScopeLogic.allActivitiesId();
-}
-
-function stringListContains(list, value) {
-  return ActivityScopeLogic.stringListContains(list, value);
-}
-
-function uniqueStringList(list) {
-  return ActivityScopeLogic.uniqueStringList(list);
-}
-
-function activitiesAreAll(activities) {
-  return ActivityScopeLogic.activitiesAreAll(activities);
-}
-
-function normalizedActivityList(activities) {
-  return ActivityScopeLogic.normalizedActivityList(activities);
-}
-
-function isInCurrentActivity(activities, currentActivity) {
-  return ActivityScopeLogic.isInCurrentActivity(activities, currentActivity);
-}
-
 function taskActivitiesAfterToggle(activities, activityId) {
   const activity = String(activityId || "");
   if (!activity) {
