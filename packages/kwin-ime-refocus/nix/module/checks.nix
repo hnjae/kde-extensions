@@ -11,7 +11,7 @@
         checks.kwin-ime-refocus-check = pkgs.stdenvNoCC.mkDerivation {
           pname = "kwin-ime-refocus-check";
           inherit (package) version;
-          src = package.source;
+          src = package.checkSource;
 
           nativeBuildInputs = [
             pkgs.biome
@@ -27,9 +27,11 @@
           buildPhase = ''
             runHook preBuild
 
+            cd packages/kwin-ime-refocus
+
             tsc --noEmit --project tsconfig.json
             tsc --noEmit --project tests/tsconfig.json
-            biome ci .biome.json kpackage.json package.json scripts src tests tsconfig.json
+            biome ci --config-path ../../biome.json kpackage.json package.json scripts src tests tsconfig.json
             tsc --project tsconfig.json --outFile build/src/main.js
             node scripts/build-package.mjs
             node scripts/check-kpackage.mjs

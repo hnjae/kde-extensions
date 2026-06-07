@@ -11,7 +11,7 @@
         checks.kwin-run-or-raise-check = pkgs.stdenvNoCC.mkDerivation {
           pname = "kwin-run-or-raise-check";
           inherit (package) version;
-          src = package.source;
+          src = package.checkSource;
 
           nativeBuildInputs = [
             pkgs.biome
@@ -27,9 +27,11 @@
           buildPhase = ''
             runHook preBuild
 
+            cd packages/kwin-run-or-raise
+
             tsc --noEmit --project tsconfig.json
             tsc --noEmit --project tests/tsconfig.json
-            biome ci .biome.json package.json scripts src tests tsconfig.json
+            biome ci --config-path ../../biome.json package.json scripts src tests tsconfig.json
             tsc --project tsconfig.json
             node scripts/build-package.mjs
             node scripts/check-kpackage.mjs

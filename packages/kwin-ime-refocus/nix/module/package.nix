@@ -12,11 +12,22 @@
           pluginId = kpackageJson.KPlugin.Id;
           version = packageJson.version;
 
-          sourceRoot = ../../.;
+          packageRoot = ../../.;
+          repoRoot = ../../../..;
           source = lib.fileset.toSource {
-            root = sourceRoot;
+            root = packageRoot;
             fileset = lib.fileset.unions [
-              ../../.biome.json
+              ../../kpackage.json
+              ../../package.json
+              ../../scripts
+              ../../src
+              ../../tsconfig.json
+            ];
+          };
+          checkSource = lib.fileset.toSource {
+            root = repoRoot;
+            fileset = lib.fileset.unions [
+              ../../../../biome.json
               ../../kpackage.json
               ../../package.json
               ../../scripts
@@ -59,6 +70,7 @@
           passthru = {
             inherit
               mainScriptRelativePath
+              checkSource
               pluginId
               source
               version

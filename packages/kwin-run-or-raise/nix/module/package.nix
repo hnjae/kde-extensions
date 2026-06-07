@@ -9,12 +9,20 @@
           pluginId = "io.github.hnjae.kwin-run-or-raise";
           version = "0.1.0";
 
-          sourceRoot = ../../.;
+          packageRoot = ../../.;
+          repoRoot = ../../../..;
           source = lib.fileset.toSource {
-            root = sourceRoot;
+            root = packageRoot;
             fileset = lib.fileset.unions [
-              ../../.biome.json
-              ../../README.md
+              ../../scripts
+              ../../src
+              ../../tsconfig.json
+            ];
+          };
+          checkSource = lib.fileset.toSource {
+            root = repoRoot;
+            fileset = lib.fileset.unions [
+              ../../../../biome.json
               ../../package.json
               ../../scripts
               ../../src
@@ -55,6 +63,7 @@
 
           passthru = {
             inherit
+              checkSource
               pluginId
               source
               version

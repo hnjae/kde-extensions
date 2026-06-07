@@ -44,7 +44,7 @@ clean:
 check-local:
     nix develop "{{ dev_shell }}" -c tsc --noEmit --project tsconfig.json
     nix develop "{{ dev_shell }}" -c tsc --noEmit --project tests/tsconfig.json
-    nix develop "{{ dev_shell }}" -c biome ci .biome.json kpackage.json package.json scripts src tests tsconfig.json
+    nix develop "{{ dev_shell }}" -c biome ci --config-path ../../biome.json kpackage.json package.json scripts src tests tsconfig.json
     nix develop "{{ dev_shell }}" -c tsc --project tsconfig.json --outFile build/src/main.js
     nix develop "{{ dev_shell }}" -c node scripts/build-package.mjs
     nix develop "{{ dev_shell }}" -c node scripts/check-kpackage.mjs
@@ -53,7 +53,7 @@ check-local:
 
 [group('lint')]
 lint: typecheck
-    nix develop "{{ dev_shell }}" -c biome ci .biome.json kpackage.json package.json scripts src tests tsconfig.json
+    nix develop "{{ dev_shell }}" -c biome ci --config-path ../../biome.json kpackage.json package.json scripts src tests tsconfig.json
 
 [group('lint')]
 typecheck:
