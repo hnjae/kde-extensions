@@ -235,6 +235,18 @@ function virtualDesktopMenuState(virtualDesktops, isOnAllDesktops, desktop) {
   };
 }
 
+function allVirtualDesktopsCommand() {
+  return contextMenuTaskCommand("requestVirtualDesktops", []);
+}
+
+function virtualDesktopCommand(desktopId) {
+  return contextMenuTaskCommand("requestVirtualDesktops", [desktopId]);
+}
+
+function newVirtualDesktopCommand() {
+  return contextMenuTaskCommand("requestNewVirtualDesktop");
+}
+
 function roleData(roleSource, role, fallback) {
   const source = roleSource || {};
   if (

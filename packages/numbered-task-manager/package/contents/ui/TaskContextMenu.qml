@@ -516,7 +516,7 @@ PlasmaExtras.Menu {
                 text: "All Desktops"
 
                 onClicked: {
-                    root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestVirtualDesktops", []));
+                    root.requestTaskModelCommand(TaskContextMenuLogic.allVirtualDesktopsCommand());
                 }
             }
 
@@ -534,7 +534,7 @@ PlasmaExtras.Menu {
                     text: modelData.name
 
                     onClicked: {
-                        root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestVirtualDesktops", [modelData.id]));
+                        root.requestTaskModelCommand(TaskContextMenuLogic.virtualDesktopCommand(modelData.id));
                     }
                 }
 
@@ -556,7 +556,7 @@ PlasmaExtras.Menu {
                 text: "New Desktop"
 
                 onClicked: {
-                    root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestNewVirtualDesktop"));
+                    root.requestTaskModelCommand(TaskContextMenuLogic.newVirtualDesktopCommand());
                 }
             }
         }
