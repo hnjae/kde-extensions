@@ -23,6 +23,7 @@ PlasmaExtras.Menu {
     readonly property bool hasWindowTask: hasTask && roleSnapshot().isWindow
     readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
+    readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var minimizeMaximizeRoles: TaskContextMenuLogic.minimizeMaximizeRoleSnapshot(roleSource(), roleIds(), task)
     property var activityEntries: []
     property var launcherModel: taskModel
@@ -86,6 +87,8 @@ PlasmaExtras.Menu {
         return {
             Activities: atm.Activities,
             CanLaunchNewInstance: atm.CanLaunchNewInstance,
+            IsKeepAbove: atm.IsKeepAbove,
+            IsKeepBelow: atm.IsKeepBelow,
             IsLauncher: atm.IsLauncher,
             IsMaximizable: atm.IsMaximizable,
             IsMaximized: atm.IsMaximized,
@@ -376,9 +379,8 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property bool roleChecked: root.boolRole(root.atm.IsKeepAbove, root.task.isKeepAbove || false)
         readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
-            checked: roleChecked,
+            checked: root.keepAboveBelowRoles.isKeepAbove,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })
@@ -395,9 +397,8 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property bool roleChecked: root.boolRole(root.atm.IsKeepBelow, root.task.isKeepBelow || false)
         readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
-            checked: roleChecked,
+            checked: root.keepAboveBelowRoles.isKeepBelow,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })

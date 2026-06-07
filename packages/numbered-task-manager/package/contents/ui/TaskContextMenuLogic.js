@@ -305,6 +305,24 @@ function minimizeMaximizeRoleSnapshot(roleSource, roles, task) {
   };
 }
 
+function keepAboveBelowRoleSnapshot(roleSource, roles, task) {
+  const roleIds = roles || {};
+  const fallback = task || {};
+
+  return {
+    isKeepAbove: boolRoleData(
+      roleSource,
+      roleIds.IsKeepAbove,
+      fallback.isKeepAbove || false,
+    ),
+    isKeepBelow: boolRoleData(
+      roleSource,
+      roleIds.IsKeepBelow,
+      fallback.isKeepBelow || false,
+    ),
+  };
+}
+
 function taskRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};
