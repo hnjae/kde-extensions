@@ -38,6 +38,10 @@ in `SPEC.md`.
   Raw launcher activity lists entering the menu should be normalized through the
   same all-activities semantics as launcher serialization before checked-state
   predicates are evaluated.
+- Keep context-menu task-activity checked-state policy in
+  `TaskContextMenuLogic.js`. Task activity mutation decisions remain in
+  `TaskActivityLogic.js`, but menu-facing all-activities and per-activity
+  checked predicates should come from tested helper output.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
