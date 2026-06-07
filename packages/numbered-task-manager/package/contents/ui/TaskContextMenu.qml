@@ -158,16 +158,16 @@ PlasmaExtras.Menu {
         launcherActivityList = TaskContextMenuLogic.launcherActivityListSnapshot(launcherModel.launcherActivities(url));
     }
 
-    function stringListContains(list, value) {
-        return TaskActivityLogic.stringListContains(list, value);
-    }
-
     function taskOnAllActivities() {
-        return TaskActivityLogic.activitiesAreAll(activities());
+        return taskActivityMenuState("").allActivitiesChecked;
     }
 
     function taskOnActivity(activityId) {
-        return taskOnAllActivities() || stringListContains(activities(), activityId);
+        return taskActivityMenuState(activityId).activityChecked;
+    }
+
+    function taskActivityMenuState(activityId) {
+        return TaskContextMenuLogic.taskActivityMenuState(activities(), activityId);
     }
 
     function toggleTaskActivity(activityId) {

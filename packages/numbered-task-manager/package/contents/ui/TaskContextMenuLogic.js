@@ -55,6 +55,18 @@ function launcherActivityMenuState(launcherActivities, activityId) {
   };
 }
 
+function taskActivityMenuState(taskActivities, activityId) {
+  const activities = Array.from(taskActivities || []);
+  const allActivitiesChecked = ActivityScopeLogic.activitiesAreAll(activities);
+
+  return {
+    activityChecked:
+      allActivitiesChecked ||
+      ActivityScopeLogic.stringListContains(activities, activityId),
+    allActivitiesChecked,
+  };
+}
+
 function roleData(roleSource, role, fallback) {
   const source = roleSource || {};
   if (
