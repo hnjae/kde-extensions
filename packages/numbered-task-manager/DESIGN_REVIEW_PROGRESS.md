@@ -313,6 +313,15 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the virtual desktop snapshot wrapper function still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function virtualDesktops|virtualDesktops\\(\\)|roleSnapshot\\(\\)\\.virtualDesktops" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 39: Remote Attention Visible-Item Activation
+
+- Status: completed.
+- What changed: declared that rendered task-like activation should consume composed visible item descriptors where practical; added `VisibleTaskItemsLogic.visibleRemoteAttentionItem(...)`; routed `AttentionItem` activation through the composed remote-attention visible item instead of reading `remoteAttentionState.target` directly at the activation decision.
+- Behavior that must remain unchanged: clicking the remote-attention item still activates the same target model index; `Meta+0` shortcut activation, normal task activation, attention rendering, and context-menu wiring remain unchanged.
+- Verification: `node tests/visibletaskitemslogic.test.mjs` failed before implementation because `visibleRemoteAttentionItem` did not exist; after implementation, `node tests/visibletaskitemslogic.test.mjs`; `node tests/taskactionlogic.test.mjs`; `rg -n "visibleRemoteAttentionItem|taskActivationRequest\\(\\\"activateRemoteAttention\\\"|remoteAttentionState\\.target" package/contents/ui/main.qml package/contents/ui/VisibleTaskItemsLogic.js tests/visibletaskitemslogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/VisibleTaskItemsLogic.js`, `package/contents/ui/main.qml`, `tests/visibletaskitemslogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: direct role snapshot passthrough wrappers have been removed. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code.
+- Visible item composer: continue migrating rendered-item activation and rendering metadata toward composed item descriptors; full remote-attention removability still requires reducing root-owned remote attention functions and binding the rendered attention item from the composed descriptor.

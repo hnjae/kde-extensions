@@ -326,9 +326,11 @@ PlasmoidItem {
     }
 
     function activateRemoteAttention() {
-        const result = TaskActionLogic.taskActivationRequest("activateRemoteAttention", remoteAttentionState.target, {
+        const visibleItem = VisibleTaskItemsLogic.visibleRemoteAttentionItem(visibleTaskItems);
+        const result = TaskActionLogic.taskActivationRequest("activateRemoteAttention", visibleItem ? visibleItem.entry : null, {
             requireSourceIndex: false,
-            sourceModel: "remoteAttention"
+            sourceModel: visibleItem ? visibleItem.sourceModel : "remoteAttention",
+            targetKind: visibleItem ? visibleItem.kind : "remoteAttention"
         });
         if (!result.ok) {
             logActionResult(result);

@@ -82,6 +82,18 @@ function visibleItemForNormalIndex(visibleItems, normalIndex) {
   return null;
 }
 
+function visibleRemoteAttentionItem(visibleItems) {
+  const items = Array.from(visibleItems || []);
+  for (let index = 0; index < items.length; ++index) {
+    const item = items[index];
+    if (item?.kind === "remoteAttention") {
+      return item;
+    }
+  }
+
+  return null;
+}
+
 function activationTargetForShortcutIndex(visibleItems, shortcutIndex) {
   const index = integerValue(shortcutIndex, -1);
   if (index < 0 || index > metaZeroShortcutIndex) {
