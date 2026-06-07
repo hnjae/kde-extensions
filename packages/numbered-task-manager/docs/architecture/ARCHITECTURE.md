@@ -97,6 +97,11 @@ in `SPEC.md`.
   may translate Qt drag/drop events, but MIME payload creation, source-index
   parsing, self-drop rejection, missing-callback rejection, and callback
   projection should be covered by pure tests.
+- Keep task-like context-menu request payload construction in the interaction
+  helper so normal and remote-attention delegates emit the same
+  `{ modelIndex, task, visualParent }` shape. The delegates may retain the
+  zero-delay timer and focus handoff until that QML interaction pattern can be
+  extracted without changing key-event delivery.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
   coercion, launcher URL precedence, title/icon fallback, model-index validity,
   and virtual-desktop membership should not be duplicated between normal task
