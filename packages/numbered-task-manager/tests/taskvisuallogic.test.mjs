@@ -297,6 +297,7 @@ assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
 assert.match(taskItemQml, /mutedLauncher:\s*root\.pinnedLauncherOnly/);
 assert.match(taskItemQml, /readonly property bool visualHighlighted:/);
 assert.match(taskItemQml, /readonly property bool titleVisible:/);
+assert.match(taskItemQml, /\bTaskLikeContentRow\s*\{/);
 assert.match(taskItemQml, /\bTaskLikeIcon\s*\{/);
 assert.match(taskItemQml, /\bTaskLikeTitle\s*\{/);
 assert.doesNotMatch(taskItemQml, /KirigamiPrimitives\.Icon\s*\{/);
@@ -344,6 +345,7 @@ assert.match(
   /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible && !root\.pinnedLauncherOnly/,
 );
 assert.match(taskItemQml, /opacity:\s*TaskVisualLogic\.contentOpacity\(\{/);
+assert.doesNotMatch(taskItemQml, /QtQuickLayouts\.RowLayout\s*\{/);
 assert.doesNotMatch(taskItemQml, /QtQuick\.Rectangle\s*\{/);
 
 const attentionItemQml = readFileSync(
@@ -360,6 +362,7 @@ assert.match(
   /readonly property bool visualHighlighted:\s*taskLikeInteraction\.highlighted/,
 );
 assert.match(attentionItemQml, /readonly property bool titleVisible:/);
+assert.match(attentionItemQml, /\bTaskLikeContentRow\s*\{/);
 assert.match(attentionItemQml, /\bTaskLikeIcon\s*\{/);
 assert.match(attentionItemQml, /\bTaskLikeTitle\s*\{/);
 assert.doesNotMatch(attentionItemQml, /KirigamiPrimitives\.Icon\s*\{/);
@@ -387,6 +390,7 @@ assert.match(
   attentionItemQml,
   /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible/,
 );
+assert.doesNotMatch(attentionItemQml, /QtQuickLayouts\.RowLayout\s*\{/);
 assert.doesNotMatch(attentionItemQml, /QtQuick\.Rectangle\s*\{/);
 
 const taskLikeInteractionQml = readFileSync(
