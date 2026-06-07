@@ -39,7 +39,7 @@ QtQuick.Item {
 
     KirigamiPlatform.Theme.colorSet: KirigamiPlatform.Theme.Button
 
-    TaskFrame {
+    TaskLikeFrame {
         id: taskFrame
 
         anchors.fill: parent
