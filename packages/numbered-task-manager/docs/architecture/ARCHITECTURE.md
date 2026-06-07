@@ -19,6 +19,9 @@ in `SPEC.md`.
 - Keep activity scope primitives in `ActivityScopeLogic.js` so null-activity,
   all-activities, de-duplication, and current-activity membership semantics are
   shared by task and launcher code.
+- Keep task-model scope policy in `TaskScopeLogic.js`. Normal and remote
+  attention `TasksModel` filter settings should be named alongside the local
+  qualification contract so QML does not carry unexplained raw filter booleans.
 - Keep task activity mutation decisions in `TaskActivityLogic.js` so task
   activity toggles are shared by the task model and context menu.
 - Create task context menus per invocation as Plasma-native menus. Do not keep a
