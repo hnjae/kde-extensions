@@ -86,7 +86,7 @@ function normalTaskSourceOrder(left, right) {
 }
 
 function normalTaskLauncherPosition(entry, visibleLauncherPosition) {
-  if (!entry || !entry.launcherUrl) {
+  if (!entry?.launcherUrl) {
     return -1;
   }
 

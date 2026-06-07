@@ -11,6 +11,7 @@
       }:
       let
         package = config.packages.numbered-task-manager;
+        packageRoot = "packages/numbered-task-manager";
         qmlImportPaths = [
           "${pkgs.kdePackages.qtdeclarative}/lib/qt-6/qml"
           "${pkgs.kdePackages.kconfig}/lib/qt-6/qml"
@@ -43,7 +44,7 @@
           buildPhase = ''
             runHook preBuild
 
-            biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
+            biome lint --error-on-warnings ${packageRoot}/package/contents/ui/*.js ${packageRoot}/tests/*.mjs
 
             installed_plasmoid="${package}/share/plasma/plasmoids/${package.pluginId}"
             installed_metainfo="${package}/share/metainfo/${package.pluginId}.metainfo.xml"
@@ -73,12 +74,12 @@
             test -f "$installed_license_dir/AGPL-3.0-or-later.txt"
             test -f "$installed_license_dir/CC0-1.0.txt"
 
-            for test_file in tests/*.test.mjs
+            for test_file in ${packageRoot}/tests/*.test.mjs
             do
               node "$test_file"
             done
 
-            find package/contents/ui -name '*.qml' -print0 \
+            find ${packageRoot}/package/contents/ui -name '*.qml' -print0 \
               | sort -z \
               | xargs -0 qmllint \
                   --ignore-settings \

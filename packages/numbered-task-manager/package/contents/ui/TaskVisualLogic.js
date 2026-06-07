@@ -70,7 +70,7 @@ function iconActive(state) {
 
 function framePrefixes(state, location, plasmaCoreTypes) {
   const prefix = baseFramePrefix(state);
-  if (state && state.hovered) {
+  if (state?.hovered) {
     return hoveredFramePrefixes(prefix, location, plasmaCoreTypes);
   }
 

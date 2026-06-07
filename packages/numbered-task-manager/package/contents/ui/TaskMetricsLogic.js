@@ -25,7 +25,7 @@ function adjustedFrameMargin(
 
 function nonNegativeNumber(value) {
   const number = Number(value || 0);
-  return isNaN(number) || number < 0 ? 0 : number;
+  return Number.isNaN(number) || number < 0 ? 0 : number;
 }
 
 function taskSlotWidth(

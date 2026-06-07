@@ -10,11 +10,12 @@
           pluginId = metadataJson.KPlugin.Id;
           version = metadataJson.KPlugin.Version;
 
-          sourceRoot = ../../.;
+          packageRoot = "packages/numbered-task-manager";
+          sourceRoot = ../../../..;
           source = lib.fileset.toSource {
             root = sourceRoot;
             fileset = lib.fileset.unions [
-              ../../.biome.json
+              ../../../../biome.json
               ../../LICENSES
               ../../README.md
               ../../metainfo
@@ -35,14 +36,14 @@
             runHook preInstall
 
             install -d "$out/share/plasma/plasmoids/${pluginId}"
-            cp -R --no-preserve=mode package/. "$out/share/plasma/plasmoids/${pluginId}/"
+            cp -R --no-preserve=mode ${packageRoot}/package/. "$out/share/plasma/plasmoids/${pluginId}/"
 
             install -D -m 0644 \
-              metainfo/${pluginId}.metainfo.xml \
+              ${packageRoot}/metainfo/${pluginId}.metainfo.xml \
               "$out/share/metainfo/${pluginId}.metainfo.xml"
 
             install -d "$out/share/licenses/numbered-task-manager"
-            install -m 0644 LICENSES/*.txt "$out/share/licenses/numbered-task-manager/"
+            install -m 0644 ${packageRoot}/LICENSES/*.txt "$out/share/licenses/numbered-task-manager/"
 
             runHook postInstall
           '';
