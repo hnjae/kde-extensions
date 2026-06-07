@@ -2760,6 +2760,7 @@ const menuQml = readFileSync(
 
 assert.equal(menuQml.includes("TaskContextMenuPlatformState {"), true);
 assert.equal(menuQml.includes("TaskContextMenuRoleState {"), true);
+assert.equal(menuQml.includes("TaskContextMenuTaskCommandAdapter {"), true);
 assert.equal(menuQml.includes("TaskManager.ActivityInfo"), false);
 assert.equal(menuQml.includes("TaskManager.VirtualDesktopInfo"), false);
 assert.equal(menuQml.includes("TaskManager.AbstractTasksModel"), false);
@@ -3151,6 +3152,12 @@ assert.equal(menuQml.includes('text: "Move"'), false);
 assert.equal(menuQml.includes('text: "Resize"'), false);
 assert.equal(
   menuQml.includes("root.requestTaskModelCommand(actionState.command"),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "taskCommandAdapter.requestTaskModelCommand(actionState.command",
+  ),
   true,
 );
 assert.equal(
@@ -3346,21 +3353,22 @@ assert.equal(
   ),
   false,
 );
-assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), true);
+assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), false);
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskCommand"), false);
 assert.equal(
   menuQml.includes("TaskActionLogic.contextMenuTaskExecutionResult"),
-  true,
+  false,
 );
 assert.equal(
   /try\s*\{[\s\S]*?taskModel\[result\.requestMethod\]/.test(menuQml),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskActionLogic.contextMenuLauncherCommand"),
   false,
 );
 assert.equal(menuQml.includes("function requestTaskModelAction"), false);
+assert.equal(menuQml.includes("function requestTaskModelCommand"), false);
 assert.equal(menuQml.includes("signal pinRequested"), false);
 assert.equal(menuQml.includes("signal unpinRequested"), false);
 assert.equal(menuQml.includes("signal launcherListChangeRequested"), false);
@@ -3425,6 +3433,37 @@ assert.equal(roleStateQml.includes("function roleSource()"), true);
 assert.equal(roleStateQml.includes("property var modelIndex"), true);
 assert.equal(roleStateQml.includes("property var task: ({})"), true);
 assert.equal(roleStateQml.includes("property var taskModel"), true);
+
+const taskCommandAdapterQml = readFileSync(
+  new URL(
+    "../package/contents/ui/TaskContextMenuTaskCommandAdapter.qml",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.equal(
+  taskCommandAdapterQml.includes("TaskActionLogic.contextMenuTaskRequest"),
+  true,
+);
+assert.equal(
+  taskCommandAdapterQml.includes(
+    "TaskActionLogic.contextMenuTaskExecutionResult",
+  ),
+  true,
+);
+assert.equal(
+  /try\s*\{[\s\S]*?taskModel\[result\.requestMethod\]/.test(
+    taskCommandAdapterQml,
+  ),
+  true,
+);
+assert.equal(
+  taskCommandAdapterQml.includes("signal actionResult(var result)"),
+  true,
+);
+assert.equal(taskCommandAdapterQml.includes("property var modelIndex"), true);
+assert.equal(taskCommandAdapterQml.includes("property var task: ({})"), true);
+assert.equal(taskCommandAdapterQml.includes("property var taskModel"), true);
 
 const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
