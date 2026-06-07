@@ -10,7 +10,9 @@ const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskVisualLogic.js", import.meta.url),
   [
     "baseFramePrefix",
+    "contentOpacity",
     "framePrefixes",
+    "frameOpacity",
     "hoveredFramePrefixes",
     "iconActive",
     "taskPrefix",
@@ -32,12 +34,25 @@ assert.equal(logic.baseFramePrefix({ minimized: true }), "minimized");
 assert.equal(logic.baseFramePrefix({ demandingAttention: true }), "attention");
 assert.equal(logic.baseFramePrefix({ attention: true }), "attention");
 assert.equal(logic.baseFramePrefix({ dropHover: true }), "attention");
+assert.equal(
+  logic.baseFramePrefix({ launcher: true, mutedLauncher: true }),
+  "minimized",
+);
 assert.equal(logic.baseFramePrefix({ launcher: true }), "");
 assert.equal(logic.baseFramePrefix({}), "normal");
 assert.equal(logic.iconActive({ active: true, highlighted: false }), false);
 assert.equal(logic.iconActive({ active: false, highlighted: true }), true);
 assert.equal(logic.iconActive({ active: true, highlighted: true }), true);
 assert.equal(logic.iconActive({}), false);
+assert.equal(logic.frameOpacity({ mutedLauncher: true }), 0.55);
+assert.equal(logic.contentOpacity({ mutedLauncher: true }), 0.78);
+assert.equal(logic.frameOpacity({ mutedLauncher: true, hovered: true }), 1);
+assert.equal(
+  logic.contentOpacity({ mutedLauncher: true, highlighted: true }),
+  1,
+);
+assert.equal(logic.frameOpacity({ mutedLauncher: true, dropHover: true }), 1);
+assert.equal(logic.contentOpacity({ minimized: true }), 1);
 
 assertArrayEqual(logic.taskPrefix("focus", undefined, edges), [
   "south-focus",
@@ -88,6 +103,25 @@ assertArrayEqual(
     "focus",
   ],
 );
+assertArrayEqual(
+  logic.framePrefixes(
+    {
+      launcher: true,
+      mutedLauncher: true,
+      hovered: true,
+    },
+    edges.LeftEdge,
+    edges,
+  ),
+  [
+    "west-minimized-hover",
+    "minimized-hover",
+    "west-hover",
+    "hover",
+    "west-minimized",
+    "minimized",
+  ],
+);
 
 const taskFrameQml = readFileSync(
   new URL("../package/contents/ui/TaskFrame.qml", import.meta.url),
@@ -95,6 +129,8 @@ const taskFrameQml = readFileSync(
 );
 assert.match(taskFrameQml, /KSvg\.FrameSvgItem/);
 assert.match(taskFrameQml, /imagePath:\s*"widgets\/tasks"/);
+assert.match(taskFrameQml, /property bool mutedLauncher:\s*false/);
+assert.match(taskFrameQml, /opacity:\s*TaskVisualLogic\.frameOpacity\(\{/);
 
 const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
@@ -138,15 +174,33 @@ assert.match(mainQml, /columnSpacing:\s*0/);
 assert.match(mainQml, /rowSpacing:\s*0/);
 assert.match(mainQml, /^\s*spacing:\s*0$/m);
 
-for (const fileName of ["TaskItem.qml", "AttentionItem.qml"]) {
-  const qml = readFileSync(
-    new URL(`../package/contents/ui/${fileName}`, import.meta.url),
-    "utf8",
-  );
-  assert.match(qml, /\bTaskFrame\s*\{/);
-  assert.match(qml, /readonly property bool visualHighlighted:/);
-  assert.match(qml, /readonly property bool titleVisible:/);
-  assert.match(qml, /TaskVisualLogic\.iconActive\(\{/);
-  assert.match(qml, /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible/);
-  assert.doesNotMatch(qml, /QtQuick\.Rectangle\s*\{/);
-}
+const taskItemQml = readFileSync(
+  new URL("../package/contents/ui/TaskItem.qml", import.meta.url),
+  "utf8",
+);
+assert.match(taskItemQml, /\bTaskFrame\s*\{/);
+assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
+assert.match(taskItemQml, /mutedLauncher:\s*root\.pinnedLauncherOnly/);
+assert.match(taskItemQml, /readonly property bool visualHighlighted:/);
+assert.match(taskItemQml, /readonly property bool titleVisible:/);
+assert.match(taskItemQml, /TaskVisualLogic\.iconActive\(\{/);
+assert.match(
+  taskItemQml,
+  /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible && !root\.pinnedLauncherOnly/,
+);
+assert.match(taskItemQml, /opacity:\s*TaskVisualLogic\.contentOpacity\(\{/);
+assert.doesNotMatch(taskItemQml, /QtQuick\.Rectangle\s*\{/);
+
+const attentionItemQml = readFileSync(
+  new URL("../package/contents/ui/AttentionItem.qml", import.meta.url),
+  "utf8",
+);
+assert.match(attentionItemQml, /\bTaskFrame\s*\{/);
+assert.match(attentionItemQml, /readonly property bool visualHighlighted:/);
+assert.match(attentionItemQml, /readonly property bool titleVisible:/);
+assert.match(attentionItemQml, /TaskVisualLogic\.iconActive\(\{/);
+assert.match(
+  attentionItemQml,
+  /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible/,
+);
+assert.doesNotMatch(attentionItemQml, /QtQuick\.Rectangle\s*\{/);

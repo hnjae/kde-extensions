@@ -92,6 +92,7 @@ const taskItemQml = readFileSync(
 assert.match(taskItemQml, /id:\s*iconOverlayContainer/);
 assert.match(taskItemQml, /property real slotWidth:\s*0/);
 assert.match(taskItemQml, /property bool showTitle:\s*true/);
+assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
 assert.match(taskItemQml, /property int titleVisibilityThreshold:\s*96/);
 assert.match(taskItemQml, /root\.showTitle \? 96 : 0/);
 assert.match(
@@ -101,8 +102,9 @@ assert.match(
 assert.match(taskItemQml, /visible:\s*root\.titleVisible/);
 assert.match(
   taskItemQml,
-  /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible/,
+  /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible && !root\.pinnedLauncherOnly/,
 );
+assert.match(taskItemQml, /opacity:\s*TaskVisualLogic\.contentOpacity\(\{/);
 assert.match(taskItemQml, /z:\s*1/);
 assert.match(
   taskItemQml,
@@ -118,6 +120,10 @@ const mainQml = readFileSync(
 assert.match(
   mainQml,
   /showTitle:\s*!\(entry\.launcherBacked && entry\.isLauncher\)/,
+);
+assert.match(
+  mainQml,
+  /pinnedLauncherOnly:\s*entry\.launcherBacked && entry\.isLauncher/,
 );
 assert.match(
   mainQml,
