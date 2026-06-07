@@ -22,7 +22,9 @@ QtQuick.Item {
     property int slotNumber: 0
     property int taskIndex: -1
     property string title: ""
+    property real slotWidth: 0
     property bool showTitle: true
+    property int titleVisibilityThreshold: 96
     property var iconSource: "application-x-executable"
     property var modelIndex
     property var taskData: ({})
@@ -38,15 +40,17 @@ QtQuick.Item {
         slotNumber: root.slotNumber
     })
     readonly property int iconExtent: itemPresentation.iconExtent
+    readonly property real naturalImplicitWidth: Math.max(root.showTitle ? 96 : 0, Math.min(220, contentRow.implicitWidth + contentHorizontalPadding))
     readonly property string numberMode: itemPresentation.numberMode
     readonly property string slotLabel: itemPresentation.slotLabel
+    readonly property bool titleVisible: root.showTitle && (root.slotWidth <= 0 || root.slotWidth >= root.titleVisibilityThreshold)
     readonly property bool visualHighlighted: pointerHandler.hovered || root.activeFocus || root.contextMenuOpen
 
     signal activated(int taskIndex)
     signal contextMenuRequested(var request)
     signal taskDropped(int sourceIndex, int targetIndex, var drop)
 
-    implicitWidth: Math.max(root.showTitle ? 96 : 0, Math.min(220, contentRow.implicitWidth + contentHorizontalPadding))
+    implicitWidth: root.slotWidth > 0 ? root.slotWidth : naturalImplicitWidth
     implicitHeight: 40
     width: implicitWidth
     activeFocusOnTab: true
@@ -74,6 +78,12 @@ QtQuick.Item {
         anchors.rightMargin: taskFrame.contentRightMargin + Kirigami.Units.smallSpacing
         anchors.topMargin: taskFrame.contentTopMargin
         spacing: Kirigami.Units.smallSpacing
+
+        QtQuick.Item {
+            visible: !root.titleVisible
+
+            QtQuickLayouts.Layout.fillWidth: !root.titleVisible
+        }
 
         QtQuick.Text {
             QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
@@ -115,14 +125,20 @@ QtQuick.Item {
 
         QtQuick.Text {
             QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
-            QtQuickLayouts.Layout.fillWidth: root.showTitle
+            QtQuickLayouts.Layout.fillWidth: root.titleVisible
             color: KirigamiPlatform.Theme.textColor
             elide: QtQuick.Text.ElideRight
             font.strikeout: root.minimized
             maximumLineCount: 1
             text: root.title
             verticalAlignment: QtQuick.Text.AlignVCenter
-            visible: root.showTitle
+            visible: root.titleVisible
+        }
+
+        QtQuick.Item {
+            visible: !root.titleVisible
+
+            QtQuickLayouts.Layout.fillWidth: !root.titleVisible
         }
     }
 

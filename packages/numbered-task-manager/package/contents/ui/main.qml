@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
+import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
@@ -12,6 +13,7 @@ import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskActivityLogic.js" as TaskActivityLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
+import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskModelLogic.js" as TaskModelLogic
 
 PlasmoidItem {
@@ -482,9 +484,13 @@ PlasmoidItem {
         id: fullRepresentationItem
 
         readonly property int taskExtent: 40
+        readonly property int titleVisibilityThreshold: 96
+        readonly property real minimumReadableSlotWidth: taskExtent + 2 * Kirigami.Units.smallSpacing
+        readonly property int visibleItemCount: root.normalTaskEntries.length + (attentionItem.visible ? 1 : 0)
+        readonly property real taskSlotWidth: root.vertical ? taskExtent : TaskMetricsLogic.taskSlotWidth(width, visibleItemCount, minimumReadableSlotWidth, 220)
         readonly property real attentionLongExtent: attentionItem.visible ? (root.vertical ? attentionItem.implicitHeight + taskLayout.rowSpacing : attentionItem.implicitWidth + taskLayout.columnSpacing) : 0
 
-        implicitWidth: root.vertical ? Math.max(96, Math.max(taskList.contentWidth, attentionItem.visible ? attentionItem.implicitWidth : 0)) : Math.max(160, taskList.contentWidth + attentionLongExtent)
+        implicitWidth: root.vertical ? Math.max(titleVisibilityThreshold, Math.max(taskList.contentWidth, attentionItem.visible ? attentionItem.implicitWidth : 0)) : Math.max(160, taskList.contentWidth + attentionLongExtent)
         implicitHeight: root.vertical ? Math.max(taskExtent, taskList.contentHeight + attentionLongExtent) : taskExtent
 
         QtQuickLayouts.Layout.fillWidth: true
@@ -525,12 +531,14 @@ PlasmoidItem {
                     readonly property var entry: modelData || ({})
 
                     height: root.vertical ? implicitHeight : taskList.height
-                    width: root.vertical ? taskList.width : implicitWidth
+                    width: root.vertical ? taskList.width : fullRepresentationItem.taskSlotWidth
+                    slotWidth: root.vertical ? 0 : fullRepresentationItem.taskSlotWidth
                     taskIndex: entry.moveIndex ?? entry.sourceIndex ?? -1
                     modelIndex: entry.modelIndex
                     slotNumber: index < 9 ? index + 1 : 0
                     title: entry.title || ""
                     showTitle: !(entry.launcherBacked && entry.isLauncher)
+                    titleVisibilityThreshold: fullRepresentationItem.titleVisibilityThreshold
                     iconSource: entry.iconSource || "application-x-executable"
                     active: entry.active || false
                     minimized: entry.isMinimized || false
@@ -564,12 +572,15 @@ PlasmoidItem {
 
                 QtQuickLayouts.Layout.fillHeight: !root.vertical
                 QtQuickLayouts.Layout.fillWidth: root.vertical
+                QtQuickLayouts.Layout.preferredWidth: root.vertical ? implicitWidth : fullRepresentationItem.taskSlotWidth
 
                 count: root.remoteAttentionCount
                 iconSource: root.remoteAttentionTarget ? root.remoteAttentionTarget.iconSource : "dialog-warning"
                 modelIndex: root.remoteAttentionTarget ? root.remoteAttentionTarget.modelIndex : undefined
+                slotWidth: root.vertical ? 0 : fullRepresentationItem.taskSlotWidth
                 taskData: root.remoteAttentionTarget || {}
                 title: root.remoteAttentionTarget ? root.remoteAttentionTarget.title : ""
+                titleVisibilityThreshold: fullRepresentationItem.titleVisibilityThreshold
                 visible: root.remoteAttentionCount > 0
 
                 onActivated: {

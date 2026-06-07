@@ -16,18 +16,23 @@ QtQuick.Item {
 
     property int count: 0
     property string title: ""
+    property real slotWidth: 0
+    property bool showTitle: true
+    property int titleVisibilityThreshold: 96
     property var iconSource: "dialog-warning"
     property var modelIndex
     property var taskData: ({})
     property bool contextMenuOpen: false
     readonly property real contentHorizontalPadding: taskFrame.contentLeftMargin + taskFrame.contentRightMargin + Kirigami.Units.smallSpacing * 2
     readonly property int iconExtent: TaskMetricsLogic.iconExtentForTaskFrame(height, taskFrame.contentTopMargin, taskFrame.contentBottomMargin, Kirigami.Units.iconSizes.small)
+    readonly property real naturalImplicitWidth: Math.max(112, Math.min(220, contentRow.implicitWidth + contentHorizontalPadding))
+    readonly property bool titleVisible: root.showTitle && (root.slotWidth <= 0 || root.slotWidth >= root.titleVisibilityThreshold)
     readonly property bool visualHighlighted: pointerHandler.hovered || root.activeFocus || root.contextMenuOpen
 
     signal activated
     signal contextMenuRequested(var request)
 
-    implicitWidth: Math.max(112, Math.min(220, contentRow.implicitWidth + contentHorizontalPadding))
+    implicitWidth: root.slotWidth > 0 ? root.slotWidth : naturalImplicitWidth
     implicitHeight: 40
     width: implicitWidth
     activeFocusOnTab: true
@@ -51,6 +56,12 @@ QtQuick.Item {
         anchors.rightMargin: taskFrame.contentRightMargin + Kirigami.Units.smallSpacing
         anchors.topMargin: taskFrame.contentTopMargin
         spacing: Kirigami.Units.smallSpacing
+
+        QtQuick.Item {
+            visible: !root.titleVisible
+
+            QtQuickLayouts.Layout.fillWidth: !root.titleVisible
+        }
 
         QtQuick.Item {
             id: iconContainer
@@ -80,12 +91,19 @@ QtQuick.Item {
 
         QtQuick.Text {
             QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
-            QtQuickLayouts.Layout.fillWidth: true
+            QtQuickLayouts.Layout.fillWidth: root.titleVisible
             color: KirigamiPlatform.Theme.textColor
             elide: QtQuick.Text.ElideRight
             maximumLineCount: 1
             text: root.title
             verticalAlignment: QtQuick.Text.AlignVCenter
+            visible: root.titleVisible
+        }
+
+        QtQuick.Item {
+            visible: !root.titleVisible
+
+            QtQuickLayouts.Layout.fillWidth: !root.titleVisible
         }
     }
 

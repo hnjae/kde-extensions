@@ -23,6 +23,29 @@ function adjustedFrameMargin(
   return frameMargin;
 }
 
+function nonNegativeNumber(value) {
+  const number = Number(value || 0);
+  return isNaN(number) || number < 0 ? 0 : number;
+}
+
+function taskSlotWidth(
+  availableExtent,
+  itemCount,
+  minimumExtent,
+  maximumExtent,
+) {
+  const count = Math.floor(nonNegativeNumber(itemCount));
+  if (count <= 0) {
+    return 0;
+  }
+
+  const available = nonNegativeNumber(availableExtent);
+  const minimum = nonNegativeNumber(minimumExtent);
+  const maximum = Math.max(minimum, nonNegativeNumber(maximumExtent));
+  const dividedExtent = Math.floor(available / count);
+  return Math.max(minimum, Math.min(maximum, dividedExtent));
+}
+
 function iconExtentForTaskFrame(
   frameExtent,
   startMargin,
