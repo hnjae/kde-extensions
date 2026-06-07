@@ -119,10 +119,6 @@ PlasmaExtras.Menu {
         return LauncherListLogic.launcherPinState(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
-    function virtualDesktops() {
-        return roleSnapshot().virtualDesktops;
-    }
-
     function refreshActivities() {
         const ids = Array.from(activityInfo.runningActivities() || []);
         const entries = [];
@@ -529,7 +525,7 @@ PlasmaExtras.Menu {
             visualParent: virtualDesktopsItem.action
 
             PlasmaExtras.MenuItem {
-                readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.virtualDesktops(), root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false), "")
+                readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.roleSnapshot().virtualDesktops, root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false), "")
 
                 checkable: true
                 checked: desktopState.allDesktopsChecked
@@ -547,7 +543,7 @@ PlasmaExtras.Menu {
                 delegate: PlasmaExtras.MenuItem {
                     required property var modelData
 
-                    readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.virtualDesktops(), root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false), modelData.id)
+                    readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.roleSnapshot().virtualDesktops, root.boolRole(root.atm.IsOnAllVirtualDesktops, root.task.isOnAllVirtualDesktops || false), modelData.id)
 
                     checkable: true
                     checked: desktopState.desktopChecked

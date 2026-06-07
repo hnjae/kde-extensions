@@ -305,6 +305,14 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the activity snapshot wrapper function still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function activities|activities\\(\\)|roleSnapshot\\(\\)\\.activities" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 38: Virtual Desktop Snapshot Binding
+
+- Status: completed.
+- What changed: declared that list role snapshot fields such as `virtualDesktops` should be consumed directly from `TaskContextMenuLogic.taskRoleSnapshot(...)`; removed the menu-local `virtualDesktops()` passthrough function; replaced virtual desktop checked-state call sites with direct `roleSnapshot().virtualDesktops` reads.
+- Behavior that must remain unchanged: virtual desktop live role data and task fallback still flow through `TaskContextMenuLogic.taskRoleSnapshot(...)`; All Desktops checked state, per-desktop checked state, labels, ordering, virtual desktop mutation payloads, and command descriptors remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the virtual desktop snapshot wrapper function still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function virtualDesktops|virtualDesktops\\(\\)|roleSnapshot\\(\\)\\.virtualDesktops" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
-- Context menu: continue reducing remaining role snapshot convenience wrappers where practical without obscuring live-role fallback behavior.
+- Context menu: audit the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) and keep them only where they preserve the tested role access boundary clearly.
