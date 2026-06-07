@@ -22,7 +22,8 @@ PlasmaExtras.Menu {
     readonly property bool hasWindowTask: hasTask && taskRoles.isWindow
     readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var captureCloseRoles: TaskContextMenuLogic.captureCloseRoleSnapshot(roleSource(), roleIds(), task)
-    readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
+    readonly property var activityEntries: platformState.activityEntries
+    readonly property var desktopEntries: platformState.desktopEntries
     readonly property var fullscreenShadeBorderRoles: TaskContextMenuLogic.fullscreenShadeBorderRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var keepAboveBelowRoles: TaskContextMenuLogic.keepAboveBelowRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var minimizeMaximizeRoles: TaskContextMenuLogic.minimizeMaximizeRoleSnapshot(roleSource(), roleIds(), task)
@@ -31,7 +32,7 @@ PlasmaExtras.Menu {
         activityEntryCount: activityEntries.length,
         basicActionRoles: basicActionRoles,
         captureCloseRoles: captureCloseRoles,
-        currentActivity: _activityInfo.currentActivity,
+        currentActivity: platformState.currentActivity,
         fullscreenShadeBorderRoles: fullscreenShadeBorderRoles,
         hasTask: hasTask,
         hasTaskModel: taskModel,
@@ -56,7 +57,6 @@ PlasmaExtras.Menu {
     readonly property var pinActionsSection: actionSections.pinActions
     readonly property var taskActivityActionsSection: actionSections.taskActivityActions
     readonly property var virtualDesktopActionsSection: actionSections.virtualDesktopActions
-    property var activityEntries: []
     property var launcherModel: taskModel
     property var launcherActivityList: []
     property var modelIndex
@@ -71,7 +71,7 @@ PlasmaExtras.Menu {
     signal closed
 
     function show() {
-        refreshActivities();
+        platformState.refreshActivities();
         refreshLauncherActivities();
         openRelative();
     }
@@ -146,11 +146,7 @@ PlasmaExtras.Menu {
 
     function launcherPinState() {
         const url = taskRoles.launcherUrl;
-        return TaskContextMenuLogic.launcherPinStateSnapshot(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
-    }
-
-    function refreshActivities() {
-        activityEntries = TaskContextMenuLogic.activityEntriesSnapshot(activityInfo.runningActivities(), id => activityInfo.activityName(id), id => activityInfo.activityIcon(id));
+        return TaskContextMenuLogic.launcherPinStateSnapshot(launcherModel ? launcherModel.launcherList : [], url, platformState.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
     function refreshLauncherActivities() {
@@ -193,18 +189,8 @@ PlasmaExtras.Menu {
         }
     }
 
-    QtQuick.Component.onCompleted: refreshActivities()
-
-    readonly property TaskManager.ActivityInfo _activityInfo: TaskManager.ActivityInfo {
-        id: activityInfo
-
-        onCurrentActivityChanged: root.refreshActivities()
-        onNamesOfRunningActivitiesChanged: root.refreshActivities()
-        onNumberOfRunningActivitiesChanged: root.refreshActivities()
-    }
-
-    readonly property TaskManager.VirtualDesktopInfo _virtualDesktopInfo: TaskManager.VirtualDesktopInfo {
-        id: virtualDesktopInfo
+    readonly property TaskContextMenuPlatformState _platformState: TaskContextMenuPlatformState {
+        id: platformState
     }
 
     PlasmaExtras.MenuItem {
