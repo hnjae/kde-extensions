@@ -30,6 +30,7 @@ const logic = loadQmlJsModule(
     "excludeFromCaptureCommand",
     "fullscreenAction",
     "fullscreenCommand",
+    "fullscreenShadeBorderActionsSection",
     "fullscreenShadeBorderRoleSnapshot",
     "menuActionSection",
     "menuActionSectionVisible",
@@ -837,6 +838,55 @@ assert.deepEqual(
     enabled: false,
     text: "No Border",
     visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.fullscreenShadeBorderActionsSection({
+      canSetNoBorder: true,
+      fullScreenable: true,
+      hasNoBorder: false,
+      hasWindowTask: false,
+      isFullScreen: true,
+      isShadeable: false,
+      isShaded: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    fullscreen: {
+      checked: true,
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestToggleFullScreen",
+      },
+      enabled: false,
+      text: "Fullscreen",
+      visible: true,
+    },
+    noBorder: {
+      checked: false,
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestToggleNoBorder",
+      },
+      enabled: false,
+      text: "No Border",
+      visible: true,
+    },
+    shade: {
+      checked: true,
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestToggleShaded",
+      },
+      enabled: false,
+      text: "Shade",
+      visible: false,
+    },
   },
 );
 assert.deepEqual(plain(logic.excludeFromCaptureCommand()), {
