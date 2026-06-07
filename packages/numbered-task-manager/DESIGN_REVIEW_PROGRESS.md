@@ -217,7 +217,15 @@
 - Verification: `node tests/taskmodellogic.test.mjs` failed before implementation because `createNormalTaskEntry` still accepted the injected helper namespace; after implementation, `node tests/taskmodellogic.test.mjs`; `node tests/normaltasksourceqml.test.mjs`; `node tests/normaltaskstorelogic.test.mjs`; `node tests/taskentrylogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskModelLogic.js`, `package/contents/ui/NormalTaskSource.qml`, `tests/taskmodellogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 27: Remote Attention Projection Dependencies
+
+- Status: completed.
+- What changed: declared that remote-attention projection should import shared task-entry mechanics directly; changed `RemoteAttentionLogic.js` to include `TaskEntryLogic.js`; removed the broad `taskEntryLogic` namespace argument from remote-attention creation and qualification call sites.
+- Behavior that must remain unchanged: remote-attention entry projection, qualification, fallback icon behavior, window-id copying, keying, ordering, count/target selection, and state transitions remain unchanged.
+- Verification: `node tests/remoteattentionlogic.test.mjs` failed before implementation because `createRemoteAttentionEntry` still accepted the injected helper namespace; after implementation, `node tests/remoteattentionlogic.test.mjs`; `node tests/remoteattentionsourceqml.test.mjs`; `node tests/taskentrylogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/RemoteAttentionLogic.js`, `package/contents/ui/RemoteAttentionSource.qml`, `tests/remoteattentionlogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.
-- Task entry projection: remove the remaining broad injected `taskEntryLogic` namespace from remote-attention projection and document or remove unused schema fields where practical.
+- Task entry projection: document or remove unused schema fields such as `hasAnyLauncher` where practical.

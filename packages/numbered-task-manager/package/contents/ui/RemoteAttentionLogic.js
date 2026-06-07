@@ -1,34 +1,28 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-function createRemoteAttentionEntry(roles, taskEntryLogic) {
+Qt.include("TaskEntryLogic.js");
+
+function createRemoteAttentionEntry(roles) {
   const taskRoles = roles || {};
 
   return Object.assign(
     {},
-    taskEntryLogic.createBaseTaskEntry(
-      taskRoles,
-      taskEntryLogic.remoteAttentionIconFallback(),
-    ),
+    createBaseTaskEntry(taskRoles, remoteAttentionIconFallback()),
     {
       winIds: Array.from(taskRoles.winIds || []),
     },
   );
 }
 
-function qualifiesRemoteAttention(
-  task,
-  isInCurrentActivity,
-  currentDesktop,
-  taskEntryLogic,
-) {
+function qualifiesRemoteAttention(task, isInCurrentActivity, currentDesktop) {
   const entry = task || {};
   return (
     Boolean(entry.isWindow) &&
     Boolean(entry.demandingAttention) &&
     (typeof isInCurrentActivity !== "function" ||
       isInCurrentActivity(entry.activities || [])) &&
-    taskEntryLogic.isRemoteVirtualDesktop(
+    isRemoteVirtualDesktop(
       entry.virtualDesktops || [],
       entry.isOnAllVirtualDesktops,
       currentDesktop,

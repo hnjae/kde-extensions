@@ -71,9 +71,9 @@ QtQuick.Item {
                 modelIndex: root.taskModel.makePersistentModelIndex(index),
                 virtualDesktops: model.VirtualDesktops,
                 winIds: model.WinIdList
-            }, TaskEntryLogic)
+            })
             property string taskKey: RemoteAttentionLogic.remoteAttentionKey(taskInfo.winIds, taskInfo.launcherUrl, taskInfo.title, index)
-            property bool qualifies: RemoteAttentionLogic.qualifiesRemoteAttention(taskInfo, activities => root.taskIsInCurrentActivity(activities), root.currentDesktop, TaskEntryLogic)
+            property bool qualifies: RemoteAttentionLogic.qualifiesRemoteAttention(taskInfo, activities => root.taskIsInCurrentActivity(activities), root.currentDesktop)
 
             height: 0
             visible: false
