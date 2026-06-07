@@ -401,10 +401,18 @@
 - Verification: `node tests/launcherlistlogic.test.mjs` failed before implementation because activity update results lacked `ok` and `reason`; after implementation, `node tests/launcherlistlogic.test.mjs`; `node tests/taskcontextmenulogic.test.mjs`; `node tests/taskactionlogic.test.mjs`; `rg -n "launcherActivityUpdate|reason: \\\"(invalid-position|unchanged|updated)\\\"|ok: (true|false)|if \\(!update\\.ok\\)|if \\(!update\\)" package/contents/ui/LauncherListLogic.js package/contents/ui/TaskContextMenu.qml tests/launcherlistlogic.test.mjs tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/LauncherListLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/launcherlistlogic.test.mjs`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 50: Task Move Reason Codes
+
+- Status: completed.
+- What changed: declared normal-task move decisions as reason-coded results; added `TaskModelLogic.canMoveTaskResult(...)` and `TaskModelLogic.moveManualTaskOrderResult(...)`; kept the existing `canMoveTask(...)` boolean and `moveManualTaskOrder(...)` `{ moved, order }` wrapper surfaces for QML compatibility.
+- Behavior that must remain unchanged: pinned launcher moves, unpinned manual moves, pinned/unpinned boundary rejections, stale-index rejections, and same-index no-ops keep the same boolean outcome; manual order updates still produce the same order arrays.
+- Verification: `node tests/taskmodellogic.test.mjs` failed before implementation because `canMoveTaskResult(...)` did not exist; after implementation, `node tests/taskmodellogic.test.mjs`; `node tests/normaltaskstorelogic.test.mjs`; `rg -n "canMoveTaskResult|moveManualTaskOrderResult|reason: \\\"(invalid-index|same-index|missing-source|missing-target|boundary-crossing|pinned-launcher-denied|movable-pinned|movable-unpinned|same-position|moved)\\\"|function canMoveTask\\(|function moveManualTaskOrder\\(" package/contents/ui/TaskModelLogic.js tests/taskmodellogic.test.mjs package/contents/ui/main.qml`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskModelLogic.js`, `tests/taskmodellogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: direct role snapshot passthrough wrappers have been removed. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code.
 - Visible item composer / remote attention: rendered remote-attention activation and metadata now consume composed descriptors, and `RemoteAttentionSource.qml` owns the remote-attention model, state snapshot, and activation adapter. Full remote-attention removability still requires shrinking root's rendered binding and context-menu wiring to one source-owned item surface.
 - Scope policy: model filter settings and local qualifiers now have a named owner; task-specific qualifier re-export facades and generic activity facades in task and launcher modules have been removed.
 - Metrics: root layout, normal task, and attention task size constants now come from `TaskMetricsLogic.js`. Badge dimensions remain badge-local rendering policy.
-- Mutation results: launcher activity updates now distinguish invalid positions from unchanged activity lists. Remaining mutation-result work is move/drag reason codes.
+- Mutation results: launcher activity updates and normal-task move decisions now expose reason-coded results. Remaining mutation-result work is migrating drag/drop callers to consume or log those typed results directly.

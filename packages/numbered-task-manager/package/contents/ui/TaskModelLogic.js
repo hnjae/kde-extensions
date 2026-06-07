@@ -205,19 +205,38 @@ function normalTaskEntryForSourceIndex(entries, sourceIndex) {
 }
 
 function moveManualTaskOrder(entries, sourceKey, targetKey) {
+  const result = moveManualTaskOrderResult(entries, sourceKey, targetKey);
+  return {
+    moved: result.moved,
+    order: result.order,
+  };
+}
+
+function moveManualTaskOrderResult(entries, sourceKey, targetKey) {
   const order = Array.from(entries || [])
     .filter((entry) => !entry.launcherBacked)
     .map((entry) => entry.entryKey);
   const sourcePosition = order.indexOf(sourceKey);
   const targetPosition = order.indexOf(targetKey);
-  if (
-    sourcePosition === -1 ||
-    targetPosition === -1 ||
-    sourcePosition === targetPosition
-  ) {
+  if (sourcePosition === -1) {
     return {
       moved: false,
       order,
+      reason: "missing-source",
+    };
+  }
+  if (targetPosition === -1) {
+    return {
+      moved: false,
+      order,
+      reason: "missing-target",
+    };
+  }
+  if (sourcePosition === targetPosition) {
+    return {
+      moved: false,
+      order,
+      reason: "same-position",
     };
   }
 
@@ -226,32 +245,74 @@ function moveManualTaskOrder(entries, sourceKey, targetKey) {
   return {
     moved: true,
     order,
+    reason: "moved",
   };
 }
 
 function canMoveTask(entries, sourceIndex, targetIndex, canMovePinnedLauncher) {
-  if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
-    return false;
+  return canMoveTaskResult(
+    entries,
+    sourceIndex,
+    targetIndex,
+    canMovePinnedLauncher,
+  ).canMove;
+}
+
+function canMoveTaskResult(
+  entries,
+  sourceIndex,
+  targetIndex,
+  canMovePinnedLauncher,
+) {
+  if (sourceIndex < 0 || targetIndex < 0) {
+    return {
+      canMove: false,
+      reason: "invalid-index",
+    };
+  }
+  if (sourceIndex === targetIndex) {
+    return {
+      canMove: false,
+      reason: "same-index",
+    };
   }
 
   const sourceEntry = normalTaskEntryForSourceIndex(entries, sourceIndex);
   const targetEntry = normalTaskEntryForSourceIndex(entries, targetIndex);
-  if (!sourceEntry || !targetEntry) {
-    return false;
+  if (!sourceEntry) {
+    return {
+      canMove: false,
+      reason: "missing-source",
+    };
+  }
+  if (!targetEntry) {
+    return {
+      canMove: false,
+      reason: "missing-target",
+    };
   }
 
   if (
     Boolean(sourceEntry.launcherBacked) !== Boolean(targetEntry.launcherBacked)
   ) {
-    return false;
+    return {
+      canMove: false,
+      reason: "boundary-crossing",
+    };
   }
 
   if (sourceEntry.launcherBacked) {
-    return (
+    const canMove =
       typeof canMovePinnedLauncher === "function" &&
-      canMovePinnedLauncher(sourceEntry, targetEntry)
-    );
+      canMovePinnedLauncher(sourceEntry, targetEntry);
+    return {
+      canMove,
+      reason: canMove ? "movable-pinned" : "pinned-launcher-denied",
+    };
   }
 
-  return true;
+  return {
+    canMove: true,
+    reason: "movable-unpinned",
+  };
 }
