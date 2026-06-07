@@ -69,6 +69,7 @@ const logic = loadQmlJsModule(
     "noBorderCommand",
     "panelMenuPlacement",
     "pinActionState",
+    "pinActionsSection",
     "pinLauncherAction",
     "pinLauncherCommand",
     "replaceLauncherListCommand",
@@ -300,6 +301,28 @@ assert.deepEqual(
     },
     enabled: false,
     text: "Pin to Task Manager",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.pinActionsSection({
+      canPin: true,
+      isPinned: true,
+      launcherUrl: "app.desktop",
+    }),
+  ),
+  {
+    pinLauncher: {
+      action: "unpin",
+      command: {
+        action: "unpinLauncher",
+        kind: "launcher-command",
+        launcherUrl: "app.desktop",
+        launchers: [],
+      },
+      enabled: true,
+      text: "Unpin from Task Manager",
+    },
   },
 );
 assert.deepEqual(
@@ -2328,7 +2351,8 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivitiesVisible(pinState"),
   false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.pinLauncherAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.pinActionsSection("), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.pinLauncherAction"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.pinActionState(root.launcherPinState"),
   false,
