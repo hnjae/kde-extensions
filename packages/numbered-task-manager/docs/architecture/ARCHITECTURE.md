@@ -85,6 +85,10 @@ in `SPEC.md`.
   Mutation results should include stable `reason` codes while preserving
   existing transition fields during migration, so invalid launcher activity
   positions are distinguishable from unchanged activity lists.
+- Keep normal-task move and drag acceptance decisions in `TaskModelLogic.js`.
+  Move helpers should expose typed reasons for invalid indexes, stale entries,
+  same-entry no-ops, pinned/unpinned boundary crossings, and pinned-launcher
+  policy denials while preserving existing boolean fields during migration.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
   coercion, launcher URL precedence, title/icon fallback, model-index validity,
   and virtual-desktop membership should not be duplicated between normal task
