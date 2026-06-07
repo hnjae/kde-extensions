@@ -34,6 +34,10 @@ in `SPEC.md`.
 - Keep context-menu live role access and menu-facing role snapshots in
   `TaskContextMenuLogic.js`. `TaskContextMenu.qml` should render menu sections
   from helper output and must not call `taskModel.data(...)` directly.
+- Keep context-menu launcher-activity menu state in `TaskContextMenuLogic.js`.
+  Raw launcher activity lists entering the menu should be normalized through the
+  same all-activities semantics as launcher serialization before checked-state
+  predicates are evaluated.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
