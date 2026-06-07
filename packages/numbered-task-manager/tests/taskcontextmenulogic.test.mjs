@@ -10,6 +10,7 @@ const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskContextMenuLogic.js", import.meta.url),
   [
     "boolRoleData",
+    "basicActionRoleSnapshot",
     "checkableWindowActionState",
     "checkableWindowCapabilityActionState",
     "closeActionState",
@@ -560,7 +561,10 @@ assert.equal(
 
 const liveRoles = {
   Activities: ["live-activity"],
+  CanLaunchNewInstance: true,
   IsLauncher: 1,
+  IsMovable: false,
+  IsResizable: true,
   IsWindow: true,
   LauncherUrl: "launcher.desktop",
   LauncherUrlWithoutIcon: "launcher-without-icon.desktop",
@@ -579,7 +583,10 @@ const roleSource = {
 };
 const roles = {
   Activities: "Activities",
+  CanLaunchNewInstance: "CanLaunchNewInstance",
   IsLauncher: "IsLauncher",
+  IsMovable: "IsMovable",
+  IsResizable: "IsResizable",
   IsWindow: "IsWindow",
   LauncherUrl: "LauncherUrl",
   LauncherUrlWithoutIcon: "LauncherUrlWithoutIcon",
@@ -632,6 +639,38 @@ assert.deepEqual(
     virtualDesktops: ["fallback-desktop"],
   },
 );
+assert.deepEqual(
+  plain(
+    logic.basicActionRoleSnapshot(roleSource, roles, {
+      canLaunchNewInstance: false,
+      isLauncher: false,
+      isMovable: true,
+      isResizable: false,
+    }),
+  ),
+  {
+    canLaunchNewInstance: true,
+    isLauncher: true,
+    isMovable: false,
+    isResizable: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.basicActionRoleSnapshot({ ...roleSource, hasTask: false }, roles, {
+      canLaunchNewInstance: false,
+      isLauncher: true,
+      isMovable: true,
+      isResizable: false,
+    }),
+  ),
+  {
+    canLaunchNewInstance: false,
+    isLauncher: true,
+    isMovable: true,
+    isResizable: false,
+  },
+);
 assert.deepEqual(plain(roleCalls.map((call) => call.role).slice(0, 2)), [
   "LauncherUrl",
   "Missing",
@@ -652,6 +691,24 @@ assert.equal(
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopEntriesSnapshot"),
   true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.basicActionRoleSnapshot"),
+  true,
+);
+assert.equal(
+  menuQml.includes(
+    "canLaunchNewInstance: root.boolRole(root.atm.CanLaunchNewInstance",
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes("capable: root.boolRole(root.atm.IsMovable"),
+  false,
+);
+assert.equal(
+  menuQml.includes("capable: root.boolRole(root.atm.IsResizable"),
+  false,
 );
 assert.equal(menuQml.includes('names[i] || "Desktop "'), false);
 assert.equal(menuQml.includes("activityInfo.activityName(id) || id"), false);
