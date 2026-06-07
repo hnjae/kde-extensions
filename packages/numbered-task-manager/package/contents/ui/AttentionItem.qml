@@ -51,10 +51,8 @@ QtQuick.Item {
 
         frame: taskFrame
 
-        QtQuick.Item {
-            visible: !root.titleVisible
-
-            QtQuickLayouts.Layout.fillWidth: !root.titleVisible
+        TaskLikeContentSpacer {
+            fill: !root.titleVisible
         }
 
         QtQuick.Item {
@@ -86,10 +84,8 @@ QtQuick.Item {
             visible: root.titleVisible
         }
 
-        QtQuick.Item {
-            visible: !root.titleVisible
-
-            QtQuickLayouts.Layout.fillWidth: !root.titleVisible
+        TaskLikeContentSpacer {
+            fill: !root.titleVisible
         }
     }
 

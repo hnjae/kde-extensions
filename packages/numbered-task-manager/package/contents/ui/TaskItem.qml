@@ -85,10 +85,8 @@ QtQuick.Item {
         })
         frame: taskFrame
 
-        QtQuick.Item {
-            visible: !root.titleVisible && !root.pinnedLauncherOnly
-
-            QtQuickLayouts.Layout.fillWidth: !root.titleVisible && !root.pinnedLauncherOnly
+        TaskLikeContentSpacer {
+            fill: !root.titleVisible && !root.pinnedLauncherOnly
         }
 
         QtQuick.Text {
@@ -133,10 +131,8 @@ QtQuick.Item {
             visible: root.titleVisible
         }
 
-        QtQuick.Item {
-            visible: !root.titleVisible
-
-            QtQuickLayouts.Layout.fillWidth: !root.titleVisible
+        TaskLikeContentSpacer {
+            fill: !root.titleVisible
         }
     }
 
