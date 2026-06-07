@@ -219,14 +219,7 @@ PlasmaExtras.Menu {
         text: pinAction.text
 
         onClicked: {
-            const pinState = root.launcherPinState();
-            const action = TaskContextMenuLogic.pinActionState(pinState);
-            const url = pinState.launcherUrl;
-            if (action.action === "unpin") {
-                root.launcherCommandRequested(TaskActionLogic.contextMenuLauncherCommand("unpinLauncher", url));
-            } else {
-                root.launcherCommandRequested(TaskActionLogic.contextMenuLauncherCommand("pinLauncher", url));
-            }
+            root.launcherCommandRequested(TaskContextMenuLogic.pinLauncherCommand(root.launcherPinState()));
         }
     }
 

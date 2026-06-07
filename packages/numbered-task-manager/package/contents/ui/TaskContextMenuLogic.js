@@ -65,6 +65,15 @@ function pinActionState(pinState) {
   };
 }
 
+function pinLauncherCommand(pinState) {
+  const state = pinState || {};
+  const action = pinActionState(state);
+  return contextMenuLauncherCommand(
+    action.action === "unpin" ? "unpinLauncher" : "pinLauncher",
+    state.launcherUrl,
+  );
+}
+
 function newInstanceActionState(taskState) {
   const state = taskState || {};
 
