@@ -123,22 +123,6 @@ PlasmaExtras.Menu {
         return LauncherListLogic.launcherPinState(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
-    function newInstanceActionState() {
-        return TaskContextMenuLogic.newInstanceActionState({
-            canLaunchNewInstance: boolRole(atm.CanLaunchNewInstance, task.canLaunchNewInstance || false),
-            hasTask: hasTask,
-            isLauncher: isLauncher()
-        });
-    }
-
-    function windowCapabilityActionState(role, fallback) {
-        return TaskContextMenuLogic.windowCapabilityActionState({
-            capable: boolRole(role, fallback || false),
-            hasWindowTask: hasWindowTask,
-            isWindow: isWindow()
-        });
-    }
-
     function checkableWindowCapabilityActionState(capabilityRole, capabilityFallback, checkedRole, checkedFallback) {
         return TaskContextMenuLogic.checkableWindowCapabilityActionState({
             capable: boolRole(capabilityRole, capabilityFallback || false),
@@ -153,14 +137,6 @@ PlasmaExtras.Menu {
             checked: boolRole(checkedRole, checkedFallback || false),
             hasWindowTask: hasWindowTask,
             isWindow: isWindow()
-        });
-    }
-
-    function menuActionSectionVisible(launcherActivitiesVisible, newInstanceVisible) {
-        return TaskContextMenuLogic.menuActionSectionVisible({
-            hasWindowTask: hasWindowTask,
-            launcherActivitiesVisible: launcherActivitiesVisible,
-            newInstanceVisible: newInstanceVisible
         });
     }
 
@@ -383,13 +359,21 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         separator: true
-        visible: root.menuActionSectionVisible(launcherActivitiesItem.visible, newInstanceItem.visible)
+        visible: TaskContextMenuLogic.menuActionSectionVisible({
+            hasWindowTask: root.hasWindowTask,
+            launcherActivitiesVisible: launcherActivitiesItem.visible,
+            newInstanceVisible: newInstanceItem.visible
+        })
     }
 
     PlasmaExtras.MenuItem {
         id: newInstanceItem
 
-        readonly property var actionState: root.newInstanceActionState()
+        readonly property var actionState: TaskContextMenuLogic.newInstanceActionState({
+            canLaunchNewInstance: root.boolRole(root.atm.CanLaunchNewInstance, root.task.canLaunchNewInstance || false),
+            hasTask: root.hasTask,
+            isLauncher: root.isLauncher()
+        })
 
         enabled: actionState.enabled
         text: "New Instance"
@@ -401,7 +385,11 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.windowCapabilityActionState(root.atm.IsMovable, root.task.isMovable || false)
+        readonly property var actionState: TaskContextMenuLogic.windowCapabilityActionState({
+            capable: root.boolRole(root.atm.IsMovable, root.task.isMovable || false),
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         enabled: actionState.enabled
         text: "Move"
@@ -413,7 +401,11 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.windowCapabilityActionState(root.atm.IsResizable, root.task.isResizable || false)
+        readonly property var actionState: TaskContextMenuLogic.windowCapabilityActionState({
+            capable: root.boolRole(root.atm.IsResizable, root.task.isResizable || false),
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         enabled: actionState.enabled
         text: "Resize"

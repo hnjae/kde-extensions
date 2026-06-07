@@ -257,6 +257,14 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the virtual desktop wrapper function still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function virtualDesktopMenuState|root\\.virtualDesktopMenuState|TaskContextMenuLogic\\.virtualDesktopMenuState" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 32: Basic Action State Bindings
+
+- Status: completed.
+- What changed: declared that New Instance, Move, Resize, and their section separator should consume action-state helper output directly; removed the menu-local basic action-state wrapper functions; bound those menu items directly to `TaskContextMenuLogic.newInstanceActionState(...)`, `TaskContextMenuLogic.windowCapabilityActionState(...)`, and `TaskContextMenuLogic.menuActionSectionVisible(...)`.
+- Behavior that must remain unchanged: menu order, labels, visible/enabled states, and `requestNewInstance`, `requestMove`, and `requestResize` command dispatch remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the basic action wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function newInstanceActionState|function windowCapabilityActionState|function menuActionSectionVisible|root\\.(newInstanceActionState|windowCapabilityActionState|menuActionSectionVisible)|TaskContextMenuLogic\\.(newInstanceActionState|windowCapabilityActionState|menuActionSectionVisible)" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.
