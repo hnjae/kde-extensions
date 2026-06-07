@@ -48,9 +48,17 @@
 - Verification: `node tests/taskactionlogic.test.mjs`; `node tests/launcherlistlogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/main.qml`, `tests/taskactionlogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Planned Checkpoint 6: Normal Task Publication Store
+
+- Status: planned.
+- What will change: add a pure normal-task store helper for publication-key allocation, publish/remove transitions, manual-order pruning, and composed normal-task snapshots; route root normal publication and recompute functions through that helper while keeping hidden repeaters as event producers.
+- Behavior that must remain unchanged: Plasma task rows are still observed by the existing hidden normal-task repeater; pinned prefix and unpinned manual ordering still use `TaskModelLogic.composeNormalTaskEntries(...)`; drag/drop behavior and visible normal task order remain unchanged.
+- Verification: `node tests/normaltaskstorelogic.test.mjs`; `node tests/taskmodellogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files likely changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/NormalTaskStoreLogic.js`, `package/contents/ui/main.qml`, `tests/normaltaskstorelogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Launcher sync: add bounded retry or next-change reconciliation for logged model/config mismatches.
-- Root/model ownership: extract normal publication/order and remote-attention source state from `main.qml` in later checkpoints.
+- Root/model ownership: finish extracting normal publication state from root properties and extract remote-attention source state from `main.qml` in later checkpoints.
 - Context menu: migrate role normalization and action policy into tested helpers before simplifying the QML menu.
 - Observability: extend structured action results beyond activation, menu creation, and launcher mutations to context-menu window/task requests.

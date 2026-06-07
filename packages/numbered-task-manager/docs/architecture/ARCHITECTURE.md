@@ -42,6 +42,10 @@ in `SPEC.md`.
   coercion, title/icon fallback, model-index validity, and virtual-desktop
   membership should not be duplicated between normal task composition, remote
   attention, and context menu code.
+- Keep normal task publication state transitions in `NormalTaskStoreLogic.js`.
+  Hidden QML delegates may still observe Plasma rows, but publication-key
+  allocation, publish/remove events, manual-order pruning, and composed normal
+  snapshots should be exercised by pure tests.
 - Keep launcher-list writes owned by the root widget. Child components such as
   the task context menu may compute and request a replacement launcher list, but
   `main.qml` is responsible for applying it to `TasksModel` and persisting it to
