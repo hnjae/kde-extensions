@@ -31,6 +31,7 @@ const logic = loadQmlJsModule(
     "launcherActivityUpdateCommand",
     "launcherAllActivitiesUpdateCommand",
     "launcherActivityToggleUpdateCommand",
+    "launcherActivitiesActionState",
     "launcherActivitiesVisible",
     "launcherPinStateSnapshot",
     "keepAboveCommand",
@@ -655,6 +656,58 @@ assert.equal(
     2,
   ),
   false,
+);
+assert.deepEqual(
+  plain(
+    logic.launcherActivitiesActionState(
+      { canPin: true, isPinned: true, launcherUrl: "app.desktop" },
+      2,
+      true,
+    ),
+  ),
+  {
+    enabled: true,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherActivitiesActionState(
+      { canPin: true, isPinned: true, launcherUrl: "app.desktop" },
+      2,
+      false,
+    ),
+  ),
+  {
+    enabled: false,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherActivitiesActionState(
+      { canPin: true, isPinned: false, launcherUrl: "app.desktop" },
+      2,
+      true,
+    ),
+  ),
+  {
+    enabled: true,
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherActivitiesActionState(
+      { canPin: false, isPinned: true, launcherUrl: "" },
+      2,
+      true,
+    ),
+  ),
+  {
+    enabled: false,
+    visible: false,
+  },
 );
 
 assert.deepEqual(plain(logic.launcherActivityListSnapshot([])), [
@@ -1453,6 +1506,18 @@ assert.equal(
 );
 assert.equal(menuQml.includes('import "LauncherListLogic.js"'), false);
 assert.equal(menuQml.includes("LauncherListLogic.launcherPinState"), false);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.launcherActivitiesActionState"),
+  true,
+);
+assert.equal(
+  menuQml.includes("enabled: Boolean(root.taskModel) && pinState.canPin"),
+  false,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.launcherActivitiesVisible(pinState"),
+  false,
+);
 assert.equal(menuQml.includes("TaskContextMenuLogic.pinLauncherCommand"), true);
 assert.equal(
   menuQml.includes('TaskActionLogic.contextMenuLauncherCommand("pinLauncher"'),
