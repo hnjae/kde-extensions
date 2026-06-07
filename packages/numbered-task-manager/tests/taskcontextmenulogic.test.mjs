@@ -109,7 +109,7 @@ assert.deepEqual(
     logic.activityEntriesSnapshot(
       ["activity-a", 42],
       (id) => (id === "activity-a" ? "Work" : ""),
-      (id) => "icon-" + id,
+      (id) => `icon-${id}`,
     ),
   ),
   [

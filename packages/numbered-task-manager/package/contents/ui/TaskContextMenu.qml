@@ -21,18 +21,7 @@ PlasmaExtras.Menu {
     readonly property var atm: TaskManager.AbstractTasksModel
     readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(modelIndex)
     readonly property bool hasWindowTask: hasTask && roleSnapshot().isWindow
-    readonly property var desktopEntries: {
-        const ids = Array.from(virtualDesktopInfo.desktopIds || []);
-        const names = Array.from(virtualDesktopInfo.desktopNames || []);
-        const entries = [];
-        for (let i = 0; i < ids.length; ++i) {
-            entries.push({
-                id: ids[i],
-                name: names[i] || "Desktop " + (i + 1).toString()
-            });
-        }
-        return entries;
-    }
+    readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
     property var activityEntries: []
     property var launcherModel: taskModel
     property var launcherActivityList: []
@@ -120,17 +109,7 @@ PlasmaExtras.Menu {
     }
 
     function refreshActivities() {
-        const ids = Array.from(activityInfo.runningActivities() || []);
-        const entries = [];
-        for (let i = 0; i < ids.length; ++i) {
-            const id = String(ids[i]);
-            entries.push({
-                icon: activityInfo.activityIcon(id),
-                id,
-                name: activityInfo.activityName(id) || id
-            });
-        }
-        activityEntries = entries;
+        activityEntries = TaskContextMenuLogic.activityEntriesSnapshot(activityInfo.runningActivities(), id => activityInfo.activityName(id), id => activityInfo.activityIcon(id));
     }
 
     function refreshLauncherActivities() {

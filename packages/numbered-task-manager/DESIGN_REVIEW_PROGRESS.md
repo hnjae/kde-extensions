@@ -449,9 +449,17 @@
 - Verification: `node tests/taskvisuallogic.test.mjs` failed before implementation because delegates did not consume `TaskLikeInteraction.qml`; after implementation, `node tests/taskvisuallogic.test.mjs`; `node tests/taskinteractionlogic.test.mjs`; `just lint-qml`; `just lint-js-host`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `tests/taskvisuallogic.test.mjs`, `package/contents/ui/TaskLikeInteraction.qml`, `package/contents/ui/TaskItem.qml`, `package/contents/ui/AttentionItem.qml`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 56: Context-Menu Platform Entry Snapshots
+
+- Status: completed.
+- What changed: declared context-menu platform entry construction as helper-owned; added `TaskContextMenuLogic.activityEntriesSnapshot(...)` and `TaskContextMenuLogic.virtualDesktopEntriesSnapshot(...)`; routed `TaskContextMenu.qml` activity and virtual-desktop entry construction through those helpers while keeping Plasma `ActivityInfo` and `VirtualDesktopInfo` ownership in the menu.
+- Behavior that must remain unchanged: activity entries keep running-activity order, stringified IDs, activity icons, and name fallback to the activity ID; virtual-desktop entries keep desktop ID order and `Desktop N` fallback labels; menu refresh triggers, submenu ordering, labels, and click effects remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the snapshot helpers did not exist; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `tests/taskcontextmenulogic.test.mjs`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
-- Context menu: direct role snapshot passthrough wrappers have been removed. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code.
+- Context menu: direct role snapshot passthrough wrappers have been removed, and activity/virtual-desktop entry construction now comes from tested helper snapshots. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code.
 - Visible item composer / remote attention: rendered remote-attention activation and metadata now consume composed descriptors, and `RemoteAttentionSource.qml` owns the remote-attention model, state snapshot, and activation adapter. Full remote-attention removability still requires shrinking root's rendered binding and context-menu wiring to one source-owned item surface.
 - Scope policy: model filter settings and local qualifiers now have a named owner; task-specific qualifier re-export facades and generic activity facades in task and launcher modules have been removed.
 - Metrics: root layout, normal task, and attention task size constants now come from `TaskMetricsLogic.js`. Badge dimensions remain badge-local rendering policy.
