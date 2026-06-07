@@ -143,6 +143,7 @@ in `SPEC.md`.
 - Bind rendered remote-attention item metadata from its composed visible item descriptor instead of reconstructing the attention target separately in root layout bindings.
 - Keep the rendered task-list representation in `TaskListRepresentation.qml`. It should own the `fullRepresentation` layout, task-list viewport, normal item delegate instantiation, and remote-attention item placement, while `main.qml` wires platform models, adapters, and composed visible-item inputs.
 - Keep shortcut activation, context-menu creation, and launcher pin/unpin request outcomes in a small action-result helper. Root QML should still execute Plasma side effects, but invalid requests, stale model indexes, missing targets, rejected launcher requests, and creation failures should be classified before deciding whether to log a diagnostic.
+- Keep action-result diagnostic filtering and warning formatting in `TaskActionResultLogger.qml`. `main.qml` should wire action-result signals to that logger instead of importing action-result policy or owning diagnostic message formatting.
 - Keep context-menu task request outcomes in the same action-result helper.
   `TaskContextMenu.qml` may execute `TasksModel.request*` effects directly from
   typed command descriptors, but missing task models, stale model indexes, and
