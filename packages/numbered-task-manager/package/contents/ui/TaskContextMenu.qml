@@ -234,18 +234,6 @@ PlasmaExtras.Menu {
         launcherActivityList = TaskContextMenuLogic.launcherActivityListSnapshot(launcherModel.launcherActivities(url));
     }
 
-    function taskOnAllActivities() {
-        return taskActivityMenuState("").allActivitiesChecked;
-    }
-
-    function taskOnActivity(activityId) {
-        return taskActivityMenuState(activityId).activityChecked;
-    }
-
-    function taskActivityMenuState(activityId) {
-        return TaskContextMenuLogic.taskActivityMenuState(activities(), activityId);
-    }
-
     function virtualDesktopMenuState(desktop) {
         return TaskContextMenuLogic.virtualDesktopMenuState(virtualDesktops(), boolRole(atm.IsOnAllVirtualDesktops, task.isOnAllVirtualDesktops || false), desktop);
     }
@@ -630,7 +618,7 @@ PlasmaExtras.Menu {
 
             PlasmaExtras.MenuItem {
                 checkable: true
-                checked: root.taskOnAllActivities()
+                checked: TaskContextMenuLogic.taskActivityMenuState(root.activities(), "").allActivitiesChecked
                 text: "All Activities"
 
                 onClicked: {
@@ -646,7 +634,7 @@ PlasmaExtras.Menu {
                     required property var modelData
 
                     checkable: true
-                    checked: root.taskOnActivity(modelData.id)
+                    checked: TaskContextMenuLogic.taskActivityMenuState(root.activities(), modelData.id).activityChecked
                     text: modelData.name
 
                     onClicked: {

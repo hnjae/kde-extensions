@@ -241,6 +241,14 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the launcher activity wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "launcherPinnedToAllActivities|launcherPinnedToActivity|function launcherActivityMenuState|TaskContextMenuLogic\\.launcherActivityMenuState" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 30: Task Activity Menu State Bindings
+
+- Status: completed.
+- What changed: declared that task-activity menu items should consume checked-state helper output directly; removed the menu-local task activity checked-state wrapper functions; bound the All Activities and per-activity task menu items directly to `TaskContextMenuLogic.taskActivityMenuState(...)`.
+- Behavior that must remain unchanged: task activity all/current checked states, submenu labels, ordering, visibility, and `requestActivities` command payloads remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the task activity wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "taskOnAllActivities|taskOnActivity|function taskActivityMenuState|TaskContextMenuLogic\\.taskActivityMenuState" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.
