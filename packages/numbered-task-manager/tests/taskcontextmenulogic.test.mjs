@@ -18,6 +18,7 @@ const logic = loadQmlJsModule(
     "roleData",
     "taskActivityMenuState",
     "taskRoleSnapshot",
+    "virtualDesktopMenuState",
   ],
 );
 
@@ -154,6 +155,35 @@ assert.deepEqual(plain(logic.taskActivityMenuState(["chat"], "chat")), {
   activityChecked: true,
   allActivitiesChecked: false,
 });
+assert.deepEqual(plain(logic.virtualDesktopMenuState([], true, "desktop-a")), {
+  allDesktopsChecked: true,
+  desktopChecked: true,
+});
+assert.deepEqual(
+  plain(logic.virtualDesktopMenuState(["desktop-a"], false, "desktop-a")),
+  {
+    allDesktopsChecked: false,
+    desktopChecked: true,
+  },
+);
+assert.deepEqual(
+  plain(logic.virtualDesktopMenuState(["desktop-a"], false, "desktop-b")),
+  {
+    allDesktopsChecked: false,
+    desktopChecked: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.virtualDesktopMenuState([{ id: "desktop-a" }], false, {
+      id: "desktop-a",
+    }),
+  ),
+  {
+    allDesktopsChecked: false,
+    desktopChecked: true,
+  },
+);
 assert.equal(
   logic.launcherActivitiesVisible(
     { canPin: true, isPinned: true, launcherUrl: "app.desktop" },
@@ -258,6 +288,10 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivityMenuState"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.virtualDesktopMenuState"),
   true,
 );
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), true);
