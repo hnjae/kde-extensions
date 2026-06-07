@@ -137,9 +137,17 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because `checkableWindowActionState` did not exist; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg "checked: root\\.boolRole\\(root\\.atm\\.(IsKeepAbove|IsKeepBelow|IsFullScreen|IsShaded|HasNoBorder|IsExcludedFromCapture)|enabled: root\\.hasWindowTask && root\\.boolRole\\(root\\.atm\\.(IsFullScreenable|IsShadeable|CanSetNoBorder)|visible: root\\.isWindow\\(\\) && root\\.boolRole\\(root\\.atm\\.(IsFullScreenable|IsShadeable|CanSetNoBorder)" package/contents/ui/TaskContextMenu.qml`; `node tests/taskactionlogic.test.mjs`; `node tests/taskactivitylogic.test.mjs`; `node tests/taskentrylogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 17: Remaining Menu Action Availability
+
+- Status: completed.
+- What changed: added tested helpers for task-action section visibility, Virtual Desktops visibility/enabled state, New Desktop enabled state, Activities visibility/enabled state, and Close visibility/enabled state; routed the corresponding `TaskContextMenu.qml` bindings through `TaskContextMenuLogic.js`.
+- Behavior that must remain unchanged: context-menu order, labels, submenu composition, checked state, click effects, request method names, and request payloads remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because `closeActionState` did not exist; after implementation, `node tests/taskcontextmenulogic.test.mjs`; source guards for direct root task availability predicates and obsolete inline virtual-desktop/activity/close predicates; `node tests/taskactionlogic.test.mjs`; `node tests/taskactivitylogic.test.mjs`; `node tests/taskentrylogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Launcher sync: add bounded retry or next-change reconciliation for logged model/config mismatches.
 - Root/model ownership: extract normal and remote hidden model repeaters into named source components in later checkpoints.
-- Context menu: continue migrating remaining section, virtual-desktop, activity, and close action visibility/enabled policy into tested helpers before simplifying the QML menu.
+- Context menu: continue shrinking thin QML wrapper functions around checked-state helpers, then simplify menu effect dispatch into typed commands where practical.
 - Observability: extend structured action results beyond activation, menu creation, and launcher mutations to context-menu window/task requests.
