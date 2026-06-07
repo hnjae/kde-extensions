@@ -294,12 +294,25 @@ function virtualDesktopsActionState(taskState) {
   );
 }
 
+function virtualDesktopsAction(taskState) {
+  return Object.assign({}, virtualDesktopsActionState(taskState), {
+    text: "Virtual Desktops",
+  });
+}
+
 function newVirtualDesktopActionState(taskState) {
   const state = taskState || {};
 
   return {
     enabled: Boolean(state.hasWindowTask),
   };
+}
+
+function newVirtualDesktopAction(taskState) {
+  return Object.assign({}, newVirtualDesktopActionState(taskState), {
+    command: newVirtualDesktopCommand(),
+    text: "New Desktop",
+  });
 }
 
 function taskActivitiesActionState(taskState) {
@@ -483,6 +496,35 @@ function virtualDesktopCommand(desktopId) {
 
 function newVirtualDesktopCommand() {
   return contextMenuTaskCommand("requestNewVirtualDesktop");
+}
+
+function allVirtualDesktopsAction(virtualDesktops, isOnAllDesktops) {
+  const desktopState = virtualDesktopMenuState(
+    virtualDesktops,
+    isOnAllDesktops,
+    "",
+  );
+
+  return {
+    checked: desktopState.allDesktopsChecked,
+    command: allVirtualDesktopsCommand(),
+    text: "All Desktops",
+  };
+}
+
+function virtualDesktopAction(virtualDesktops, isOnAllDesktops, desktop) {
+  const entry = desktop || {};
+  const desktopState = virtualDesktopMenuState(
+    virtualDesktops,
+    isOnAllDesktops,
+    entry,
+  );
+
+  return {
+    checked: desktopState.desktopChecked,
+    command: virtualDesktopCommand(entry.id),
+    text: entry.name,
+  };
 }
 
 function roleData(roleSource, role, fallback) {

@@ -480,14 +480,14 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: virtualDesktopsItem
-        readonly property var actionState: TaskContextMenuLogic.virtualDesktopsActionState({
+        readonly property var actionState: TaskContextMenuLogic.virtualDesktopsAction({
             changeable: root.virtualDesktopRoles.isVirtualDesktopsChangeable,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.taskRoles.isWindow
         })
 
         enabled: actionState.enabled
-        text: "Virtual Desktops"
+        text: actionState.text
         visible: actionState.visible
 
         readonly property PlasmaExtras.Menu _virtualDesktopsMenu: PlasmaExtras.Menu {
@@ -497,14 +497,14 @@ PlasmaExtras.Menu {
             visualParent: virtualDesktopsItem.action
 
             PlasmaExtras.MenuItem {
-                readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.taskRoles.virtualDesktops, root.virtualDesktopRoles.isOnAllVirtualDesktops, "")
+                readonly property var actionState: TaskContextMenuLogic.allVirtualDesktopsAction(root.taskRoles.virtualDesktops, root.virtualDesktopRoles.isOnAllVirtualDesktops)
 
                 checkable: true
-                checked: desktopState.allDesktopsChecked
-                text: "All Desktops"
+                checked: actionState.checked
+                text: actionState.text
 
                 onClicked: {
-                    root.requestTaskModelCommand(TaskContextMenuLogic.allVirtualDesktopsCommand());
+                    root.requestTaskModelCommand(actionState.command);
                 }
             }
 
@@ -515,14 +515,14 @@ PlasmaExtras.Menu {
                 delegate: PlasmaExtras.MenuItem {
                     required property var modelData
 
-                    readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.taskRoles.virtualDesktops, root.virtualDesktopRoles.isOnAllVirtualDesktops, modelData.id)
+                    readonly property var actionState: TaskContextMenuLogic.virtualDesktopAction(root.taskRoles.virtualDesktops, root.virtualDesktopRoles.isOnAllVirtualDesktops, modelData)
 
                     checkable: true
-                    checked: desktopState.desktopChecked
-                    text: modelData.name
+                    checked: actionState.checked
+                    text: actionState.text
 
                     onClicked: {
-                        root.requestTaskModelCommand(TaskContextMenuLogic.virtualDesktopCommand(modelData.id));
+                        root.requestTaskModelCommand(actionState.command);
                     }
                 }
 
@@ -536,15 +536,15 @@ PlasmaExtras.Menu {
             }
 
             PlasmaExtras.MenuItem {
-                readonly property var actionState: TaskContextMenuLogic.newVirtualDesktopActionState({
+                readonly property var actionState: TaskContextMenuLogic.newVirtualDesktopAction({
                     hasWindowTask: root.hasWindowTask
                 })
 
                 enabled: actionState.enabled
-                text: "New Desktop"
+                text: actionState.text
 
                 onClicked: {
-                    root.requestTaskModelCommand(TaskContextMenuLogic.newVirtualDesktopCommand());
+                    root.requestTaskModelCommand(actionState.command);
                 }
             }
         }
