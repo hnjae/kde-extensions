@@ -70,6 +70,7 @@ in `SPEC.md`.
   coercion, launcher URL precedence, title/icon fallback, model-index validity,
   and virtual-desktop membership should not be duplicated between normal task
   composition, remote attention, context menu code, and task-like delegates.
+- Keep normal-task projection dependencies explicit. `TaskModelLogic.js` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
 - Keep normal task publication state transitions in `NormalTaskStoreLogic.js`.
   `NormalTaskSource.qml` owns observation of the normal `TasksModel` rows and
   emits explicit publication/removal events into the root-owned store.
