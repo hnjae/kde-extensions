@@ -50,6 +50,10 @@ in `SPEC.md`.
   Simple item visible/enabled predicates such as New Instance, Move, and Resize
   should be derived by tested helpers while QML keeps rendering order and Plasma
   request dispatch.
+- Keep checkable context-menu window action state in `TaskContextMenuLogic.js`.
+  Checked, visible, and enabled predicates for actions such as Minimize and
+  Maximize should be derived by tested helpers while QML keeps labels and effect
+  dispatch.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
