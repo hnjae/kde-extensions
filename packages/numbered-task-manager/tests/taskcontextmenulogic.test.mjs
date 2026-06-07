@@ -24,6 +24,7 @@ const plasmaMenu = {
   RightPosedTopAlignedPopup: "open-right",
   TopPosedLeftAlignedPopup: "open-up",
 };
+const plain = (value) => JSON.parse(JSON.stringify(value));
 
 assert.equal(
   logic.panelMenuPlacement(
@@ -62,21 +63,30 @@ assert.equal(
   plasmaMenu.TopPosedLeftAlignedPopup,
 );
 
-assert.deepEqual(logic.pinActionState({ canPin: true, isPinned: true }), {
-  action: "unpin",
-  enabled: true,
-  text: "Unpin from Task Manager",
-});
-assert.deepEqual(logic.pinActionState({ canPin: true, isPinned: false }), {
-  action: "pin",
-  enabled: true,
-  text: "Pin to Task Manager",
-});
-assert.deepEqual(logic.pinActionState({ canPin: false, isPinned: true }), {
-  action: "unpin",
-  enabled: false,
-  text: "Unpin from Task Manager",
-});
+assert.deepEqual(
+  plain(logic.pinActionState({ canPin: true, isPinned: true })),
+  {
+    action: "unpin",
+    enabled: true,
+    text: "Unpin from Task Manager",
+  },
+);
+assert.deepEqual(
+  plain(logic.pinActionState({ canPin: true, isPinned: false })),
+  {
+    action: "pin",
+    enabled: true,
+    text: "Pin to Task Manager",
+  },
+);
+assert.deepEqual(
+  plain(logic.pinActionState({ canPin: false, isPinned: true })),
+  {
+    action: "unpin",
+    enabled: false,
+    text: "Unpin from Task Manager",
+  },
+);
 assert.equal(
   logic.launcherActivitiesVisible(
     { canPin: true, isPinned: true, launcherUrl: "app.desktop" },

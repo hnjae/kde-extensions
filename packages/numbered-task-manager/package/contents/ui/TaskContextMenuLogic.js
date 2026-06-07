@@ -16,3 +16,22 @@ function panelMenuPlacement(location, plasmaCoreTypes, plasmaMenu) {
 
   return plasmaMenu.TopPosedLeftAlignedPopup;
 }
+
+function pinActionState(pinState) {
+  const state = pinState || {};
+  const isPinned = Boolean(state.isPinned);
+
+  return {
+    action: isPinned ? "unpin" : "pin",
+    enabled: Boolean(state.canPin),
+    text: isPinned ? "Unpin from Task Manager" : "Pin to Task Manager",
+  };
+}
+
+function launcherActivitiesVisible(pinState, activityEntryCount) {
+  const state = pinState || {};
+  const count = Number(activityEntryCount || 0);
+  return Boolean(
+    state.canPin && state.isPinned && state.launcherUrl && count > 1,
+  );
+}

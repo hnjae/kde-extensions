@@ -246,6 +246,28 @@ function visibleLauncherPosition(
   return -1;
 }
 
+function launcherPinState(
+  launcherList,
+  launcherUrl,
+  currentActivity,
+  launcherPosition,
+) {
+  const url = String(launcherUrl || "");
+  const pinnedLauncherPosition = visibleLauncherPosition(
+    launcherList,
+    url,
+    currentActivity,
+    launcherPosition,
+  );
+
+  return {
+    canPin: url.length > 0,
+    isPinned: pinnedLauncherPosition !== -1,
+    launcherUrl: url,
+    pinnedLauncherPosition,
+  };
+}
+
 function pinnedLauncherGlobalPosition(launcherList, entry, launcherPosition) {
   const launcherUrl = entry
     ? String(entry.pinnedLauncherUrl || entry.launcherUrl || "")

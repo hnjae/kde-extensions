@@ -354,8 +354,10 @@ PlasmoidItem {
             required property var model
 
             property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
-            property int launcherPosition: root.visibleLauncherPosition(launcherUrl, root.launcherRevision)
-            property bool launcherPinned: launcherPosition !== -1
+            property int launcherRevisionToken: root.launcherRevision
+            property var launcherPinState: LauncherListLogic.launcherPinState(tasksModel.launcherList, launcherUrl, activityInfo.currentActivity, url => tasksModel.launcherPosition(url), launcherRevisionToken)
+            property int launcherPosition: launcherPinState.pinnedLauncherPosition
+            property bool launcherPinned: launcherPinState.isPinned
             property string publishedKey: ""
             property var taskInfo: TaskModelLogic.createNormalTaskEntry({
                 activities: model.Activities,

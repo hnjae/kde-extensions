@@ -71,6 +71,11 @@ PlasmaExtras.Menu {
         return String(roleData(atm.LauncherUrlWithoutIcon, roleData(atm.LauncherUrl, task.launcherUrl || "")) || "");
     }
 
+    function launcherPinState() {
+        const url = launcherUrl();
+        return LauncherListLogic.launcherPinState(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
+    }
+
     function activities() {
         return Array.from(roleData(atm.Activities, task.activities || []) || []);
     }
@@ -85,10 +90,6 @@ PlasmaExtras.Menu {
 
     function isLauncher() {
         return boolRole(atm.IsLauncher, task.isLauncher || false);
-    }
-
-    function hasLauncher() {
-        return boolRole(atm.HasLauncher, task.hasLauncher || false);
     }
 
     function refreshActivities() {
@@ -213,12 +214,16 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        enabled: root.launcherUrl().length > 0
-        text: root.hasLauncher() ? "Unpin from Task Manager" : "Pin to Task Manager"
+        readonly property var pinAction: TaskContextMenuLogic.pinActionState(root.launcherPinState())
+
+        enabled: pinAction.enabled
+        text: pinAction.text
 
         onClicked: {
-            const url = root.launcherUrl();
-            if (root.hasLauncher()) {
+            const pinState = root.launcherPinState();
+            const action = TaskContextMenuLogic.pinActionState(pinState);
+            const url = pinState.launcherUrl;
+            if (action.action === "unpin") {
                 root.unpinRequested(url);
             } else {
                 root.pinRequested(url);
@@ -229,9 +234,11 @@ PlasmaExtras.Menu {
     PlasmaExtras.MenuItem {
         id: launcherActivitiesItem
 
-        enabled: root.taskModel && root.launcherUrl()
+        readonly property var pinState: root.launcherPinState()
+
+        enabled: Boolean(root.taskModel) && pinState.canPin
         text: "Launcher Activities"
-        visible: root.hasLauncher() && root.launcherUrl() && root.activityEntries.length > 1
+        visible: TaskContextMenuLogic.launcherActivitiesVisible(pinState, root.activityEntries.length)
 
         readonly property PlasmaExtras.Menu _launcherActivitiesMenu: PlasmaExtras.Menu {
             id: launcherActivitiesMenu
