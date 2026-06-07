@@ -729,6 +729,31 @@ function virtualDesktopAction(virtualDesktops, isOnAllDesktops, desktop) {
   };
 }
 
+function virtualDesktopActionsSection(sectionState) {
+  const state = sectionState || {};
+
+  return {
+    allVirtualDesktops: allVirtualDesktopsAction(
+      state.virtualDesktops,
+      state.isOnAllVirtualDesktops,
+    ),
+    desktopAction: (desktop) =>
+      virtualDesktopAction(
+        state.virtualDesktops,
+        state.isOnAllVirtualDesktops,
+        desktop,
+      ),
+    newVirtualDesktop: newVirtualDesktopAction({
+      hasWindowTask: state.hasWindowTask,
+    }),
+    virtualDesktops: virtualDesktopsAction({
+      changeable: state.changeable,
+      hasWindowTask: state.hasWindowTask,
+      isWindow: state.isWindow,
+    }),
+  };
+}
+
 function roleData(roleSource, role, fallback) {
   const source = roleSource || {};
   if (
