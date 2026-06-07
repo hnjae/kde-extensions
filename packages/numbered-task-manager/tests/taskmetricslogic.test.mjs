@@ -16,6 +16,7 @@ const logic = loadQmlJsModule(
     "minimumReadableSlotWidth",
     "normalNaturalWidthMinimum",
     "taskExtent",
+    "taskImplicitWidth",
     "taskTitleVisible",
     "taskSlotWidth",
     "titleVisibilityThreshold",
@@ -44,6 +45,10 @@ assert.equal(logic.taskTitleVisible(true, -1, 96), true);
 assert.equal(logic.taskTitleVisible(true, 95, 96), false);
 assert.equal(logic.taskTitleVisible(true, 96, 96), true);
 assert.equal(logic.taskTitleVisible(false, 120, 96), false);
+
+assert.equal(logic.taskImplicitWidth(140, 220), 140);
+assert.equal(logic.taskImplicitWidth(0, 220), 220);
+assert.equal(logic.taskImplicitWidth(-1, 220), 220);
 
 assert.equal(logic.taskSlotWidth(1200, 3, 48, 220), 220);
 assert.equal(logic.taskSlotWidth(600, 4, 48, 220), 150);
@@ -74,6 +79,10 @@ assert.match(
 assert.match(
   attentionItemQml,
   /implicitHeight:\s*TaskMetricsLogic\.taskExtent\(\)/,
+);
+assert.match(
+  attentionItemQml,
+  /implicitWidth:\s*TaskMetricsLogic\.taskImplicitWidth\(root\.slotWidth, naturalImplicitWidth\)/,
 );
 assert.match(
   attentionItemQml,
@@ -132,7 +141,19 @@ assert.match(
 assert.match(taskItemQml, /implicitHeight:\s*TaskMetricsLogic\.taskExtent\(\)/);
 assert.match(
   taskItemQml,
+  /implicitWidth:\s*TaskMetricsLogic\.taskImplicitWidth\(root\.slotWidth, naturalImplicitWidth\)/,
+);
+assert.match(
+  taskItemQml,
   /readonly property bool titleVisible:\s*TaskMetricsLogic\.taskTitleVisible\(root\.showTitle, root\.slotWidth, root\.titleVisibilityThreshold\)/,
+);
+assert.doesNotMatch(
+  taskItemQml,
+  /implicitWidth:\s*root\.slotWidth > 0 \? root\.slotWidth : naturalImplicitWidth/,
+);
+assert.doesNotMatch(
+  attentionItemQml,
+  /implicitWidth:\s*root\.slotWidth > 0 \? root\.slotWidth : naturalImplicitWidth/,
 );
 assert.doesNotMatch(taskItemQml, /property int titleVisibilityThreshold:\s*96/);
 assert.doesNotMatch(
