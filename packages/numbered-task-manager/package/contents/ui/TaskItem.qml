@@ -9,6 +9,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
 import "TaskEntryLogic.js" as TaskEntryLogic
+import "TaskInteractionLogic.js" as TaskInteractionLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskItemPresentationLogic.js" as TaskItemPresentationLogic
 import "TaskVisualLogic.js" as TaskVisualLogic
@@ -157,41 +158,16 @@ QtQuick.Item {
     QtQuick.Drag.hotSpot.x: width / 2
     QtQuick.Drag.hotSpot.y: height / 2
     QtQuick.Drag.keys: root.dragMimeType ? [root.dragMimeType] : []
-    QtQuick.Drag.mimeData: {
-        if (!root.dragMimeType) {
-            return {};
-        }
-
-        const data = {};
-        data[root.dragMimeType] = root.taskIndex.toString();
-        return data;
-    }
+    QtQuick.Drag.mimeData: TaskInteractionLogic.taskDragMimeData(root.dragMimeType, root.taskIndex)
     QtQuick.Drag.supportedActions: QtQuick.Qt.MoveAction
 
     QtQuick.DropArea {
         anchors.fill: parent
         keys: root.dragMimeType ? [root.dragMimeType] : []
 
-        function sourceIndexFromDrop(drop) {
-            const sourceIndex = Number(drop.getDataAsString(root.dragMimeType));
-            return isNaN(sourceIndex) ? -1 : sourceIndex;
-        }
-
-        function acceptsDrop(sourceIndex) {
-            if (sourceIndex === root.taskIndex) {
-                return false;
-            }
-
-            if (typeof root.canDropTask !== "function") {
-                return false;
-            }
-
-            return root.canDropTask(sourceIndex, root.taskIndex);
-        }
-
         onEntered: drag => {
-            const sourceIndex = sourceIndexFromDrop(drag);
-            root.dropHover = acceptsDrop(sourceIndex);
+            const sourceIndex = TaskInteractionLogic.taskDropSourceIndex(drag.getDataAsString(root.dragMimeType));
+            root.dropHover = TaskInteractionLogic.canAcceptTaskDrop(sourceIndex, root.taskIndex, root.canDropTask);
         }
 
         onExited: {
@@ -199,9 +175,9 @@ QtQuick.Item {
         }
 
         onDropped: drop => {
-            const sourceIndex = sourceIndexFromDrop(drop);
+            const sourceIndex = TaskInteractionLogic.taskDropSourceIndex(drop.getDataAsString(root.dragMimeType));
             root.dropHover = false;
-            if (acceptsDrop(sourceIndex)) {
+            if (TaskInteractionLogic.canAcceptTaskDrop(sourceIndex, root.taskIndex, root.canDropTask)) {
                 root.taskDropped(sourceIndex, root.taskIndex, drop);
             }
         }
