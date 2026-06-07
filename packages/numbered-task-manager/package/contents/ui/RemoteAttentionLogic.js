@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 Qt.include("TaskEntryLogic.js");
+Qt.include("TaskScopeLogic.js");
 
 function createRemoteAttentionEntry(roles) {
   const taskRoles = roles || {};
@@ -16,18 +17,7 @@ function createRemoteAttentionEntry(roles) {
 }
 
 function qualifiesRemoteAttention(task, isInCurrentActivity, currentDesktop) {
-  const entry = task || {};
-  return (
-    Boolean(entry.isWindow) &&
-    Boolean(entry.demandingAttention) &&
-    (typeof isInCurrentActivity !== "function" ||
-      isInCurrentActivity(entry.activities || [])) &&
-    isRemoteVirtualDesktop(
-      entry.virtualDesktops || [],
-      entry.isOnAllVirtualDesktops,
-      currentDesktop,
-    )
-  );
+  return remoteAttentionQualifies(task, isInCurrentActivity, currentDesktop);
 }
 
 function remoteAttentionKey(winIds, launcherUrl, title, row) {

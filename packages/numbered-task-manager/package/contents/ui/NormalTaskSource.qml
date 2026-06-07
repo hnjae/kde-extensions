@@ -7,6 +7,7 @@ import QtQuick as QtQuick
 import "LauncherListLogic.js" as LauncherListLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskModelLogic.js" as TaskModelLogic
+import "TaskScopeLogic.js" as TaskScopeLogic
 
 QtQuick.Item {
     id: root
@@ -100,7 +101,7 @@ QtQuick.Item {
                 modelIndex: root.taskModel.makePersistentModelIndex(index),
                 virtualDesktops: model.VirtualDesktops
             })
-            property bool qualifies: TaskModelLogic.qualifiesNormalTask(taskInfo, activities => root.taskIsInCurrentActivity(activities), root.currentDesktop)
+            property bool qualifies: TaskScopeLogic.normalTaskQualifies(taskInfo, activities => root.taskIsInCurrentActivity(activities), root.currentDesktop)
 
             height: 0
             visible: false

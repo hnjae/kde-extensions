@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 Qt.include("TaskEntryLogic.js");
+Qt.include("TaskScopeLogic.js");
 
 function createNormalTaskEntry(roles) {
   const taskRoles = roles || {};
@@ -45,23 +46,7 @@ function createNormalTaskEntry(roles) {
 }
 
 function qualifiesNormalTask(task, isInCurrentActivity, currentDesktop) {
-  const entry = task || {};
-  if (
-    typeof isInCurrentActivity === "function" &&
-    !isInCurrentActivity(entry.activities || [])
-  ) {
-    return false;
-  }
-
-  if (entry.isWindow) {
-    return isOnCurrentVirtualDesktop(
-      entry.virtualDesktops || [],
-      entry.isOnAllVirtualDesktops,
-      currentDesktop,
-    );
-  }
-
-  return Boolean(entry.isLauncher || entry.isStartup);
+  return normalTaskQualifies(task, isInCurrentActivity, currentDesktop);
 }
 
 function normalTaskSourceOrder(left, right) {
