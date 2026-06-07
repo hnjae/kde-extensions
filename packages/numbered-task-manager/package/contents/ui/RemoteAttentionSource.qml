@@ -13,8 +13,9 @@ QtQuick.Item {
     property var taskModel: null
     property string currentDesktop: ""
     property var isInCurrentActivity: null
-    property var publishAttention: null
-    property var removeAttention: null
+    property var attentionState: RemoteAttentionLogic.createRemoteAttentionState()
+    readonly property int count: attentionState.count || 0
+    readonly property var target: attentionState.target || null
 
     signal attentionPublished(string previousKey, string key, bool qualifies, var task, bool becameQualified)
     signal attentionRemoved(string key)
@@ -32,19 +33,18 @@ QtQuick.Item {
     }
 
     function publishRemoteAttention(previousKey, key, qualifies, task, becameQualified) {
+        const result = RemoteAttentionLogic.publishRemoteAttentionState(attentionState, previousKey, key, qualifies, task, becameQualified);
+        attentionState = result.state;
         root.attentionPublished(previousKey, key, qualifies, task, becameQualified);
-        if (typeof root.publishAttention !== "function") {
-            return qualifies ? key : "";
-        }
-
-        return root.publishAttention(previousKey, key, qualifies, task, becameQualified);
+        return result.publishedKey;
     }
 
     function removeRemoteAttention(key) {
-        root.attentionRemoved(key);
-        if (typeof root.removeAttention === "function") {
-            root.removeAttention(key);
+        const result = RemoteAttentionLogic.removeRemoteAttentionState(attentionState, key);
+        if (result.state !== attentionState) {
+            attentionState = result.state;
         }
+        root.attentionRemoved(key);
     }
 
     QtQuick.Repeater {

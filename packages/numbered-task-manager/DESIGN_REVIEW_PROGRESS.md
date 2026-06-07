@@ -329,7 +329,15 @@
 - Verification: `node tests/taskvisuallogic.test.mjs` failed before implementation because `main.qml` did not expose `remoteAttentionVisibleItem`; after implementation, `node tests/taskvisuallogic.test.mjs`; `node tests/visibletaskitemslogic.test.mjs`; `rg -n "remoteAttentionVisibleItem|remoteAttentionState\\.target|visibleItem\\.entry|count: visibleItem|taskData: entry|title: entry" package/contents/ui/main.qml tests/taskvisuallogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/main.qml`, `tests/taskvisuallogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 41: Remote Attention Source-Owned State
+
+- Status: completed.
+- What changed: declared that `RemoteAttentionSource.qml` should own one remote-attention state snapshot; moved `remoteAttentionState` from root into `RemoteAttentionSource.qml`; exposed source-owned `count` and `target`; removed root publication/removal callback functions and callback bindings from the source instantiation.
+- Behavior that must remain unchanged: remote-attention qualification, keying, ordering, latest-target selection, count/target snapshot, `Meta+0` shortcut behavior, rendered attention item, context-menu payload, and activation target remain unchanged.
+- Verification: `node tests/remoteattentionsourceqml.test.mjs` failed before implementation because the source did not own `attentionState`; after implementation, `node tests/remoteattentionsourceqml.test.mjs`; `node tests/remoteattentionlogic.test.mjs`; `node tests/visibletaskitemslogic.test.mjs`; `node tests/taskvisuallogic.test.mjs`; `rg -n "RemoteAttentionLogic|remoteAttentionState|publishAttention|removeAttention|publishRemoteAttention\\(|removeRemoteAttention\\(|remoteAttentionSource\\.(count|target)|property var attentionState|readonly property int count|readonly property var target" package/contents/ui/main.qml package/contents/ui/RemoteAttentionSource.qml tests/remoteattentionsourceqml.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/RemoteAttentionSource.qml`, `package/contents/ui/main.qml`, `tests/remoteattentionsourceqml.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: direct role snapshot passthrough wrappers have been removed. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code.
-- Visible item composer / remote attention: rendered remote-attention activation and metadata now consume composed descriptors. Full remote-attention removability still requires reducing root-owned remote attention functions and moving more source/controller ownership behind `RemoteAttentionSource`.
+- Visible item composer / remote attention: rendered remote-attention activation and metadata now consume composed descriptors, and `RemoteAttentionSource.qml` owns the remote-attention state snapshot. Full remote-attention removability still requires reducing root-owned attention `TasksModel` instantiation and activation side-effect wiring.

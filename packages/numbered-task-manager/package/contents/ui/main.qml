@@ -9,7 +9,6 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
-import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskActivityLogic.js" as TaskActivityLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
@@ -26,10 +25,9 @@ PlasmoidItem {
     readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
     property var normalTaskStoreState: NormalTaskStoreLogic.createNormalTaskStore()
     readonly property var normalTaskEntries: normalTaskStoreState.entries || []
-    property var remoteAttentionState: RemoteAttentionLogic.createRemoteAttentionState()
     readonly property var visibleTaskItems: VisibleTaskItemsLogic.composeVisibleTaskItems(normalTaskEntries, {
-        count: remoteAttentionState.count || 0,
-        target: remoteAttentionState.target || null
+        count: remoteAttentionSource.count || 0,
+        target: remoteAttentionSource.target || null
     })
     readonly property var remoteAttentionVisibleItem: VisibleTaskItemsLogic.visibleRemoteAttentionItem(root.visibleTaskItems)
     property int launcherRevision: 0
@@ -309,23 +307,6 @@ PlasmoidItem {
         applyNormalTaskStore(NormalTaskStoreLogic.recomputeNormalTaskStore(normalTaskStoreState, launcherUrl => visibleLauncherPosition(launcherUrl)));
     }
 
-    function publishRemoteAttention(previousKey, key, qualifies, task, becameQualified) {
-        const result = RemoteAttentionLogic.publishRemoteAttentionState(remoteAttentionState, previousKey, key, qualifies, task, becameQualified);
-        remoteAttentionState = result.state;
-        return result.publishedKey;
-    }
-
-    function removeRemoteAttention(key) {
-        const result = RemoteAttentionLogic.removeRemoteAttentionState(remoteAttentionState, key);
-        if (result.state !== remoteAttentionState) {
-            remoteAttentionState = result.state;
-        }
-    }
-
-    function recomputeRemoteAttention() {
-        remoteAttentionState = RemoteAttentionLogic.recomputeRemoteAttentionState(remoteAttentionState);
-    }
-
     function activateRemoteAttention() {
         const visibleItem = remoteAttentionVisibleItem;
         const result = TaskActionLogic.taskActivationRequest("activateRemoteAttention", visibleItem ? visibleItem.entry : null, {
@@ -451,11 +432,11 @@ PlasmoidItem {
     }
 
     RemoteAttentionSource {
+        id: remoteAttentionSource
+
         taskModel: attentionTasksModel
         currentDesktop: virtualDesktopInfo.currentDesktop
         isInCurrentActivity: activities => root.isInCurrentActivity(activities)
-        publishAttention: (previousKey, key, qualifies, task, becameQualified) => root.publishRemoteAttention(previousKey, key, qualifies, task, becameQualified)
-        removeAttention: key => root.removeRemoteAttention(key)
     }
 
     fullRepresentation: QtQuick.Item {
