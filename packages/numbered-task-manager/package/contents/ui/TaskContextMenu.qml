@@ -221,10 +221,11 @@ PlasmaExtras.Menu {
         id: launcherActivitiesItem
 
         readonly property var pinState: root.launcherPinState()
+        readonly property var actionState: TaskContextMenuLogic.launcherActivitiesActionState(pinState, root.activityEntries.length, root.taskModel)
 
-        enabled: Boolean(root.taskModel) && pinState.canPin
+        enabled: actionState.enabled
         text: "Launcher Activities"
-        visible: TaskContextMenuLogic.launcherActivitiesVisible(pinState, root.activityEntries.length)
+        visible: actionState.visible
 
         readonly property PlasmaExtras.Menu _launcherActivitiesMenu: PlasmaExtras.Menu {
             id: launcherActivitiesMenu

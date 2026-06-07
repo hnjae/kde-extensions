@@ -236,6 +236,19 @@ function launcherActivitiesVisible(pinState, activityEntryCount) {
   );
 }
 
+function launcherActivitiesActionState(
+  pinState,
+  activityEntryCount,
+  hasTaskModel,
+) {
+  const state = pinState || {};
+
+  return {
+    enabled: Boolean(hasTaskModel) && Boolean(state.canPin),
+    visible: launcherActivitiesVisible(state, activityEntryCount),
+  };
+}
+
 function launcherActivityListSnapshot(launcherActivities) {
   return ActivityScopeLogic.normalizedActivityList(launcherActivities);
 }
