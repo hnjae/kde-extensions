@@ -315,4 +315,4 @@
 
 ## Remaining Follow-Up Work
 
-- Context menu: audit the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) and keep them only where they preserve the tested role access boundary clearly.
+- Context menu: direct role snapshot passthrough wrappers have been removed. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code.
