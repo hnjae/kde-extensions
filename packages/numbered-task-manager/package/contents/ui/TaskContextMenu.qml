@@ -461,7 +461,7 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
+        readonly property var actionState: TaskContextMenuLogic.excludeFromCaptureAction({
             checked: root.captureCloseRoles.isExcludedFromCapture,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.taskRoles.isWindow
@@ -470,11 +470,11 @@ PlasmaExtras.Menu {
         checkable: true
         checked: actionState.checked
         enabled: actionState.enabled
-        text: "Hide from Screencasts"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.excludeFromCaptureCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 
@@ -612,18 +612,18 @@ PlasmaExtras.Menu {
 
     PlasmaExtras.MenuItem {
         id: closeItem
-        readonly property var actionState: TaskContextMenuLogic.closeActionState({
+        readonly property var actionState: TaskContextMenuLogic.closeAction({
             closable: root.captureCloseRoles.closable,
             hasTask: root.hasTask,
             isWindow: root.taskRoles.isWindow
         })
 
         enabled: actionState.enabled
-        text: "Close"
+        text: actionState.text
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskContextMenuLogic.closeCommand());
+            root.requestTaskModelCommand(actionState.command);
         }
     }
 }

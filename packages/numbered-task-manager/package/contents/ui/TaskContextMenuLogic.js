@@ -229,6 +229,20 @@ function closeCommand() {
   return contextMenuTaskCommand("requestClose");
 }
 
+function excludeFromCaptureAction(taskState) {
+  return Object.assign({}, checkableWindowActionState(taskState), {
+    command: excludeFromCaptureCommand(),
+    text: "Hide from Screencasts",
+  });
+}
+
+function closeAction(taskState) {
+  return Object.assign({}, closeActionState(taskState), {
+    command: closeCommand(),
+    text: "Close",
+  });
+}
+
 function allTaskActivitiesCommand() {
   return contextMenuTaskCommand("requestActivities", []);
 }
