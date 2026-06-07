@@ -10,6 +10,7 @@ const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskContextMenuLogic.js", import.meta.url),
   [
     "boolRoleData",
+    "checkableWindowActionState",
     "checkableWindowCapabilityActionState",
     "launcherActivityListSnapshot",
     "launcherActivityMenuState",
@@ -225,6 +226,48 @@ assert.deepEqual(
     visible: true,
   },
 );
+assert.deepEqual(
+  plain(
+    logic.checkableWindowActionState({
+      checked: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: true,
+    enabled: true,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.checkableWindowActionState({
+      checked: true,
+      hasWindowTask: false,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: true,
+    enabled: false,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.checkableWindowActionState({
+      checked: false,
+      hasWindowTask: true,
+      isWindow: false,
+    }),
+  ),
+  {
+    checked: false,
+    enabled: true,
+    visible: false,
+  },
+);
 assert.equal(
   logic.launcherActivitiesVisible(
     { canPin: true, isPinned: true, launcherUrl: "app.desktop" },
@@ -431,6 +474,16 @@ assert.equal(
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.checkableWindowCapabilityActionState"),
   true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.checkableWindowActionState"),
+  true,
+);
+assert.equal(
+  /checked: root\.boolRole\(root\.atm\.(?:IsKeepAbove|IsKeepBelow|IsFullScreen|IsShaded|HasNoBorder|IsExcludedFromCapture)\b/.test(
+    menuQml,
+  ),
+  false,
 );
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), true);
 assert.equal(/\b(?:root\.)?taskModel\.request[A-Z]/.test(menuQml), false);
