@@ -34,9 +34,9 @@ in `SPEC.md`.
 - Keep context-menu live role access and menu-facing role snapshots in
   `TaskContextMenuLogic.js`. `TaskContextMenu.qml` should render menu sections
   from helper output and must not call `taskModel.data(...)` directly. Snapshot
-  fields such as `isWindow`, `isLauncher`, `launcherUrl`, and `activities`
-  should be consumed from the role snapshot directly instead of through
-  menu-local passthrough functions.
+  fields such as `isWindow`, `isLauncher`, `launcherUrl`, `activities`, and
+  `virtualDesktops` should be consumed from the role snapshot directly instead
+  of through menu-local passthrough functions.
 - Keep context-menu launcher-activity menu state in `TaskContextMenuLogic.js`.
   Raw launcher activity lists entering the menu should be normalized through the
   same all-activities semantics as launcher serialization before checked-state
