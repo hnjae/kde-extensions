@@ -46,6 +46,7 @@ in `SPEC.md`.
   the task context menu may compute and request a replacement launcher list, but
   `main.qml` is responsible for applying it to `TasksModel` and persisting it to
   plasmoid configuration.
+- Apply launcher-list writes through a root-owned transaction that always releases its update guard. Keep post-write convergence checks in `LauncherListLogic.js` so failed model/config writes can be logged with the attempted launcher list.
 - Keep remote-attention qualification, keying, and ordering in
   `RemoteAttentionLogic.js` so the separate attention model remains testable
   independently from normal task composition.
