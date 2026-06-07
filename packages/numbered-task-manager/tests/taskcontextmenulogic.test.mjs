@@ -12,6 +12,7 @@ const logic = loadQmlJsModule(
     "boolRoleData",
     "basicActionRoleSnapshot",
     "basicActionsSection",
+    "captureActionsSection",
     "captureCloseRoleSnapshot",
     "checkableWindowActionState",
     "checkableWindowCapabilityActionState",
@@ -917,6 +918,28 @@ assert.deepEqual(
     enabled: true,
     text: "Hide from Screencasts",
     visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.captureActionsSection({
+      hasWindowTask: false,
+      isExcludedFromCapture: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    excludeFromCapture: {
+      checked: true,
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestToggleExcludeFromCapture",
+      },
+      enabled: false,
+      text: "Hide from Screencasts",
+      visible: true,
+    },
   },
 );
 assert.deepEqual(
@@ -2588,8 +2611,12 @@ assert.equal(
   false,
 );
 assert.equal(
-  menuQml.includes("TaskContextMenuLogic.excludeFromCaptureAction"),
+  menuQml.includes("TaskContextMenuLogic.captureActionsSection({"),
   true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.excludeFromCaptureAction"),
+  false,
 );
 assert.equal(menuQml.includes("TaskContextMenuLogic.closeAction"), true);
 assert.equal(menuQml.includes("TaskContextMenuLogic.closeActionSection"), true);
