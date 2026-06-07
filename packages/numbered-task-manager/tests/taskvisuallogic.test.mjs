@@ -260,7 +260,7 @@ assert.match(mainQml, /\bTaskMoveAdapter\s*\{/);
 assert.match(mainQml, /normalEntries:\s*root\.normalTaskEntries/);
 assert.match(
   mainQml,
-  /onActionResult:\s*result => \{[\s\S]*?root\.logActionResult\(result\);[\s\S]*?\}/,
+  /onActionResult:\s*result => \{[\s\S]*?actionLogger\.logActionResult\(result\);[\s\S]*?\}/,
 );
 assert.match(
   normalTaskItemQml,

@@ -28,7 +28,7 @@ assert.match(mainQml, /remoteAttentionSource:\s*remoteAttentionSource/);
 assert.match(mainQml, /visibleTaskItems:\s*root\.visibleTaskItems/);
 assert.match(
   mainQml,
-  /onActionResult:\s*result\s*=>\s*\{[\s\S]*?root\.logActionResult\(result\);[\s\S]*?\}/,
+  /onActionResult:\s*result\s*=>\s*\{[\s\S]*?actionLogger\.logActionResult\(result\);[\s\S]*?\}/,
 );
 assert.match(mainQml, /taskActivation\.activateTaskAtIndex\(/);
 assert.doesNotMatch(mainQml, /taskActivation\.activateTaskEntry\(entry\)/);

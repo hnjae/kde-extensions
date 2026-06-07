@@ -33,7 +33,7 @@ assert.doesNotMatch(
   mainQml,
   /contextMenuAdapter\.openTaskContextMenu\(Object\.assign\(\{\s*taskModel:\s*tasksModel\s*\}/,
 );
-assert.match(mainQml, /root\.logActionResult\(result\)/);
+assert.match(mainQml, /actionLogger\.logActionResult\(result\)/);
 assert.match(mainQml, /launcherCommands\.dispatchLauncherCommand\(command\)/);
 assert.doesNotMatch(mainQml, /function openTaskContextMenu\(/);
 assert.doesNotMatch(mainQml, /id:\s*contextMenuComponent/);

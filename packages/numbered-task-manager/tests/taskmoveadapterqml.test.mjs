@@ -40,7 +40,7 @@ assert.match(
   normalTaskItemQml,
   /root\.moveAdapter\.moveTask\(sourceIndex, targetIndex\)/,
 );
-assert.match(mainQml, /root\.logActionResult\(result\)/);
+assert.match(mainQml, /actionLogger\.logActionResult\(result\)/);
 assert.doesNotMatch(mainQml, /import "TaskModelLogic\.js" as TaskModelLogic/);
 assert.doesNotMatch(mainQml, /function moveTask\(/);
 assert.doesNotMatch(mainQml, /function movePinnedLauncher\(/);

@@ -22,7 +22,7 @@ assert.match(mainQml, /id:\s*launcherCommands/);
 assert.match(mainQml, /launcherSync:\s*launcherSync/);
 assert.match(mainQml, /taskModel:\s*tasksModel/);
 assert.match(mainQml, /launcherCommands\.dispatchLauncherCommand\(command\)/);
-assert.match(mainQml, /root\.logActionResult\(result\)/);
+assert.match(mainQml, /actionLogger\.logActionResult\(result\)/);
 assert.doesNotMatch(mainQml, /function pinLauncher\(/);
 assert.doesNotMatch(mainQml, /function unpinLauncher\(/);
 assert.doesNotMatch(mainQml, /function requestLauncherMutation\(/);
