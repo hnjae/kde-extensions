@@ -46,6 +46,15 @@ assert.match(
 );
 assert.match(sourceQml, /readonly property int count:/);
 assert.match(sourceQml, /readonly property var target:/);
+assert.match(sourceQml, /readonly property var snapshot:/);
+assert.match(sourceQml, /count:\s*root\.count/);
+assert.match(sourceQml, /target:\s*root\.target/);
+assert.match(
+  mainQml,
+  /VisibleTaskItemsLogic\.composeVisibleTaskItems\(normalTaskEntries,\s*remoteAttentionSource\.snapshot\)/,
+);
+assert.doesNotMatch(mainQml, /count:\s*remoteAttentionSource\.count/);
+assert.doesNotMatch(mainQml, /target:\s*remoteAttentionSource\.target/);
 assert.doesNotMatch(sourceQml, /property var publishAttention:/);
 assert.doesNotMatch(sourceQml, /property var removeAttention:/);
 assert.doesNotMatch(mainQml, /property var remoteAttentionState:/);
