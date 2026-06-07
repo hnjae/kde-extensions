@@ -89,6 +89,8 @@ in `SPEC.md`.
   Move helpers should expose typed reasons for invalid indexes, stale entries,
   same-entry no-ops, pinned/unpinned boundary crossings, and pinned-launcher
   policy denials while preserving existing boolean fields during migration.
+  Root drag/drop glue should consume the typed move result and project booleans
+  only at the visual delegate boundary.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
   coercion, launcher URL precedence, title/icon fallback, model-index validity,
   and virtual-desktop membership should not be duplicated between normal task
