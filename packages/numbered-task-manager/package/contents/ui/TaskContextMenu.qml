@@ -55,20 +55,38 @@ PlasmaExtras.Menu {
     }
 
     function roleData(role, fallback) {
-        if (!hasTask) {
-            return fallback;
-        }
-
-        const value = taskModel.data(modelIndex, role);
-        return value === undefined || value === null ? fallback : value;
+        return TaskContextMenuLogic.roleData(roleSource(), role, fallback);
     }
 
     function boolRole(role, fallback) {
-        return Boolean(roleData(role, fallback || false));
+        return TaskContextMenuLogic.boolRoleData(roleSource(), role, fallback || false);
+    }
+
+    function roleIds() {
+        return {
+            Activities: atm.Activities,
+            IsLauncher: atm.IsLauncher,
+            IsWindow: atm.IsWindow,
+            LauncherUrl: atm.LauncherUrl,
+            LauncherUrlWithoutIcon: atm.LauncherUrlWithoutIcon,
+            VirtualDesktops: atm.VirtualDesktops
+        };
+    }
+
+    function roleSnapshot() {
+        return TaskContextMenuLogic.taskRoleSnapshot(roleSource(), roleIds(), task);
+    }
+
+    function roleSource() {
+        return {
+            hasTask: hasTask,
+            modelIndex: modelIndex,
+            taskModel: taskModel
+        };
     }
 
     function launcherUrl() {
-        return String(roleData(atm.LauncherUrlWithoutIcon, roleData(atm.LauncherUrl, task.launcherUrl || "")) || "");
+        return roleSnapshot().launcherUrl;
     }
 
     function launcherPinState() {
@@ -77,19 +95,19 @@ PlasmaExtras.Menu {
     }
 
     function activities() {
-        return Array.from(roleData(atm.Activities, task.activities || []) || []);
+        return roleSnapshot().activities;
     }
 
     function virtualDesktops() {
-        return Array.from(roleData(atm.VirtualDesktops, task.virtualDesktops || []) || []);
+        return roleSnapshot().virtualDesktops;
     }
 
     function isWindow() {
-        return boolRole(atm.IsWindow, task.isWindow || false);
+        return roleSnapshot().isWindow;
     }
 
     function isLauncher() {
-        return boolRole(atm.IsLauncher, task.isLauncher || false);
+        return roleSnapshot().isLauncher;
     }
 
     function refreshActivities() {

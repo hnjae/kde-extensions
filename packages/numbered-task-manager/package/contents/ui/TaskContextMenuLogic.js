@@ -35,3 +35,65 @@ function launcherActivitiesVisible(pinState, activityEntryCount) {
     state.canPin && state.isPinned && state.launcherUrl && count > 1,
   );
 }
+
+function roleData(roleSource, role, fallback) {
+  const source = roleSource || {};
+  if (
+    !source.hasTask ||
+    !source.taskModel ||
+    source.modelIndex === undefined ||
+    source.modelIndex === null ||
+    role === undefined ||
+    role === null ||
+    typeof source.taskModel.data !== "function"
+  ) {
+    return fallback;
+  }
+
+  const value = source.taskModel.data(source.modelIndex, role);
+  return value === undefined || value === null ? fallback : value;
+}
+
+function boolRoleData(roleSource, role, fallback) {
+  return Boolean(roleData(roleSource, role, fallback || false));
+}
+
+function taskRoleSnapshot(roleSource, roles, task) {
+  const roleIds = roles || {};
+  const fallback = task || {};
+  const fallbackLauncherUrl = roleData(
+    roleSource,
+    roleIds.LauncherUrl,
+    fallback.launcherUrl || "",
+  );
+
+  return {
+    activities: Array.from(
+      roleData(roleSource, roleIds.Activities, fallback.activities || []) || [],
+    ),
+    isLauncher: boolRoleData(
+      roleSource,
+      roleIds.IsLauncher,
+      fallback.isLauncher || false,
+    ),
+    isWindow: boolRoleData(
+      roleSource,
+      roleIds.IsWindow,
+      fallback.isWindow || false,
+    ),
+    launcherUrl: String(
+      roleData(
+        roleSource,
+        roleIds.LauncherUrlWithoutIcon,
+        fallbackLauncherUrl,
+      ) || "",
+    ),
+    virtualDesktops: Array.from(
+      roleData(
+        roleSource,
+        roleIds.VirtualDesktops,
+        fallback.virtualDesktops || [],
+      ) || [],
+    ),
+  };
+}
