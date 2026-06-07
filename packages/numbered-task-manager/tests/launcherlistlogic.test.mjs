@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -36,6 +37,10 @@ const helpers = loadQmlJsModule(
 
 const nullActivityId = "00000000-0000-0000-0000-000000000000";
 const plain = (value) => JSON.parse(JSON.stringify(value));
+const launcherListLogicSource = readFileSync(
+  new URL("../package/contents/ui/LauncherListLogic.js", import.meta.url),
+  "utf8",
+);
 
 assert.deepEqual(plain(helpers.normalizedLauncherList(null)), []);
 assert.deepEqual(
@@ -546,6 +551,24 @@ assert.deepEqual(
 assert.deepEqual(
   plain(helpers.launcherActivitiesAfterToggle(["work"], "chat", "work")),
   ["work", "chat"],
+);
+
+assert.doesNotMatch(launcherListLogicSource, /function stringListContains\b/);
+assert.doesNotMatch(launcherListLogicSource, /function uniqueStringList\b/);
+assert.doesNotMatch(launcherListLogicSource, /function activitiesAreAll\b/);
+assert.doesNotMatch(
+  launcherListLogicSource,
+  /function normalizedActivityList\b/,
+);
+assert.doesNotMatch(launcherListLogicSource, /function isInCurrentActivity\b/);
+assert.match(
+  launcherListLogicSource,
+  /ActivityScopeLogic\.isInCurrentActivity/,
+);
+assert.match(launcherListLogicSource, /ActivityScopeLogic\.activitiesAreAll/);
+assert.match(
+  launcherListLogicSource,
+  /ActivityScopeLogic\.normalizedActivityList/,
 );
 
 const visibleLaunchers = [
