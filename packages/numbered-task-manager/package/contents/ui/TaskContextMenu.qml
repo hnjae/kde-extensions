@@ -23,6 +23,7 @@ PlasmaExtras.Menu {
     readonly property bool hasWindowTask: hasTask && roleSnapshot().isWindow
     readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
+    readonly property var minimizeMaximizeRoles: TaskContextMenuLogic.minimizeMaximizeRoleSnapshot(roleSource(), roleIds(), task)
     property var activityEntries: []
     property var launcherModel: taskModel
     property var launcherActivityList: []
@@ -86,6 +87,10 @@ PlasmaExtras.Menu {
             Activities: atm.Activities,
             CanLaunchNewInstance: atm.CanLaunchNewInstance,
             IsLauncher: atm.IsLauncher,
+            IsMaximizable: atm.IsMaximizable,
+            IsMaximized: atm.IsMaximized,
+            IsMinimizable: atm.IsMinimizable,
+            IsMinimized: atm.IsMinimized,
             IsMovable: atm.IsMovable,
             IsResizable: atm.IsResizable,
             IsWindow: atm.IsWindow,
@@ -333,10 +338,9 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property bool roleChecked: root.boolRole(root.atm.IsMinimized, root.task.isMinimized || false)
         readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
-            capable: root.boolRole(root.atm.IsMinimizable, root.task.isMinimizable || false),
-            checked: roleChecked,
+            capable: root.minimizeMaximizeRoles.isMinimizable,
+            checked: root.minimizeMaximizeRoles.isMinimized,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })
@@ -353,10 +357,9 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property bool roleChecked: root.boolRole(root.atm.IsMaximized, root.task.isMaximized || false)
         readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
-            capable: root.boolRole(root.atm.IsMaximizable, root.task.isMaximizable || false),
-            checked: roleChecked,
+            capable: root.minimizeMaximizeRoles.isMaximizable,
+            checked: root.minimizeMaximizeRoles.isMaximized,
             hasWindowTask: root.hasWindowTask,
             isWindow: root.roleSnapshot().isWindow
         })

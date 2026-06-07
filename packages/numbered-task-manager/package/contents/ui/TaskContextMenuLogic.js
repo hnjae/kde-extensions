@@ -277,6 +277,34 @@ function basicActionRoleSnapshot(roleSource, roles, task) {
   };
 }
 
+function minimizeMaximizeRoleSnapshot(roleSource, roles, task) {
+  const roleIds = roles || {};
+  const fallback = task || {};
+
+  return {
+    isMaximizable: boolRoleData(
+      roleSource,
+      roleIds.IsMaximizable,
+      fallback.isMaximizable || false,
+    ),
+    isMaximized: boolRoleData(
+      roleSource,
+      roleIds.IsMaximized,
+      fallback.isMaximized || false,
+    ),
+    isMinimizable: boolRoleData(
+      roleSource,
+      roleIds.IsMinimizable,
+      fallback.isMinimizable || false,
+    ),
+    isMinimized: boolRoleData(
+      roleSource,
+      roleIds.IsMinimized,
+      fallback.isMinimized || false,
+    ),
+  };
+}
+
 function taskRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};
