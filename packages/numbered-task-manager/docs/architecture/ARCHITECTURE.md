@@ -71,11 +71,13 @@ in `SPEC.md`.
   membership should not be duplicated between normal task composition, remote
   attention, and context menu code.
 - Keep normal task publication state transitions in `NormalTaskStoreLogic.js`.
-  Hidden QML delegates may still observe Plasma rows, but publication-key
-  allocation, publish/remove events, manual-order pruning, publication-counter
-  state, and composed normal snapshots should be exercised by pure tests. Root
-  QML should bind to one normal-task store state instead of owning separate
-  entry-map and manual-order properties.
+  `NormalTaskSource.qml` owns observation of the normal `TasksModel` rows and
+  emits explicit publication/removal events into the root-owned store.
+  Publication-key allocation, publish/remove events, manual-order pruning,
+  publication-counter state, and composed normal snapshots should be exercised
+  by pure tests. Root QML should bind to one normal-task store state instead of
+  owning hidden normal publication delegates or separate entry-map and
+  manual-order properties.
 - Keep launcher-list writes owned by the root widget. Child components such as
   the task context menu may compute and request a replacement launcher list, but
   `main.qml` is responsible for applying it to `TasksModel` and persisting it to
