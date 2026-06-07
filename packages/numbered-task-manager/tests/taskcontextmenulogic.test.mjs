@@ -335,7 +335,10 @@ assert.deepEqual(
 assert.deepEqual(
   plain(
     logic.contextMenuActionRoute({
-      command: logic.contextMenuLauncherCommand("pinLauncher", "app.desktop"),
+      command: logic.pinLauncherCommand({
+        isPinned: false,
+        launcherUrl: "app.desktop",
+      }),
     }),
   ),
   {
@@ -352,7 +355,7 @@ assert.deepEqual(
 assert.deepEqual(
   plain(
     logic.contextMenuActionRoute({
-      command: logic.contextMenuTaskCommand("requestMove"),
+      command: logic.moveCommand(),
     }),
   ),
   {

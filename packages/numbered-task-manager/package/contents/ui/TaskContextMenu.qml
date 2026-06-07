@@ -124,6 +124,17 @@ PlasmaExtras.Menu {
         }
     }
 
+    readonly property TaskContextMenuActionDispatcher _actionDispatcher: TaskContextMenuActionDispatcher {
+        id: actionDispatcher
+
+        launcherActivityAdapter: launcherActivityAdapter
+        taskCommandAdapter: taskCommandAdapter
+
+        onLauncherCommandRequested: command => {
+            root.launcherCommandRequested(command);
+        }
+    }
+
     PlasmaExtras.MenuItem {
         readonly property var pinAction: root.pinActionsSection.pinLauncher
 
@@ -131,7 +142,7 @@ PlasmaExtras.Menu {
         text: pinAction.text
 
         onClicked: {
-            root.launcherCommandRequested(pinAction.command);
+            actionDispatcher.triggerAction(pinAction);
         }
     }
 
@@ -158,7 +169,7 @@ PlasmaExtras.Menu {
                 text: actionState.text
 
                 onClicked: {
-                    launcherActivityAdapter.applyLauncherActivityAction(actionState.update);
+                    actionDispatcher.triggerAction(actionState);
                 }
             }
 
@@ -176,7 +187,7 @@ PlasmaExtras.Menu {
                     text: actionState.text
 
                     onClicked: {
-                        launcherActivityAdapter.applyLauncherActivityAction(actionState.update);
+                        actionDispatcher.triggerAction(actionState);
                     }
                 }
 
@@ -208,7 +219,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -220,7 +231,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -232,7 +243,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -246,7 +257,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -260,7 +271,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -274,7 +285,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -288,7 +299,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -302,7 +313,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -316,7 +327,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -330,7 +341,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -344,7 +355,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 
@@ -370,7 +381,7 @@ PlasmaExtras.Menu {
                 text: actionState.text
 
                 onClicked: {
-                    taskCommandAdapter.requestTaskModelCommand(actionState.command);
+                    actionDispatcher.triggerAction(actionState);
                 }
             }
 
@@ -388,7 +399,7 @@ PlasmaExtras.Menu {
                     text: actionState.text
 
                     onClicked: {
-                        taskCommandAdapter.requestTaskModelCommand(actionState.command);
+                        actionDispatcher.triggerAction(actionState);
                     }
                 }
 
@@ -408,7 +419,7 @@ PlasmaExtras.Menu {
                 text: actionState.text
 
                 onClicked: {
-                    taskCommandAdapter.requestTaskModelCommand(actionState.command);
+                    actionDispatcher.triggerAction(actionState);
                 }
             }
         }
@@ -436,7 +447,7 @@ PlasmaExtras.Menu {
                 text: actionState.text
 
                 onClicked: {
-                    taskCommandAdapter.requestTaskModelCommand(actionState.command);
+                    actionDispatcher.triggerAction(actionState);
                 }
             }
 
@@ -454,7 +465,7 @@ PlasmaExtras.Menu {
                     text: actionState.text
 
                     onClicked: {
-                        taskCommandAdapter.requestTaskModelCommand(actionState.command);
+                        actionDispatcher.triggerAction(actionState);
                     }
                 }
 
@@ -485,7 +496,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            taskCommandAdapter.requestTaskModelCommand(actionState.command);
+            actionDispatcher.triggerAction(actionState);
         }
     }
 }

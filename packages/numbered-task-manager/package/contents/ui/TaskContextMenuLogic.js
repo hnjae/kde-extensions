@@ -804,6 +804,40 @@ function virtualDesktopActionsSection(sectionState) {
   };
 }
 
+function contextMenuActionRoute(actionState) {
+  const state = actionState || {};
+  if (state.update) {
+    return {
+      command: null,
+      kind: "launcher-activity-update",
+      update: state.update,
+    };
+  }
+
+  const command = state.command || null;
+  if (!command) {
+    return {
+      command: null,
+      kind: "none",
+      update: null,
+    };
+  }
+
+  if (command.kind === "launcher-command") {
+    return {
+      command,
+      kind: "launcher-command",
+      update: null,
+    };
+  }
+
+  return {
+    command,
+    kind: "task-model-request",
+    update: null,
+  };
+}
+
 function contextMenuActionSections(menuState) {
   const state = menuState || {};
   const basicRoles = state.basicActionRoles || {};
