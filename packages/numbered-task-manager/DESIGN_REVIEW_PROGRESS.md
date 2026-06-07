@@ -409,10 +409,18 @@
 - Verification: `node tests/taskmodellogic.test.mjs` failed before implementation because `canMoveTaskResult(...)` did not exist; after implementation, `node tests/taskmodellogic.test.mjs`; `node tests/normaltaskstorelogic.test.mjs`; `rg -n "canMoveTaskResult|moveManualTaskOrderResult|reason: \\\"(invalid-index|same-index|missing-source|missing-target|boundary-crossing|pinned-launcher-denied|movable-pinned|movable-unpinned|same-position|moved)\\\"|function canMoveTask\\(|function moveManualTaskOrder\\(" package/contents/ui/TaskModelLogic.js tests/taskmodellogic.test.mjs package/contents/ui/main.qml`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskModelLogic.js`, `tests/taskmodellogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 51: Drag Move Result Boundary
+
+- Status: completed.
+- What changed: declared root drag/drop glue as the consumer of typed move results; changed `main.qml` so root exposes `canMoveTaskResult(...)`, `moveTask(...)` gates on that typed result, and `canMoveTask(...)` plus delegate `canDropTask` remain boolean projections.
+- Behavior that must remain unchanged: drag acceptance and rejection outcomes, manual task moves, pinned launcher moves, invalid and stale-index no-ops, and delegate drop enablement remain unchanged.
+- Verification: `node tests/taskvisuallogic.test.mjs` failed before implementation because `main.qml` did not expose `canMoveTaskResult(...)`; after implementation, `node tests/taskvisuallogic.test.mjs`; `node tests/taskmodellogic.test.mjs`; `rg -n "canMoveTaskResult|function canMoveTask\\(|TaskModelLogic\\.canMoveTask\\(|TaskModelLogic\\.canMoveTaskResult|canDropTask:" package/contents/ui/main.qml tests/taskvisuallogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/main.qml`, `tests/taskvisuallogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: direct role snapshot passthrough wrappers have been removed. Keep the remaining live-role boundary helpers (`roleData`, `boolRole`, `roleIds`, `roleSource`, and `roleSnapshot`) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code.
 - Visible item composer / remote attention: rendered remote-attention activation and metadata now consume composed descriptors, and `RemoteAttentionSource.qml` owns the remote-attention model, state snapshot, and activation adapter. Full remote-attention removability still requires shrinking root's rendered binding and context-menu wiring to one source-owned item surface.
 - Scope policy: model filter settings and local qualifiers now have a named owner; task-specific qualifier re-export facades and generic activity facades in task and launcher modules have been removed.
 - Metrics: root layout, normal task, and attention task size constants now come from `TaskMetricsLogic.js`. Badge dimensions remain badge-local rendering policy.
-- Mutation results: launcher activity updates and normal-task move decisions now expose reason-coded results. Remaining mutation-result work is migrating drag/drop callers to consume or log those typed results directly.
+- Mutation results: launcher activity updates and normal-task move decisions now expose reason-coded results, and root drag/drop consumes the typed move result before projecting booleans to delegates. Remaining mutation-result work is logging or otherwise surfacing unexpected drag/drop rejection reasons where useful.

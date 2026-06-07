@@ -210,7 +210,8 @@ PlasmoidItem {
     }
 
     function moveTask(sourceIndex, targetIndex) {
-        if (!canMoveTask(sourceIndex, targetIndex)) {
+        const moveDecision = canMoveTaskResult(sourceIndex, targetIndex);
+        if (!moveDecision.canMove) {
             return false;
         }
 
@@ -253,8 +254,12 @@ PlasmoidItem {
         return LauncherListLogic.canMovePinnedLauncher(tasksModel.launcherList, sourceEntry, targetEntry, launcherUrl => tasksModel.launcherPosition(launcherUrl));
     }
 
+    function canMoveTaskResult(sourceIndex, targetIndex) {
+        return TaskModelLogic.canMoveTaskResult(normalTaskEntries, sourceIndex, targetIndex, (sourceEntry, targetEntry) => canMovePinnedLauncher(sourceEntry, targetEntry));
+    }
+
     function canMoveTask(sourceIndex, targetIndex) {
-        return TaskModelLogic.canMoveTask(normalTaskEntries, sourceIndex, targetIndex, (sourceEntry, targetEntry) => canMovePinnedLauncher(sourceEntry, targetEntry));
+        return canMoveTaskResult(sourceIndex, targetIndex).canMove;
     }
 
     function normalTaskEntryForSourceIndex(sourceIndex) {
@@ -495,7 +500,7 @@ PlasmoidItem {
                     launcher: entry.isLauncher || false
                     demandingAttention: entry.demandingAttention || false
                     dragMimeType: root.taskDragMimeType
-                    canDropTask: (sourceIndex, targetIndex) => root.canMoveTask(sourceIndex, targetIndex)
+                    canDropTask: (sourceIndex, targetIndex) => root.canMoveTaskResult(sourceIndex, targetIndex).canMove
 
                     onActivated: {
                         root.activateTaskEntry(entry);
