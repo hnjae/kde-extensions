@@ -8,7 +8,14 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskContextMenuLogic.js", import.meta.url),
-  ["launcherActivitiesVisible", "panelMenuPlacement", "pinActionState"],
+  [
+    "boolRoleData",
+    "launcherActivitiesVisible",
+    "panelMenuPlacement",
+    "pinActionState",
+    "roleData",
+    "taskRoleSnapshot",
+  ],
 );
 
 const plasmaCoreTypes = {
@@ -109,12 +116,92 @@ assert.equal(
   false,
 );
 
+const liveRoles = {
+  Activities: ["live-activity"],
+  IsLauncher: 1,
+  IsWindow: true,
+  LauncherUrl: "launcher.desktop",
+  LauncherUrlWithoutIcon: "launcher-without-icon.desktop",
+  VirtualDesktops: ["live-desktop"],
+};
+const roleCalls = [];
+const roleSource = {
+  hasTask: true,
+  modelIndex: { row: 5 },
+  taskModel: {
+    data(modelIndex, role) {
+      roleCalls.push({ modelIndex, role });
+      return liveRoles[role];
+    },
+  },
+};
+const roles = {
+  Activities: "Activities",
+  IsLauncher: "IsLauncher",
+  IsWindow: "IsWindow",
+  LauncherUrl: "LauncherUrl",
+  LauncherUrlWithoutIcon: "LauncherUrlWithoutIcon",
+  VirtualDesktops: "VirtualDesktops",
+};
+
+assert.equal(
+  logic.roleData(roleSource, "LauncherUrl", "fallback"),
+  "launcher.desktop",
+);
+assert.equal(logic.roleData(roleSource, "Missing", "fallback"), "fallback");
+assert.equal(
+  logic.roleData({ ...roleSource, hasTask: false }, "LauncherUrl", "fallback"),
+  "fallback",
+);
+assert.equal(logic.boolRoleData(roleSource, "IsLauncher", false), true);
+assert.deepEqual(
+  plain(
+    logic.taskRoleSnapshot(roleSource, roles, {
+      activities: ["fallback-activity"],
+      isLauncher: false,
+      isWindow: false,
+      launcherUrl: "fallback.desktop",
+      virtualDesktops: ["fallback-desktop"],
+    }),
+  ),
+  {
+    activities: ["live-activity"],
+    isLauncher: true,
+    isWindow: true,
+    launcherUrl: "launcher-without-icon.desktop",
+    virtualDesktops: ["live-desktop"],
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.taskRoleSnapshot({ ...roleSource, hasTask: false }, roles, {
+      activities: ["fallback-activity"],
+      isLauncher: false,
+      isWindow: true,
+      launcherUrl: "fallback.desktop",
+      virtualDesktops: ["fallback-desktop"],
+    }),
+  ),
+  {
+    activities: ["fallback-activity"],
+    isLauncher: false,
+    isWindow: true,
+    launcherUrl: "fallback.desktop",
+    virtualDesktops: ["fallback-desktop"],
+  },
+);
+assert.deepEqual(plain(roleCalls.map((call) => call.role).slice(0, 2)), [
+  "LauncherUrl",
+  "Missing",
+]);
+
 const menuQml = readFileSync(
   new URL("../package/contents/ui/TaskContextMenu.qml", import.meta.url),
   "utf8",
 );
 
 assert.equal(menuQml.includes("atm.HasLauncher"), false);
+assert.equal(menuQml.includes("taskModel.data"), false);
 
 function directMenuContentObjectViolations(qml) {
   const violations = [];
