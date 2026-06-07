@@ -19,6 +19,7 @@ in `SPEC.md`.
 - Keep activity scope primitives in `ActivityScopeLogic.js` so null-activity,
   all-activities, de-duplication, and current-activity membership semantics are
   shared by task and launcher code.
+- Keep applet-wide activity/desktop platform state in `TaskPlatformState.qml`. It should own `ActivityInfo`, `VirtualDesktopInfo`, current activity/current desktop exposure, launcher revision changes, current-activity membership checks, and visible launcher position lookups for source components, while `main.qml` keeps `TasksModel` instantiation and launcher-list write effects.
 - Keep task-model scope policy in `TaskScopeLogic.js`. Normal and remote attention `TasksModel` filter settings and local qualification helpers should be named together so QML does not carry unexplained raw filter booleans or split scope decisions across unrelated modules.
 - Do not re-export scope qualification helpers from task-specific modules once source components consume `TaskScopeLogic.js` directly. `TaskModelLogic.js` should own normal task entry/composition policy, and `RemoteAttentionLogic.js` should own remote-attention entry/state policy.
 - Keep task activity mutation decisions in `TaskActivityLogic.js` so task activity toggles are shared by the task model and context menu. Generic current-activity and all-activities primitives should be imported from `ActivityScopeLogic.js` directly.
