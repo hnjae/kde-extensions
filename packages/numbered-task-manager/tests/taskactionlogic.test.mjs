@@ -10,6 +10,7 @@ const logic = loadQmlJsModule(
   [
     "contextMenuCreationResult",
     "contextMenuRequestResult",
+    "contextMenuTaskRequest",
     "launcherMutationRequest",
     "launcherMutationResult",
     "shortcutActivationRequest",
@@ -179,6 +180,63 @@ assert.equal(
   logic.contextMenuCreationResult({ objectName: "menu" }, {}).ok,
   true,
 );
+
+const taskRequestModel = {
+  requestMove() {},
+};
+assert.deepEqual(
+  plain(
+    logic.contextMenuTaskRequest(
+      "requestMove",
+      taskRequestModel,
+      validModelIndex,
+      normalTask,
+    ),
+  ),
+  {
+    action: "requestMove",
+    code: "ready",
+    context: {
+      entryKey: "normal-task",
+      modelIndexValid: true,
+      title: "Normal Task",
+    },
+    diagnostic: false,
+    modelIndex: validModelIndex,
+    ok: true,
+    requestMethod: "requestMove",
+  },
+);
+
+const missingTaskModelRequest = logic.contextMenuTaskRequest(
+  "requestMove",
+  null,
+  validModelIndex,
+  normalTask,
+);
+assert.equal(missingTaskModelRequest.ok, false);
+assert.equal(missingTaskModelRequest.code, "missing-task-model");
+assert.equal(logic.shouldLogActionResult(missingTaskModelRequest), true);
+
+const invalidTaskRequest = logic.contextMenuTaskRequest(
+  "requestMove",
+  taskRequestModel,
+  invalidModelIndex,
+  normalTask,
+);
+assert.equal(invalidTaskRequest.ok, false);
+assert.equal(invalidTaskRequest.code, "invalid-model-index");
+assert.equal(logic.shouldLogActionResult(invalidTaskRequest), true);
+
+const missingMethodRequest = logic.contextMenuTaskRequest(
+  "requestResize",
+  taskRequestModel,
+  validModelIndex,
+  normalTask,
+);
+assert.equal(missingMethodRequest.ok, false);
+assert.equal(missingMethodRequest.code, "missing-request-method");
+assert.equal(logic.shouldLogActionResult(missingMethodRequest), true);
 
 assert.deepEqual(
   plain(logic.launcherMutationRequest("pinLauncher", "app.desktop")),

@@ -239,6 +239,8 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivityMenuState"),
   true,
 );
+assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), true);
+assert.equal(/\b(?:root\.)?taskModel\.request[A-Z]/.test(menuQml), false);
 
 function directMenuContentObjectViolations(qml) {
   const violations = [];
