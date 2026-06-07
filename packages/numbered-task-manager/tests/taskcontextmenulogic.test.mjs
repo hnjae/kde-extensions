@@ -20,6 +20,7 @@ const logic = loadQmlJsModule(
     "launcherActivityListSnapshot",
     "launcherActivityMenuState",
     "launcherActivitiesVisible",
+    "minimizeMaximizeRoleSnapshot",
     "newInstanceActionState",
     "panelMenuPlacement",
     "pinActionState",
@@ -563,6 +564,10 @@ const liveRoles = {
   Activities: ["live-activity"],
   CanLaunchNewInstance: true,
   IsLauncher: 1,
+  IsMaximizable: true,
+  IsMaximized: false,
+  IsMinimizable: false,
+  IsMinimized: true,
   IsMovable: false,
   IsResizable: true,
   IsWindow: true,
@@ -585,6 +590,10 @@ const roles = {
   Activities: "Activities",
   CanLaunchNewInstance: "CanLaunchNewInstance",
   IsLauncher: "IsLauncher",
+  IsMaximizable: "IsMaximizable",
+  IsMaximized: "IsMaximized",
+  IsMinimizable: "IsMinimizable",
+  IsMinimized: "IsMinimized",
   IsMovable: "IsMovable",
   IsResizable: "IsResizable",
   IsWindow: "IsWindow",
@@ -671,6 +680,42 @@ assert.deepEqual(
     isResizable: false,
   },
 );
+assert.deepEqual(
+  plain(
+    logic.minimizeMaximizeRoleSnapshot(roleSource, roles, {
+      isMaximizable: false,
+      isMaximized: true,
+      isMinimizable: true,
+      isMinimized: false,
+    }),
+  ),
+  {
+    isMaximizable: true,
+    isMaximized: false,
+    isMinimizable: false,
+    isMinimized: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.minimizeMaximizeRoleSnapshot(
+      { ...roleSource, hasTask: false },
+      roles,
+      {
+        isMaximizable: false,
+        isMaximized: true,
+        isMinimizable: true,
+        isMinimized: false,
+      },
+    ),
+  ),
+  {
+    isMaximizable: false,
+    isMaximized: true,
+    isMinimizable: true,
+    isMinimized: false,
+  },
+);
 assert.deepEqual(plain(roleCalls.map((call) => call.role).slice(0, 2)), [
   "LauncherUrl",
   "Missing",
@@ -697,6 +742,10 @@ assert.equal(
   true,
 );
 assert.equal(
+  menuQml.includes("TaskContextMenuLogic.minimizeMaximizeRoleSnapshot"),
+  true,
+);
+assert.equal(
   menuQml.includes(
     "canLaunchNewInstance: root.boolRole(root.atm.CanLaunchNewInstance",
   ),
@@ -708,6 +757,26 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("capable: root.boolRole(root.atm.IsResizable"),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "readonly property bool roleChecked: root.boolRole(root.atm.IsMinimized",
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes("capable: root.boolRole(root.atm.IsMinimizable"),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "readonly property bool roleChecked: root.boolRole(root.atm.IsMaximized",
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes("capable: root.boolRole(root.atm.IsMaximizable"),
   false,
 );
 assert.equal(menuQml.includes('names[i] || "Desktop "'), false);
