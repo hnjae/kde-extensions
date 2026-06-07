@@ -108,6 +108,7 @@ in `SPEC.md`.
 - Keep remote-attention projection dependencies explicit. `RemoteAttentionLogic.js` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
 - Keep composed visible item order, slot labels, `Meta+0` target selection, item source metadata, and item count in a visible-item composer instead of reconstructing those policies independently in root activation, layout sizing, and delegates.
 - Route activation decisions for rendered task-like items through composed visible item descriptors where practical. Root QML still executes the unavoidable `TasksModel.requestActivate(...)` side effect, but normal shortcut activation, `Meta+0`, and remote-attention item activation should share the same visible-item metadata contract.
+- Bind rendered remote-attention item metadata from its composed visible item descriptor instead of reconstructing the attention target separately in root layout bindings.
 - Keep shortcut activation, context-menu creation, and launcher pin/unpin request outcomes in a small action-result helper. Root QML should still execute Plasma side effects, but invalid requests, stale model indexes, missing targets, rejected launcher requests, and creation failures should be classified before deciding whether to log a diagnostic.
 - Keep context-menu task request outcomes in the same action-result helper.
   `TaskContextMenu.qml` may execute `TasksModel.request*` effects directly from
