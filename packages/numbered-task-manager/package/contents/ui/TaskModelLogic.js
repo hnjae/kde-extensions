@@ -5,7 +5,7 @@ function createNormalTaskEntry(roles, taskEntryLogic) {
   const taskRoles = roles || {};
   const baseEntry = taskEntryLogic.createBaseTaskEntry(
     taskRoles,
-    "application-x-executable",
+    taskEntryLogic.normalTaskIconFallback(),
   );
   const launcherPinned = taskEntryLogic.boolValue(taskRoles.launcherPinned);
   const isLauncher = taskEntryLogic.boolValue(taskRoles.isLauncher);

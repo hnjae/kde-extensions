@@ -6,7 +6,10 @@ function createRemoteAttentionEntry(roles, taskEntryLogic) {
 
   return Object.assign(
     {},
-    taskEntryLogic.createBaseTaskEntry(taskRoles, "dialog-warning"),
+    taskEntryLogic.createBaseTaskEntry(
+      taskRoles,
+      taskEntryLogic.remoteAttentionIconFallback(),
+    ),
     {
       winIds: Array.from(taskRoles.winIds || []),
     },

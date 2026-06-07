@@ -11,6 +11,7 @@ const taskEntryLogic = loadQmlJsModule(
     "boolValue",
     "createBaseTaskEntry",
     "isOnCurrentVirtualDesktop",
+    "normalTaskIconFallback",
     "numberValue",
     "stringValue",
   ],

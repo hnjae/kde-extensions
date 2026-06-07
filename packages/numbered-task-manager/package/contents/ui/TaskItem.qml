@@ -8,6 +8,7 @@ import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
+import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskItemPresentationLogic.js" as TaskItemPresentationLogic
 import "TaskVisualLogic.js" as TaskVisualLogic
 
@@ -26,7 +27,7 @@ QtQuick.Item {
     property real slotWidth: 0
     property bool showTitle: true
     property int titleVisibilityThreshold: 96
-    property var iconSource: "application-x-executable"
+    property var iconSource: TaskEntryLogic.normalTaskIconFallback()
     property var modelIndex
     property var taskData: ({})
     property var canDropTask
@@ -116,7 +117,7 @@ QtQuick.Item {
                     active: root.active,
                     highlighted: root.visualHighlighted
                 })
-                fallback: "application-x-executable"
+                fallback: TaskEntryLogic.normalTaskIconFallback()
                 source: root.iconSource
                 z: 0
             }

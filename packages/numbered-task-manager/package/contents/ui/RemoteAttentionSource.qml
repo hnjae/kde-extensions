@@ -54,7 +54,7 @@ QtQuick.Item {
             required property int index
             required property var model
 
-            property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
+            property string launcherUrl: TaskEntryLogic.launcherUrlFromRoles(model.LauncherUrlWithoutIcon, model.LauncherUrl)
             property bool hasSyncedAttention: false
             property string publishedKey: ""
             property bool previousQualifies: false

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 Qt.include("ActivityScopeLogic.js");
+Qt.include("TaskEntryLogic.js");
 
 function panelMenuPlacement(location, plasmaCoreTypes, plasmaMenu) {
   if (location === plasmaCoreTypes.LeftEdge) {
@@ -223,6 +224,11 @@ function taskRoleSnapshot(roleSource, roles, task) {
     roleIds.LauncherUrl,
     fallback.launcherUrl || "",
   );
+  const launcherUrlWithoutIcon = roleData(
+    roleSource,
+    roleIds.LauncherUrlWithoutIcon,
+    "",
+  );
 
   return {
     activities: Array.from(
@@ -238,12 +244,9 @@ function taskRoleSnapshot(roleSource, roles, task) {
       roleIds.IsWindow,
       fallback.isWindow || false,
     ),
-    launcherUrl: String(
-      roleData(
-        roleSource,
-        roleIds.LauncherUrlWithoutIcon,
-        fallbackLauncherUrl,
-      ) || "",
+    launcherUrl: launcherUrlFromRoles(
+      launcherUrlWithoutIcon,
+      fallbackLauncherUrl,
     ),
     virtualDesktops: Array.from(
       roleData(

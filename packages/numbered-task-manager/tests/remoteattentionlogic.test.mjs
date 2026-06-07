@@ -7,7 +7,11 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const taskEntryLogic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskEntryLogic.js", import.meta.url),
-  ["createBaseTaskEntry", "isRemoteVirtualDesktop"],
+  [
+    "createBaseTaskEntry",
+    "isRemoteVirtualDesktop",
+    "remoteAttentionIconFallback",
+  ],
 );
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/RemoteAttentionLogic.js", import.meta.url),

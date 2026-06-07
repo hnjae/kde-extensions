@@ -201,6 +201,15 @@
 - Verification: `node tests/taskactionlogic.test.mjs` failed before implementation because `contextMenuLauncherCommandDispatchResult` did not exist; after implementation, `node tests/taskactionlogic.test.mjs`; `node tests/taskcontextmenulogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/main.qml`, `tests/taskactionlogic.test.mjs`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 25: Shared Task Entry Projection Helpers
+
+- Status: completed.
+- What changed: declared launcher URL precedence and fallback icon ownership in `TaskEntryLogic.js`; added shared launcher URL and icon fallback helpers; replaced duplicated launcher URL precedence and normal/remote fallback icon literals in task sources, menu snapshot logic, task-like delegates, and root bindings.
+- Behavior that must remain unchanged: `LauncherUrlWithoutIcon` still takes precedence over `LauncherUrl`; normal task fallback icons remain `application-x-executable`; remote attention fallback icons remain `dialog-warning`; task entry fields and visible icon behavior remain unchanged.
+- Verification: `node tests/taskentrylogic.test.mjs` failed before implementation because projection helpers did not exist; `node tests/taskcontextmenulogic.test.mjs` failed before implementation because duplicate source literals remained; after implementation, `node tests/taskentrylogic.test.mjs`; `node tests/taskmodellogic.test.mjs`; `node tests/remoteattentionlogic.test.mjs`; `node tests/taskcontextmenulogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskEntryLogic.js`, `package/contents/ui/NormalTaskSource.qml`, `package/contents/ui/RemoteAttentionSource.qml`, `package/contents/ui/TaskModelLogic.js`, `package/contents/ui/RemoteAttentionLogic.js`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskItem.qml`, `package/contents/ui/AttentionItem.qml`, `package/contents/ui/main.qml`, `tests/taskentrylogic.test.mjs`, `tests/taskmodellogic.test.mjs`, `tests/remoteattentionlogic.test.mjs`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.
+- Task entry projection: remove broad injected `taskEntryLogic` namespaces from factories one module at a time and document or remove unused schema fields where practical.

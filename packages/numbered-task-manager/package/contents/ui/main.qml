@@ -11,6 +11,7 @@ import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskActivityLogic.js" as TaskActivityLogic
+import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
 import "NormalTaskStoreLogic.js" as NormalTaskStoreLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
@@ -514,7 +515,7 @@ PlasmoidItem {
                     title: entry.title || ""
                     showTitle: !(entry.launcherBacked && entry.isLauncher)
                     titleVisibilityThreshold: fullRepresentationItem.titleVisibilityThreshold
-                    iconSource: entry.iconSource || "application-x-executable"
+                    iconSource: entry.iconSource || TaskEntryLogic.normalTaskIconFallback()
                     active: entry.active || false
                     minimized: entry.isMinimized || false
                     pinnedLauncherOnly: entry.launcherBacked && entry.isLauncher
@@ -551,7 +552,7 @@ PlasmoidItem {
                 QtQuickLayouts.Layout.preferredWidth: root.vertical ? implicitWidth : fullRepresentationItem.taskSlotWidth
 
                 count: root.remoteAttentionState.count || 0
-                iconSource: root.remoteAttentionState.target ? root.remoteAttentionState.target.iconSource : "dialog-warning"
+                iconSource: root.remoteAttentionState.target ? root.remoteAttentionState.target.iconSource : TaskEntryLogic.remoteAttentionIconFallback()
                 modelIndex: root.remoteAttentionState.target ? root.remoteAttentionState.target.modelIndex : undefined
                 slotWidth: root.vertical ? 0 : fullRepresentationItem.taskSlotWidth
                 taskData: root.remoteAttentionState.target || {}

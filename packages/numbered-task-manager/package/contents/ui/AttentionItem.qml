@@ -8,6 +8,7 @@ import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
+import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskVisualLogic.js" as TaskVisualLogic
 
@@ -19,7 +20,7 @@ QtQuick.Item {
     property real slotWidth: 0
     property bool showTitle: true
     property int titleVisibilityThreshold: 96
-    property var iconSource: "dialog-warning"
+    property var iconSource: TaskEntryLogic.remoteAttentionIconFallback()
     property var modelIndex
     property var taskData: ({})
     property bool contextMenuOpen: false
@@ -75,7 +76,7 @@ QtQuick.Item {
                 active: TaskVisualLogic.iconActive({
                     highlighted: root.visualHighlighted
                 })
-                fallback: "dialog-warning"
+                fallback: TaskEntryLogic.remoteAttentionIconFallback()
                 source: root.iconSource
             }
 

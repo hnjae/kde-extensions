@@ -66,6 +66,18 @@ function stringValue(value) {
   return String(value || "");
 }
 
+function normalTaskIconFallback() {
+  return "application-x-executable";
+}
+
+function remoteAttentionIconFallback() {
+  return "dialog-warning";
+}
+
+function launcherUrlFromRoles(launcherUrlWithoutIcon, launcherUrl) {
+  return stringValue(launcherUrlWithoutIcon || launcherUrl);
+}
+
 function numberValue(value, fallback) {
   if (value === undefined || value === null) {
     return fallback;

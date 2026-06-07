@@ -57,7 +57,7 @@ QtQuick.Item {
             required property int index
             required property var model
 
-            property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
+            property string launcherUrl: TaskEntryLogic.launcherUrlFromRoles(model.LauncherUrlWithoutIcon, model.LauncherUrl)
             property int launcherRevisionToken: root.launcherRevision
             property var launcherPinState: LauncherListLogic.launcherPinState(root.taskModel.launcherList, launcherUrl, root.currentActivity, url => root.taskModel.launcherPosition(url), launcherRevisionToken)
             property int launcherPosition: launcherPinState.pinnedLauncherPosition
