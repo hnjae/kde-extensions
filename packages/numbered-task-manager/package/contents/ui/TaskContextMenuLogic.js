@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-Qt.include("ActivityScopeLogic.js");
+Qt.include("TaskActionLogic.js");
+Qt.include("TaskActivityLogic.js");
 Qt.include("TaskEntryLogic.js");
 
 function panelMenuPlacement(location, plasmaCoreTypes, plasmaMenu) {
@@ -182,6 +183,13 @@ function taskActivityMenuState(taskActivities, activityId) {
       ActivityScopeLogic.stringListContains(activities, activityId),
     allActivitiesChecked,
   };
+}
+
+function taskActivityToggleCommand(taskActivities, activityId) {
+  return contextMenuTaskCommand(
+    "requestActivities",
+    taskActivitiesAfterToggle(taskActivities, activityId),
+  );
 }
 
 function virtualDesktopId(desktop) {

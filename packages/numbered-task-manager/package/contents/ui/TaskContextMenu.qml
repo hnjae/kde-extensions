@@ -8,7 +8,6 @@ import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
-import "TaskActivityLogic.js" as TaskActivityLogic
 import "TaskActionLogic.js" as TaskActionLogic
 import "TaskContextMenuLogic.js" as TaskContextMenuLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
@@ -141,7 +140,7 @@ PlasmaExtras.Menu {
             return;
         }
 
-        requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestActivities", TaskActivityLogic.taskActivitiesAfterToggle(taskRoles.activities, activityId)));
+        requestTaskModelCommand(TaskContextMenuLogic.taskActivityToggleCommand(taskRoles.activities, activityId));
     }
 
     function launcherPosition() {
