@@ -10,6 +10,7 @@ const logic = loadQmlJsModule(
   [
     "activationTargetForShortcutIndex",
     "composeVisibleTaskItems",
+    "normalVisibleTaskItems",
     "visibleItemForNormalIndex",
     "visibleRemoteAttentionItem",
   ],
@@ -187,3 +188,33 @@ assert.equal(
   "attention-target",
 );
 assert.equal(logic.visibleRemoteAttentionItem(threeNormalItems), null);
+assert.deepEqual(
+  plain(
+    logic.normalVisibleTaskItems(attentionItems).map((item) => ({
+      entryKey: item.entry.entryKey,
+      kind: item.kind,
+      slotNumber: item.slotNumber,
+      sourceIndex: item.sourceIndex,
+    })),
+  ),
+  [
+    {
+      entryKey: "task-0",
+      kind: "normal",
+      slotNumber: 1,
+      sourceIndex: 0,
+    },
+    {
+      entryKey: "task-1",
+      kind: "normal",
+      slotNumber: 2,
+      sourceIndex: 1,
+    },
+    {
+      entryKey: "task-2",
+      kind: "normal",
+      slotNumber: 3,
+      sourceIndex: 2,
+    },
+  ],
+);

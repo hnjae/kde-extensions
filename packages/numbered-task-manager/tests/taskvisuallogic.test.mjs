@@ -167,6 +167,16 @@ assert.match(
   mainQml,
   /readonly property var remoteAttentionVisibleItem:\s*VisibleTaskItemsLogic\.visibleRemoteAttentionItem\(root\.visibleTaskItems\)/,
 );
+assert.match(
+  mainQml,
+  /readonly property var normalVisibleTaskItems:\s*VisibleTaskItemsLogic\.normalVisibleTaskItems\(root\.visibleTaskItems\)/,
+);
+assert.match(mainQml, /model:\s*root\.normalVisibleTaskItems/);
+assert.doesNotMatch(mainQml, /model:\s*root\.normalTaskEntries/);
+assert.doesNotMatch(
+  mainQml,
+  /VisibleTaskItemsLogic\.visibleItemForNormalIndex/,
+);
 assert.doesNotMatch(mainQml, /root\.remoteAttentionState\.target\s*\?/);
 assert.match(
   mainQml,
