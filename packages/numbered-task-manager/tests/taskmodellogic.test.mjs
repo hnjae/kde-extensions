@@ -44,8 +44,8 @@ const normalTask = createNormalTaskEntry({
 assert.deepEqual(plain(normalTask.activities), ["work"]);
 assert.equal(normalTask.active, true);
 assert.equal(normalTask.canLaunchNewInstance, true);
-assert.equal(normalTask.hasAnyLauncher, true);
 assert.equal(normalTask.hasLauncher, true);
+assert.equal(Object.hasOwn(normalTask, "hasAnyLauncher"), false);
 assert.equal(normalTask.iconSource, "app-icon");
 assert.equal(normalTask.index, 7);
 assert.equal(normalTask.isLauncher, true);
