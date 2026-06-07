@@ -71,8 +71,10 @@ in `SPEC.md`.
   Checked, visible, and enabled predicates for actions such as Minimize,
   Maximize, Keep Above, Keep Below, Full Screen, Shade, No Border, and Exclude
   From Capture should be derived by tested helpers while QML keeps labels and
-  effect dispatch. QML menu items should consume the helper output directly
-  instead of adding menu-local action-state wrapper functions.
+  effect dispatch. Live checked/capability role reads should enter QML as
+  tested snapshot objects instead of as item-local `boolRole(...)` calls. QML
+  menu items should consume the helper output directly instead of adding
+  menu-local action-state wrapper functions.
 - Keep context-menu section and terminal action availability in
   `TaskContextMenuLogic.js`. Section visibility and enabled/visible predicates
   for Virtual Desktops, Activities, New Desktop, and Close should be derived by
