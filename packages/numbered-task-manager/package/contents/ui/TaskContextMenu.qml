@@ -123,23 +123,6 @@ PlasmaExtras.Menu {
         return LauncherListLogic.launcherPinState(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
-    function checkableWindowCapabilityActionState(capabilityRole, capabilityFallback, checkedRole, checkedFallback) {
-        return TaskContextMenuLogic.checkableWindowCapabilityActionState({
-            capable: boolRole(capabilityRole, capabilityFallback || false),
-            checked: boolRole(checkedRole, checkedFallback || false),
-            hasWindowTask: hasWindowTask,
-            isWindow: isWindow()
-        });
-    }
-
-    function checkableWindowActionState(checkedRole, checkedFallback) {
-        return TaskContextMenuLogic.checkableWindowActionState({
-            checked: boolRole(checkedRole, checkedFallback || false),
-            hasWindowTask: hasWindowTask,
-            isWindow: isWindow()
-        });
-    }
-
     function virtualDesktopsActionState() {
         return TaskContextMenuLogic.virtualDesktopsActionState({
             changeable: boolRole(atm.IsVirtualDesktopsChangeable, task.isVirtualDesktopsChangeable || false),
@@ -417,7 +400,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.checkableWindowCapabilityActionState(root.atm.IsMinimizable, root.task.isMinimizable || false, root.atm.IsMinimized, root.task.isMinimized || false)
+        readonly property bool roleChecked: root.boolRole(root.atm.IsMinimized, root.task.isMinimized || false)
+        readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
+            capable: root.boolRole(root.atm.IsMinimizable, root.task.isMinimizable || false),
+            checked: roleChecked,
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         checkable: true
         checked: actionState.checked
@@ -431,7 +420,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.checkableWindowCapabilityActionState(root.atm.IsMaximizable, root.task.isMaximizable || false, root.atm.IsMaximized, root.task.isMaximized || false)
+        readonly property bool roleChecked: root.boolRole(root.atm.IsMaximized, root.task.isMaximized || false)
+        readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
+            capable: root.boolRole(root.atm.IsMaximizable, root.task.isMaximizable || false),
+            checked: roleChecked,
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         checkable: true
         checked: actionState.checked
@@ -445,7 +440,12 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.checkableWindowActionState(root.atm.IsKeepAbove, root.task.isKeepAbove || false)
+        readonly property bool roleChecked: root.boolRole(root.atm.IsKeepAbove, root.task.isKeepAbove || false)
+        readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
+            checked: roleChecked,
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         checkable: true
         checked: actionState.checked
@@ -459,7 +459,12 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.checkableWindowActionState(root.atm.IsKeepBelow, root.task.isKeepBelow || false)
+        readonly property bool roleChecked: root.boolRole(root.atm.IsKeepBelow, root.task.isKeepBelow || false)
+        readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
+            checked: roleChecked,
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         checkable: true
         checked: actionState.checked
@@ -473,7 +478,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.checkableWindowCapabilityActionState(root.atm.IsFullScreenable, root.task.fullScreenable || false, root.atm.IsFullScreen, root.task.isFullScreen || false)
+        readonly property bool roleChecked: root.boolRole(root.atm.IsFullScreen, root.task.isFullScreen || false)
+        readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
+            capable: root.boolRole(root.atm.IsFullScreenable, root.task.fullScreenable || false),
+            checked: roleChecked,
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         checkable: true
         checked: actionState.checked
@@ -487,7 +498,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.checkableWindowCapabilityActionState(root.atm.IsShadeable, root.task.isShadeable || false, root.atm.IsShaded, root.task.isShaded || false)
+        readonly property bool roleChecked: root.boolRole(root.atm.IsShaded, root.task.isShaded || false)
+        readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
+            capable: root.boolRole(root.atm.IsShadeable, root.task.isShadeable || false),
+            checked: roleChecked,
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         checkable: true
         checked: actionState.checked
@@ -501,7 +518,13 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.checkableWindowCapabilityActionState(root.atm.CanSetNoBorder, root.task.canSetNoBorder || false, root.atm.HasNoBorder, root.task.hasNoBorder || false)
+        readonly property bool roleChecked: root.boolRole(root.atm.HasNoBorder, root.task.hasNoBorder || false)
+        readonly property var actionState: TaskContextMenuLogic.checkableWindowCapabilityActionState({
+            capable: root.boolRole(root.atm.CanSetNoBorder, root.task.canSetNoBorder || false),
+            checked: roleChecked,
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         checkable: true
         checked: actionState.checked
@@ -515,7 +538,12 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.checkableWindowActionState(root.atm.IsExcludedFromCapture, root.task.isExcludedFromCapture || false)
+        readonly property bool roleChecked: root.boolRole(root.atm.IsExcludedFromCapture, root.task.isExcludedFromCapture || false)
+        readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
+            checked: roleChecked,
+            hasWindowTask: root.hasWindowTask,
+            isWindow: root.isWindow()
+        })
 
         checkable: true
         checked: actionState.checked

@@ -265,6 +265,14 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the basic action wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function newInstanceActionState|function windowCapabilityActionState|function menuActionSectionVisible|root\\.(newInstanceActionState|windowCapabilityActionState|menuActionSectionVisible)|TaskContextMenuLogic\\.(newInstanceActionState|windowCapabilityActionState|menuActionSectionVisible)" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 33: Checkable Window Action State Bindings
+
+- Status: completed.
+- What changed: declared that checkable window action menu items should consume helper output directly; removed the menu-local checkable window action-state wrapper functions; bound Minimize, Maximize, Keep Above, Keep Below, Fullscreen, Shade, No Border, and Hide from Screencasts directly to `TaskContextMenuLogic.checkableWindowCapabilityActionState(...)` or `TaskContextMenuLogic.checkableWindowActionState(...)`.
+- Behavior that must remain unchanged: checked, visible, and enabled states, menu labels, ordering, and all existing toggle command descriptors remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the checkable window action wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function checkableWindowCapabilityActionState|function checkableWindowActionState|root\\.(checkableWindowCapabilityActionState|checkableWindowActionState)|checked: root\\.boolRole|TaskContextMenuLogic\\.(checkableWindowCapabilityActionState|checkableWindowActionState)" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.
