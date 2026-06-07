@@ -172,6 +172,27 @@ assert.match(
   mainQml,
   /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*fullRepresentationItem\.taskSlotWidth/,
 );
+assert.match(mainQml, /function canMoveTaskResult\(sourceIndex, targetIndex\)/);
+assert.match(
+  mainQml,
+  /return TaskModelLogic\.canMoveTaskResult\(normalTaskEntries, sourceIndex, targetIndex, \(sourceEntry, targetEntry\) => canMovePinnedLauncher\(sourceEntry, targetEntry\)\);/,
+);
+assert.match(
+  mainQml,
+  /function canMoveTask\(sourceIndex, targetIndex\)\s*\{[\s\S]*?return canMoveTaskResult\(sourceIndex, targetIndex\)\.canMove;/,
+);
+assert.match(
+  mainQml,
+  /const moveDecision = canMoveTaskResult\(sourceIndex, targetIndex\);[\s\S]*?if \(!moveDecision\.canMove\)/,
+);
+assert.match(
+  mainQml,
+  /canDropTask:\s*\(sourceIndex, targetIndex\) => root\.canMoveTaskResult\(sourceIndex, targetIndex\)\.canMove/,
+);
+assert.doesNotMatch(
+  mainQml,
+  /canDropTask:\s*\(sourceIndex, targetIndex\) => root\.canMoveTask\(sourceIndex, targetIndex\)/,
+);
 assert.match(mainQml, /columnSpacing:\s*0/);
 assert.match(mainQml, /rowSpacing:\s*0/);
 assert.match(mainQml, /^\s*spacing:\s*0$/m);
