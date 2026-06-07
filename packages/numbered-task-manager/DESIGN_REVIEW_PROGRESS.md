@@ -785,6 +785,14 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because `taskActivityActionsSection(...)` did not exist; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `tests/taskcontextmenulogic.test.mjs`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 98: Context-Menu Launcher Activity Section Descriptor
+
+- Status: completed.
+- What changed: added `TaskContextMenuLogic.launcherActivityActionsSection(...)`; routed the Launcher Activities submenu item, All Activities entry, and per-activity entry factory through one section descriptor instead of item-local helper calls in QML.
+- Behavior that must remain unchanged: Launcher Activities submenu order, labels, checkability and checked state, visibility/enabled state, launcher update result shape, local launcher-activity refresh behavior, emitted launcher command shape, and no-op behavior remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because `launcherActivityActionsSection(...)` did not exist; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `tests/taskcontextmenulogic.test.mjs`, `package/contents/ui/TaskContextMenuLogic.js`, `package/contents/ui/TaskContextMenu.qml`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: QML-local role snapshot passthrough wrappers have been removed, activity/virtual-desktop entry construction now comes from tested helper snapshots, New Instance/Move/Resize descriptors, Minimize/Maximize descriptors, Keep Above/Below descriptors, Fullscreen/Shade/No Border descriptors, Capture/Close descriptors, Virtual Desktop descriptors, Activity descriptors, and Launcher Activity descriptors consume tested live-role snapshots, all task-model command descriptors are helper-owned, launcher pin state and Pin/Unpin action descriptors are helper-owned, launcher activity update-to-command adaptation is helper-owned, and the launcher All Activities and per-activity next-state adapters are helper-owned. Keep the remaining live-role boundary helpers (`roleIds`, `roleSource`, `taskRoles`, and the tested JS `roleData`/`boolRoleData` primitives) until a larger menu action-model or adapter extraction can preserve that boundary with less QML-local code. Remaining context-menu work is moving broader section descriptors into action-model outputs rather than item-local role reads.

@@ -605,6 +605,32 @@ function launcherActivityAction(
   };
 }
 
+function launcherActivityActionsSection(sectionState) {
+  const state = sectionState || {};
+
+  return {
+    activityAction: (activity) =>
+      launcherActivityAction(
+        state.launcherList,
+        state.launcherPosition,
+        state.launcherActivities,
+        activity,
+        state.currentActivity,
+      ),
+    allLauncherActivities: launcherAllActivitiesAction(
+      state.launcherList,
+      state.launcherPosition,
+      state.launcherActivities,
+      state.currentActivity,
+    ),
+    launcherActivities: launcherActivitiesAction(
+      state.pinState,
+      state.activityEntryCount,
+      state.hasTaskModel,
+    ),
+  };
+}
+
 function taskActivityMenuState(taskActivities, activityId) {
   const activities = Array.from(taskActivities || []);
   const allActivitiesChecked = ActivityScopeLogic.activitiesAreAll(activities);

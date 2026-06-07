@@ -71,6 +71,15 @@ PlasmaExtras.Menu {
         isWindow: taskRoles.isWindow
     })
     readonly property var pinActionsSection: TaskContextMenuLogic.pinActionsSection(launcherPinState())
+    readonly property var launcherActivityActionsSection: TaskContextMenuLogic.launcherActivityActionsSection({
+        activityEntryCount: activityEntries.length,
+        currentActivity: _activityInfo.currentActivity,
+        hasTaskModel: taskModel,
+        launcherActivities: launcherActivityList,
+        launcherList: launcherModel ? launcherModel.launcherList : [],
+        launcherPosition: launcherPosition(),
+        pinState: launcherPinState()
+    })
     readonly property var virtualDesktopRoles: TaskContextMenuLogic.virtualDesktopRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var virtualDesktopActionsSection: TaskContextMenuLogic.virtualDesktopActionsSection({
         changeable: virtualDesktopRoles.isVirtualDesktopsChangeable,
@@ -250,8 +259,7 @@ PlasmaExtras.Menu {
     PlasmaExtras.MenuItem {
         id: launcherActivitiesItem
 
-        readonly property var pinState: root.launcherPinState()
-        readonly property var actionState: TaskContextMenuLogic.launcherActivitiesAction(pinState, root.activityEntries.length, root.taskModel)
+        readonly property var actionState: root.launcherActivityActionsSection.launcherActivities
 
         enabled: actionState.enabled
         text: actionState.text
@@ -264,7 +272,7 @@ PlasmaExtras.Menu {
             visualParent: launcherActivitiesItem.action
 
             PlasmaExtras.MenuItem {
-                readonly property var actionState: TaskContextMenuLogic.launcherAllActivitiesAction(root.launcherModel ? root.launcherModel.launcherList : [], root.launcherPosition(), root.launcherActivityList, root._activityInfo.currentActivity)
+                readonly property var actionState: root.launcherActivityActionsSection.allLauncherActivities
 
                 checkable: true
                 checked: actionState.checked
@@ -288,7 +296,7 @@ PlasmaExtras.Menu {
                 delegate: PlasmaExtras.MenuItem {
                     required property var modelData
 
-                    readonly property var actionState: TaskContextMenuLogic.launcherActivityAction(root.launcherModel ? root.launcherModel.launcherList : [], root.launcherPosition(), root.launcherActivityList, modelData, root._activityInfo.currentActivity)
+                    readonly property var actionState: root.launcherActivityActionsSection.activityAction(modelData)
 
                     checkable: true
                     checked: actionState.checked
