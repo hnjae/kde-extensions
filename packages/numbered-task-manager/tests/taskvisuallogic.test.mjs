@@ -169,9 +169,29 @@ assert.match(
 );
 assert.doesNotMatch(mainQml, /count:\s*remoteAttentionSource\.count/);
 assert.doesNotMatch(mainQml, /target:\s*remoteAttentionSource\.target/);
+assert.doesNotMatch(
+  mainQml,
+  /readonly property var remoteAttentionVisibleItem:/,
+);
+assert.match(mainQml, /visibleTaskItems:\s*root\.visibleTaskItems/);
+assert.match(mainQml, /count:\s*remoteAttentionSource\.itemCount/);
+assert.match(mainQml, /iconSource:\s*remoteAttentionSource\.itemIconSource/);
+assert.match(mainQml, /modelIndex:\s*remoteAttentionSource\.itemModelIndex/);
+assert.match(mainQml, /taskData:\s*remoteAttentionSource\.itemTaskData/);
+assert.match(mainQml, /title:\s*remoteAttentionSource\.itemTitle/);
+assert.match(mainQml, /visible:\s*remoteAttentionSource\.itemVisible/);
+assert.match(mainQml, /remoteAttentionSource\.requestVisibleActivation\(\)/);
 assert.match(
   mainQml,
-  /readonly property var remoteAttentionVisibleItem:\s*VisibleTaskItemsLogic\.visibleRemoteAttentionItem\(root\.visibleTaskItems\)/,
+  /remoteAttentionSource\.requestVisibleContextMenu\(request\)/,
+);
+assert.doesNotMatch(
+  mainQml,
+  /readonly property var visibleItem:\s*root\.remoteAttentionVisibleItem/,
+);
+assert.doesNotMatch(
+  mainQml,
+  /taskActivation\.activateRemoteAttention\(root\.remoteAttentionVisibleItem\)/,
 );
 assert.match(
   mainQml,

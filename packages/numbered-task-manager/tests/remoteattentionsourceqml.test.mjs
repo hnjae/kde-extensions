@@ -53,8 +53,50 @@ assert.match(
   mainQml,
   /VisibleTaskItemsLogic\.composeVisibleTaskItems\(normalTaskEntries,\s*remoteAttentionSource\.snapshot\)/,
 );
+assert.match(mainQml, /visibleTaskItems:\s*root\.visibleTaskItems/);
+assert.match(
+  mainQml,
+  /onActivationRequested:\s*visibleItem\s*=>\s*\{[\s\S]*?taskActivation\.activateRemoteAttention\(visibleItem\);[\s\S]*?\}/,
+);
+assert.match(
+  mainQml,
+  /onContextMenuRequested:\s*request\s*=>\s*\{[\s\S]*?contextMenuAdapter\.openTaskContextMenu\(request\);[\s\S]*?\}/,
+);
 assert.doesNotMatch(mainQml, /count:\s*remoteAttentionSource\.count/);
 assert.doesNotMatch(mainQml, /target:\s*remoteAttentionSource\.target/);
+assert.doesNotMatch(
+  mainQml,
+  /readonly property var remoteAttentionVisibleItem:/,
+);
+assert.doesNotMatch(
+  mainQml,
+  /taskActivation\.activateRemoteAttention\(root\.remoteAttentionVisibleItem\)/,
+);
+assert.doesNotMatch(mainQml, /taskModel:\s*remoteAttentionSource\.taskModel/);
+assert.match(
+  sourceQml,
+  /import "VisibleTaskItemsLogic\.js" as VisibleTaskItemsLogic/,
+);
+assert.match(sourceQml, /property var visibleTaskItems/);
+assert.match(
+  sourceQml,
+  /readonly property var visibleItem:\s*VisibleTaskItemsLogic\.visibleRemoteAttentionItem\(root\.visibleTaskItems\)/,
+);
+assert.match(sourceQml, /readonly property bool itemVisible:/);
+assert.match(sourceQml, /readonly property int itemCount:/);
+assert.match(sourceQml, /readonly property var itemIconSource:/);
+assert.match(sourceQml, /readonly property var itemModelIndex:/);
+assert.match(sourceQml, /readonly property var itemTaskData:/);
+assert.match(sourceQml, /readonly property string itemTitle:/);
+assert.match(sourceQml, /signal activationRequested\(var visibleItem\)/);
+assert.match(sourceQml, /signal contextMenuRequested\(var request\)/);
+assert.match(sourceQml, /function requestVisibleActivation\(\)/);
+assert.match(sourceQml, /root\.activationRequested\(root\.visibleItem\)/);
+assert.match(sourceQml, /function requestVisibleContextMenu\(request\)/);
+assert.match(
+  sourceQml,
+  /root\.contextMenuRequested\(Object\.assign\(\{\s*taskModel:\s*root\.taskModel\s*\},\s*request\)\)/,
+);
 assert.doesNotMatch(sourceQml, /property var publishAttention:/);
 assert.doesNotMatch(sourceQml, /property var removeAttention:/);
 assert.doesNotMatch(mainQml, /property var remoteAttentionState:/);

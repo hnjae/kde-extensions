@@ -30,7 +30,7 @@ assert.match(mainQml, /taskActivation\.activateTaskAtIndex\(/);
 assert.match(mainQml, /taskActivation\.activateTaskEntry\(entry\)/);
 assert.match(
   mainQml,
-  /taskActivation\.activateRemoteAttention\(root\.remoteAttentionVisibleItem\)/,
+  /onActivationRequested:\s*visibleItem\s*=>\s*\{[\s\S]*?taskActivation\.activateRemoteAttention\(visibleItem\);[\s\S]*?\}/,
 );
 assert.match(
   mainQml,
@@ -51,6 +51,10 @@ assert.doesNotMatch(
 assert.doesNotMatch(
   mainQml,
   /TaskActionLogic\.taskActivationRequest\("activateRemoteAttention"/,
+);
+assert.doesNotMatch(
+  mainQml,
+  /taskActivation\.activateRemoteAttention\(root\.remoteAttentionVisibleItem\)/,
 );
 assert.doesNotMatch(
   mainQml,
