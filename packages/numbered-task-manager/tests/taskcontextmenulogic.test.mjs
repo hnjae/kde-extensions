@@ -12,6 +12,9 @@ const logic = loadQmlJsModule(
     "boolRoleData",
     "checkableWindowActionState",
     "checkableWindowCapabilityActionState",
+    "closeActionState",
+    "menuActionSectionVisible",
+    "newVirtualDesktopActionState",
     "launcherActivityListSnapshot",
     "launcherActivityMenuState",
     "launcherActivitiesVisible",
@@ -21,7 +24,9 @@ const logic = loadQmlJsModule(
     "roleData",
     "taskActivityMenuState",
     "taskRoleSnapshot",
+    "taskActivitiesActionState",
     "virtualDesktopMenuState",
+    "virtualDesktopsActionState",
     "windowCapabilityActionState",
   ],
 );
@@ -269,6 +274,146 @@ assert.deepEqual(
   },
 );
 assert.equal(
+  logic.menuActionSectionVisible({
+    hasWindowTask: false,
+    launcherActivitiesVisible: false,
+    newInstanceVisible: false,
+  }),
+  false,
+);
+assert.equal(
+  logic.menuActionSectionVisible({
+    hasWindowTask: true,
+    launcherActivitiesVisible: false,
+    newInstanceVisible: false,
+  }),
+  true,
+);
+assert.equal(
+  logic.menuActionSectionVisible({
+    hasWindowTask: false,
+    launcherActivitiesVisible: true,
+    newInstanceVisible: false,
+  }),
+  true,
+);
+assert.deepEqual(
+  plain(
+    logic.virtualDesktopsActionState({
+      changeable: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: true,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.virtualDesktopsActionState({
+      changeable: false,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: false,
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.virtualDesktopsActionState({
+      changeable: true,
+      hasWindowTask: false,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: false,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(logic.newVirtualDesktopActionState({ hasWindowTask: true })),
+  {
+    enabled: true,
+  },
+);
+assert.deepEqual(
+  plain(logic.newVirtualDesktopActionState({ hasWindowTask: false })),
+  {
+    enabled: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.taskActivitiesActionState({
+      activityEntryCount: 2,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: true,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.taskActivitiesActionState({
+      activityEntryCount: 1,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: true,
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.closeActionState({
+      closable: true,
+      hasTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: true,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.closeActionState({
+      closable: false,
+      hasTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: true,
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.closeActionState({
+      closable: true,
+      hasTask: false,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: false,
+    visible: true,
+  },
+);
+assert.equal(
   logic.launcherActivitiesVisible(
     { canPin: true, isPinned: true, launcherUrl: "app.desktop" },
     2,
@@ -480,7 +625,22 @@ assert.equal(
   true,
 );
 assert.equal(
+  menuQml.includes("TaskContextMenuLogic.virtualDesktopsActionState"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.taskActivitiesActionState"),
+  true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.closeActionState"), true);
+assert.equal(
   /checked: root\.boolRole\(root\.atm\.(?:IsKeepAbove|IsKeepBelow|IsFullScreen|IsShaded|HasNoBorder|IsExcludedFromCapture)\b/.test(
+    menuQml,
+  ),
+  false,
+);
+assert.equal(
+  /(?:enabled|visible): root\.(?:hasTask|hasWindowTask|isWindow\(\))/.test(
     menuQml,
   ),
   false,
