@@ -614,6 +614,7 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopMenuState"),
   true,
 );
+assert.equal(menuQml.includes("function virtualDesktopMenuState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.newInstanceActionState"),
   true,
