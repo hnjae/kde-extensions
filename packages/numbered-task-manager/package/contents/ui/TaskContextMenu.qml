@@ -586,7 +586,7 @@ PlasmaExtras.Menu {
                 text: "All Activities"
 
                 onClicked: {
-                    root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestActivities", []));
+                    root.requestTaskModelCommand(TaskContextMenuLogic.allTaskActivitiesCommand());
                 }
             }
 

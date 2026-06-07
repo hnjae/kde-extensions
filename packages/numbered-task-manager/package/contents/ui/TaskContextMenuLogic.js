@@ -122,6 +122,10 @@ function closeCommand() {
   return contextMenuTaskCommand("requestClose");
 }
 
+function allTaskActivitiesCommand() {
+  return contextMenuTaskCommand("requestActivities", []);
+}
+
 function windowCapabilityActionState(taskState) {
   const state = taskState || {};
   const capable = Boolean(state.capable);

@@ -283,7 +283,7 @@ assert.deepEqual(plain(logic.closeCommand()), {
   requestMethod: "requestClose",
 });
 assert.deepEqual(plain(logic.allTaskActivitiesCommand()), {
-  arguments: [],
+  arguments: [[]],
   kind: "task-model-request",
   requestMethod: "requestActivities",
 });
