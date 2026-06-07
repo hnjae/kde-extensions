@@ -8,13 +8,13 @@
 - P0: none identified in `DESIGN_REVIEW_CORRECT_END_STATE.md`.
 - P1: competing pin-state ownership; no single visible-order, slot-numbering, and `Meta+0` owner; root-level task-manager controller state in `main.qml`; context-menu policy inside `TaskContextMenu.qml`; launcher sync without failure-safe semantics; user actions failing as silent no-ops; hidden delegate publication flow; remote attention state spread through root.
 
-## Checkpoint 1: Visible Item Composer
+## Completed Checkpoint 1: Visible Item Composer
 
-- Status: in progress.
+- Status: completed.
 - What will change: add a tested visible-item composer that owns final visible item order, normal slot numbers, item source metadata, visible count, and shortcut target selection.
 - Behavior that must remain unchanged: normal task entries render before the remote-attention item; remote attention remains a single far-right item when present; slots 1 through 9 keep their current labels; tasks after slot 9 remain unnumbered; `Meta+0` targets the final visible item; the remote-attention item remains unbadged.
-- Verification: host JS tests for no tasks, fewer than nine tasks, more than nine tasks, `Meta+0` without remote attention, and `Meta+0` with remote attention; relevant lint/check commands after implementation.
-- Likely files: `docs/architecture/ARCHITECTURE.md`, `DESIGN_REVIEW_PROGRESS.md`, `package/contents/ui/VisibleTaskItemsLogic.js`, `package/contents/ui/main.qml`, `tests/visibletaskitemslogic.test.mjs`, and source-regex tests that currently assert old root-owned policy.
+- Verification: `node tests/visibletaskitemslogic.test.mjs`; `node tests/taskvisuallogic.test.mjs`; `just test-host`; `just lint-js-host`; `just test`; `just lint-qml`; `just check`.
+- Files changed: `package/contents/ui/VisibleTaskItemsLogic.js`, `package/contents/ui/main.qml`, `tests/visibletaskitemslogic.test.mjs`, `tests/taskvisuallogic.test.mjs`, `docs/architecture/ARCHITECTURE.md`, and `DESIGN_REVIEW_PROGRESS.md`.
 
 ## Remaining Follow-Up Work
 

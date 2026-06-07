@@ -162,10 +162,7 @@ assert.match(
   mainQml,
   /width:\s*root\.vertical\s*\?\s*taskList\.width\s*:\s*fullRepresentationItem\.taskSlotWidth/,
 );
-assert.match(
-  mainQml,
-  /visibleItemCount:\s*root\.normalTaskEntries\.length \+ \(attentionItem\.visible \? 1 : 0\)/,
-);
+assert.match(mainQml, /visibleItemCount:\s*root\.visibleTaskItems\.length/);
 assert.match(
   mainQml,
   /slotWidth:\s*root\.vertical\s*\?\s*0\s*:\s*fullRepresentationItem\.taskSlotWidth/,

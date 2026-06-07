@@ -15,6 +15,7 @@ import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskModelLogic.js" as TaskModelLogic
+import "VisibleTaskItemsLogic.js" as VisibleTaskItemsLogic
 
 PlasmoidItem {
     id: root
@@ -30,6 +31,10 @@ PlasmoidItem {
     property var remoteAttentionEntryMap: ({})
     property var remoteAttentionOrder: []
     property var remoteAttentionTarget: null
+    readonly property var visibleTaskItems: VisibleTaskItemsLogic.composeVisibleTaskItems(normalTaskEntries, {
+        count: remoteAttentionCount,
+        target: remoteAttentionTarget
+    })
     property int launcherRevision: 0
     property bool updatingLauncherConfig: false
 
@@ -42,27 +47,17 @@ PlasmoidItem {
     QtQuickLayouts.Layout.fillHeight: true
 
     function activateTaskAtIndex(index) {
-        if (index === 9 && remoteAttentionTarget) {
+        const targetItem = VisibleTaskItemsLogic.activationTargetForShortcutIndex(visibleTaskItems, index);
+        if (!targetItem) {
+            return;
+        }
+
+        if (targetItem.kind === "remoteAttention") {
             activateRemoteAttention();
             return;
         }
 
-        const taskCount = normalTaskEntries.length;
-        if (taskCount <= 0) {
-            return;
-        }
-
-        const targetIndex = index === 9 ? taskCount - 1 : index;
-        if (targetIndex < 0 || targetIndex >= taskCount) {
-            return;
-        }
-
-        const targetTask = normalTaskEntries[targetIndex];
-        if (!targetTask || !TaskEntryLogic.hasValidModelIndex(targetTask.modelIndex)) {
-            return;
-        }
-
-        tasksModel.requestActivate(targetTask.modelIndex);
+        activateTaskEntry(targetItem.entry);
     }
 
     function activateTaskEntry(task) {
@@ -486,7 +481,7 @@ PlasmoidItem {
         readonly property int taskExtent: 40
         readonly property int titleVisibilityThreshold: 96
         readonly property real minimumReadableSlotWidth: taskExtent + 2 * Kirigami.Units.smallSpacing
-        readonly property int visibleItemCount: root.normalTaskEntries.length + (attentionItem.visible ? 1 : 0)
+        readonly property int visibleItemCount: root.visibleTaskItems.length
         readonly property real taskSlotWidth: root.vertical ? taskExtent : TaskMetricsLogic.taskSlotWidth(width, visibleItemCount, minimumReadableSlotWidth, 220)
         readonly property real attentionLongExtent: attentionItem.visible ? (root.vertical ? attentionItem.implicitHeight + taskLayout.rowSpacing : attentionItem.implicitWidth + taskLayout.columnSpacing) : 0
 
@@ -529,13 +524,14 @@ PlasmoidItem {
                     required property var modelData
 
                     readonly property var entry: modelData || ({})
+                    readonly property var visibleItem: VisibleTaskItemsLogic.visibleItemForNormalIndex(root.visibleTaskItems, index) || ({})
 
                     height: root.vertical ? implicitHeight : taskList.height
                     width: root.vertical ? taskList.width : fullRepresentationItem.taskSlotWidth
                     slotWidth: root.vertical ? 0 : fullRepresentationItem.taskSlotWidth
                     taskIndex: entry.moveIndex ?? entry.sourceIndex ?? -1
                     modelIndex: entry.modelIndex
-                    slotNumber: index < 9 ? index + 1 : 0
+                    slotNumber: visibleItem.slotNumber || 0
                     title: entry.title || ""
                     showTitle: !(entry.launcherBacked && entry.isLauncher)
                     titleVisibilityThreshold: fullRepresentationItem.titleVisibilityThreshold
