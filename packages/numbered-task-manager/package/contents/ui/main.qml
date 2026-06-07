@@ -46,7 +46,7 @@ PlasmoidItem {
             return;
         }
 
-        requestActivation(result);
+        taskActivation.requestActivation(result);
     }
 
     function activateTaskEntry(task) {
@@ -59,16 +59,7 @@ PlasmoidItem {
             return;
         }
 
-        requestActivation(result);
-    }
-
-    function requestActivation(result) {
-        if (result.sourceModel === "remoteAttention") {
-            remoteAttentionSource.requestActivate(result.modelIndex);
-            return;
-        }
-
-        tasksModel.requestActivate(result.modelIndex);
+        taskActivation.requestActivation(result);
     }
 
     function logActionResult(result) {
@@ -245,7 +236,7 @@ PlasmoidItem {
             return;
         }
 
-        requestActivation(result);
+        taskActivation.requestActivation(result);
     }
 
     function openTaskContextMenu(request) {
@@ -305,6 +296,13 @@ PlasmoidItem {
         id: launcherSync
 
         configuration: Plasmoid.configuration
+        taskModel: tasksModel
+    }
+
+    TaskActivationAdapter {
+        id: taskActivation
+
+        remoteAttentionSource: remoteAttentionSource
         taskModel: tasksModel
     }
 
