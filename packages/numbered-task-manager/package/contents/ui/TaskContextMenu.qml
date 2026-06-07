@@ -20,7 +20,8 @@ PlasmaExtras.Menu {
 
     readonly property var atm: TaskManager.AbstractTasksModel
     readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(modelIndex)
-    readonly property bool hasWindowTask: hasTask && roleSnapshot().isWindow
+    readonly property var taskRoles: TaskContextMenuLogic.taskRoleSnapshot(roleSource(), roleIds(), task)
+    readonly property bool hasWindowTask: hasTask && taskRoles.isWindow
     readonly property var basicActionRoles: TaskContextMenuLogic.basicActionRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var captureCloseRoles: TaskContextMenuLogic.captureCloseRoleSnapshot(roleSource(), roleIds(), task)
     readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
@@ -108,10 +109,6 @@ PlasmaExtras.Menu {
         };
     }
 
-    function roleSnapshot() {
-        return TaskContextMenuLogic.taskRoleSnapshot(roleSource(), roleIds(), task);
-    }
-
     function roleSource() {
         return {
             hasTask: hasTask,
@@ -121,7 +118,7 @@ PlasmaExtras.Menu {
     }
 
     function launcherPinState() {
-        const url = roleSnapshot().launcherUrl;
+        const url = taskRoles.launcherUrl;
         return LauncherListLogic.launcherPinState(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
@@ -130,7 +127,7 @@ PlasmaExtras.Menu {
     }
 
     function refreshLauncherActivities() {
-        const url = roleSnapshot().launcherUrl;
+        const url = taskRoles.launcherUrl;
         if (!launcherModel || !url) {
             launcherActivityList = [];
             return;
@@ -144,11 +141,11 @@ PlasmaExtras.Menu {
             return;
         }
 
-        requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestActivities", TaskActivityLogic.taskActivitiesAfterToggle(roleSnapshot().activities, activityId)));
+        requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestActivities", TaskActivityLogic.taskActivitiesAfterToggle(taskRoles.activities, activityId)));
     }
 
     function launcherPosition() {
-        const url = roleSnapshot().launcherUrl;
+        const url = taskRoles.launcherUrl;
         if (!launcherModel || !url) {
             return -1;
         }
@@ -173,7 +170,7 @@ PlasmaExtras.Menu {
     }
 
     function setLauncherAllActivities() {
-        const url = roleSnapshot().launcherUrl;
+        const url = taskRoles.launcherUrl;
         if (!launcherModel || !url) {
             return;
         }
@@ -186,7 +183,7 @@ PlasmaExtras.Menu {
     }
 
     function toggleLauncherActivity(activityId) {
-        const url = roleSnapshot().launcherUrl;
+        const url = taskRoles.launcherUrl;
         if (!launcherModel || !url) {
             return;
         }
@@ -317,7 +314,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.windowCapabilityActionState({
             capable: root.basicActionRoles.isMovable,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         enabled: actionState.enabled
@@ -333,7 +330,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.windowCapabilityActionState({
             capable: root.basicActionRoles.isResizable,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         enabled: actionState.enabled
@@ -350,7 +347,7 @@ PlasmaExtras.Menu {
             capable: root.minimizeMaximizeRoles.isMinimizable,
             checked: root.minimizeMaximizeRoles.isMinimized,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         checkable: true
@@ -369,7 +366,7 @@ PlasmaExtras.Menu {
             capable: root.minimizeMaximizeRoles.isMaximizable,
             checked: root.minimizeMaximizeRoles.isMaximized,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         checkable: true
@@ -387,7 +384,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
             checked: root.keepAboveBelowRoles.isKeepAbove,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         checkable: true
@@ -405,7 +402,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
             checked: root.keepAboveBelowRoles.isKeepBelow,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         checkable: true
@@ -424,7 +421,7 @@ PlasmaExtras.Menu {
             capable: root.fullscreenShadeBorderRoles.fullScreenable,
             checked: root.fullscreenShadeBorderRoles.isFullScreen,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         checkable: true
@@ -443,7 +440,7 @@ PlasmaExtras.Menu {
             capable: root.fullscreenShadeBorderRoles.isShadeable,
             checked: root.fullscreenShadeBorderRoles.isShaded,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         checkable: true
@@ -462,7 +459,7 @@ PlasmaExtras.Menu {
             capable: root.fullscreenShadeBorderRoles.canSetNoBorder,
             checked: root.fullscreenShadeBorderRoles.hasNoBorder,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         checkable: true
@@ -480,7 +477,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
             checked: root.captureCloseRoles.isExcludedFromCapture,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         checkable: true
@@ -499,7 +496,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.virtualDesktopsActionState({
             changeable: root.virtualDesktopRoles.isVirtualDesktopsChangeable,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         enabled: actionState.enabled
@@ -513,7 +510,7 @@ PlasmaExtras.Menu {
             visualParent: virtualDesktopsItem.action
 
             PlasmaExtras.MenuItem {
-                readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.roleSnapshot().virtualDesktops, root.virtualDesktopRoles.isOnAllVirtualDesktops, "")
+                readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.taskRoles.virtualDesktops, root.virtualDesktopRoles.isOnAllVirtualDesktops, "")
 
                 checkable: true
                 checked: desktopState.allDesktopsChecked
@@ -531,7 +528,7 @@ PlasmaExtras.Menu {
                 delegate: PlasmaExtras.MenuItem {
                     required property var modelData
 
-                    readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.roleSnapshot().virtualDesktops, root.virtualDesktopRoles.isOnAllVirtualDesktops, modelData.id)
+                    readonly property var desktopState: TaskContextMenuLogic.virtualDesktopMenuState(root.taskRoles.virtualDesktops, root.virtualDesktopRoles.isOnAllVirtualDesktops, modelData.id)
 
                     checkable: true
                     checked: desktopState.desktopChecked
@@ -571,7 +568,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.taskActivitiesActionState({
             activityEntryCount: root.activityEntries.length,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         enabled: actionState.enabled
@@ -586,7 +583,7 @@ PlasmaExtras.Menu {
 
             PlasmaExtras.MenuItem {
                 checkable: true
-                checked: TaskContextMenuLogic.taskActivityMenuState(root.roleSnapshot().activities, "").allActivitiesChecked
+                checked: TaskContextMenuLogic.taskActivityMenuState(root.taskRoles.activities, "").allActivitiesChecked
                 text: "All Activities"
 
                 onClicked: {
@@ -602,7 +599,7 @@ PlasmaExtras.Menu {
                     required property var modelData
 
                     checkable: true
-                    checked: TaskContextMenuLogic.taskActivityMenuState(root.roleSnapshot().activities, modelData.id).activityChecked
+                    checked: TaskContextMenuLogic.taskActivityMenuState(root.taskRoles.activities, modelData.id).activityChecked
                     text: modelData.name
 
                     onClicked: {
@@ -631,7 +628,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.closeActionState({
             closable: root.captureCloseRoles.closable,
             hasTask: root.hasTask,
-            isWindow: root.roleSnapshot().isWindow
+            isWindow: root.taskRoles.isWindow
         })
 
         enabled: actionState.enabled
