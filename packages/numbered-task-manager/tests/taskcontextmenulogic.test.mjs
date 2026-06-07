@@ -40,6 +40,7 @@ const logic = loadQmlJsModule(
     "newVirtualDesktopCommand",
     "newVirtualDesktopActionState",
     "launcherActivityListSnapshot",
+    "launcherActivityActionsSection",
     "launcherActivityMenuState",
     "launcherActivityUpdateCommand",
     "launcherActivityAction",
@@ -1555,6 +1556,73 @@ assert.deepEqual(
     },
   },
 );
+{
+  const launcherActivitySection = logic.launcherActivityActionsSection({
+    activityEntryCount: 2,
+    currentActivity: "work",
+    hasTaskModel: true,
+    launcherActivities: [nullActivityId],
+    launcherList: ["one.desktop", "two.desktop"],
+    launcherPosition: 1,
+    pinState: {
+      canPin: true,
+      isPinned: true,
+      launcherUrl: "app.desktop",
+    },
+  });
+  assert.equal(typeof launcherActivitySection.activityAction, "function");
+  assert.deepEqual(
+    plain({
+      allLauncherActivities: launcherActivitySection.allLauncherActivities,
+      launcherActivities: launcherActivitySection.launcherActivities,
+      launcherActivity: launcherActivitySection.activityAction({
+        id: "chat",
+        name: "Chat",
+      }),
+    }),
+    {
+      allLauncherActivities: {
+        checked: true,
+        text: "All Activities",
+        update: {
+          activities: ["work"],
+          changed: true,
+          command: {
+            action: "replaceLauncherList",
+            kind: "launcher-command",
+            launcherUrl: "",
+            launchers: ["one.desktop", "[work]\ntwo.desktop"],
+          },
+          launchers: ["one.desktop", "[work]\ntwo.desktop"],
+          ok: true,
+          reason: "updated",
+        },
+      },
+      launcherActivities: {
+        enabled: true,
+        text: "Launcher Activities",
+        visible: true,
+      },
+      launcherActivity: {
+        checked: true,
+        text: "Chat",
+        update: {
+          activities: ["chat"],
+          changed: true,
+          command: {
+            action: "replaceLauncherList",
+            kind: "launcher-command",
+            launcherUrl: "",
+            launchers: ["one.desktop", "[chat]\ntwo.desktop"],
+          },
+          launchers: ["one.desktop", "[chat]\ntwo.desktop"],
+          ok: true,
+          reason: "updated",
+        },
+      },
+    },
+  );
+}
 assert.deepEqual(
   plain(
     logic.launcherActivityUpdateCommand(["one.desktop", "two.desktop"], 1, [
@@ -2401,16 +2469,20 @@ assert.equal(
   false,
 );
 assert.equal(
-  menuQml.includes("TaskContextMenuLogic.launcherActivitiesAction("),
+  menuQml.includes("TaskContextMenuLogic.launcherActivityActionsSection({"),
   true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.launcherActivitiesAction("),
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherAllActivitiesAction("),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivityAction("),
-  true,
+  false,
 );
 assert.equal(menuQml.includes('text: "Launcher Activities"'), false);
 assert.equal(menuQml.includes('text: "All Activities"'), false);
