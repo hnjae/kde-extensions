@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+Qt.include("ActivityScopeLogic.js");
+
 function panelMenuPlacement(location, plasmaCoreTypes, plasmaMenu) {
   if (location === plasmaCoreTypes.LeftEdge) {
     return plasmaMenu.RightPosedTopAlignedPopup;
@@ -34,6 +36,23 @@ function launcherActivitiesVisible(pinState, activityEntryCount) {
   return Boolean(
     state.canPin && state.isPinned && state.launcherUrl && count > 1,
   );
+}
+
+function launcherActivityListSnapshot(launcherActivities) {
+  return ActivityScopeLogic.normalizedActivityList(launcherActivities);
+}
+
+function launcherActivityMenuState(launcherActivities, activityId) {
+  const activities = launcherActivityListSnapshot(launcherActivities);
+  const allActivitiesChecked = ActivityScopeLogic.activitiesAreAll(activities);
+
+  return {
+    activities,
+    activityChecked:
+      allActivitiesChecked ||
+      ActivityScopeLogic.stringListContains(activities, activityId),
+    allActivitiesChecked,
+  };
 }
 
 function roleData(roleSource, role, fallback) {

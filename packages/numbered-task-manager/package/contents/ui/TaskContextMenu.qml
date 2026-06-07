@@ -131,7 +131,7 @@ PlasmaExtras.Menu {
             return;
         }
 
-        launcherActivityList = Array.from(launcherModel.launcherActivities(url) || []);
+        launcherActivityList = TaskContextMenuLogic.launcherActivityListSnapshot(launcherModel.launcherActivities(url));
     }
 
     function stringListContains(list, value) {
@@ -155,11 +155,15 @@ PlasmaExtras.Menu {
     }
 
     function launcherPinnedToAllActivities() {
-        return stringListContains(launcherActivityList, TaskActivityLogic.allActivitiesId());
+        return launcherActivityMenuState("").allActivitiesChecked;
     }
 
     function launcherPinnedToActivity(activityId) {
-        return launcherPinnedToAllActivities() || stringListContains(launcherActivityList, activityId);
+        return launcherActivityMenuState(activityId).activityChecked;
+    }
+
+    function launcherActivityMenuState(activityId) {
+        return TaskContextMenuLogic.launcherActivityMenuState(launcherActivityList, activityId);
     }
 
     function launcherPosition() {
