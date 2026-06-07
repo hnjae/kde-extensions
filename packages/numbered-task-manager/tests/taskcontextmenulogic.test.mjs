@@ -19,6 +19,7 @@ const logic = loadQmlJsModule(
     "allVirtualDesktopsCommand",
     "fullscreenShadeBorderRoleSnapshot",
     "menuActionSectionVisible",
+    "moveCommand",
     "newVirtualDesktopCommand",
     "newVirtualDesktopActionState",
     "launcherActivityListSnapshot",
@@ -26,10 +27,12 @@ const logic = loadQmlJsModule(
     "launcherActivitiesVisible",
     "keepAboveBelowRoleSnapshot",
     "minimizeMaximizeRoleSnapshot",
+    "newInstanceCommand",
     "newInstanceActionState",
     "panelMenuPlacement",
     "pinActionState",
     "roleData",
+    "resizeCommand",
     "taskActivityMenuState",
     "taskActivityToggleCommand",
     "taskRoleSnapshot",
@@ -209,6 +212,21 @@ assert.deepEqual(
     visible: false,
   },
 );
+assert.deepEqual(plain(logic.newInstanceCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestNewInstance",
+});
+assert.deepEqual(plain(logic.moveCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestMove",
+});
+assert.deepEqual(plain(logic.resizeCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestResize",
+});
 assert.deepEqual(
   plain(
     logic.windowCapabilityActionState({
@@ -1114,6 +1132,23 @@ assert.equal(menuQml.includes("function virtualDesktopMenuState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.newInstanceActionState"),
   true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.newInstanceCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.moveCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.resizeCommand"), true);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuTaskCommand("requestNewInstance"',
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes('TaskActionLogic.contextMenuTaskCommand("requestMove"'),
+  false,
+);
+assert.equal(
+  menuQml.includes('TaskActionLogic.contextMenuTaskCommand("requestResize"'),
+  false,
 );
 assert.equal(menuQml.includes("function newInstanceActionState"), false);
 assert.equal(
