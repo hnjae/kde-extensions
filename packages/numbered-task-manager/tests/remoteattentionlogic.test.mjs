@@ -5,14 +5,6 @@ import assert from "node:assert/strict";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const taskEntryLogic = loadQmlJsModule(
-  new URL("../package/contents/ui/TaskEntryLogic.js", import.meta.url),
-  [
-    "createBaseTaskEntry",
-    "isRemoteVirtualDesktop",
-    "remoteAttentionIconFallback",
-  ],
-);
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/RemoteAttentionLogic.js", import.meta.url),
   [
@@ -30,14 +22,12 @@ const logic = loadQmlJsModule(
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const createRemoteAttentionEntry = (roles) =>
-  logic.createRemoteAttentionEntry(roles, taskEntryLogic);
+  logic.createRemoteAttentionEntry(roles);
 const qualifiesRemoteAttention = (task, isInCurrentActivity, currentDesktop) =>
-  logic.qualifiesRemoteAttention(
-    task,
-    isInCurrentActivity,
-    currentDesktop,
-    taskEntryLogic,
-  );
+  logic.qualifiesRemoteAttention(task, isInCurrentActivity, currentDesktop);
+
+assert.equal(logic.createRemoteAttentionEntry.length, 1);
+assert.equal(logic.qualifiesRemoteAttention.length, 3);
 
 const modelIndex = { valid: true };
 const remoteTask = createRemoteAttentionEntry({
