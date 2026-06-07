@@ -11,11 +11,17 @@ function normalTaskStoreManualOrder(store) {
   return Array.from(store?.manualOrder || []);
 }
 
+function normalTaskStoreNextPublicationId(store) {
+  const numericId = Number(store?.nextPublicationId || 0);
+  return Number.isFinite(numericId) ? numericId : 0;
+}
+
 function createNormalTaskStore() {
   return {
     entries: [],
     entryMap: {},
     manualOrder: [],
+    nextPublicationId: 0,
   };
 }
 
@@ -25,6 +31,22 @@ function createNormalTaskPublicationKey(nextPublicationId) {
   return {
     key: `normal:${nextId.toString()}`,
     nextPublicationId: nextId,
+  };
+}
+
+function allocateNormalTaskPublication(store) {
+  const publication = createNormalTaskPublicationKey(
+    normalTaskStoreNextPublicationId(store),
+  );
+
+  return {
+    key: publication.key,
+    store: {
+      entries: Array.from(store?.entries || []),
+      entryMap: normalTaskStoreEntryMap(store),
+      manualOrder: normalTaskStoreManualOrder(store),
+      nextPublicationId: publication.nextPublicationId,
+    },
   };
 }
 
@@ -40,6 +62,7 @@ function recomputeNormalTaskStore(store, visibleLauncherPosition) {
     entries: result.entries,
     entryMap,
     manualOrder: result.manualOrder,
+    nextPublicationId: normalTaskStoreNextPublicationId(store),
   };
 }
 
@@ -54,6 +77,7 @@ function removeNormalTask(store, key, visibleLauncherPosition) {
     {
       entryMap,
       manualOrder: normalTaskStoreManualOrder(store),
+      nextPublicationId: normalTaskStoreNextPublicationId(store),
     },
     visibleLauncherPosition,
   );
@@ -76,6 +100,7 @@ function publishNormalTask(
     {
       entryMap,
       manualOrder: normalTaskStoreManualOrder(store),
+      nextPublicationId: normalTaskStoreNextPublicationId(store),
     },
     visibleLauncherPosition,
   );

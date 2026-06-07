@@ -24,10 +24,8 @@ PlasmoidItem {
 
     readonly property string taskDragMimeType: "application/x-numbered-task-manager-row"
     readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
-    property var normalTaskEntries: []
-    property var normalTaskEntryMap: ({})
-    property var normalTaskManualOrder: []
-    property int nextNormalTaskPublicationId: 0
+    property var normalTaskStoreState: NormalTaskStoreLogic.createNormalTaskStore()
+    readonly property var normalTaskEntries: normalTaskStoreState.entries || []
     property int remoteAttentionCount: 0
     property var remoteAttentionEntries: []
     property var remoteAttentionEntryMap: ({})
@@ -184,7 +182,9 @@ PlasmoidItem {
             return false;
         }
 
-        normalTaskManualOrder = result.order;
+        normalTaskStoreState = Object.assign({}, normalTaskStoreState, {
+            manualOrder: result.order
+        });
         recomputeNormalTaskEntries();
         return true;
     }
@@ -211,8 +211,8 @@ PlasmoidItem {
     }
 
     function createNormalTaskPublicationKey() {
-        const publication = NormalTaskStoreLogic.createNormalTaskPublicationKey(nextNormalTaskPublicationId);
-        nextNormalTaskPublicationId = publication.nextPublicationId;
+        const publication = NormalTaskStoreLogic.allocateNormalTaskPublication(normalTaskStoreState);
+        normalTaskStoreState = publication.store;
         return publication.key;
     }
 
@@ -234,7 +234,7 @@ PlasmoidItem {
     }
 
     function publishNormalTask(key, qualifies, task) {
-        const store = normalTaskStore();
+        const store = normalTaskStoreState;
         const nextStore = NormalTaskStoreLogic.publishNormalTask(store, key, qualifies, task, launcherUrl => visibleLauncherPosition(launcherUrl));
         if (nextStore !== store) {
             applyNormalTaskStore(nextStore);
@@ -242,29 +242,19 @@ PlasmoidItem {
     }
 
     function removeNormalTask(key) {
-        const store = normalTaskStore();
+        const store = normalTaskStoreState;
         const nextStore = NormalTaskStoreLogic.removeNormalTask(store, key, launcherUrl => visibleLauncherPosition(launcherUrl));
         if (nextStore !== store) {
             applyNormalTaskStore(nextStore);
         }
     }
 
-    function normalTaskStore() {
-        return {
-            entries: normalTaskEntries,
-            entryMap: normalTaskEntryMap,
-            manualOrder: normalTaskManualOrder
-        };
-    }
-
     function applyNormalTaskStore(store) {
-        normalTaskEntryMap = store.entryMap;
-        normalTaskManualOrder = store.manualOrder;
-        normalTaskEntries = store.entries;
+        normalTaskStoreState = store;
     }
 
     function recomputeNormalTaskEntries() {
-        applyNormalTaskStore(NormalTaskStoreLogic.recomputeNormalTaskStore(normalTaskStore(), launcherUrl => visibleLauncherPosition(launcherUrl)));
+        applyNormalTaskStore(NormalTaskStoreLogic.recomputeNormalTaskStore(normalTaskStoreState, launcherUrl => visibleLauncherPosition(launcherUrl)));
     }
 
     function remoteAttentionKey(winIds, launcherUrl, title, row) {
