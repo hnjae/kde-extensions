@@ -683,6 +683,26 @@ assert.equal(mainQml.includes("pinRequested.connect"), false);
 assert.equal(mainQml.includes("unpinRequested.connect"), false);
 assert.equal(mainQml.includes("launcherListChangeRequested.connect"), false);
 
+const sourceFiles = [
+  "../package/contents/ui/AttentionItem.qml",
+  "../package/contents/ui/NormalTaskSource.qml",
+  "../package/contents/ui/RemoteAttentionLogic.js",
+  "../package/contents/ui/RemoteAttentionSource.qml",
+  "../package/contents/ui/TaskContextMenuLogic.js",
+  "../package/contents/ui/TaskItem.qml",
+  "../package/contents/ui/TaskModelLogic.js",
+  "../package/contents/ui/main.qml",
+];
+for (const sourceFile of sourceFiles) {
+  const sourceText = readFileSync(new URL(sourceFile, import.meta.url), "utf8");
+  assert.equal(
+    sourceText.includes("LauncherUrlWithoutIcon || model.LauncherUrl"),
+    false,
+  );
+  assert.equal(sourceText.includes('"application-x-executable"'), false);
+  assert.equal(sourceText.includes('"dialog-warning"'), false);
+}
+
 function directMenuContentObjectViolations(qml) {
   const violations = [];
   const menuStack = [];

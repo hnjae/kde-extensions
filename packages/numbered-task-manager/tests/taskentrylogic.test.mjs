@@ -15,7 +15,10 @@ const logic = loadQmlJsModule(
     "hasValidModelIndex",
     "isOnCurrentVirtualDesktop",
     "isRemoteVirtualDesktop",
+    "launcherUrlFromRoles",
+    "normalTaskIconFallback",
     "numberValue",
+    "remoteAttentionIconFallback",
     "stringValue",
     "taskIconSource",
     "taskTitle",
@@ -68,6 +71,16 @@ assert.equal(logic.numberValue("5", -1), 5);
 assert.equal(logic.numberValue("not-a-number", -1), -1);
 assert.equal(logic.taskTitle("", "Fallback App"), "Fallback App");
 assert.equal(logic.taskIconSource("", "fallback-icon"), "fallback-icon");
+assert.equal(
+  logic.launcherUrlFromRoles("without-icon.desktop", "with-icon.desktop"),
+  "without-icon.desktop",
+);
+assert.equal(
+  logic.launcherUrlFromRoles("", "with-icon.desktop"),
+  "with-icon.desktop",
+);
+assert.equal(logic.normalTaskIconFallback(), "application-x-executable");
+assert.equal(logic.remoteAttentionIconFallback(), "dialog-warning");
 
 const modelIndex = { valid: true };
 const baseTask = logic.createBaseTaskEntry(
