@@ -40,8 +40,10 @@ const logic = loadQmlJsModule(
     "keepAboveBelowRoleSnapshot",
     "keepBelowCommand",
     "maximizeCommand",
+    "maximizeAction",
     "minimizeMaximizeRoleSnapshot",
     "minimizeCommand",
+    "minimizeAction",
     "newInstanceAction",
     "newInstanceCommand",
     "newInstanceActionState",
@@ -477,6 +479,48 @@ assert.deepEqual(plain(logic.maximizeCommand()), {
   kind: "task-model-request",
   requestMethod: "requestToggleMaximized",
 });
+assert.deepEqual(
+  plain(
+    logic.minimizeAction({
+      capable: true,
+      checked: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: true,
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestToggleMinimized",
+    },
+    enabled: true,
+    text: "Minimize",
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.maximizeAction({
+      capable: false,
+      checked: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: true,
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestToggleMaximized",
+    },
+    enabled: false,
+    text: "Maximize",
+    visible: false,
+  },
+);
 assert.deepEqual(plain(logic.keepAboveCommand()), {
   arguments: [],
   kind: "task-model-request",
@@ -1802,8 +1846,12 @@ assert.equal(
   ),
   false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.minimizeCommand"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.maximizeCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.minimizeAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.maximizeAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.minimizeCommand"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.maximizeCommand"), false);
+assert.equal(menuQml.includes('text: "Minimize"'), false);
+assert.equal(menuQml.includes('text: "Maximize"'), false);
 assert.equal(
   menuQml.includes(
     'TaskActionLogic.contextMenuTaskCommand("requestToggleMinimized"',
