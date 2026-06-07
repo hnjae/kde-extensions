@@ -109,7 +109,7 @@ assert.match(
 assert.match(taskItemQml, /visible:\s*root\.titleVisible/);
 assert.match(
   taskItemQml,
-  /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible && !root\.pinnedLauncherOnly/,
+  /fill:\s*!root\.titleVisible && !root\.pinnedLauncherOnly/,
 );
 assert.match(
   taskItemQml,
