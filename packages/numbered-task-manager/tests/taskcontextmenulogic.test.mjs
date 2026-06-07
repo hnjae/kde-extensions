@@ -22,6 +22,7 @@ const logic = loadQmlJsModule(
     "basicMoveAction",
     "basicResizeAction",
     "excludeFromCaptureCommand",
+    "fullscreenAction",
     "fullscreenCommand",
     "fullscreenShadeBorderRoleSnapshot",
     "menuActionSectionVisible",
@@ -49,6 +50,7 @@ const logic = loadQmlJsModule(
     "newInstanceAction",
     "newInstanceCommand",
     "newInstanceActionState",
+    "noBorderAction",
     "noBorderCommand",
     "panelMenuPlacement",
     "pinActionState",
@@ -57,6 +59,7 @@ const logic = loadQmlJsModule(
     "replaceLauncherListCommand",
     "roleData",
     "resizeCommand",
+    "shadeAction",
     "shadeCommand",
     "taskActivityMenuState",
     "taskActivityToggleCommand",
@@ -588,6 +591,69 @@ assert.deepEqual(plain(logic.noBorderCommand()), {
   kind: "task-model-request",
   requestMethod: "requestToggleNoBorder",
 });
+assert.deepEqual(
+  plain(
+    logic.fullscreenAction({
+      capable: true,
+      checked: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: true,
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestToggleFullScreen",
+    },
+    enabled: true,
+    text: "Fullscreen",
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.shadeAction({
+      capable: false,
+      checked: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: true,
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestToggleShaded",
+    },
+    enabled: false,
+    text: "Shade",
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.noBorderAction({
+      capable: true,
+      checked: false,
+      hasWindowTask: false,
+      isWindow: true,
+    }),
+  ),
+  {
+    checked: false,
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestToggleNoBorder",
+    },
+    enabled: false,
+    text: "No Border",
+    visible: true,
+  },
+);
 assert.deepEqual(plain(logic.excludeFromCaptureCommand()), {
   arguments: [],
   kind: "task-model-request",
@@ -1865,11 +1931,17 @@ assert.equal(menuQml.includes("function windowCapabilityActionState"), false);
 assert.equal(menuQml.includes("function menuActionSectionVisible"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.checkableWindowCapabilityActionState"),
-  true,
+  false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.fullscreenCommand"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.shadeCommand"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.noBorderCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.fullscreenAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.shadeAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.noBorderAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.fullscreenCommand"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.shadeCommand"), false);
+assert.equal(menuQml.includes("TaskContextMenuLogic.noBorderCommand"), false);
+assert.equal(menuQml.includes('text: "Fullscreen"'), false);
+assert.equal(menuQml.includes('text: "Shade"'), false);
+assert.equal(menuQml.includes('text: "No Border"'), false);
 assert.equal(
   menuQml.includes(
     'TaskActionLogic.contextMenuTaskCommand("requestToggleFullScreen"',
