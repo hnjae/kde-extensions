@@ -61,6 +61,32 @@ function remoteAttentionSnapshot(entryMap, order) {
   };
 }
 
+function remoteAttentionStateEntryMap(state) {
+  return Object.assign({}, state?.entryMap || {});
+}
+
+function remoteAttentionStateOrder(state) {
+  return Array.from(state?.order || []);
+}
+
+function remoteAttentionStateFromParts(entryMap, order) {
+  const nextEntryMap = Object.assign({}, entryMap || {});
+  const nextOrder = Array.from(order || []);
+  const snapshot = remoteAttentionSnapshot(nextEntryMap, nextOrder);
+
+  return {
+    count: snapshot.count,
+    entries: snapshot.entries,
+    entryMap: nextEntryMap,
+    order: nextOrder,
+    target: snapshot.target,
+  };
+}
+
+function createRemoteAttentionState() {
+  return remoteAttentionStateFromParts({}, []);
+}
+
 function publishRemoteAttention(
   entryMap,
   order,
@@ -134,6 +160,30 @@ function publishRemoteAttention(
   };
 }
 
+function publishRemoteAttentionState(
+  state,
+  previousKey,
+  key,
+  qualifies,
+  task,
+  becameQualified,
+) {
+  const result = publishRemoteAttention(
+    remoteAttentionStateEntryMap(state),
+    remoteAttentionStateOrder(state),
+    previousKey,
+    key,
+    qualifies,
+    task,
+    becameQualified,
+  );
+
+  return {
+    publishedKey: result.publishedKey,
+    state: remoteAttentionStateFromParts(result.entryMap, result.order),
+  };
+}
+
 function removeRemoteAttention(entryMap, order, key) {
   const entries = Object.assign({}, entryMap || {});
   if (!key || !entries[key]) {
@@ -153,4 +203,29 @@ function removeRemoteAttention(entryMap, order, key) {
     order: nextOrder,
     snapshot: remoteAttentionSnapshot(entries, nextOrder),
   };
+}
+
+function removeRemoteAttentionState(state, key) {
+  const entries = remoteAttentionStateEntryMap(state);
+  if (!key || !entries[key]) {
+    return {
+      state: state || createRemoteAttentionState(),
+    };
+  }
+
+  const result = removeRemoteAttention(
+    entries,
+    remoteAttentionStateOrder(state),
+    key,
+  );
+  return {
+    state: remoteAttentionStateFromParts(result.entryMap, result.order),
+  };
+}
+
+function recomputeRemoteAttentionState(state) {
+  return remoteAttentionStateFromParts(
+    remoteAttentionStateEntryMap(state),
+    remoteAttentionStateOrder(state),
+  );
 }

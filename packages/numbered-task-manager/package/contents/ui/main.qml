@@ -26,14 +26,10 @@ PlasmoidItem {
     readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
     property var normalTaskStoreState: NormalTaskStoreLogic.createNormalTaskStore()
     readonly property var normalTaskEntries: normalTaskStoreState.entries || []
-    property int remoteAttentionCount: 0
-    property var remoteAttentionEntries: []
-    property var remoteAttentionEntryMap: ({})
-    property var remoteAttentionOrder: []
-    property var remoteAttentionTarget: null
+    property var remoteAttentionState: RemoteAttentionLogic.createRemoteAttentionState()
     readonly property var visibleTaskItems: VisibleTaskItemsLogic.composeVisibleTaskItems(normalTaskEntries, {
-        count: remoteAttentionCount,
-        target: remoteAttentionTarget
+        count: remoteAttentionState.count || 0,
+        target: remoteAttentionState.target || null
     })
     property int launcherRevision: 0
     property bool updatingLauncherConfig: false
@@ -262,36 +258,24 @@ PlasmoidItem {
     }
 
     function publishRemoteAttention(previousKey, key, qualifies, task, becameQualified) {
-        const result = RemoteAttentionLogic.publishRemoteAttention(remoteAttentionEntryMap, remoteAttentionOrder, previousKey, key, qualifies, task, becameQualified);
-        remoteAttentionEntryMap = result.entryMap;
-        remoteAttentionOrder = result.order;
-        applyRemoteAttentionSnapshot(result.snapshot);
+        const result = RemoteAttentionLogic.publishRemoteAttentionState(remoteAttentionState, previousKey, key, qualifies, task, becameQualified);
+        remoteAttentionState = result.state;
         return result.publishedKey;
     }
 
     function removeRemoteAttention(key) {
-        if (!key || !remoteAttentionEntryMap[key]) {
-            return;
+        const result = RemoteAttentionLogic.removeRemoteAttentionState(remoteAttentionState, key);
+        if (result.state !== remoteAttentionState) {
+            remoteAttentionState = result.state;
         }
-
-        const result = RemoteAttentionLogic.removeRemoteAttention(remoteAttentionEntryMap, remoteAttentionOrder, key);
-        remoteAttentionEntryMap = result.entryMap;
-        remoteAttentionOrder = result.order;
-        applyRemoteAttentionSnapshot(result.snapshot);
     }
 
     function recomputeRemoteAttention() {
-        applyRemoteAttentionSnapshot(RemoteAttentionLogic.remoteAttentionSnapshot(remoteAttentionEntryMap, remoteAttentionOrder));
-    }
-
-    function applyRemoteAttentionSnapshot(snapshot) {
-        remoteAttentionEntries = snapshot.entries;
-        remoteAttentionCount = snapshot.count;
-        remoteAttentionTarget = snapshot.target;
+        remoteAttentionState = RemoteAttentionLogic.recomputeRemoteAttentionState(remoteAttentionState);
     }
 
     function activateRemoteAttention() {
-        const result = TaskActionLogic.taskActivationRequest("activateRemoteAttention", remoteAttentionTarget, {
+        const result = TaskActionLogic.taskActivationRequest("activateRemoteAttention", remoteAttentionState.target, {
             requireSourceIndex: false,
             sourceModel: "remoteAttention"
         });
@@ -621,14 +605,14 @@ PlasmoidItem {
                 QtQuickLayouts.Layout.fillWidth: root.vertical
                 QtQuickLayouts.Layout.preferredWidth: root.vertical ? implicitWidth : fullRepresentationItem.taskSlotWidth
 
-                count: root.remoteAttentionCount
-                iconSource: root.remoteAttentionTarget ? root.remoteAttentionTarget.iconSource : "dialog-warning"
-                modelIndex: root.remoteAttentionTarget ? root.remoteAttentionTarget.modelIndex : undefined
+                count: root.remoteAttentionState.count || 0
+                iconSource: root.remoteAttentionState.target ? root.remoteAttentionState.target.iconSource : "dialog-warning"
+                modelIndex: root.remoteAttentionState.target ? root.remoteAttentionState.target.modelIndex : undefined
                 slotWidth: root.vertical ? 0 : fullRepresentationItem.taskSlotWidth
-                taskData: root.remoteAttentionTarget || {}
-                title: root.remoteAttentionTarget ? root.remoteAttentionTarget.title : ""
+                taskData: root.remoteAttentionState.target || {}
+                title: root.remoteAttentionState.target ? root.remoteAttentionState.target.title : ""
                 titleVisibilityThreshold: fullRepresentationItem.titleVisibilityThreshold
-                visible: root.remoteAttentionCount > 0
+                visible: root.remoteAttentionState.count > 0
 
                 onActivated: {
                     root.activateRemoteAttention();
