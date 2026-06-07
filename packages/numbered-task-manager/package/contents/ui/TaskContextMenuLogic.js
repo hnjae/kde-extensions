@@ -114,6 +114,14 @@ function noBorderCommand() {
   return contextMenuTaskCommand("requestToggleNoBorder");
 }
 
+function excludeFromCaptureCommand() {
+  return contextMenuTaskCommand("requestToggleExcludeFromCapture");
+}
+
+function closeCommand() {
+  return contextMenuTaskCommand("requestClose");
+}
+
 function windowCapabilityActionState(taskState) {
   const state = taskState || {};
   const capable = Boolean(state.capable);

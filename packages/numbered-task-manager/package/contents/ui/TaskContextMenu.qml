@@ -486,7 +486,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleExcludeFromCapture"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.excludeFromCaptureCommand());
         }
     }
 
@@ -635,7 +635,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestClose"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.closeCommand());
         }
     }
 }
