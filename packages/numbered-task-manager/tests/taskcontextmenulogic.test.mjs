@@ -14,9 +14,11 @@ const logic = loadQmlJsModule(
     "captureCloseRoleSnapshot",
     "checkableWindowActionState",
     "checkableWindowCapabilityActionState",
+    "closeCommand",
     "closeActionState",
     "activityEntriesSnapshot",
     "allVirtualDesktopsCommand",
+    "excludeFromCaptureCommand",
     "fullscreenCommand",
     "fullscreenShadeBorderRoleSnapshot",
     "menuActionSectionVisible",
@@ -268,6 +270,16 @@ assert.deepEqual(plain(logic.noBorderCommand()), {
   arguments: [],
   kind: "task-model-request",
   requestMethod: "requestToggleNoBorder",
+});
+assert.deepEqual(plain(logic.excludeFromCaptureCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestToggleExcludeFromCapture",
+});
+assert.deepEqual(plain(logic.closeCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestClose",
 });
 assert.deepEqual(
   plain(
@@ -1271,7 +1283,22 @@ assert.equal(
   true,
 );
 assert.equal(menuQml.includes("function taskActivitiesActionState"), false);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.excludeFromCaptureCommand"),
+  true,
+);
 assert.equal(menuQml.includes("TaskContextMenuLogic.closeActionState"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.closeCommand"), true);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuTaskCommand("requestToggleExcludeFromCapture"',
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes('TaskActionLogic.contextMenuTaskCommand("requestClose"'),
+  false,
+);
 assert.equal(menuQml.includes("function newVirtualDesktopActionState"), false);
 assert.equal(menuQml.includes("function closeActionState"), false);
 assert.equal(
