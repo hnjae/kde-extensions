@@ -19,6 +19,8 @@ const logic = loadQmlJsModule(
     "activityEntriesSnapshot",
     "allTaskActivitiesCommand",
     "allVirtualDesktopsCommand",
+    "basicMoveAction",
+    "basicResizeAction",
     "excludeFromCaptureCommand",
     "fullscreenCommand",
     "fullscreenShadeBorderRoleSnapshot",
@@ -40,6 +42,7 @@ const logic = loadQmlJsModule(
     "maximizeCommand",
     "minimizeMaximizeRoleSnapshot",
     "minimizeCommand",
+    "newInstanceAction",
     "newInstanceCommand",
     "newInstanceActionState",
     "noBorderCommand",
@@ -370,6 +373,82 @@ assert.deepEqual(
   ),
   {
     enabled: false,
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.newInstanceAction({
+      canLaunchNewInstance: true,
+      hasTask: true,
+      isLauncher: false,
+    }),
+  ),
+  {
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestNewInstance",
+    },
+    enabled: true,
+    text: "New Instance",
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.newInstanceAction({
+      canLaunchNewInstance: false,
+      hasTask: false,
+      isLauncher: false,
+    }),
+  ),
+  {
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestNewInstance",
+    },
+    enabled: false,
+    text: "New Instance",
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.basicMoveAction({
+      capable: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestMove",
+    },
+    enabled: true,
+    text: "Move",
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.basicResizeAction({
+      capable: false,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestResize",
+    },
+    enabled: false,
+    text: "Resize",
     visible: false,
   },
 );
@@ -1665,11 +1744,18 @@ assert.equal(
 assert.equal(menuQml.includes("function virtualDesktopMenuState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.newInstanceActionState"),
+  false,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.newInstanceAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.basicMoveAction"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.basicResizeAction"), true);
+assert.equal(menuQml.includes('text: "New Instance"'), false);
+assert.equal(menuQml.includes('text: "Move"'), false);
+assert.equal(menuQml.includes('text: "Resize"'), false);
+assert.equal(
+  menuQml.includes("root.requestTaskModelCommand(actionState.command"),
   true,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.newInstanceCommand"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.moveCommand"), true);
-assert.equal(menuQml.includes("TaskContextMenuLogic.resizeCommand"), true);
 assert.equal(
   menuQml.includes(
     'TaskActionLogic.contextMenuTaskCommand("requestNewInstance"',
@@ -1687,7 +1773,7 @@ assert.equal(
 assert.equal(menuQml.includes("function newInstanceActionState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.windowCapabilityActionState"),
-  true,
+  false,
 );
 assert.equal(menuQml.includes("function windowCapabilityActionState"), false);
 assert.equal(menuQml.includes("function menuActionSectionVisible"), false);
