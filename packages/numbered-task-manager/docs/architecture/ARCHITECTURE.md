@@ -43,6 +43,11 @@ in `SPEC.md`.
   same all-activities semantics as launcher serialization before checked-state
   predicates are evaluated. QML menu items should consume the helper output
   directly instead of adding menu-local checked-state wrapper functions.
+- Keep context-menu platform entry snapshots in `TaskContextMenuLogic.js`.
+  `TaskContextMenu.qml` may instantiate `ActivityInfo` and
+  `VirtualDesktopInfo`, but activity and virtual-desktop entry construction,
+  ordering, and fallback labels should be tested helper output rather than
+  inline menu loops.
 - Keep context-menu task-activity checked-state policy in
   `TaskContextMenuLogic.js`. Task activity mutation decisions remain in
   `TaskActivityLogic.js`, but menu-facing all-activities and per-activity
