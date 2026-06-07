@@ -2030,7 +2030,7 @@ assert.equal(menuQml.includes('import "LauncherListLogic.js"'), false);
 assert.equal(menuQml.includes("LauncherListLogic.launcherPinState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivitiesActionState"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("enabled: Boolean(root.taskModel) && pinState.canPin"),

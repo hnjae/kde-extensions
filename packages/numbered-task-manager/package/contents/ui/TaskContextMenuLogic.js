@@ -361,6 +361,16 @@ function launcherActivitiesActionState(
   };
 }
 
+function launcherActivitiesAction(pinState, activityEntryCount, hasTaskModel) {
+  return Object.assign(
+    {},
+    launcherActivitiesActionState(pinState, activityEntryCount, hasTaskModel),
+    {
+      text: "Launcher Activities",
+    },
+  );
+}
+
 function launcherActivityListSnapshot(launcherActivities) {
   return ActivityScopeLogic.normalizedActivityList(launcherActivities);
 }
@@ -428,6 +438,49 @@ function launcherActivityToggleUpdateCommand(
       currentActivity,
     ),
   );
+}
+
+function launcherAllActivitiesAction(
+  launcherList,
+  position,
+  launcherActivities,
+  currentActivity,
+) {
+  const activityState = launcherActivityMenuState(launcherActivities, "");
+
+  return {
+    checked: activityState.allActivitiesChecked,
+    text: "All Activities",
+    update: launcherAllActivitiesUpdateCommand(
+      launcherList,
+      position,
+      launcherActivities,
+      currentActivity,
+    ),
+  };
+}
+
+function launcherActivityAction(
+  launcherList,
+  position,
+  launcherActivities,
+  activity,
+  currentActivity,
+) {
+  const entry = activity || {};
+  const activityState = launcherActivityMenuState(launcherActivities, entry.id);
+
+  return {
+    checked: activityState.activityChecked,
+    text: entry.name,
+    update: launcherActivityToggleUpdateCommand(
+      launcherList,
+      position,
+      launcherActivities,
+      entry.id,
+      currentActivity,
+    ),
+  };
 }
 
 function taskActivityMenuState(taskActivities, activityId) {

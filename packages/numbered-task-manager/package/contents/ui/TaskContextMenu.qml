@@ -157,26 +157,6 @@ PlasmaExtras.Menu {
         return true;
     }
 
-    function setLauncherAllActivities() {
-        const url = taskRoles.launcherUrl;
-        if (!launcherModel || !url) {
-            return;
-        }
-
-        applyLauncherActivityUpdate(TaskContextMenuLogic.launcherAllActivitiesUpdateCommand(launcherModel.launcherList, launcherPosition(), launcherActivityList, activityInfo.currentActivity));
-        refreshLauncherActivities();
-    }
-
-    function toggleLauncherActivity(activityId) {
-        const url = taskRoles.launcherUrl;
-        if (!launcherModel || !url) {
-            return;
-        }
-
-        applyLauncherActivityUpdate(TaskContextMenuLogic.launcherActivityToggleUpdateCommand(launcherModel.launcherList, launcherPosition(), launcherActivityList, activityId, activityInfo.currentActivity));
-        refreshLauncherActivities();
-    }
-
     onStatusChanged: {
         if (status === PlasmaExtras.Menu.Closed) {
             closed();
@@ -213,10 +193,10 @@ PlasmaExtras.Menu {
         id: launcherActivitiesItem
 
         readonly property var pinState: root.launcherPinState()
-        readonly property var actionState: TaskContextMenuLogic.launcherActivitiesActionState(pinState, root.activityEntries.length, root.taskModel)
+        readonly property var actionState: TaskContextMenuLogic.launcherActivitiesAction(pinState, root.activityEntries.length, root.taskModel)
 
         enabled: actionState.enabled
-        text: "Launcher Activities"
+        text: actionState.text
         visible: actionState.visible
 
         readonly property PlasmaExtras.Menu _launcherActivitiesMenu: PlasmaExtras.Menu {
@@ -226,12 +206,20 @@ PlasmaExtras.Menu {
             visualParent: launcherActivitiesItem.action
 
             PlasmaExtras.MenuItem {
+                readonly property var actionState: TaskContextMenuLogic.launcherAllActivitiesAction(root.launcherModel ? root.launcherModel.launcherList : [], root.launcherPosition(), root.launcherActivityList, root._activityInfo.currentActivity)
+
                 checkable: true
-                checked: TaskContextMenuLogic.launcherActivityMenuState(root.launcherActivityList, "").allActivitiesChecked
-                text: "All Activities"
+                checked: actionState.checked
+                text: actionState.text
 
                 onClicked: {
-                    root.setLauncherAllActivities();
+                    const url = root.taskRoles.launcherUrl;
+                    if (!root.launcherModel || !url) {
+                        return;
+                    }
+
+                    root.applyLauncherActivityUpdate(actionState.update);
+                    root.refreshLauncherActivities();
                 }
             }
 
@@ -242,12 +230,20 @@ PlasmaExtras.Menu {
                 delegate: PlasmaExtras.MenuItem {
                     required property var modelData
 
+                    readonly property var actionState: TaskContextMenuLogic.launcherActivityAction(root.launcherModel ? root.launcherModel.launcherList : [], root.launcherPosition(), root.launcherActivityList, modelData, root._activityInfo.currentActivity)
+
                     checkable: true
-                    checked: TaskContextMenuLogic.launcherActivityMenuState(root.launcherActivityList, modelData.id).activityChecked
-                    text: modelData.name
+                    checked: actionState.checked
+                    text: actionState.text
 
                     onClicked: {
-                        root.toggleLauncherActivity(modelData.id);
+                        const url = root.taskRoles.launcherUrl;
+                        if (!root.launcherModel || !url) {
+                            return;
+                        }
+
+                        root.applyLauncherActivityUpdate(actionState.update);
+                        root.refreshLauncherActivities();
                     }
                 }
 
