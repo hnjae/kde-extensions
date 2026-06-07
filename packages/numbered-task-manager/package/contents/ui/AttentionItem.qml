@@ -47,15 +47,10 @@ QtQuick.Item {
         hovered: root.visualHighlighted
     }
 
-    QtQuickLayouts.RowLayout {
+    TaskLikeContentRow {
         id: contentRow
 
-        anchors.fill: parent
-        anchors.bottomMargin: taskFrame.contentBottomMargin
-        anchors.leftMargin: taskFrame.contentLeftMargin + Kirigami.Units.smallSpacing
-        anchors.rightMargin: taskFrame.contentRightMargin + Kirigami.Units.smallSpacing
-        anchors.topMargin: taskFrame.contentTopMargin
-        spacing: Kirigami.Units.smallSpacing
+        frame: taskFrame
 
         QtQuick.Item {
             visible: !root.titleVisible

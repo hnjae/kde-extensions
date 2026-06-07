@@ -111,7 +111,10 @@ assert.match(
   taskItemQml,
   /QtQuickLayouts\.Layout\.fillWidth:\s*!root\.titleVisible && !root\.pinnedLauncherOnly/,
 );
-assert.match(taskItemQml, /opacity:\s*TaskVisualLogic\.contentOpacity\(\{/);
+assert.match(
+  taskItemQml,
+  /contentOpacity:\s*TaskVisualLogic\.contentOpacity\(\{/,
+);
 assert.match(taskItemQml, /z:\s*1/);
 assert.match(
   taskItemQml,
