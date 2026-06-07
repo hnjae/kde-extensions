@@ -223,11 +223,7 @@ QtQuick.Item {
 
         onTriggered: {
             root.forceActiveFocus(QtQuick.Qt.MouseFocusReason);
-            root.contextMenuRequested({
-                modelIndex: root.modelIndex,
-                task: root.taskData,
-                visualParent: root
-            });
+            root.contextMenuRequested(TaskInteractionLogic.taskContextMenuRequest(root.modelIndex, root.taskData, root));
         }
     }
 }

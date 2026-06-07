@@ -37,3 +37,11 @@ function canAcceptTaskDrop(sourceIndex, targetIndex, canDropTask) {
 
   return Boolean(canDropTask(sourceIndex, targetIndex));
 }
+
+function taskContextMenuRequest(modelIndex, taskData, visualParent) {
+  return {
+    modelIndex,
+    task: taskData || {},
+    visualParent,
+  };
+}

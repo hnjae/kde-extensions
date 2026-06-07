@@ -9,6 +9,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
 import org.kde.kirigami.primitives as KirigamiPrimitives
 import "TaskEntryLogic.js" as TaskEntryLogic
+import "TaskInteractionLogic.js" as TaskInteractionLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskVisualLogic.js" as TaskVisualLogic
 
@@ -141,11 +142,7 @@ QtQuick.Item {
 
         onTriggered: {
             root.forceActiveFocus(QtQuick.Qt.MouseFocusReason);
-            root.contextMenuRequested({
-                modelIndex: root.modelIndex,
-                task: root.taskData,
-                visualParent: root
-            });
+            root.contextMenuRequested(TaskInteractionLogic.taskContextMenuRequest(root.modelIndex, root.taskData, root));
         }
     }
 }
