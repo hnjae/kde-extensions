@@ -94,6 +94,14 @@ function maximizeCommand() {
   return contextMenuTaskCommand("requestToggleMaximized");
 }
 
+function keepAboveCommand() {
+  return contextMenuTaskCommand("requestToggleKeepAbove");
+}
+
+function keepBelowCommand() {
+  return contextMenuTaskCommand("requestToggleKeepBelow");
+}
+
 function windowCapabilityActionState(taskState) {
   const state = taskState || {};
   const capable = Boolean(state.capable);

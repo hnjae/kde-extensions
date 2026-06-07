@@ -393,7 +393,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleKeepAbove"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.keepAboveCommand());
         }
     }
 
@@ -411,7 +411,7 @@ PlasmaExtras.Menu {
         visible: actionState.visible
 
         onClicked: {
-            root.requestTaskModelCommand(TaskActionLogic.contextMenuTaskCommand("requestToggleKeepBelow"));
+            root.requestTaskModelCommand(TaskContextMenuLogic.keepBelowCommand());
         }
     }
 
