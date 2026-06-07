@@ -15,6 +15,7 @@ import "LauncherListLogic.js" as LauncherListLogic
 import "NormalTaskStoreLogic.js" as NormalTaskStoreLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskModelLogic.js" as TaskModelLogic
+import "TaskScopeLogic.js" as TaskScopeLogic
 import "TaskActionLogic.js" as TaskActionLogic
 import "VisibleTaskItemsLogic.js" as VisibleTaskItemsLogic
 
@@ -379,9 +380,9 @@ PlasmoidItem {
         id: tasksModel
 
         activity: activityInfo.currentActivity
-        filterByActivity: true
-        filterByScreen: false
-        filterByVirtualDesktop: true
+        filterByActivity: TaskScopeLogic.normalTaskModelFilterSettings().filterByActivity
+        filterByScreen: TaskScopeLogic.normalTaskModelFilterSettings().filterByScreen
+        filterByVirtualDesktop: TaskScopeLogic.normalTaskModelFilterSettings().filterByVirtualDesktop
         groupMode: TaskManager.TasksModel.GroupDisabled
         hideActivatedLaunchers: false
         launchInPlace: true

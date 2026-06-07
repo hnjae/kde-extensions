@@ -7,6 +7,7 @@ import QtQuick as QtQuick
 import org.kde.taskmanager as TaskManager
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
+import "TaskScopeLogic.js" as TaskScopeLogic
 
 QtQuick.Item {
     id: root
@@ -57,9 +58,9 @@ QtQuick.Item {
         id: attentionTasksModel
 
         activity: root.currentActivity
-        filterByActivity: false
-        filterByScreen: false
-        filterByVirtualDesktop: false
+        filterByActivity: TaskScopeLogic.remoteAttentionModelFilterSettings().filterByActivity
+        filterByScreen: TaskScopeLogic.remoteAttentionModelFilterSettings().filterByScreen
+        filterByVirtualDesktop: TaskScopeLogic.remoteAttentionModelFilterSettings().filterByVirtualDesktop
         groupMode: TaskManager.TasksModel.GroupDisabled
         sortMode: TaskManager.TasksModel.SortManual
         virtualDesktop: root.currentDesktop
