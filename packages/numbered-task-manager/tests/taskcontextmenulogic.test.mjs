@@ -3053,7 +3053,7 @@ assert.equal(
   ),
   false,
 );
-assert.equal(menuQml.includes("if (!update.ok)"), true);
+assert.equal(menuQml.includes("if (!update.ok)"), false);
 assert.equal(menuQml.includes("if (!update)"), false);
 assert.equal(menuQml.includes("function launcherPinnedToAllActivities"), false);
 assert.equal(menuQml.includes("function launcherPinnedToActivity"), false);
@@ -3512,6 +3512,8 @@ assert.equal(
   launcherActivityAdapterQml.includes("function applyLauncherActivityUpdate"),
   true,
 );
+assert.equal(launcherActivityAdapterQml.includes("if (!update.ok)"), true);
+assert.equal(launcherActivityAdapterQml.includes("if (!update)"), false);
 assert.equal(
   launcherActivityAdapterQml.includes("function applyLauncherActivityAction"),
   true,

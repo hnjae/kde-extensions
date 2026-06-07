@@ -24,6 +24,7 @@ PlasmaExtras.Menu {
     readonly property var desktopEntries: platformState.desktopEntries
     readonly property var fullscreenShadeBorderRoles: roleSnapshots.fullscreenShadeBorderRoles
     readonly property var keepAboveBelowRoles: roleSnapshots.keepAboveBelowRoles
+    readonly property var launcherActivityList: launcherActivityAdapter.launcherActivityList
     readonly property var minimizeMaximizeRoles: roleSnapshots.minimizeMaximizeRoles
     readonly property var virtualDesktopRoles: roleSnapshots.virtualDesktopRoles
     readonly property var actionSections: TaskContextMenuLogic.contextMenuActionSections({
@@ -56,7 +57,6 @@ PlasmaExtras.Menu {
     readonly property var taskActivityActionsSection: actionSections.taskActivityActions
     readonly property var virtualDesktopActionsSection: actionSections.virtualDesktopActions
     property var launcherModel: taskModel
-    property var launcherActivityList: []
     property var modelIndex
     property var task: ({})
     property var taskModel
@@ -70,7 +70,7 @@ PlasmaExtras.Menu {
 
     function show() {
         platformState.refreshActivities();
-        refreshLauncherActivities();
+        launcherActivityAdapter.refreshLauncherActivities();
         openRelative();
     }
 
@@ -87,16 +87,6 @@ PlasmaExtras.Menu {
         return TaskContextMenuLogic.launcherPinStateSnapshot(launcherModel ? launcherModel.launcherList : [], url, platformState.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
-    function refreshLauncherActivities() {
-        const url = taskRoles.launcherUrl;
-        if (!launcherModel || !url) {
-            launcherActivityList = [];
-            return;
-        }
-
-        launcherActivityList = TaskContextMenuLogic.launcherActivityListSnapshot(launcherModel.launcherActivities(url));
-    }
-
     function launcherPosition() {
         const url = taskRoles.launcherUrl;
         if (!launcherModel || !url) {
@@ -104,20 +94,6 @@ PlasmaExtras.Menu {
         }
 
         return launcherModel.launcherPosition(url);
-    }
-
-    function applyLauncherActivityUpdate(update) {
-        if (!update.ok) {
-            return false;
-        }
-
-        launcherActivityList = update.activities;
-        if (!update.changed) {
-            return false;
-        }
-
-        root.launcherCommandRequested(update.command);
-        return true;
     }
 
     onStatusChanged: {
@@ -137,6 +113,17 @@ PlasmaExtras.Menu {
         modelIndex: root.modelIndex
         task: root.task
         taskModel: root.taskModel
+    }
+
+    readonly property TaskContextMenuLauncherActivityAdapter _launcherActivityAdapter: TaskContextMenuLauncherActivityAdapter {
+        id: launcherActivityAdapter
+
+        launcherModel: root.launcherModel
+        launcherUrl: root.taskRoles.launcherUrl
+
+        onLauncherCommandRequested: command => {
+            root.launcherCommandRequested(command);
+        }
     }
 
     readonly property TaskContextMenuTaskCommandAdapter _taskCommandAdapter: TaskContextMenuTaskCommandAdapter {
@@ -185,13 +172,7 @@ PlasmaExtras.Menu {
                 text: actionState.text
 
                 onClicked: {
-                    const url = root.taskRoles.launcherUrl;
-                    if (!root.launcherModel || !url) {
-                        return;
-                    }
-
-                    root.applyLauncherActivityUpdate(actionState.update);
-                    root.refreshLauncherActivities();
+                    launcherActivityAdapter.applyLauncherActivityAction(actionState.update);
                 }
             }
 
@@ -209,13 +190,7 @@ PlasmaExtras.Menu {
                     text: actionState.text
 
                     onClicked: {
-                        const url = root.taskRoles.launcherUrl;
-                        if (!root.launcherModel || !url) {
-                            return;
-                        }
-
-                        root.applyLauncherActivityUpdate(actionState.update);
-                        root.refreshLauncherActivities();
+                        launcherActivityAdapter.applyLauncherActivityAction(actionState.update);
                     }
                 }
 
