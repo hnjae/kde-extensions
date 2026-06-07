@@ -13,12 +13,14 @@ const logic = loadQmlJsModule(
     "launcherActivityListSnapshot",
     "launcherActivityMenuState",
     "launcherActivitiesVisible",
+    "newInstanceActionState",
     "panelMenuPlacement",
     "pinActionState",
     "roleData",
     "taskActivityMenuState",
     "taskRoleSnapshot",
     "virtualDesktopMenuState",
+    "windowCapabilityActionState",
   ],
 );
 
@@ -97,6 +99,84 @@ assert.deepEqual(
     action: "unpin",
     enabled: false,
     text: "Unpin from Task Manager",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.newInstanceActionState({
+      canLaunchNewInstance: true,
+      hasTask: true,
+      isLauncher: false,
+    }),
+  ),
+  {
+    enabled: true,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.newInstanceActionState({
+      canLaunchNewInstance: false,
+      hasTask: true,
+      isLauncher: true,
+    }),
+  ),
+  {
+    enabled: true,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.newInstanceActionState({
+      canLaunchNewInstance: false,
+      hasTask: false,
+      isLauncher: false,
+    }),
+  ),
+  {
+    enabled: false,
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.windowCapabilityActionState({
+      capable: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: true,
+    visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.windowCapabilityActionState({
+      capable: false,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: false,
+    visible: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.windowCapabilityActionState({
+      capable: true,
+      hasWindowTask: false,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: false,
+    visible: true,
   },
 );
 assert.equal(
@@ -292,6 +372,14 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopMenuState"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.newInstanceActionState"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.windowCapabilityActionState"),
   true,
 );
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), true);
