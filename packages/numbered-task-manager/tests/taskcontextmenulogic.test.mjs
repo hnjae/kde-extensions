@@ -2761,6 +2761,10 @@ const menuQml = readFileSync(
 assert.equal(menuQml.includes("TaskContextMenuPlatformState {"), true);
 assert.equal(menuQml.includes("TaskContextMenuRoleState {"), true);
 assert.equal(menuQml.includes("TaskContextMenuTaskCommandAdapter {"), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLauncherActivityAdapter {"),
+  true,
+);
 assert.equal(menuQml.includes("TaskManager.ActivityInfo"), false);
 assert.equal(menuQml.includes("TaskManager.VirtualDesktopInfo"), false);
 assert.equal(menuQml.includes("TaskManager.AbstractTasksModel"), false);
@@ -2928,6 +2932,22 @@ assert.equal(menuQml.includes("function activities"), false);
 assert.equal(menuQml.includes("function virtualDesktops"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivityListSnapshot"),
+  false,
+);
+assert.equal(menuQml.includes("function refreshLauncherActivities"), false);
+assert.equal(menuQml.includes("function applyLauncherActivityUpdate"), false);
+assert.equal(menuQml.includes("launcherModel.launcherActivities("), false);
+assert.equal(menuQml.includes("launcherActivityList ="), false);
+assert.equal(menuQml.includes("root.applyLauncherActivityUpdate"), false);
+assert.equal(menuQml.includes("root.refreshLauncherActivities"), false);
+assert.equal(
+  menuQml.includes("launcherActivityAdapter.refreshLauncherActivities()"),
+  true,
+);
+assert.equal(
+  menuQml.includes(
+    "launcherActivityAdapter.applyLauncherActivityAction(actionState.update)",
+  ),
   true,
 );
 assert.equal(
@@ -3464,6 +3484,68 @@ assert.equal(
 assert.equal(taskCommandAdapterQml.includes("property var modelIndex"), true);
 assert.equal(taskCommandAdapterQml.includes("property var task: ({})"), true);
 assert.equal(taskCommandAdapterQml.includes("property var taskModel"), true);
+
+const launcherActivityAdapterQml = readFileSync(
+  new URL(
+    "../package/contents/ui/TaskContextMenuLauncherActivityAdapter.qml",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    "TaskContextMenuLogic.launcherActivityListSnapshot",
+  ),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    "launcherModel.launcherActivities(launcherUrl)",
+  ),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes("function refreshLauncherActivities()"),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes("function applyLauncherActivityUpdate"),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes("function applyLauncherActivityAction"),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    "launcherActivityList = update.activities",
+  ),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    "launcherCommandRequested(update.command)",
+  ),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    "signal launcherCommandRequested(var command)",
+  ),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes("property var launcherActivityList: []"),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes("property var launcherModel"),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes('property string launcherUrl: ""'),
+  true,
+);
 
 const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
