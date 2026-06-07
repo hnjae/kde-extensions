@@ -292,7 +292,7 @@ assert.match(
   taskItemQml,
   /import "TaskInteractionLogic\.js" as TaskInteractionLogic/,
 );
-assert.match(taskItemQml, /\bTaskFrame\s*\{/);
+assert.match(taskItemQml, /\bTaskLikeFrame\s*\{/);
 assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
 assert.match(taskItemQml, /mutedLauncher:\s*root\.pinnedLauncherOnly/);
 assert.match(taskItemQml, /readonly property bool visualHighlighted:/);
@@ -359,7 +359,7 @@ assert.doesNotMatch(
   attentionItemQml,
   /import "TaskInteractionLogic\.js" as TaskInteractionLogic/,
 );
-assert.match(attentionItemQml, /\bTaskFrame\s*\{/);
+assert.match(attentionItemQml, /\bTaskLikeFrame\s*\{/);
 assert.match(
   attentionItemQml,
   /readonly property bool visualHighlighted:\s*taskLikeInteraction\.highlighted/,
