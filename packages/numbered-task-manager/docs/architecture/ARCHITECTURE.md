@@ -241,6 +241,7 @@ in `SPEC.md`.
 - Keep task item number presentation in `TaskItemPresentationLogic.js`. Slot label text and the `none`, `prefix`, or `overlay` decision should have one tested owner instead of being derived from visual-state side effects in delegates.
 - Number presentation must use state-independent cross-axis availability so frame prefix, pinned, launcher, active, hover, and attention state cannot change the fallback threshold for the same slot and panel size.
 - Keep hover-active icon decisions in `TaskVisualLogic.js`. A task model's active-window state selects the frame `focus` prefix only; icon active rendering is controlled by delegate highlight state.
+- Keep shared task-like icon rendering in `TaskLikeIcon.qml`. Normal and remote-attention delegates should provide their variant fallback/source and active/highlighted inputs, while icon active-state mapping and `KirigamiPrimitives.Icon` setup live in one component.
 - Treat a closed pinned launcher as a delegate-only muted launcher visual state. This must not change the model minimized state or the styling of real minimized windows.
 - Render muted launcher idle backgrounds by reusing the themed minimized frame with reduced frame and content opacity; return to full opacity for hover, keyboard focus, open-menu, attention, or drag-drop feedback.
 - Each task-like delegate owns its own `visualHighlighted` state from pointer hover, keyboard focus, and task-menu-open status. The root widget owns menu lifecycle, but it must not own per-delegate hover state.
