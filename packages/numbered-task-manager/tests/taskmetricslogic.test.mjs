@@ -16,6 +16,7 @@ const logic = loadQmlJsModule(
     "minimumReadableSlotWidth",
     "normalNaturalWidthMinimum",
     "taskExtent",
+    "taskTitleVisible",
     "taskSlotWidth",
     "titleVisibilityThreshold",
   ],
@@ -37,6 +38,12 @@ assert.equal(logic.iconExtentForTaskFrame(56, 4, 4, 16), 48);
 assert.equal(logic.iconExtentForTaskFrame(40, 4, 4, 16), 32);
 assert.equal(logic.iconExtentForTaskFrame(18, 4, 4, 16), 14);
 assert.equal(logic.iconExtentForTaskFrame(0, 4, 4, 16), 0);
+
+assert.equal(logic.taskTitleVisible(true, 0, 96), true);
+assert.equal(logic.taskTitleVisible(true, -1, 96), true);
+assert.equal(logic.taskTitleVisible(true, 95, 96), false);
+assert.equal(logic.taskTitleVisible(true, 96, 96), true);
+assert.equal(logic.taskTitleVisible(false, 120, 96), false);
 
 assert.equal(logic.taskSlotWidth(1200, 3, 48, 220), 220);
 assert.equal(logic.taskSlotWidth(600, 4, 48, 220), 150);
@@ -70,7 +77,7 @@ assert.match(
 );
 assert.match(
   attentionItemQml,
-  /root\.showTitle && \(root\.slotWidth <= 0 \|\| root\.slotWidth >= root\.titleVisibilityThreshold\)/,
+  /readonly property bool titleVisible:\s*TaskMetricsLogic\.taskTitleVisible\(root\.showTitle, root\.slotWidth, root\.titleVisibilityThreshold\)/,
 );
 
 const presentationLogicJs = readFileSync(
@@ -123,11 +130,23 @@ assert.match(
   /Math\.max\(TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\), Math\.min\(TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth \+ contentHorizontalPadding\)\)/,
 );
 assert.match(taskItemQml, /implicitHeight:\s*TaskMetricsLogic\.taskExtent\(\)/);
+assert.match(
+  taskItemQml,
+  /readonly property bool titleVisible:\s*TaskMetricsLogic\.taskTitleVisible\(root\.showTitle, root\.slotWidth, root\.titleVisibilityThreshold\)/,
+);
 assert.doesNotMatch(taskItemQml, /property int titleVisibilityThreshold:\s*96/);
+assert.doesNotMatch(
+  taskItemQml,
+  /root\.showTitle && \(root\.slotWidth <= 0 \|\| root\.slotWidth >= root\.titleVisibilityThreshold\)/,
+);
 assert.doesNotMatch(taskItemQml, /root\.showTitle \? 96 : 0/);
 assert.doesNotMatch(
   attentionItemQml,
   /property int titleVisibilityThreshold:\s*96/,
+);
+assert.doesNotMatch(
+  attentionItemQml,
+  /root\.showTitle && \(root\.slotWidth <= 0 \|\| root\.slotWidth >= root\.titleVisibilityThreshold\)/,
 );
 assert.doesNotMatch(
   taskListRepresentationQml,

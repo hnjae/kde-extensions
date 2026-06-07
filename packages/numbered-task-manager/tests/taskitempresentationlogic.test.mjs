@@ -104,7 +104,7 @@ assert.match(
 );
 assert.match(
   taskItemQml,
-  /root\.showTitle && \(root\.slotWidth <= 0 \|\| root\.slotWidth >= root\.titleVisibilityThreshold\)/,
+  /TaskMetricsLogic\.taskTitleVisible\(root\.showTitle, root\.slotWidth, root\.titleVisibilityThreshold\)/,
 );
 assert.match(taskItemQml, /visible:\s*root\.titleVisible/);
 assert.match(
