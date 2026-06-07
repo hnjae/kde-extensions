@@ -281,6 +281,14 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the terminal action wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function (virtualDesktopsActionState|newVirtualDesktopActionState|taskActivitiesActionState|closeActionState)|root\\.(virtualDesktopsActionState|newVirtualDesktopActionState|taskActivitiesActionState|closeActionState)|TaskContextMenuLogic\\.(virtualDesktopsActionState|newVirtualDesktopActionState|taskActivitiesActionState|closeActionState)" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 35: Boolean Role Snapshot Bindings
+
+- Status: completed.
+- What changed: declared that boolean role snapshot fields should be consumed directly from `TaskContextMenuLogic.taskRoleSnapshot(...)`; removed the menu-local `isWindow()` and `isLauncher()` passthrough functions; replaced their call sites with direct `roleSnapshot().isWindow` and `roleSnapshot().isLauncher` reads.
+- Behavior that must remain unchanged: live role data and task fallbacks still flow through `TaskContextMenuLogic.taskRoleSnapshot(...)`; menu visible/enabled states and command descriptors remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the boolean role snapshot wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function isWindow|function isLauncher|\\bisWindow\\(\\)|\\bisLauncher\\(\\)|roleSnapshot\\(\\)\\.(isWindow|isLauncher)" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue reducing remaining role snapshot convenience wrappers where practical without obscuring live-role fallback behavior.

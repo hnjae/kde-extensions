@@ -20,7 +20,7 @@ PlasmaExtras.Menu {
 
     readonly property var atm: TaskManager.AbstractTasksModel
     readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(modelIndex)
-    readonly property bool hasWindowTask: hasTask && isWindow()
+    readonly property bool hasWindowTask: hasTask && roleSnapshot().isWindow
     readonly property var desktopEntries: {
         const ids = Array.from(virtualDesktopInfo.desktopIds || []);
         const names = Array.from(virtualDesktopInfo.desktopNames || []);
@@ -129,14 +129,6 @@ PlasmaExtras.Menu {
 
     function virtualDesktops() {
         return roleSnapshot().virtualDesktops;
-    }
-
-    function isWindow() {
-        return roleSnapshot().isWindow;
-    }
-
-    function isLauncher() {
-        return roleSnapshot().isLauncher;
     }
 
     function refreshActivities() {
@@ -325,7 +317,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.newInstanceActionState({
             canLaunchNewInstance: root.boolRole(root.atm.CanLaunchNewInstance, root.task.canLaunchNewInstance || false),
             hasTask: root.hasTask,
-            isLauncher: root.isLauncher()
+            isLauncher: root.roleSnapshot().isLauncher
         })
 
         enabled: actionState.enabled
@@ -341,7 +333,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.windowCapabilityActionState({
             capable: root.boolRole(root.atm.IsMovable, root.task.isMovable || false),
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         enabled: actionState.enabled
@@ -357,7 +349,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.windowCapabilityActionState({
             capable: root.boolRole(root.atm.IsResizable, root.task.isResizable || false),
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         enabled: actionState.enabled
@@ -375,7 +367,7 @@ PlasmaExtras.Menu {
             capable: root.boolRole(root.atm.IsMinimizable, root.task.isMinimizable || false),
             checked: roleChecked,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         checkable: true
@@ -395,7 +387,7 @@ PlasmaExtras.Menu {
             capable: root.boolRole(root.atm.IsMaximizable, root.task.isMaximizable || false),
             checked: roleChecked,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         checkable: true
@@ -414,7 +406,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
             checked: roleChecked,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         checkable: true
@@ -433,7 +425,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
             checked: roleChecked,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         checkable: true
@@ -453,7 +445,7 @@ PlasmaExtras.Menu {
             capable: root.boolRole(root.atm.IsFullScreenable, root.task.fullScreenable || false),
             checked: roleChecked,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         checkable: true
@@ -473,7 +465,7 @@ PlasmaExtras.Menu {
             capable: root.boolRole(root.atm.IsShadeable, root.task.isShadeable || false),
             checked: roleChecked,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         checkable: true
@@ -493,7 +485,7 @@ PlasmaExtras.Menu {
             capable: root.boolRole(root.atm.CanSetNoBorder, root.task.canSetNoBorder || false),
             checked: roleChecked,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         checkable: true
@@ -512,7 +504,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.checkableWindowActionState({
             checked: roleChecked,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         checkable: true
@@ -531,7 +523,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.virtualDesktopsActionState({
             changeable: root.boolRole(root.atm.IsVirtualDesktopsChangeable, root.task.isVirtualDesktopsChangeable || false),
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         enabled: actionState.enabled
@@ -603,7 +595,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.taskActivitiesActionState({
             activityEntryCount: root.activityEntries.length,
             hasWindowTask: root.hasWindowTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         enabled: actionState.enabled
@@ -663,7 +655,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: TaskContextMenuLogic.closeActionState({
             closable: root.boolRole(root.atm.IsClosable, root.task.closable || false),
             hasTask: root.hasTask,
-            isWindow: root.isWindow()
+            isWindow: root.roleSnapshot().isWindow
         })
 
         enabled: actionState.enabled
