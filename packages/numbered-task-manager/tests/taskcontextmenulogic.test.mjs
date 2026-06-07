@@ -25,7 +25,9 @@ const logic = loadQmlJsModule(
     "launcherActivityListSnapshot",
     "launcherActivityMenuState",
     "launcherActivitiesVisible",
+    "keepAboveCommand",
     "keepAboveBelowRoleSnapshot",
+    "keepBelowCommand",
     "maximizeCommand",
     "minimizeMaximizeRoleSnapshot",
     "minimizeCommand",
@@ -238,6 +240,16 @@ assert.deepEqual(plain(logic.maximizeCommand()), {
   arguments: [],
   kind: "task-model-request",
   requestMethod: "requestToggleMaximized",
+});
+assert.deepEqual(plain(logic.keepAboveCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestToggleKeepAbove",
+});
+assert.deepEqual(plain(logic.keepBelowCommand()), {
+  arguments: [],
+  kind: "task-model-request",
+  requestMethod: "requestToggleKeepBelow",
 });
 assert.deepEqual(
   plain(
@@ -1194,6 +1206,20 @@ assert.equal(
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.checkableWindowActionState"),
   true,
+);
+assert.equal(menuQml.includes("TaskContextMenuLogic.keepAboveCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.keepBelowCommand"), true);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuTaskCommand("requestToggleKeepAbove"',
+  ),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    'TaskActionLogic.contextMenuTaskCommand("requestToggleKeepBelow"',
+  ),
+  false,
 );
 assert.equal(menuQml.includes("function checkableWindowActionState"), false);
 assert.equal(
