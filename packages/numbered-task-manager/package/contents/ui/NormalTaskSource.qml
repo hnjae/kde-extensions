@@ -100,8 +100,8 @@ QtQuick.Item {
                 launcherUrl,
                 modelIndex: root.taskModel.makePersistentModelIndex(index),
                 virtualDesktops: model.VirtualDesktops
-            }, TaskEntryLogic)
-            property bool qualifies: TaskModelLogic.qualifiesNormalTask(taskInfo, activities => root.taskIsInCurrentActivity(activities), root.currentDesktop, TaskEntryLogic)
+            })
+            property bool qualifies: TaskModelLogic.qualifiesNormalTask(taskInfo, activities => root.taskIsInCurrentActivity(activities), root.currentDesktop)
 
             height: 0
             visible: false

@@ -1,63 +1,52 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-function createNormalTaskEntry(roles, taskEntryLogic) {
+Qt.include("TaskEntryLogic.js");
+
+function createNormalTaskEntry(roles) {
   const taskRoles = roles || {};
-  const baseEntry = taskEntryLogic.createBaseTaskEntry(
-    taskRoles,
-    taskEntryLogic.normalTaskIconFallback(),
-  );
-  const launcherPinned = taskEntryLogic.boolValue(taskRoles.launcherPinned);
-  const isLauncher = taskEntryLogic.boolValue(taskRoles.isLauncher);
-  const hasLauncher = taskEntryLogic.boolValue(taskRoles.hasLauncher);
+  const baseEntry = createBaseTaskEntry(taskRoles, normalTaskIconFallback());
+  const launcherPinned = boolValue(taskRoles.launcherPinned);
+  const isLauncher = boolValue(taskRoles.isLauncher);
+  const hasLauncher = boolValue(taskRoles.hasLauncher);
 
   return Object.assign({}, baseEntry, {
-    active: taskEntryLogic.boolValue(taskRoles.active),
-    canLaunchNewInstance: taskEntryLogic.boolValue(
+    active: boolValue(taskRoles.active),
+    canLaunchNewInstance: boolValue(
       taskRoles.canLaunchNewInstance || isLauncher,
     ),
-    canSetNoBorder: taskEntryLogic.boolValue(taskRoles.canSetNoBorder),
-    closable: taskEntryLogic.boolValue(taskRoles.closable),
-    fullScreenable: taskEntryLogic.boolValue(taskRoles.fullScreenable),
+    canSetNoBorder: boolValue(taskRoles.canSetNoBorder),
+    closable: boolValue(taskRoles.closable),
+    fullScreenable: boolValue(taskRoles.fullScreenable),
     hasAnyLauncher: hasLauncher || isLauncher || launcherPinned,
     hasLauncher: isLauncher || launcherPinned,
-    hasNoBorder: taskEntryLogic.boolValue(taskRoles.hasNoBorder),
-    entryKey: taskEntryLogic.stringValue(taskRoles.entryKey),
-    isExcludedFromCapture: taskEntryLogic.boolValue(
-      taskRoles.isExcludedFromCapture,
-    ),
-    isFullScreen: taskEntryLogic.boolValue(taskRoles.isFullScreen),
-    isKeepAbove: taskEntryLogic.boolValue(taskRoles.isKeepAbove),
-    isKeepBelow: taskEntryLogic.boolValue(taskRoles.isKeepBelow),
+    hasNoBorder: boolValue(taskRoles.hasNoBorder),
+    entryKey: stringValue(taskRoles.entryKey),
+    isExcludedFromCapture: boolValue(taskRoles.isExcludedFromCapture),
+    isFullScreen: boolValue(taskRoles.isFullScreen),
+    isKeepAbove: boolValue(taskRoles.isKeepAbove),
+    isKeepBelow: boolValue(taskRoles.isKeepBelow),
     isLauncher,
-    isMaximizable: taskEntryLogic.boolValue(taskRoles.isMaximizable),
-    isMaximized: taskEntryLogic.boolValue(taskRoles.isMaximized),
-    isMinimizable: taskEntryLogic.boolValue(taskRoles.isMinimizable),
-    isMinimized: taskEntryLogic.boolValue(taskRoles.isMinimized),
-    isMovable: taskEntryLogic.boolValue(taskRoles.isMovable),
-    isResizable: taskEntryLogic.boolValue(taskRoles.isResizable),
-    isShadeable: taskEntryLogic.boolValue(taskRoles.isShadeable),
-    isShaded: taskEntryLogic.boolValue(taskRoles.isShaded),
-    isStartup: taskEntryLogic.boolValue(taskRoles.isStartup),
-    isVirtualDesktopsChangeable: taskEntryLogic.boolValue(
+    isMaximizable: boolValue(taskRoles.isMaximizable),
+    isMaximized: boolValue(taskRoles.isMaximized),
+    isMinimizable: boolValue(taskRoles.isMinimizable),
+    isMinimized: boolValue(taskRoles.isMinimized),
+    isMovable: boolValue(taskRoles.isMovable),
+    isResizable: boolValue(taskRoles.isResizable),
+    isShadeable: boolValue(taskRoles.isShadeable),
+    isShaded: boolValue(taskRoles.isShaded),
+    isStartup: boolValue(taskRoles.isStartup),
+    isVirtualDesktopsChangeable: boolValue(
       taskRoles.isVirtualDesktopsChangeable,
     ),
     launcherBacked: false,
-    launcherPosition: taskEntryLogic.numberValue(
-      taskRoles.launcherPosition,
-      -1,
-    ),
+    launcherPosition: numberValue(taskRoles.launcherPosition, -1),
     moveIndex: baseEntry.index,
     sourceIndex: baseEntry.index,
   });
 }
 
-function qualifiesNormalTask(
-  task,
-  isInCurrentActivity,
-  currentDesktop,
-  taskEntryLogic,
-) {
+function qualifiesNormalTask(task, isInCurrentActivity, currentDesktop) {
   const entry = task || {};
   if (
     typeof isInCurrentActivity === "function" &&
@@ -67,7 +56,7 @@ function qualifiesNormalTask(
   }
 
   if (entry.isWindow) {
-    return taskEntryLogic.isOnCurrentVirtualDesktop(
+    return isOnCurrentVirtualDesktop(
       entry.virtualDesktops || [],
       entry.isOnAllVirtualDesktops,
       currentDesktop,

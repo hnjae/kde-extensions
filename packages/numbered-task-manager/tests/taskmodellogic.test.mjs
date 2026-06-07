@@ -5,17 +5,6 @@ import assert from "node:assert/strict";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const taskEntryLogic = loadQmlJsModule(
-  new URL("../package/contents/ui/TaskEntryLogic.js", import.meta.url),
-  [
-    "boolValue",
-    "createBaseTaskEntry",
-    "isOnCurrentVirtualDesktop",
-    "normalTaskIconFallback",
-    "numberValue",
-    "stringValue",
-  ],
-);
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskModelLogic.js", import.meta.url),
   [
