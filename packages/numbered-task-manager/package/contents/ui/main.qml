@@ -11,7 +11,6 @@ import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
 import "TaskActivityLogic.js" as TaskActivityLogic
-import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
 import "NormalTaskStoreLogic.js" as NormalTaskStoreLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
@@ -253,10 +252,6 @@ PlasmoidItem {
         applyNormalTaskStore(NormalTaskStoreLogic.recomputeNormalTaskStore(normalTaskStoreState, launcherUrl => visibleLauncherPosition(launcherUrl)));
     }
 
-    function remoteAttentionKey(winIds, launcherUrl, title, row) {
-        return RemoteAttentionLogic.remoteAttentionKey(winIds, launcherUrl, title, row);
-    }
-
     function publishRemoteAttention(previousKey, key, qualifies, task, becameQualified) {
         const result = RemoteAttentionLogic.publishRemoteAttentionState(remoteAttentionState, previousKey, key, qualifies, task, becameQualified);
         remoteAttentionState = result.state;
@@ -395,53 +390,12 @@ PlasmoidItem {
         }
     }
 
-    QtQuick.Repeater {
-        model: attentionTasksModel
-
-        delegate: QtQuick.Item {
-            required property int index
-            required property var model
-
-            property string launcherUrl: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
-            property bool hasSyncedAttention: false
-            property string publishedKey: ""
-            property bool previousQualifies: false
-            property var taskInfo: RemoteAttentionLogic.createRemoteAttentionEntry({
-                activities: model.Activities,
-                appName: model.AppName,
-                demandingAttention: model.IsDemandingAttention,
-                display: model.display,
-                iconSource: model.decoration,
-                index,
-                isOnAllVirtualDesktops: model.IsOnAllVirtualDesktops,
-                isWindow: model.IsWindow,
-                launcherUrl,
-                modelIndex: attentionTasksModel.makePersistentModelIndex(index),
-                virtualDesktops: model.VirtualDesktops,
-                winIds: model.WinIdList
-            }, TaskEntryLogic)
-            property string taskKey: root.remoteAttentionKey(taskInfo.winIds, taskInfo.launcherUrl, taskInfo.title, index)
-            property bool qualifies: RemoteAttentionLogic.qualifiesRemoteAttention(taskInfo, activities => root.isInCurrentActivity(activities), virtualDesktopInfo.currentDesktop, TaskEntryLogic)
-
-            height: 0
-            visible: false
-            width: 0
-
-            function syncAttention() {
-                const becameQualified = hasSyncedAttention && !previousQualifies && qualifies;
-                publishedKey = root.publishRemoteAttention(publishedKey, taskKey, qualifies, taskInfo, becameQualified);
-                previousQualifies = qualifies;
-                hasSyncedAttention = true;
-            }
-
-            QtQuick.Component.onCompleted: syncAttention()
-            QtQuick.Component.onDestruction: {
-                root.removeRemoteAttention(publishedKey);
-            }
-            onQualifiesChanged: syncAttention()
-            onTaskInfoChanged: syncAttention()
-            onTaskKeyChanged: syncAttention()
-        }
+    RemoteAttentionSource {
+        taskModel: attentionTasksModel
+        currentDesktop: virtualDesktopInfo.currentDesktop
+        isInCurrentActivity: activities => root.isInCurrentActivity(activities)
+        publishAttention: (previousKey, key, qualifies, task, becameQualified) => root.publishRemoteAttention(previousKey, key, qualifies, task, becameQualified)
+        removeAttention: key => root.removeRemoteAttention(key)
     }
 
     fullRepresentation: QtQuick.Item {
