@@ -50,6 +50,7 @@ const logic = loadQmlJsModule(
     "launcherPinStateSnapshot",
     "keepAboveCommand",
     "keepAboveAction",
+    "keepAboveBelowActionsSection",
     "keepAboveBelowRoleSnapshot",
     "keepBelowCommand",
     "keepBelowAction",
@@ -724,6 +725,40 @@ assert.deepEqual(
     enabled: false,
     text: "Keep Below Others",
     visible: true,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.keepAboveBelowActionsSection({
+      hasWindowTask: false,
+      isKeepAbove: true,
+      isKeepBelow: false,
+      isWindow: true,
+    }),
+  ),
+  {
+    keepAbove: {
+      checked: true,
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestToggleKeepAbove",
+      },
+      enabled: false,
+      text: "Keep Above Others",
+      visible: true,
+    },
+    keepBelow: {
+      checked: false,
+      command: {
+        arguments: [],
+        kind: "task-model-request",
+        requestMethod: "requestToggleKeepBelow",
+      },
+      enabled: false,
+      text: "Keep Below Others",
+      visible: true,
+    },
   },
 );
 assert.deepEqual(plain(logic.fullscreenCommand()), {
