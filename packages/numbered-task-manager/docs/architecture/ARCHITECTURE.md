@@ -63,8 +63,10 @@ in `SPEC.md`.
 - Keep context-menu basic action availability in `TaskContextMenuLogic.js`.
   Simple item visible/enabled predicates such as New Instance, Move, and Resize
   should be derived by tested helpers while QML keeps rendering order and Plasma
-  request dispatch. QML menu items should consume the helper output directly
-  instead of adding menu-local action-state wrapper functions.
+  request dispatch. Live role reads needed by those helpers should enter QML as
+  a tested snapshot object instead of as item-local `boolRole(...)` calls. QML
+  menu items should consume the helper output directly instead of adding
+  menu-local action-state wrapper functions.
 - Keep checkable context-menu window action state in `TaskContextMenuLogic.js`.
   Checked, visible, and enabled predicates for actions such as Minimize,
   Maximize, Keep Above, Keep Below, Full Screen, Shade, No Border, and Exclude
