@@ -249,6 +249,14 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the task activity wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "taskOnAllActivities|taskOnActivity|function taskActivityMenuState|TaskContextMenuLogic\\.taskActivityMenuState" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 31: Virtual Desktop Menu State Bindings
+
+- Status: completed.
+- What changed: declared that virtual desktop menu items should consume checked-state helper output directly; removed the menu-local virtual desktop checked-state wrapper function; bound the All Desktops and per-desktop menu items directly to `TaskContextMenuLogic.virtualDesktopMenuState(...)`.
+- Behavior that must remain unchanged: All Desktops and per-desktop checked states still use live role data with task fallback; submenu labels, ordering, visibility, and `requestVirtualDesktops` command payloads remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the virtual desktop wrapper function still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function virtualDesktopMenuState|root\\.virtualDesktopMenuState|TaskContextMenuLogic\\.virtualDesktopMenuState" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue shrinking thin QML wrapper functions around checked-state helpers where practical.
