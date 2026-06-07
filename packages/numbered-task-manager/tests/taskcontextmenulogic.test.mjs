@@ -619,10 +619,13 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.newInstanceActionState"),
   true,
 );
+assert.equal(menuQml.includes("function newInstanceActionState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.windowCapabilityActionState"),
   true,
 );
+assert.equal(menuQml.includes("function windowCapabilityActionState"), false);
+assert.equal(menuQml.includes("function menuActionSectionVisible"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.checkableWindowCapabilityActionState"),
   true,
