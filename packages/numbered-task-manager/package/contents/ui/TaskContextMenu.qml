@@ -7,7 +7,6 @@ import QtQuick as QtQuick
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid
-import "TaskActionLogic.js" as TaskActionLogic
 import "TaskContextMenuLogic.js" as TaskContextMenuLogic
 
 // qmllint disable incompatible-type
@@ -65,6 +64,7 @@ PlasmaExtras.Menu {
     minimumWidth: visualParentWidth
     placement: TaskContextMenuLogic.panelMenuPlacement(Plasmoid.location, PlasmaCore.Types, PlasmaExtras.Menu)
 
+    signal actionResult(var result)
     signal launcherCommandRequested(var command)
     signal closed
 
@@ -72,14 +72,6 @@ PlasmaExtras.Menu {
         platformState.refreshActivities();
         launcherActivityAdapter.refreshLauncherActivities();
         openRelative();
-    }
-
-    function logActionResult(result) {
-        if (!TaskActionLogic.shouldLogActionResult(result)) {
-            return;
-        }
-
-        console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
     }
 
     onStatusChanged: {
@@ -128,7 +120,7 @@ PlasmaExtras.Menu {
         taskModel: root.taskModel
 
         onActionResult: result => {
-            root.logActionResult(result);
+            root.actionResult(result);
         }
     }
 

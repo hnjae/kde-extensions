@@ -239,41 +239,6 @@ PlasmoidItem {
         taskActivation.requestActivation(result);
     }
 
-    function openTaskContextMenu(request) {
-        const menuRequest = TaskActionLogic.contextMenuRequestResult(request);
-        if (!menuRequest.ok) {
-            logActionResult(menuRequest);
-            return;
-        }
-
-        const visualParent = menuRequest.visualParent;
-        const menu = contextMenuComponent.createObject(visualParent, {
-            launcherModel: tasksModel,
-            modelIndex: menuRequest.modelIndex,
-            task: menuRequest.task || {},
-            taskModel: menuRequest.taskModel,
-            visualParent: visualParent,
-            visualParentWidth: menuRequest.visualParentWidth
-        }) as TaskContextMenu;
-        const creationResult = TaskActionLogic.contextMenuCreationResult(menu, menuRequest);
-        if (!creationResult.ok) {
-            logActionResult(creationResult);
-            return;
-        }
-
-        if (visualParent.contextMenuOpen !== undefined) {
-            visualParent.contextMenuOpen = true;
-            menu.closed.connect(() => {
-                if (visualParent.contextMenuOpen !== undefined) {
-                    visualParent.contextMenuOpen = false;
-                }
-            });
-        }
-
-        menu.launcherCommandRequested.connect(root.dispatchLauncherCommand);
-        menu.show();
-    }
-
     TaskManager.ActivityInfo {
         id: activityInfo
 
@@ -284,12 +249,6 @@ PlasmoidItem {
 
     TaskManager.VirtualDesktopInfo {
         id: virtualDesktopInfo
-    }
-
-    QtQuick.Component {
-        id: contextMenuComponent
-
-        TaskContextMenu {}
     }
 
     LauncherSyncAdapter {
@@ -304,6 +263,20 @@ PlasmoidItem {
 
         remoteAttentionSource: remoteAttentionSource
         taskModel: tasksModel
+    }
+
+    TaskContextMenuAdapter {
+        id: contextMenuAdapter
+
+        launcherModel: tasksModel
+
+        onActionResult: result => {
+            root.logActionResult(result);
+        }
+
+        onLauncherCommandRequested: command => {
+            root.dispatchLauncherCommand(command);
+        }
     }
 
     TaskManager.TasksModel {
@@ -432,7 +405,7 @@ PlasmoidItem {
                     }
 
                     onContextMenuRequested: request => {
-                        root.openTaskContextMenu(Object.assign({
+                        contextMenuAdapter.openTaskContextMenu(Object.assign({
                             taskModel: tasksModel
                         }, request));
                     }
@@ -471,7 +444,7 @@ PlasmoidItem {
                 }
 
                 onContextMenuRequested: request => {
-                    root.openTaskContextMenu(Object.assign({
+                    contextMenuAdapter.openTaskContextMenu(Object.assign({
                         taskModel: remoteAttentionSource.taskModel
                     }, request));
                 }

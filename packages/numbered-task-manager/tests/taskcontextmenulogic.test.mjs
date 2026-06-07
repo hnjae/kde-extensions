@@ -3616,15 +3616,16 @@ const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
   "utf8",
 );
+assert.equal(mainQml.includes("TaskContextMenuAdapter {"), true);
+assert.equal(
+  mainQml.includes("TaskActionLogic.contextMenuLauncherCommandDispatchResult"),
+  true,
+);
 assert.equal(
   mainQml.includes(
     "launcherCommandRequested.connect(root.dispatchLauncherCommand)",
   ),
-  true,
-);
-assert.equal(
-  mainQml.includes("TaskActionLogic.contextMenuLauncherCommandDispatchResult"),
-  true,
+  false,
 );
 assert.equal(mainQml.includes("pinRequested.connect"), false);
 assert.equal(mainQml.includes("unpinRequested.connect"), false);
