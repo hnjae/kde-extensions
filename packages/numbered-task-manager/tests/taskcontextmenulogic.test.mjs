@@ -16,6 +16,7 @@ const logic = loadQmlJsModule(
     "panelMenuPlacement",
     "pinActionState",
     "roleData",
+    "taskActivityMenuState",
     "taskRoleSnapshot",
   ],
 );
@@ -137,6 +138,22 @@ assert.deepEqual(plain(logic.launcherActivityMenuState(["chat"], "chat")), {
   activityChecked: true,
   allActivitiesChecked: false,
 });
+assert.deepEqual(plain(logic.taskActivityMenuState([], "work")), {
+  activityChecked: true,
+  allActivitiesChecked: true,
+});
+assert.deepEqual(plain(logic.taskActivityMenuState([nullActivityId], "work")), {
+  activityChecked: true,
+  allActivitiesChecked: true,
+});
+assert.deepEqual(plain(logic.taskActivityMenuState(["chat"], "work")), {
+  activityChecked: false,
+  allActivitiesChecked: false,
+});
+assert.deepEqual(plain(logic.taskActivityMenuState(["chat"], "chat")), {
+  activityChecked: true,
+  allActivitiesChecked: false,
+});
 assert.equal(
   logic.launcherActivitiesVisible(
     { canPin: true, isPinned: true, launcherUrl: "app.desktop" },
@@ -237,6 +254,10 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivityMenuState"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.taskActivityMenuState"),
   true,
 );
 assert.equal(menuQml.includes("TaskActionLogic.contextMenuTaskRequest"), true);
