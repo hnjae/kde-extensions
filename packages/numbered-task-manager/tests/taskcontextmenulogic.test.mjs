@@ -596,6 +596,7 @@ assert.equal(menuQml.includes("TaskContextMenuLogic.taskRoleSnapshot"), true);
 assert.equal(menuQml.includes("function isWindow"), false);
 assert.equal(menuQml.includes("function isLauncher"), false);
 assert.equal(menuQml.includes("function launcherUrl"), false);
+assert.equal(menuQml.includes("function activities"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivityListSnapshot"),
   true,
