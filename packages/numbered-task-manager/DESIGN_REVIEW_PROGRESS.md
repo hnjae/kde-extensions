@@ -289,6 +289,14 @@
 - Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the boolean role snapshot wrapper functions still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function isWindow|function isLauncher|\\bisWindow\\(\\)|\\bisLauncher\\(\\)|roleSnapshot\\(\\)\\.(isWindow|isLauncher)" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
+## Completed Checkpoint 36: Launcher URL Snapshot Binding
+
+- Status: completed.
+- What changed: declared that scalar role snapshot fields such as `launcherUrl` should be consumed directly from `TaskContextMenuLogic.taskRoleSnapshot(...)`; removed the menu-local `launcherUrl()` passthrough function; replaced its call sites with direct `roleSnapshot().launcherUrl` reads.
+- Behavior that must remain unchanged: launcher URL live role data and task fallback still flow through `TaskContextMenuLogic.taskRoleSnapshot(...)`; pin/unpin state, launcher activity refresh, launcher position lookup, launcher activity mutation guards, and launcher command descriptors remain unchanged.
+- Verification: `node tests/taskcontextmenulogic.test.mjs` failed before implementation because the launcher URL snapshot wrapper function still existed; after implementation, `node tests/taskcontextmenulogic.test.mjs`; `rg -n "function launcherUrl|launcherUrl\\(\\)|roleSnapshot\\(\\)\\.launcherUrl" package/contents/ui/TaskContextMenu.qml tests/taskcontextmenulogic.test.mjs`; `just lint-js-host`; `just lint-qml`; `just test-host`; `just test`; `just check`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskContextMenu.qml`, `tests/taskcontextmenulogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+
 ## Remaining Follow-Up Work
 
 - Context menu: continue reducing remaining role snapshot convenience wrappers where practical without obscuring live-role fallback behavior.

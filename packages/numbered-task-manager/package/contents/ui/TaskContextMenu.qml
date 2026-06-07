@@ -114,12 +114,8 @@ PlasmaExtras.Menu {
         };
     }
 
-    function launcherUrl() {
-        return roleSnapshot().launcherUrl;
-    }
-
     function launcherPinState() {
-        const url = launcherUrl();
+        const url = roleSnapshot().launcherUrl;
         return LauncherListLogic.launcherPinState(launcherModel ? launcherModel.launcherList : [], url, activityInfo.currentActivity, launcherModel ? pinnedUrl => launcherModel.launcherPosition(pinnedUrl) : -1);
     }
 
@@ -146,7 +142,7 @@ PlasmaExtras.Menu {
     }
 
     function refreshLauncherActivities() {
-        const url = launcherUrl();
+        const url = roleSnapshot().launcherUrl;
         if (!launcherModel || !url) {
             launcherActivityList = [];
             return;
@@ -164,7 +160,7 @@ PlasmaExtras.Menu {
     }
 
     function launcherPosition() {
-        const url = launcherUrl();
+        const url = roleSnapshot().launcherUrl;
         if (!launcherModel || !url) {
             return -1;
         }
@@ -189,7 +185,7 @@ PlasmaExtras.Menu {
     }
 
     function setLauncherAllActivities() {
-        const url = launcherUrl();
+        const url = roleSnapshot().launcherUrl;
         if (!launcherModel || !url) {
             return;
         }
@@ -202,7 +198,7 @@ PlasmaExtras.Menu {
     }
 
     function toggleLauncherActivity(activityId) {
-        const url = launcherUrl();
+        const url = roleSnapshot().launcherUrl;
         if (!launcherModel || !url) {
             return;
         }
