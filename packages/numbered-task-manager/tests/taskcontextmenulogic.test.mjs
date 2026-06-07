@@ -1241,7 +1241,7 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.replaceLauncherListCommand"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes(

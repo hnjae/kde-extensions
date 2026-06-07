@@ -4,6 +4,7 @@
 Qt.include("TaskActionLogic.js");
 Qt.include("TaskActivityLogic.js");
 Qt.include("TaskEntryLogic.js");
+Qt.include("LauncherListLogic.js");
 
 function panelMenuPlacement(location, plasmaCoreTypes, plasmaMenu) {
   if (location === plasmaCoreTypes.LeftEdge) {
@@ -236,6 +237,16 @@ function launcherActivityMenuState(launcherActivities, activityId) {
       ActivityScopeLogic.stringListContains(activities, activityId),
     allActivitiesChecked,
   };
+}
+
+function launcherActivityUpdateCommand(launcherList, position, activities) {
+  const update = launcherActivityUpdate(launcherList, position, activities);
+  return Object.assign({}, update, {
+    command:
+      update.ok && update.changed
+        ? replaceLauncherListCommand(update.launchers)
+        : null,
+  });
 }
 
 function taskActivityMenuState(taskActivities, activityId) {

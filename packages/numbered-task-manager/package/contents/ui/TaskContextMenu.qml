@@ -154,7 +154,7 @@ PlasmaExtras.Menu {
 
     function applyLauncherActivities(activities) {
         const position = launcherPosition();
-        const update = LauncherListLogic.launcherActivityUpdate(launcherModel.launcherList, position, activities);
+        const update = TaskContextMenuLogic.launcherActivityUpdateCommand(launcherModel.launcherList, position, activities);
         if (!update.ok) {
             return false;
         }
@@ -164,7 +164,7 @@ PlasmaExtras.Menu {
             return false;
         }
 
-        root.launcherCommandRequested(TaskContextMenuLogic.replaceLauncherListCommand(update.launchers));
+        root.launcherCommandRequested(update.command);
         return true;
     }
 

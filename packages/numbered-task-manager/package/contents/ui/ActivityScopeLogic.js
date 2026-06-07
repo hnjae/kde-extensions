@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-const nullActivityId = "00000000-0000-0000-0000-000000000000";
+var nullActivityId = "00000000-0000-0000-0000-000000000000";
 
 function allActivitiesId() {
   return nullActivityId;
