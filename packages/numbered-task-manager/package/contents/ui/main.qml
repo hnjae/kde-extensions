@@ -15,6 +15,7 @@ import "TaskEntryLogic.js" as TaskEntryLogic
 import "LauncherListLogic.js" as LauncherListLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 import "TaskModelLogic.js" as TaskModelLogic
+import "TaskActionLogic.js" as TaskActionLogic
 import "VisibleTaskItemsLogic.js" as VisibleTaskItemsLogic
 
 PlasmoidItem {
@@ -47,25 +48,43 @@ PlasmoidItem {
     QtQuickLayouts.Layout.fillHeight: true
 
     function activateTaskAtIndex(index) {
-        const targetItem = VisibleTaskItemsLogic.activationTargetForShortcutIndex(visibleTaskItems, index);
-        if (!targetItem) {
+        const result = TaskActionLogic.shortcutActivationRequest(visibleTaskItems, index);
+        if (!result.ok) {
+            logActionResult(result);
             return;
         }
 
-        if (targetItem.kind === "remoteAttention") {
-            activateRemoteAttention();
-            return;
-        }
-
-        activateTaskEntry(targetItem.entry);
+        requestActivation(result);
     }
 
     function activateTaskEntry(task) {
-        if (!task || task.sourceIndex === undefined || task.sourceIndex < 0 || !TaskEntryLogic.hasValidModelIndex(task.modelIndex)) {
+        const result = TaskActionLogic.taskActivationRequest("activateTask", task, {
+            requireSourceIndex: true,
+            sourceModel: "normal"
+        });
+        if (!result.ok) {
+            logActionResult(result);
             return;
         }
 
-        tasksModel.requestActivate(task.modelIndex);
+        requestActivation(result);
+    }
+
+    function requestActivation(result) {
+        if (result.sourceModel === "remoteAttention") {
+            attentionTasksModel.requestActivate(result.modelIndex);
+            return;
+        }
+
+        tasksModel.requestActivate(result.modelIndex);
+    }
+
+    function logActionResult(result) {
+        if (!TaskActionLogic.shouldLogActionResult(result)) {
+            return;
+        }
+
+        console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
     }
 
     function persistLaunchers(launchers) {
@@ -270,29 +289,37 @@ PlasmoidItem {
     }
 
     function activateRemoteAttention() {
-        if (!remoteAttentionTarget || !TaskEntryLogic.hasValidModelIndex(remoteAttentionTarget.modelIndex)) {
+        const result = TaskActionLogic.taskActivationRequest("activateRemoteAttention", remoteAttentionTarget, {
+            requireSourceIndex: false,
+            sourceModel: "remoteAttention"
+        });
+        if (!result.ok) {
+            logActionResult(result);
             return;
         }
 
-        attentionTasksModel.requestActivate(remoteAttentionTarget.modelIndex);
+        requestActivation(result);
     }
 
     function openTaskContextMenu(request) {
-        const menuRequest = request || {};
-        if (!menuRequest.visualParent || !menuRequest.taskModel || !TaskEntryLogic.hasValidModelIndex(menuRequest.modelIndex)) {
+        const menuRequest = TaskActionLogic.contextMenuRequestResult(request);
+        if (!menuRequest.ok) {
+            logActionResult(menuRequest);
             return;
         }
 
         const visualParent = menuRequest.visualParent;
-        const menu = contextMenuComponent.createObject(menuRequest.visualParent, {
+        const menu = contextMenuComponent.createObject(visualParent, {
             launcherModel: tasksModel,
             modelIndex: menuRequest.modelIndex,
             task: menuRequest.task || {},
             taskModel: menuRequest.taskModel,
-            visualParent: menuRequest.visualParent,
-            visualParentWidth: menuRequest.visualParent.width || 0
+            visualParent: visualParent,
+            visualParentWidth: menuRequest.visualParentWidth
         }) as TaskContextMenu;
-        if (!menu) {
+        const creationResult = TaskActionLogic.contextMenuCreationResult(menu, menuRequest);
+        if (!creationResult.ok) {
+            logActionResult(creationResult);
             return;
         }
 

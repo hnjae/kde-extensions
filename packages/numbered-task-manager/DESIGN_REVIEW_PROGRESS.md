@@ -32,17 +32,17 @@
 - Verification: `node tests/launcherlistlogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
 - Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/LauncherListLogic.js`, `package/contents/ui/main.qml`, `tests/launcherlistlogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
-## Planned Checkpoint 4: Activation And Menu Action Results
+## Completed Checkpoint 4: Activation And Menu Action Results
 
-- Status: planned.
-- What will change: add a small tested action-result helper for shortcut activation and context-menu creation, then route root activation/menu code through it so stale inputs and internal failures have stable result codes.
+- Status: completed.
+- What changed: added `TaskActionLogic.js` for activation and context-menu action results; routed shortcut activation, task activation, remote-attention activation, context-menu request validation, and menu creation failure through stable result codes and diagnostic logging decisions.
 - Behavior that must remain unchanged: invalid shortcuts, stale task indexes, empty remote-attention targets, and failed menu creation still produce no user-visible UI action; valid normal and remote-attention activation still call the same `TasksModel.requestActivate`; context-menu visual-parent state and signal wiring stay unchanged.
 - Verification: `node tests/taskactionlogic.test.mjs`; `node tests/visibletaskitemslogic.test.mjs`; `just test-host`; `just lint-js-host`; `just lint-qml`; `just test`; `just check`.
-- Files likely changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/main.qml`, `tests/taskactionlogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
+- Files changed: `docs/architecture/ARCHITECTURE.md`, `package/contents/ui/TaskActionLogic.js`, `package/contents/ui/main.qml`, `tests/taskactionlogic.test.mjs`, and `DESIGN_REVIEW_PROGRESS.md`.
 
 ## Remaining Follow-Up Work
 
 - Launcher sync: add bounded retry or next-change reconciliation for logged model/config mismatches.
 - Root/model ownership: extract normal publication/order and remote-attention source state from `main.qml` in later checkpoints.
 - Context menu: migrate role normalization and action policy into tested helpers before simplifying the QML menu.
-- Observability: add structured action results for activation, menu creation, and launcher mutations.
+- Observability: extend structured action results beyond activation/menu creation to launcher mutations and context-menu window/task requests.

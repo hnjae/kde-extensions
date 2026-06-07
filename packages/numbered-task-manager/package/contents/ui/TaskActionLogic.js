@@ -1,0 +1,232 @@
+// SPDX-FileCopyrightText: 2026 KIM Hyunjae
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+Qt.include("TaskEntryLogic.js");
+Qt.include("VisibleTaskItemsLogic.js");
+
+function actionResult(action, code, ok, diagnostic, context) {
+  return {
+    action,
+    code,
+    context: Object.assign({}, context || {}),
+    diagnostic: Boolean(diagnostic),
+    ok: Boolean(ok),
+  };
+}
+
+function taskContext(task, options) {
+  const entry = task || {};
+  const requestOptions = options || {};
+  const context = {};
+
+  if (entry.entryKey) {
+    context.entryKey = entry.entryKey;
+  }
+  if (requestOptions.requireSourceIndex !== undefined) {
+    context.requireSourceIndex = Boolean(requestOptions.requireSourceIndex);
+  }
+  if (entry.sourceIndex !== undefined) {
+    context.sourceIndex = entry.sourceIndex;
+  }
+  if (requestOptions.shortcutIndex !== undefined) {
+    context.shortcutIndex = requestOptions.shortcutIndex;
+  }
+  if (requestOptions.sourceModel) {
+    context.sourceModel = requestOptions.sourceModel;
+  }
+  if (requestOptions.targetKind) {
+    context.targetKind = requestOptions.targetKind;
+  }
+  if (entry.title) {
+    context.title = entry.title;
+  }
+
+  return context;
+}
+
+function hasActivationSourceIndex(task) {
+  const entry = task || {};
+  return !(entry.sourceIndex === undefined || entry.sourceIndex < 0);
+}
+
+function rejectedActivation(action, code, diagnostic, task, options) {
+  return actionResult(
+    action,
+    code,
+    false,
+    diagnostic,
+    taskContext(task, options),
+  );
+}
+
+function taskActivationRequest(action, task, options) {
+  const entry = task || null;
+  const requestOptions = options || {};
+  const requestAction = action || "activateTask";
+
+  if (!entry) {
+    return rejectedActivation(
+      requestAction,
+      "missing-task",
+      false,
+      entry,
+      requestOptions,
+    );
+  }
+
+  if (requestOptions.requireSourceIndex && !hasActivationSourceIndex(entry)) {
+    return rejectedActivation(
+      requestAction,
+      "invalid-source-index",
+      true,
+      entry,
+      requestOptions,
+    );
+  }
+
+  if (!hasValidModelIndex(entry.modelIndex)) {
+    return rejectedActivation(
+      requestAction,
+      "invalid-model-index",
+      true,
+      entry,
+      requestOptions,
+    );
+  }
+
+  return Object.assign(
+    actionResult(
+      requestAction,
+      "ready",
+      true,
+      false,
+      taskContext(entry, requestOptions),
+    ),
+    {
+      modelIndex: entry.modelIndex,
+      sourceModel: requestOptions.sourceModel || "",
+    },
+  );
+}
+
+function shortcutActivationOptions(targetItem, shortcutIndex) {
+  const item = targetItem || {};
+  const kind = item.kind || "";
+
+  return {
+    requireSourceIndex: kind === "normal",
+    shortcutIndex,
+    sourceModel: item.sourceModel || kind,
+    targetKind: kind,
+  };
+}
+
+function shortcutActivationRequest(visibleItems, shortcutIndex) {
+  const targetItem = activationTargetForShortcutIndex(
+    visibleItems,
+    shortcutIndex,
+  );
+  if (!targetItem) {
+    return actionResult("activateShortcut", "no-target", false, false, {
+      shortcutIndex,
+    });
+  }
+
+  if (targetItem.kind !== "normal" && targetItem.kind !== "remoteAttention") {
+    return actionResult(
+      "activateShortcut",
+      "unsupported-target-kind",
+      false,
+      true,
+      {
+        shortcutIndex,
+        sourceModel: targetItem.sourceModel || "",
+        targetKind: targetItem.kind || "",
+      },
+    );
+  }
+
+  return taskActivationRequest(
+    "activateShortcut",
+    targetItem.entry,
+    shortcutActivationOptions(targetItem, shortcutIndex),
+  );
+}
+
+function contextMenuRequestContext(request) {
+  const menuRequest = request || {};
+  const task = menuRequest.task || {};
+  const visualParent = menuRequest.visualParent || {};
+
+  return {
+    entryKey: task.entryKey || "",
+    modelIndexValid: hasValidModelIndex(menuRequest.modelIndex),
+    title: task.title || "",
+    visualParentWidth: visualParent.width || 0,
+  };
+}
+
+function contextMenuRequestResult(request) {
+  const menuRequest = request || {};
+  const context = contextMenuRequestContext(menuRequest);
+
+  if (!menuRequest.visualParent) {
+    return actionResult(
+      "openContextMenu",
+      "missing-visual-parent",
+      false,
+      true,
+      context,
+    );
+  }
+
+  if (!menuRequest.taskModel) {
+    return actionResult(
+      "openContextMenu",
+      "missing-task-model",
+      false,
+      true,
+      context,
+    );
+  }
+
+  if (!hasValidModelIndex(menuRequest.modelIndex)) {
+    return actionResult(
+      "openContextMenu",
+      "invalid-model-index",
+      false,
+      true,
+      context,
+    );
+  }
+
+  return Object.assign(
+    actionResult("openContextMenu", "ready", true, false, context),
+    {
+      modelIndex: menuRequest.modelIndex,
+      task: menuRequest.task || {},
+      taskModel: menuRequest.taskModel,
+      visualParent: menuRequest.visualParent,
+      visualParentWidth: context.visualParentWidth,
+    },
+  );
+}
+
+function contextMenuCreationResult(menu, requestResult) {
+  if (menu) {
+    return actionResult("openContextMenu", "created", true, false, {});
+  }
+
+  const result = requestResult || {};
+  return actionResult(
+    "openContextMenu",
+    "create-failed",
+    false,
+    true,
+    result.context || {},
+  );
+}
+
+function shouldLogActionResult(result) {
+  return Boolean(result && !result.ok && result.diagnostic);
+}
