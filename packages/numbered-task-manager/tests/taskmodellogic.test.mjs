@@ -30,7 +30,6 @@ const normalTask = createNormalTaskEntry({
   active: 1,
   appName: "Fallback App",
   canLaunchNewInstance: false,
-  hasLauncher: false,
   iconSource: "app-icon",
   index: 7,
   isLauncher: true,

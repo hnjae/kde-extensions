@@ -74,7 +74,6 @@ QtQuick.Item {
                 display: model.display,
                 entryKey: publishedKey,
                 fullScreenable: model.IsFullScreenable,
-                hasLauncher: model.HasLauncher,
                 hasNoBorder: model.HasNoBorder,
                 iconSource: model.decoration,
                 index,

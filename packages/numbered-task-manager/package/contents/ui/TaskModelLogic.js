@@ -8,7 +8,6 @@ function createNormalTaskEntry(roles) {
   const baseEntry = createBaseTaskEntry(taskRoles, normalTaskIconFallback());
   const launcherPinned = boolValue(taskRoles.launcherPinned);
   const isLauncher = boolValue(taskRoles.isLauncher);
-  const hasLauncher = boolValue(taskRoles.hasLauncher);
 
   return Object.assign({}, baseEntry, {
     active: boolValue(taskRoles.active),
@@ -18,7 +17,6 @@ function createNormalTaskEntry(roles) {
     canSetNoBorder: boolValue(taskRoles.canSetNoBorder),
     closable: boolValue(taskRoles.closable),
     fullScreenable: boolValue(taskRoles.fullScreenable),
-    hasAnyLauncher: hasLauncher || isLauncher || launcherPinned,
     hasLauncher: isLauncher || launcherPinned,
     hasNoBorder: boolValue(taskRoles.hasNoBorder),
     entryKey: stringValue(taskRoles.entryKey),
