@@ -45,6 +45,7 @@ const logic = loadQmlJsModule(
     "noBorderCommand",
     "panelMenuPlacement",
     "pinActionState",
+    "pinLauncherAction",
     "pinLauncherCommand",
     "replaceLauncherListCommand",
     "roleData",
@@ -210,6 +211,66 @@ assert.deepEqual(
     kind: "launcher-command",
     launcherUrl: "app.desktop",
     launchers: [],
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.pinLauncherAction({
+      canPin: true,
+      isPinned: false,
+      launcherUrl: "app.desktop",
+    }),
+  ),
+  {
+    action: "pin",
+    command: {
+      action: "pinLauncher",
+      kind: "launcher-command",
+      launcherUrl: "app.desktop",
+      launchers: [],
+    },
+    enabled: true,
+    text: "Pin to Task Manager",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.pinLauncherAction({
+      canPin: true,
+      isPinned: true,
+      launcherUrl: "app.desktop",
+    }),
+  ),
+  {
+    action: "unpin",
+    command: {
+      action: "unpinLauncher",
+      kind: "launcher-command",
+      launcherUrl: "app.desktop",
+      launchers: [],
+    },
+    enabled: true,
+    text: "Unpin from Task Manager",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.pinLauncherAction({
+      canPin: false,
+      isPinned: false,
+      launcherUrl: "",
+    }),
+  ),
+  {
+    action: "pin",
+    command: {
+      action: "pinLauncher",
+      kind: "launcher-command",
+      launcherUrl: "",
+      launchers: [],
+    },
+    enabled: false,
+    text: "Pin to Task Manager",
   },
 );
 assert.deepEqual(
@@ -1518,7 +1579,17 @@ assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivitiesVisible(pinState"),
   false,
 );
-assert.equal(menuQml.includes("TaskContextMenuLogic.pinLauncherCommand"), true);
+assert.equal(menuQml.includes("TaskContextMenuLogic.pinLauncherAction"), true);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.pinActionState(root.launcherPinState"),
+  false,
+);
+assert.equal(
+  menuQml.includes(
+    "TaskContextMenuLogic.pinLauncherCommand(root.launcherPinState",
+  ),
+  false,
+);
 assert.equal(
   menuQml.includes('TaskActionLogic.contextMenuLauncherCommand("pinLauncher"'),
   false,
