@@ -19,6 +19,7 @@ const logic = loadQmlJsModule(
     "closeActionState",
     "activityEntriesSnapshot",
     "allTaskActivitiesCommand",
+    "allVirtualDesktopsAction",
     "allVirtualDesktopsCommand",
     "basicMoveAction",
     "basicResizeAction",
@@ -29,6 +30,7 @@ const logic = loadQmlJsModule(
     "fullscreenShadeBorderRoleSnapshot",
     "menuActionSectionVisible",
     "moveCommand",
+    "newVirtualDesktopAction",
     "newVirtualDesktopCommand",
     "newVirtualDesktopActionState",
     "launcherActivityListSnapshot",
@@ -67,10 +69,12 @@ const logic = loadQmlJsModule(
     "taskActivityToggleCommand",
     "taskRoleSnapshot",
     "taskActivitiesActionState",
+    "virtualDesktopAction",
     "virtualDesktopEntriesSnapshot",
     "virtualDesktopCommand",
     "virtualDesktopMenuState",
     "virtualDesktopRoleSnapshot",
+    "virtualDesktopsAction",
     "virtualDesktopsActionState",
     "windowCapabilityActionState",
   ],
@@ -900,6 +904,20 @@ assert.deepEqual(
   },
 );
 assert.deepEqual(
+  plain(
+    logic.virtualDesktopsAction({
+      changeable: true,
+      hasWindowTask: true,
+      isWindow: true,
+    }),
+  ),
+  {
+    enabled: true,
+    text: "Virtual Desktops",
+    visible: true,
+  },
+);
+assert.deepEqual(
   plain(logic.newVirtualDesktopActionState({ hasWindowTask: true })),
   {
     enabled: true,
@@ -909,6 +927,18 @@ assert.deepEqual(
   plain(logic.newVirtualDesktopActionState({ hasWindowTask: false })),
   {
     enabled: false,
+  },
+);
+assert.deepEqual(
+  plain(logic.newVirtualDesktopAction({ hasWindowTask: false })),
+  {
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestNewVirtualDesktop",
+    },
+    enabled: false,
+    text: "New Desktop",
   },
 );
 assert.deepEqual(
@@ -1314,6 +1344,32 @@ assert.deepEqual(plain(logic.newVirtualDesktopCommand()), {
   kind: "task-model-request",
   requestMethod: "requestNewVirtualDesktop",
 });
+assert.deepEqual(plain(logic.allVirtualDesktopsAction([], true)), {
+  checked: true,
+  command: {
+    arguments: [[]],
+    kind: "task-model-request",
+    requestMethod: "requestVirtualDesktops",
+  },
+  text: "All Desktops",
+});
+assert.deepEqual(
+  plain(
+    logic.virtualDesktopAction(["desktop-a"], false, {
+      id: "desktop-a",
+      name: "Desktop A",
+    }),
+  ),
+  {
+    checked: true,
+    command: {
+      arguments: [["desktop-a"]],
+      kind: "task-model-request",
+      requestMethod: "requestVirtualDesktops",
+    },
+    text: "Desktop A",
+  },
+);
 assert.deepEqual(
   plain(logic.virtualDesktopMenuState(["desktop-a"], false, "desktop-a")),
   {
@@ -1912,16 +1968,35 @@ assert.equal(
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.allVirtualDesktopsCommand"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopCommand"),
-  true,
+  false,
 );
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.newVirtualDesktopCommand"),
+  false,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.virtualDesktopsAction({"),
   true,
 );
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.allVirtualDesktopsAction"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.virtualDesktopAction"),
+  true,
+);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.newVirtualDesktopAction({"),
+  true,
+);
+assert.equal(menuQml.includes('text: "Virtual Desktops"'), false);
+assert.equal(menuQml.includes('text: "All Desktops"'), false);
+assert.equal(menuQml.includes('text: "New Desktop"'), false);
 assert.equal(
   menuQml.includes(
     'TaskActionLogic.contextMenuTaskCommand("requestVirtualDesktops"',
@@ -2050,9 +2125,13 @@ assert.equal(
 assert.equal(menuQml.includes("function checkableWindowActionState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.virtualDesktopsActionState"),
-  true,
+  false,
 );
 assert.equal(menuQml.includes("function virtualDesktopsActionState"), false);
+assert.equal(
+  menuQml.includes("TaskContextMenuLogic.newVirtualDesktopActionState"),
+  false,
+);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.taskActivitiesActionState"),
   true,
