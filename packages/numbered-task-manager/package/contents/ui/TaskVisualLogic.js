@@ -15,7 +15,7 @@ function baseFramePrefix(state) {
     return "attention";
   }
 
-  if (taskState.minimized) {
+  if (taskState.minimized || taskState.mutedLauncher) {
     return "minimized";
   }
 
@@ -66,6 +66,29 @@ function hoveredFramePrefixes(prefix, location, plasmaCoreTypes) {
 function iconActive(state) {
   const taskState = state || {};
   return Boolean(taskState.highlighted);
+}
+
+function mutedLauncherIdle(state) {
+  const taskState = state || {};
+  return (
+    Boolean(taskState.mutedLauncher) &&
+    !(
+      taskState.active ||
+      taskState.attention ||
+      taskState.demandingAttention ||
+      taskState.dropHover ||
+      taskState.hovered ||
+      taskState.highlighted
+    )
+  );
+}
+
+function frameOpacity(state) {
+  return mutedLauncherIdle(state) ? 0.55 : 1;
+}
+
+function contentOpacity(state) {
+  return mutedLauncherIdle(state) ? 0.78 : 1;
 }
 
 function framePrefixes(state, location, plasmaCoreTypes) {

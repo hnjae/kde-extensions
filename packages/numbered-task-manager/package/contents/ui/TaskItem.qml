@@ -18,6 +18,7 @@ QtQuick.Item {
     property bool demandingAttention: false
     property bool launcher: false
     property bool minimized: false
+    property bool pinnedLauncherOnly: false
     property string dragMimeType: ""
     property int slotNumber: 0
     property int taskIndex: -1
@@ -67,6 +68,7 @@ QtQuick.Item {
         hovered: root.visualHighlighted
         launcher: root.launcher
         minimized: root.minimized
+        mutedLauncher: root.pinnedLauncherOnly
     }
 
     QtQuickLayouts.RowLayout {
@@ -77,12 +79,19 @@ QtQuick.Item {
         anchors.leftMargin: taskFrame.contentLeftMargin + Kirigami.Units.smallSpacing
         anchors.rightMargin: taskFrame.contentRightMargin + Kirigami.Units.smallSpacing
         anchors.topMargin: taskFrame.contentTopMargin
+        opacity: TaskVisualLogic.contentOpacity({
+            active: root.active,
+            attention: root.demandingAttention,
+            dropHover: root.dropHover,
+            highlighted: root.visualHighlighted,
+            mutedLauncher: root.pinnedLauncherOnly
+        })
         spacing: Kirigami.Units.smallSpacing
 
         QtQuick.Item {
-            visible: !root.titleVisible
+            visible: !root.titleVisible && !root.pinnedLauncherOnly
 
-            QtQuickLayouts.Layout.fillWidth: !root.titleVisible
+            QtQuickLayouts.Layout.fillWidth: !root.titleVisible && !root.pinnedLauncherOnly
         }
 
         QtQuick.Text {

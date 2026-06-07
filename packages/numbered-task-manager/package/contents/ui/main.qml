@@ -542,6 +542,7 @@ PlasmoidItem {
                     iconSource: entry.iconSource || "application-x-executable"
                     active: entry.active || false
                     minimized: entry.isMinimized || false
+                    pinnedLauncherOnly: entry.launcherBacked && entry.isLauncher
                     launcher: entry.isLauncher || false
                     demandingAttention: entry.demandingAttention || false
                     dragMimeType: root.taskDragMimeType
