@@ -95,10 +95,25 @@ assert.match(
   /TaskActionLogic\.taskActivationRequest\("activateRemoteAttention",\s*visibleItem\s*\?\s*visibleItem\.entry\s*:\s*null,/,
 );
 assert.match(sourceQml, /actionResult\(result\)/);
+assert.match(sourceQml, /function activationTarget\(result\)/);
 assert.match(sourceQml, /function requestActivation\(result\)/);
 assert.match(sourceQml, /result\.sourceModel === "remoteAttention"/);
+assert.match(sourceQml, /return remoteAttentionSource/);
+assert.match(sourceQml, /return taskModel/);
 assert.match(
   sourceQml,
-  /remoteAttentionSource\.requestActivate\(result\.modelIndex\)/,
+  /TaskActionLogic\.activationExecutionResult\(result,\s*target\)/,
 );
-assert.match(sourceQml, /taskModel\.requestActivate\(result\.modelIndex\)/);
+assert.match(sourceQml, /actionResult\(executionResult\)/);
+assert.match(
+  sourceQml,
+  /try\s*\{[\s\S]*?target\.requestActivate\(result\.modelIndex\);[\s\S]*?\}\s*catch\s*\(error\)/,
+);
+assert.match(
+  sourceQml,
+  /TaskActionLogic\.activationExecutionResult\(result,\s*target,\s*error\)/,
+);
+assert.doesNotMatch(
+  sourceQml,
+  /remoteAttentionSource\.requestActivate\(result\.modelIndex\);\s*return;[\s\S]*?taskModel\.requestActivate\(result\.modelIndex\);/,
+);

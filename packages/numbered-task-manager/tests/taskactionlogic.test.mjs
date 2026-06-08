@@ -8,6 +8,7 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskActionLogic.js", import.meta.url),
   [
+    "activationExecutionResult",
     "contextMenuCreationResult",
     "contextMenuActionDispatchFailure",
     "contextMenuLauncherCommand",
@@ -95,6 +96,64 @@ assert.equal(
   }).ok,
   true,
 );
+
+const readyNormalActivation = logic.taskActivationRequest(
+  "activateTask",
+  normalTask,
+  {
+    requireSourceIndex: true,
+    sourceModel: "normal",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.activationExecutionResult(readyNormalActivation, {
+      requestActivate() {},
+    }),
+  ),
+  {
+    action: "activateTask",
+    code: "executed",
+    context: {
+      entryKey: "normal-task",
+      modelIndexValid: true,
+      requireSourceIndex: true,
+      sourceIndex: 1,
+      sourceModel: "normal",
+      title: "Normal Task",
+    },
+    diagnostic: false,
+    ok: true,
+  },
+);
+
+const missingActivationTarget = logic.activationExecutionResult(
+  readyNormalActivation,
+  null,
+);
+assert.equal(missingActivationTarget.ok, false);
+assert.equal(missingActivationTarget.code, "missing-activation-target");
+assert.equal(logic.shouldLogActionResult(missingActivationTarget), true);
+
+const missingActivateMethod = logic.activationExecutionResult(
+  readyNormalActivation,
+  {},
+);
+assert.equal(missingActivateMethod.ok, false);
+assert.equal(missingActivateMethod.code, "missing-request-activate");
+assert.equal(logic.shouldLogActionResult(missingActivateMethod), true);
+
+const thrownActivation = logic.activationExecutionResult(
+  readyNormalActivation,
+  {
+    requestActivate() {},
+  },
+  new Error("activation failed"),
+);
+assert.equal(thrownActivation.ok, false);
+assert.equal(thrownActivation.code, "request-threw");
+assert.equal(thrownActivation.context.error, "activation failed");
+assert.equal(logic.shouldLogActionResult(thrownActivation), true);
 
 const projectionDiagnostic = logic.taskEntryDiagnosticResult({
   code: "unknown-model-index-shape",
