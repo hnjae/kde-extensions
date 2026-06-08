@@ -66,6 +66,31 @@ function taskEntryDiagnostic(code, field, context) {
   };
 }
 
+function isListRoleValue(value) {
+  if (value === undefined || value === null) {
+    return true;
+  }
+
+  if (typeof value === "string") {
+    return false;
+  }
+
+  if (Array.isArray(value)) {
+    return true;
+  }
+
+  if (typeof value !== "object") {
+    return false;
+  }
+
+  if (value.length === undefined || value.length === null) {
+    return false;
+  }
+
+  const listLength = Number(value.length);
+  return Number.isInteger(listLength) && listLength >= 0;
+}
+
 function taskEntryDiagnostics(roles, context) {
   const taskRoles = roles || {};
   const diagnostics = [];
@@ -79,6 +104,12 @@ function taskEntryDiagnostics(roles, context) {
     diagnostics.push(taskEntryDiagnostic("invalid-number", "index", context));
   }
 
+  if (!isListRoleValue(taskRoles.activities)) {
+    diagnostics.push(
+      taskEntryDiagnostic("invalid-list", "activities", context),
+    );
+  }
+
   if (!modelIndex) {
     diagnostics.push(
       taskEntryDiagnostic("missing-model-index", "modelIndex", context),
@@ -90,6 +121,12 @@ function taskEntryDiagnostics(roles, context) {
   } else if (!modelIndex.valid) {
     diagnostics.push(
       taskEntryDiagnostic("invalid-model-index", "modelIndex", context),
+    );
+  }
+
+  if (!isListRoleValue(taskRoles.virtualDesktops)) {
+    diagnostics.push(
+      taskEntryDiagnostic("invalid-list", "virtualDesktops", context),
     );
   }
 
