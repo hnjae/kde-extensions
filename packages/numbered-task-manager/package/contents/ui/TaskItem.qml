@@ -94,21 +94,12 @@ QtQuick.Item {
             visible: root.numberMode === "prefix"
         }
 
-        QtQuick.Item {
-            id: iconOverlayContainer
-
-            QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
-            QtQuickLayouts.Layout.preferredHeight: root.iconExtent
-            QtQuickLayouts.Layout.preferredWidth: root.iconExtent
-
-            TaskLikeIcon {
-                anchors.fill: parent
-                activeTask: root.active
-                fallback: TaskEntryLogic.normalTaskIconFallback()
-                highlighted: root.visualHighlighted
-                source: root.iconSource
-                z: 0
-            }
+        TaskLikeIconSlot {
+            activeTask: root.active
+            fallback: TaskEntryLogic.normalTaskIconFallback()
+            highlighted: root.visualHighlighted
+            iconExtent: root.iconExtent
+            source: root.iconSource
 
             NumberBadge {
                 anchors.left: parent.left

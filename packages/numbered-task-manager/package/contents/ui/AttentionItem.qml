@@ -4,7 +4,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami as Kirigami
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
@@ -50,19 +49,11 @@ QtQuick.Item {
             fill: !root.titleVisible
         }
 
-        QtQuick.Item {
-            id: iconContainer
-
-            QtQuickLayouts.Layout.alignment: QtQuick.Qt.AlignVCenter
-            QtQuickLayouts.Layout.preferredHeight: root.iconExtent
-            QtQuickLayouts.Layout.preferredWidth: QtQuickLayouts.Layout.preferredHeight
-
-            TaskLikeIcon {
-                anchors.fill: parent
-                fallback: TaskEntryLogic.remoteAttentionIconFallback()
-                highlighted: root.visualHighlighted
-                source: root.iconSource
-            }
+        TaskLikeIconSlot {
+            fallback: TaskEntryLogic.remoteAttentionIconFallback()
+            highlighted: root.visualHighlighted
+            iconExtent: root.iconExtent
+            source: root.iconSource
 
             NumberBadge {
                 anchors.right: parent.right

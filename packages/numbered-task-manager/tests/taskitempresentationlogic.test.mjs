@@ -89,7 +89,7 @@ const taskItemQml = readFileSync(
   new URL("../package/contents/ui/TaskItem.qml", import.meta.url),
   "utf8",
 );
-assert.match(taskItemQml, /id:\s*iconOverlayContainer/);
+assert.match(taskItemQml, /\bTaskLikeIconSlot\s*\{/);
 assert.match(taskItemQml, /property real slotWidth:\s*0/);
 assert.match(taskItemQml, /property bool showTitle:\s*true/);
 assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
