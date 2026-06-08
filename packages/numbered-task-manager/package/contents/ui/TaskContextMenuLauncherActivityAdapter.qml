@@ -4,6 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
+import "TaskActionLogic.js" as TaskActionLogic
 import "TaskContextMenuLogic.js" as TaskContextMenuLogic
 
 QtQuick.QtObject {
@@ -13,7 +14,14 @@ QtQuick.QtObject {
     property var launcherModel
     property string launcherUrl: ""
 
+    signal actionResult(var result)
     signal launcherCommandRequested(var command)
+
+    function launcherActivityFailure(update, code) {
+        const result = TaskActionLogic.contextMenuLauncherActivityResult(update, code, launcherUrl);
+        actionResult(result);
+        return false;
+    }
 
     function refreshLauncherActivities() {
         if (!launcherModel || !launcherUrl) {
@@ -26,7 +34,7 @@ QtQuick.QtObject {
 
     function applyLauncherActivityUpdate(update) {
         if (!update.ok) {
-            return false;
+            return launcherActivityFailure(update, "invalid-launcher-activity-update");
         }
 
         launcherActivityList = update.activities;
@@ -39,8 +47,11 @@ QtQuick.QtObject {
     }
 
     function applyLauncherActivityAction(update) {
-        if (!launcherModel || !launcherUrl) {
-            return false;
+        if (!launcherModel) {
+            return launcherActivityFailure(update, "missing-launcher-model");
+        }
+        if (!launcherUrl) {
+            return launcherActivityFailure(update, "missing-launcher-url");
         }
 
         const changed = applyLauncherActivityUpdate(update);

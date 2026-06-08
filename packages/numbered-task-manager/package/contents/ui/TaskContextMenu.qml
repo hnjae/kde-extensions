@@ -136,6 +136,9 @@ PlasmaExtras.Menu {
         onLauncherCommandRequested: command => {
             root.launcherCommandRequested(command);
         }
+        onActionResult: result => {
+            root.actionResult(result);
+        }
     }
 
     PlasmaExtras.MenuItem {

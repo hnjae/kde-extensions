@@ -411,6 +411,34 @@ function contextMenuLauncherCommandDispatchResult(command) {
   );
 }
 
+function contextMenuLauncherActivityContext(update, launcherUrl) {
+  const activityUpdate = update || {};
+  const context = {};
+  const url = String(launcherUrl || "");
+
+  if (url) {
+    context.launcherUrl = url;
+  }
+  if (activityUpdate.changed !== undefined) {
+    context.changed = Boolean(activityUpdate.changed);
+  }
+  if (activityUpdate.reason) {
+    context.reason = String(activityUpdate.reason);
+  }
+
+  return context;
+}
+
+function contextMenuLauncherActivityResult(update, code, launcherUrl) {
+  return actionResult(
+    "updateLauncherActivities",
+    code || "launcher-activity-update-failed",
+    false,
+    true,
+    contextMenuLauncherActivityContext(update, launcherUrl),
+  );
+}
+
 function contextMenuTaskRequestContext(modelIndex, task) {
   const entry = task || {};
   const context = {
