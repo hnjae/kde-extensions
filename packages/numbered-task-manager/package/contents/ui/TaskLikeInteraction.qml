@@ -4,6 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
+import org.kde.kirigami.platform as KirigamiPlatform
 import "TaskInteractionLogic.js" as TaskInteractionLogic
 
 QtQuick.Item {
@@ -14,12 +15,15 @@ QtQuick.Item {
     property var modelIndex
     property var taskData: ({})
     property var visualParent: root.focusTarget
-    readonly property bool highlighted: pointerHandler.hovered || root.focusTarget.activeFocus || root.contextMenuOpen
+    readonly property bool highlighted: pointerHandler.hovered || root.activeFocus || root.focusTarget.activeFocus || root.contextMenuOpen
 
     signal activated
     signal contextMenuRequested(var request)
 
     anchors.fill: parent
+    activeFocusOnTab: true
+
+    KirigamiPlatform.Theme.colorSet: KirigamiPlatform.Theme.Button
 
     QtQuick.Keys.onMenuPressed: contextMenuTimer.start()
 

@@ -6,7 +6,6 @@ pragma ComponentBehavior: Bound
 import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami as Kirigami
-import org.kde.kirigami.platform as KirigamiPlatform
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskMetricsLogic.js" as TaskMetricsLogic
 
@@ -33,10 +32,6 @@ QtQuick.Item {
     implicitWidth: TaskMetricsLogic.taskImplicitWidth(root.slotWidth, naturalImplicitWidth)
     implicitHeight: TaskMetricsLogic.taskExtent()
     width: implicitWidth
-    activeFocusOnTab: true
-    QtQuick.Keys.forwardTo: [taskLikeInteraction]
-
-    KirigamiPlatform.Theme.colorSet: KirigamiPlatform.Theme.Button
 
     TaskLikeFrame {
         id: taskFrame
@@ -93,7 +88,6 @@ QtQuick.Item {
         id: taskLikeInteraction
 
         contextMenuOpen: root.contextMenuOpen
-        focusTarget: root
         modelIndex: root.modelIndex
         taskData: root.taskData
         visualParent: root

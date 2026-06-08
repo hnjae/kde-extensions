@@ -55,10 +55,6 @@ QtQuick.Item {
     implicitWidth: TaskMetricsLogic.taskImplicitWidth(root.slotWidth, naturalImplicitWidth)
     implicitHeight: TaskMetricsLogic.taskExtent()
     width: implicitWidth
-    activeFocusOnTab: true
-    QtQuick.Keys.forwardTo: [taskLikeInteraction]
-
-    KirigamiPlatform.Theme.colorSet: KirigamiPlatform.Theme.Button
 
     TaskLikeFrame {
         id: taskFrame
@@ -176,7 +172,6 @@ QtQuick.Item {
         id: taskLikeInteraction
 
         contextMenuOpen: root.contextMenuOpen
-        focusTarget: root
         modelIndex: root.modelIndex
         taskData: root.taskData
         visualParent: root
