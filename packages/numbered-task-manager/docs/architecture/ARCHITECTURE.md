@@ -112,9 +112,10 @@ in `SPEC.md`.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
   coercion, launcher URL precedence, title/icon fallback, model-index validity,
   diagnostics for malformed required projection fields, diagnostics for
-  malformed activity and virtual-desktop list role shapes, and virtual-desktop
-  membership should not be duplicated between normal task composition, remote
-  attention, context menu code, and task-like delegates.
+  malformed base boolean role shapes, diagnostics for malformed activity and
+  virtual-desktop list role shapes, and virtual-desktop membership should not
+  be duplicated between normal task composition, remote attention, context menu
+  code, and task-like delegates.
 - Keep source-side task-entry diagnostic action-result adaptation in
   `TaskEntryDiagnosticReporter.qml`. Normal and remote-attention source
   delegates should provide source model, source row, publication key, and roles;
