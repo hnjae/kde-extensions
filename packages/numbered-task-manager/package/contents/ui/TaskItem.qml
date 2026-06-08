@@ -52,7 +52,7 @@ QtQuick.Item {
     signal contextMenuRequested(var request)
     signal taskDropped(int sourceIndex, int targetIndex, var drop)
 
-    implicitWidth: root.slotWidth > 0 ? root.slotWidth : naturalImplicitWidth
+    implicitWidth: TaskMetricsLogic.taskImplicitWidth(root.slotWidth, naturalImplicitWidth)
     implicitHeight: TaskMetricsLogic.taskExtent()
     width: implicitWidth
     activeFocusOnTab: true

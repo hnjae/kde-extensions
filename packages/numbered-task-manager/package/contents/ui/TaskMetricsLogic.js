@@ -14,6 +14,11 @@ function taskTitleVisible(showTitle, slotWidth, threshold) {
   return Boolean(showTitle) && (width <= 0 || width >= Number(threshold || 0));
 }
 
+function taskImplicitWidth(slotWidth, naturalImplicitWidth) {
+  const width = Number(slotWidth || 0);
+  return width > 0 ? width : Number(naturalImplicitWidth || 0);
+}
+
 function maximumSlotWidth() {
   return 220;
 }
