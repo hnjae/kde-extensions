@@ -111,7 +111,8 @@ in `SPEC.md`.
 - Keep shared task-like activation and context-menu trigger wiring in a QML interaction component. Normal and remote-attention delegates should consume that component for hover state, focusability, menu-key handling, Button color-set binding, menu-key/right-click zero-delay context-menu requests, internal focus handoff, and left-click activation while variant delegates keep their own task data, badges, drag/drop, menu visual-parent routing, and visual layout.
 - Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
   coercion, launcher URL precedence, title/icon fallback, model-index validity,
-  diagnostics for malformed required projection fields, and virtual-desktop
+  diagnostics for malformed required projection fields, diagnostics for
+  malformed activity and virtual-desktop list role shapes, and virtual-desktop
   membership should not be duplicated between normal task composition, remote
   attention, context menu code, and task-like delegates.
 - Keep source-side task-entry diagnostic action-result adaptation in
