@@ -58,6 +58,44 @@ function hasValidModelIndex(modelIndex) {
   );
 }
 
+function taskEntryDiagnostic(code, field, context) {
+  return {
+    code,
+    context: Object.assign({}, context || {}),
+    field,
+  };
+}
+
+function taskEntryDiagnostics(roles, context) {
+  const taskRoles = roles || {};
+  const diagnostics = [];
+  const modelIndex = taskRoles.modelIndex;
+
+  if (
+    taskRoles.index !== undefined &&
+    taskRoles.index !== null &&
+    Number.isNaN(Number(taskRoles.index))
+  ) {
+    diagnostics.push(taskEntryDiagnostic("invalid-number", "index", context));
+  }
+
+  if (!modelIndex) {
+    diagnostics.push(
+      taskEntryDiagnostic("missing-model-index", "modelIndex", context),
+    );
+  } else if (modelIndex.valid === undefined) {
+    diagnostics.push(
+      taskEntryDiagnostic("unknown-model-index-shape", "modelIndex", context),
+    );
+  } else if (!modelIndex.valid) {
+    diagnostics.push(
+      taskEntryDiagnostic("invalid-model-index", "modelIndex", context),
+    );
+  }
+
+  return diagnostics;
+}
+
 function boolValue(value) {
   return Boolean(value);
 }

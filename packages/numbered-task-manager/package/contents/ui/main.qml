@@ -147,6 +147,9 @@ PlasmoidItem {
         onTaskRemoved: key => {
             normalTaskStore.removeNormalTask(key);
         }
+        onActionResult: result => {
+            actionLogger.logActionResult(result);
+        }
     }
 
     RemoteAttentionSource {
@@ -163,6 +166,10 @@ PlasmoidItem {
 
         onContextMenuRequested: request => {
             contextMenuAdapter.openTaskContextMenu(request);
+        }
+
+        onActionResult: result => {
+            actionLogger.logActionResult(result);
         }
     }
 

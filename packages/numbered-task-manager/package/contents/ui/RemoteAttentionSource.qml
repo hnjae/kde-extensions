@@ -6,6 +6,7 @@ pragma ComponentBehavior: Bound
 import QtQuick as QtQuick
 import org.kde.taskmanager as TaskManager
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
+import "TaskActionLogic.js" as TaskActionLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskScopeLogic.js" as TaskScopeLogic
 import "VisibleTaskItemsLogic.js" as VisibleTaskItemsLogic
@@ -34,6 +35,7 @@ QtQuick.Item {
     readonly property var itemTaskData: root.itemEntry
     readonly property string itemTitle: root.itemEntry.title || ""
 
+    signal actionResult(var result)
     signal attentionPublished(string previousKey, string key, bool qualifies, var task, bool becameQualified)
     signal attentionRemoved(string key)
     signal activationRequested(var visibleItem)
@@ -101,6 +103,8 @@ QtQuick.Item {
 
             property string launcherUrl: TaskEntryLogic.launcherUrlFromRoles(model.LauncherUrlWithoutIcon, model.LauncherUrl)
             property bool hasSyncedAttention: false
+            property string lastDiagnosticSignature: ""
+            property var persistentModelIndex: root.taskModel.makePersistentModelIndex(index)
             property string publishedKey: ""
             property bool previousQualifies: false
             property var taskInfo: RemoteAttentionLogic.createRemoteAttentionEntry({
@@ -113,7 +117,7 @@ QtQuick.Item {
                 isOnAllVirtualDesktops: model.IsOnAllVirtualDesktops,
                 isWindow: model.IsWindow,
                 launcherUrl,
-                modelIndex: root.taskModel.makePersistentModelIndex(index),
+                modelIndex: persistentModelIndex,
                 virtualDesktops: model.VirtualDesktops,
                 winIds: model.WinIdList
             })
@@ -124,9 +128,43 @@ QtQuick.Item {
             visible: false
             width: 0
 
+            function diagnosticContext() {
+                const context = {
+                    sourceModel: "remoteAttention",
+                    sourceRow: index
+                };
+                if (publishedKey) {
+                    context.publicationKey = publishedKey;
+                }
+                return context;
+            }
+
+            function diagnosticResult(diagnostic) {
+                return TaskActionLogic.actionResult("projectTaskEntry", diagnostic.code, false, true, Object.assign({
+                    field: diagnostic.field
+                }, diagnostic.context || {}));
+            }
+
+            function emitTaskEntryDiagnostics() {
+                const diagnostics = TaskEntryLogic.taskEntryDiagnostics({
+                    index,
+                    modelIndex: persistentModelIndex
+                }, diagnosticContext());
+                const signature = JSON.stringify(diagnostics);
+                if (signature === lastDiagnosticSignature) {
+                    return;
+                }
+
+                lastDiagnosticSignature = signature;
+                for (let i = 0; i < diagnostics.length; ++i) {
+                    root.actionResult(diagnosticResult(diagnostics[i]));
+                }
+            }
+
             function syncAttention() {
                 const becameQualified = hasSyncedAttention && !previousQualifies && qualifies;
                 publishedKey = root.publishRemoteAttention(publishedKey, taskKey, qualifies, taskInfo, becameQualified);
+                emitTaskEntryDiagnostics();
                 previousQualifies = qualifies;
                 hasSyncedAttention = true;
             }

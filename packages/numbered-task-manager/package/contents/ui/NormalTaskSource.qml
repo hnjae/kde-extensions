@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import "LauncherListLogic.js" as LauncherListLogic
+import "TaskActionLogic.js" as TaskActionLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskModelLogic.js" as TaskModelLogic
 import "TaskScopeLogic.js" as TaskScopeLogic
@@ -20,6 +21,7 @@ QtQuick.Item {
     property var isInCurrentActivity: null
     property var visibleLauncherPosition: null
 
+    signal actionResult(var result)
     signal taskPublished(string key, bool qualifies, var task)
     signal taskRemoved(string key)
 
@@ -63,6 +65,8 @@ QtQuick.Item {
             property var launcherPinState: LauncherListLogic.launcherPinState(root.taskModel.launcherList, launcherUrl, root.currentActivity, url => root.taskModel.launcherPosition(url), launcherRevisionToken)
             property int launcherPosition: launcherPinState.pinnedLauncherPosition
             property bool launcherPinned: launcherPinState.isPinned
+            property string lastDiagnosticSignature: ""
+            property var persistentModelIndex: root.taskModel.makePersistentModelIndex(index)
             property string publishedKey: ""
             property var taskInfo: TaskModelLogic.createNormalTaskEntry({
                 activities: model.Activities,
@@ -98,7 +102,7 @@ QtQuick.Item {
                 launcherPinned,
                 launcherPosition,
                 launcherUrl,
-                modelIndex: root.taskModel.makePersistentModelIndex(index),
+                modelIndex: persistentModelIndex,
                 virtualDesktops: model.VirtualDesktops
             })
             property bool qualifies: TaskScopeLogic.normalTaskQualifies(taskInfo, activities => root.taskIsInCurrentActivity(activities), root.currentDesktop)
@@ -107,11 +111,45 @@ QtQuick.Item {
             visible: false
             width: 0
 
+            function diagnosticContext() {
+                const context = {
+                    sourceModel: "normal",
+                    sourceRow: index
+                };
+                if (publishedKey) {
+                    context.publicationKey = publishedKey;
+                }
+                return context;
+            }
+
+            function diagnosticResult(diagnostic) {
+                return TaskActionLogic.actionResult("projectTaskEntry", diagnostic.code, false, true, Object.assign({
+                    field: diagnostic.field
+                }, diagnostic.context || {}));
+            }
+
+            function emitTaskEntryDiagnostics() {
+                const diagnostics = TaskEntryLogic.taskEntryDiagnostics({
+                    index,
+                    modelIndex: persistentModelIndex
+                }, diagnosticContext());
+                const signature = JSON.stringify(diagnostics);
+                if (signature === lastDiagnosticSignature) {
+                    return;
+                }
+
+                lastDiagnosticSignature = signature;
+                for (let i = 0; i < diagnostics.length; ++i) {
+                    root.actionResult(diagnosticResult(diagnostics[i]));
+                }
+            }
+
             function syncTask() {
                 if (!publishedKey) {
                     return;
                 }
 
+                emitTaskEntryDiagnostics();
                 const task = Object.assign({}, taskInfo);
                 task.entryKey = publishedKey;
                 root.taskPublished(publishedKey, qualifies, task);

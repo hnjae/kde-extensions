@@ -84,16 +84,18 @@ assert.equal(logic.normalTaskIconFallback(), "application-x-executable");
 assert.equal(logic.remoteAttentionIconFallback(), "dialog-warning");
 
 assert.deepEqual(
-  logic.taskEntryDiagnostics(
-    {
-      index: "not-a-number",
-      modelIndex: {},
-    },
-    {
-      publicationKey: "normal:1",
-      sourceModel: "normal",
-      sourceRow: 3,
-    },
+  plain(
+    logic.taskEntryDiagnostics(
+      {
+        index: "not-a-number",
+        modelIndex: {},
+      },
+      {
+        publicationKey: "normal:1",
+        sourceModel: "normal",
+        sourceRow: 3,
+      },
+    ),
   ),
   [
     {
@@ -117,15 +119,17 @@ assert.deepEqual(
   ],
 );
 assert.deepEqual(
-  logic.taskEntryDiagnostics(
-    {
-      index: 1,
-      modelIndex: { valid: false },
-    },
-    {
-      sourceModel: "remoteAttention",
-      sourceRow: 1,
-    },
+  plain(
+    logic.taskEntryDiagnostics(
+      {
+        index: 1,
+        modelIndex: { valid: false },
+      },
+      {
+        sourceModel: "remoteAttention",
+        sourceRow: 1,
+      },
+    ),
   ),
   [
     {
@@ -139,10 +143,12 @@ assert.deepEqual(
   ],
 );
 assert.deepEqual(
-  logic.taskEntryDiagnostics({
-    index: 1,
-    modelIndex: { valid: true },
-  }),
+  plain(
+    logic.taskEntryDiagnostics({
+      index: 1,
+      modelIndex: { valid: true },
+    }),
+  ),
   [],
 );
 
