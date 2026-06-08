@@ -82,6 +82,11 @@ in `SPEC.md`.
   tested helpers while QML keeps submenu composition and effect dispatch. QML
   menu items should consume the helper output directly instead of adding
   menu-local action-state wrapper functions.
+- Keep context-menu action dispatch failure classification in the action-result
+  layer. The dispatcher may route helper-owned actions to task-model adapters,
+  launcher commands, or launcher-activity adapters, but missing adapters and
+  unknown routes should produce structured diagnostic results instead of silent
+  false returns.
 - Keep launcher-list transformations in `LauncherListLogic.js` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
