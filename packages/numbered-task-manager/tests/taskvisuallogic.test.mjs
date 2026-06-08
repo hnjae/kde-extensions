@@ -323,6 +323,7 @@ assert.match(
 );
 assert.doesNotMatch(taskItemQml, /activeFocusOnTab:\s*true/);
 assert.doesNotMatch(taskItemQml, /QtQuick\.Keys\.forwardTo:/);
+assert.doesNotMatch(taskItemQml, /focusTarget:\s*root/);
 assert.doesNotMatch(
   taskItemQml,
   /KirigamiPlatform\.Theme\.colorSet:\s*KirigamiPlatform\.Theme\.Button/,
@@ -381,6 +382,7 @@ assert.doesNotMatch(attentionItemQml, /TaskVisualLogic\.iconActive\(\{/);
 assert.match(attentionItemQml, /\bTaskLikeInteraction\s*\{/);
 assert.doesNotMatch(attentionItemQml, /activeFocusOnTab:\s*true/);
 assert.doesNotMatch(attentionItemQml, /QtQuick\.Keys\.forwardTo:/);
+assert.doesNotMatch(attentionItemQml, /focusTarget:\s*root/);
 assert.doesNotMatch(
   attentionItemQml,
   /KirigamiPlatform\.Theme\.colorSet:\s*KirigamiPlatform\.Theme\.Button/,
@@ -417,10 +419,10 @@ assert.match(
 );
 assert.match(
   taskLikeInteractionQml,
-  /readonly property bool highlighted:\s*pointerHandler\.hovered \|\| root\.focusTarget\.activeFocus \|\| root\.contextMenuOpen/,
+  /readonly property bool highlighted:\s*pointerHandler\.hovered \|\| root\.activeFocus \|\| root\.focusTarget\.activeFocus \|\| root\.contextMenuOpen/,
 );
 assert.match(taskLikeInteractionQml, /activeFocusOnTab:\s*true/);
-assert.match(taskLikeInteractionQml, /QtQuick\.Keys\.forwardTo:\s*\[root\]/);
+assert.doesNotMatch(taskLikeInteractionQml, /QtQuick\.Keys\.forwardTo:/);
 assert.match(
   taskLikeInteractionQml,
   /KirigamiPlatform\.Theme\.colorSet:\s*KirigamiPlatform\.Theme\.Button/,
