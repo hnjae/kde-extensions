@@ -114,6 +114,11 @@ in `SPEC.md`.
   diagnostics for malformed required projection fields, and virtual-desktop
   membership should not be duplicated between normal task composition, remote
   attention, context menu code, and task-like delegates.
+- Keep source-side task-entry diagnostic action-result adaptation in
+  `TaskEntryDiagnosticReporter.qml`. Normal and remote-attention source
+  delegates should provide source model, source row, publication key, and roles;
+  the reporter owns diagnostic context, repeated-signature suppression, and
+  `projectTaskEntry` action-result mapping.
 - Keep normal-task projection dependencies explicit. `TaskModelLogic.js` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
 - Keep normal-task entry schema limited to fields with production consumers or documented purpose. Raw upstream launcher association should not be carried as a separate `hasAnyLauncher` field unless a production consumer is added.
 - Keep normal task publication state transitions in `NormalTaskStoreLogic.js`.
