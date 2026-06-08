@@ -9,6 +9,7 @@ const logic = loadQmlJsModule(
   new URL("../package/contents/ui/TaskActionLogic.js", import.meta.url),
   [
     "contextMenuCreationResult",
+    "contextMenuActionDispatchFailure",
     "contextMenuLauncherCommand",
     "contextMenuLauncherCommandDispatchResult",
     "contextMenuRequestResult",
@@ -208,6 +209,48 @@ assert.equal(logic.shouldLogActionResult(creationFailure), true);
 assert.equal(
   logic.contextMenuCreationResult({ objectName: "menu" }, {}).ok,
   true,
+);
+
+const missingTaskDispatcher = logic.contextMenuActionDispatchFailure(
+  {
+    command: logic.contextMenuTaskCommand("requestMove"),
+    kind: "task-model-request",
+    update: null,
+  },
+  "missing-task-command-adapter",
+);
+assert.deepEqual(plain(missingTaskDispatcher), {
+  action: "dispatchContextMenuAction",
+  code: "missing-task-command-adapter",
+  context: {
+    requestMethod: "requestMove",
+    routeKind: "task-model-request",
+  },
+  diagnostic: true,
+  ok: false,
+});
+assert.equal(logic.shouldLogActionResult(missingTaskDispatcher), true);
+
+assert.deepEqual(
+  plain(
+    logic.contextMenuActionDispatchFailure(
+      {
+        command: null,
+        kind: "none",
+        update: null,
+      },
+      "unknown-route",
+    ),
+  ),
+  {
+    action: "dispatchContextMenuAction",
+    code: "unknown-route",
+    context: {
+      routeKind: "none",
+    },
+    diagnostic: true,
+    ok: false,
+  },
 );
 
 assert.deepEqual(

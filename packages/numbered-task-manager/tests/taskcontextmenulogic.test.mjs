@@ -3712,7 +3712,39 @@ assert.equal(
   actionDispatcherQml.includes("TaskContextMenuLogic.contextMenuActionRoute"),
   true,
 );
+assert.equal(
+  actionDispatcherQml.includes(
+    'import "TaskActionLogic.js" as TaskActionLogic',
+  ),
+  true,
+);
+assert.equal(
+  actionDispatcherQml.includes("signal actionResult(var result)"),
+  true,
+);
 assert.equal(actionDispatcherQml.includes("function triggerAction"), true);
+assert.equal(
+  actionDispatcherQml.includes(
+    "TaskActionLogic.contextMenuActionDispatchFailure(route, code)",
+  ),
+  true,
+);
+assert.equal(
+  actionDispatcherQml.includes(
+    'dispatchFailure(route, "missing-launcher-activity-adapter")',
+  ),
+  true,
+);
+assert.equal(
+  actionDispatcherQml.includes(
+    'dispatchFailure(route, "missing-task-command-adapter")',
+  ),
+  true,
+);
+assert.equal(
+  actionDispatcherQml.includes('dispatchFailure(route, "unknown-route")'),
+  true,
+);
 assert.equal(
   actionDispatcherQml.includes(
     "taskCommandAdapter.requestTaskModelCommand(route.command)",
@@ -3729,6 +3761,11 @@ assert.equal(
   actionDispatcherQml.includes("launcherCommandRequested(route.command)"),
   true,
 );
+const menuDispatchesActionResults =
+  menuQml.includes("TaskContextMenuActionDispatcher") &&
+  menuQml.includes("onActionResult: result =>") &&
+  menuQml.includes("root.actionResult(result)");
+assert.equal(menuDispatchesActionResults, true);
 
 const mainQml = readFileSync(
   new URL("../package/contents/ui/main.qml", import.meta.url),
