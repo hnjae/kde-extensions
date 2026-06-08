@@ -131,8 +131,10 @@ QtQuick.Item {
 
                 publicationKey: publishedKey
                 roles: ({
+                        activities: model.Activities,
                         index: index,
-                        modelIndex: persistentModelIndex
+                        modelIndex: persistentModelIndex,
+                        virtualDesktops: model.VirtualDesktops
                     })
                 sourceModel: "remoteAttention"
                 sourceRow: index
