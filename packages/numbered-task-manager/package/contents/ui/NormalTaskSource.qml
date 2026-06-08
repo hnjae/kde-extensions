@@ -5,7 +5,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import "LauncherListLogic.js" as LauncherListLogic
-import "TaskActionLogic.js" as TaskActionLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskModelLogic.js" as TaskModelLogic
 import "TaskScopeLogic.js" as TaskScopeLogic
@@ -65,7 +64,6 @@ QtQuick.Item {
             property var launcherPinState: LauncherListLogic.launcherPinState(root.taskModel.launcherList, launcherUrl, root.currentActivity, url => root.taskModel.launcherPosition(url), launcherRevisionToken)
             property int launcherPosition: launcherPinState.pinnedLauncherPosition
             property bool launcherPinned: launcherPinState.isPinned
-            property string lastDiagnosticSignature: ""
             property var persistentModelIndex: root.taskModel.makePersistentModelIndex(index)
             property string publishedKey: ""
             property var taskInfo: TaskModelLogic.createNormalTaskEntry({
@@ -111,36 +109,19 @@ QtQuick.Item {
             visible: false
             width: 0
 
-            function diagnosticContext() {
-                const context = {
-                    sourceModel: "normal",
-                    sourceRow: index
-                };
-                if (publishedKey) {
-                    context.publicationKey = publishedKey;
-                }
-                return context;
-            }
+            TaskEntryDiagnosticReporter {
+                id: taskEntryDiagnostics
 
-            function diagnosticResult(diagnostic) {
-                return TaskActionLogic.actionResult("projectTaskEntry", diagnostic.code, false, true, Object.assign({
-                    field: diagnostic.field
-                }, diagnostic.context || {}));
-            }
+                publicationKey: publishedKey
+                roles: ({
+                        index: index,
+                        modelIndex: persistentModelIndex
+                    })
+                sourceModel: "normal"
+                sourceRow: index
 
-            function emitTaskEntryDiagnostics() {
-                const diagnostics = TaskEntryLogic.taskEntryDiagnostics({
-                    index,
-                    modelIndex: persistentModelIndex
-                }, diagnosticContext());
-                const signature = JSON.stringify(diagnostics);
-                if (signature === lastDiagnosticSignature) {
-                    return;
-                }
-
-                lastDiagnosticSignature = signature;
-                for (let i = 0; i < diagnostics.length; ++i) {
-                    root.actionResult(diagnosticResult(diagnostics[i]));
+                onActionResult: result => {
+                    root.actionResult(result);
                 }
             }
 
@@ -149,7 +130,7 @@ QtQuick.Item {
                     return;
                 }
 
-                emitTaskEntryDiagnostics();
+                taskEntryDiagnostics.emitDiagnostics();
                 const task = Object.assign({}, taskInfo);
                 task.entryKey = publishedKey;
                 root.taskPublished(publishedKey, qualifies, task);

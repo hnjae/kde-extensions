@@ -6,7 +6,6 @@ pragma ComponentBehavior: Bound
 import QtQuick as QtQuick
 import org.kde.taskmanager as TaskManager
 import "RemoteAttentionLogic.js" as RemoteAttentionLogic
-import "TaskActionLogic.js" as TaskActionLogic
 import "TaskEntryLogic.js" as TaskEntryLogic
 import "TaskScopeLogic.js" as TaskScopeLogic
 import "VisibleTaskItemsLogic.js" as VisibleTaskItemsLogic
@@ -103,7 +102,6 @@ QtQuick.Item {
 
             property string launcherUrl: TaskEntryLogic.launcherUrlFromRoles(model.LauncherUrlWithoutIcon, model.LauncherUrl)
             property bool hasSyncedAttention: false
-            property string lastDiagnosticSignature: ""
             property var persistentModelIndex: root.taskModel.makePersistentModelIndex(index)
             property string publishedKey: ""
             property bool previousQualifies: false
@@ -128,43 +126,26 @@ QtQuick.Item {
             visible: false
             width: 0
 
-            function diagnosticContext() {
-                const context = {
-                    sourceModel: "remoteAttention",
-                    sourceRow: index
-                };
-                if (publishedKey) {
-                    context.publicationKey = publishedKey;
-                }
-                return context;
-            }
+            TaskEntryDiagnosticReporter {
+                id: taskEntryDiagnostics
 
-            function diagnosticResult(diagnostic) {
-                return TaskActionLogic.actionResult("projectTaskEntry", diagnostic.code, false, true, Object.assign({
-                    field: diagnostic.field
-                }, diagnostic.context || {}));
-            }
+                publicationKey: publishedKey
+                roles: ({
+                        index: index,
+                        modelIndex: persistentModelIndex
+                    })
+                sourceModel: "remoteAttention"
+                sourceRow: index
 
-            function emitTaskEntryDiagnostics() {
-                const diagnostics = TaskEntryLogic.taskEntryDiagnostics({
-                    index,
-                    modelIndex: persistentModelIndex
-                }, diagnosticContext());
-                const signature = JSON.stringify(diagnostics);
-                if (signature === lastDiagnosticSignature) {
-                    return;
-                }
-
-                lastDiagnosticSignature = signature;
-                for (let i = 0; i < diagnostics.length; ++i) {
-                    root.actionResult(diagnosticResult(diagnostics[i]));
+                onActionResult: result => {
+                    root.actionResult(result);
                 }
             }
 
             function syncAttention() {
                 const becameQualified = hasSyncedAttention && !previousQualifies && qualifies;
                 publishedKey = root.publishRemoteAttention(publishedKey, taskKey, qualifies, taskInfo, becameQualified);
-                emitTaskEntryDiagnostics();
+                taskEntryDiagnostics.emitDiagnostics();
                 previousQualifies = qualifies;
                 hasSyncedAttention = true;
             }
