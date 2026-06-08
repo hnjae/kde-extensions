@@ -32,21 +32,10 @@ assert.match(
   /TaskVisualLogic\.iconActive\(\{\s*active:\s*root\.activeTask,\s*highlighted:\s*root\.highlighted\s*\}\)/,
 );
 
-assert.match(taskItemQml, /\bTaskLikeIcon\s*\{/);
-assert.match(taskItemQml, /activeTask:\s*root\.active/);
-assert.match(taskItemQml, /highlighted:\s*root\.visualHighlighted/);
-assert.match(
-  taskItemQml,
-  /fallback:\s*TaskEntryLogic\.normalTaskIconFallback\(\)/,
-);
-assert.match(taskItemQml, /source:\s*root\.iconSource/);
+assert.match(taskItemQml, /\bTaskLikeIconSlot\s*\{/);
+assert.doesNotMatch(taskItemQml, /\bTaskLikeIcon\s*\{/);
 assert.doesNotMatch(taskItemQml, /KirigamiPrimitives\.Icon\s*\{/);
 
-assert.match(attentionItemQml, /\bTaskLikeIcon\s*\{/);
-assert.match(attentionItemQml, /highlighted:\s*root\.visualHighlighted/);
-assert.match(
-  attentionItemQml,
-  /fallback:\s*TaskEntryLogic\.remoteAttentionIconFallback\(\)/,
-);
-assert.match(attentionItemQml, /source:\s*root\.iconSource/);
+assert.match(attentionItemQml, /\bTaskLikeIconSlot\s*\{/);
+assert.doesNotMatch(attentionItemQml, /\bTaskLikeIcon\s*\{/);
 assert.doesNotMatch(attentionItemQml, /KirigamiPrimitives\.Icon\s*\{/);
