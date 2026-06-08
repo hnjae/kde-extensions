@@ -32,7 +32,6 @@ assert.match(
   sourceQml,
   /TaskManager\.TasksModel\s*\{[\s\S]*?id:\s*attentionTasksModel/,
 );
-assert.match(sourceQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
 assert.match(
   sourceQml,
   /readonly property var taskModel:\s*attentionTasksModel/,
@@ -46,8 +45,8 @@ assert.match(
 assert.match(sourceQml, /signal attentionPublished\(/);
 assert.match(sourceQml, /signal attentionRemoved\(/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
-assert.match(sourceQml, /TaskEntryLogic\.taskEntryDiagnostics\(/);
-assert.match(sourceQml, /TaskActionLogic\.actionResult\("projectTaskEntry"/);
+assert.match(sourceQml, /\bTaskEntryDiagnosticReporter\s*\{/);
+assert.match(sourceQml, /taskEntryDiagnostics\.emitDiagnostics\(\)/);
 assert.match(
   sourceQml,
   /property var attentionState:\s*RemoteAttentionLogic\.createRemoteAttentionState\(\)/,

@@ -26,7 +26,6 @@ assert.doesNotMatch(
   mainQml,
   /QtQuick\.Repeater\s*\{[\s\S]*?model:\s*tasksModel[\s\S]*?publishNormalTask/,
 );
-assert.match(sourceQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
 assert.match(
   sourceQml,
   /QtQuick\.Repeater\s*\{[\s\S]*?model:\s*root\.taskModel/,
@@ -34,5 +33,5 @@ assert.match(
 assert.match(sourceQml, /signal taskPublished\(/);
 assert.match(sourceQml, /signal taskRemoved\(/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
-assert.match(sourceQml, /TaskEntryLogic\.taskEntryDiagnostics\(/);
-assert.match(sourceQml, /TaskActionLogic\.actionResult\("projectTaskEntry"/);
+assert.match(sourceQml, /\bTaskEntryDiagnosticReporter\s*\{/);
+assert.match(sourceQml, /taskEntryDiagnostics\.emitDiagnostics\(\)/);
