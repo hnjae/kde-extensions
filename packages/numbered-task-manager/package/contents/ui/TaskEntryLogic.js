@@ -66,6 +66,14 @@ function taskEntryDiagnostic(code, field, context) {
   };
 }
 
+function isBooleanRoleValue(value) {
+  if (value === undefined || value === null) {
+    return true;
+  }
+
+  return typeof value === "boolean";
+}
+
 function isListRoleValue(value) {
   if (value === undefined || value === null) {
     return true;
@@ -102,6 +110,18 @@ function taskEntryDiagnostics(roles, context) {
     Number.isNaN(Number(taskRoles.index))
   ) {
     diagnostics.push(taskEntryDiagnostic("invalid-number", "index", context));
+  }
+
+  const baseBooleanRoleFields = [
+    "demandingAttention",
+    "isOnAllVirtualDesktops",
+    "isWindow",
+  ];
+  for (let i = 0; i < baseBooleanRoleFields.length; ++i) {
+    const field = baseBooleanRoleFields[i];
+    if (!isBooleanRoleValue(taskRoles[field])) {
+      diagnostics.push(taskEntryDiagnostic("invalid-boolean", field, context));
+    }
   }
 
   if (!isListRoleValue(taskRoles.activities)) {

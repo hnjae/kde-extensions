@@ -115,7 +115,10 @@ QtQuick.Item {
                 publicationKey: publishedKey
                 roles: ({
                         activities: model.Activities,
+                        demandingAttention: model.IsDemandingAttention,
                         index: index,
+                        isOnAllVirtualDesktops: model.IsOnAllVirtualDesktops,
+                        isWindow: model.IsWindow,
                         modelIndex: persistentModelIndex,
                         virtualDesktops: model.VirtualDesktops
                     })
