@@ -20,6 +20,7 @@ const logic = loadQmlJsModule(
     "numberValue",
     "remoteAttentionIconFallback",
     "stringValue",
+    "taskEntryDiagnostics",
     "taskIconSource",
     "taskTitle",
   ],
@@ -81,6 +82,69 @@ assert.equal(
 );
 assert.equal(logic.normalTaskIconFallback(), "application-x-executable");
 assert.equal(logic.remoteAttentionIconFallback(), "dialog-warning");
+
+assert.deepEqual(
+  logic.taskEntryDiagnostics(
+    {
+      index: "not-a-number",
+      modelIndex: {},
+    },
+    {
+      publicationKey: "normal:1",
+      sourceModel: "normal",
+      sourceRow: 3,
+    },
+  ),
+  [
+    {
+      code: "invalid-number",
+      context: {
+        publicationKey: "normal:1",
+        sourceModel: "normal",
+        sourceRow: 3,
+      },
+      field: "index",
+    },
+    {
+      code: "unknown-model-index-shape",
+      context: {
+        publicationKey: "normal:1",
+        sourceModel: "normal",
+        sourceRow: 3,
+      },
+      field: "modelIndex",
+    },
+  ],
+);
+assert.deepEqual(
+  logic.taskEntryDiagnostics(
+    {
+      index: 1,
+      modelIndex: { valid: false },
+    },
+    {
+      sourceModel: "remoteAttention",
+      sourceRow: 1,
+    },
+  ),
+  [
+    {
+      code: "invalid-model-index",
+      context: {
+        sourceModel: "remoteAttention",
+        sourceRow: 1,
+      },
+      field: "modelIndex",
+    },
+  ],
+);
+assert.deepEqual(
+  logic.taskEntryDiagnostics({
+    index: 1,
+    modelIndex: { valid: true },
+  }),
+  [],
+);
 
 const modelIndex = { valid: true };
 const baseTask = logic.createBaseTaskEntry(

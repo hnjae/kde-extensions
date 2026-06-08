@@ -18,13 +18,21 @@ assert.equal(existsSync(sourceUrl), true);
 const sourceQml = readFileSync(sourceUrl, "utf8");
 
 assert.match(mainQml, /\bNormalTaskSource\s*\{/);
+assert.match(
+  mainQml,
+  /\bNormalTaskSource\s*\{[\s\S]*?onActionResult:\s*result\s*=>\s*\{[\s\S]*?actionLogger\.logActionResult\(result\);[\s\S]*?\}/,
+);
 assert.doesNotMatch(
   mainQml,
   /QtQuick\.Repeater\s*\{[\s\S]*?model:\s*tasksModel[\s\S]*?publishNormalTask/,
 );
+assert.match(sourceQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
 assert.match(
   sourceQml,
   /QtQuick\.Repeater\s*\{[\s\S]*?model:\s*root\.taskModel/,
 );
 assert.match(sourceQml, /signal taskPublished\(/);
 assert.match(sourceQml, /signal taskRemoved\(/);
+assert.match(sourceQml, /signal actionResult\(var result\)/);
+assert.match(sourceQml, /TaskEntryLogic\.taskEntryDiagnostics\(/);
+assert.match(sourceQml, /TaskActionLogic\.actionResult\("projectTaskEntry"/);
