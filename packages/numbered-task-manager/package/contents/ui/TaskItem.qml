@@ -42,7 +42,7 @@ QtQuick.Item {
         slotNumber: root.slotNumber
     })
     readonly property int iconExtent: itemPresentation.iconExtent
-    readonly property real naturalImplicitWidth: Math.max(TaskMetricsLogic.normalNaturalWidthMinimum(root.showTitle), Math.min(TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth + contentRow.horizontalPadding))
+    readonly property real naturalImplicitWidth: TaskMetricsLogic.taskNaturalImplicitWidth(TaskMetricsLogic.normalNaturalWidthMinimum(root.showTitle), TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth, contentRow.horizontalPadding)
     readonly property string numberMode: itemPresentation.numberMode
     readonly property string slotLabel: itemPresentation.slotLabel
     readonly property bool titleVisible: TaskMetricsLogic.taskTitleVisible(root.showTitle, root.slotWidth, root.titleVisibilityThreshold)

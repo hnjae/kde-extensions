@@ -63,7 +63,7 @@ assert.match(taskItemQml, /id:\s*contentRow/);
 assert.match(taskItemQml, /frame:\s*taskFrame/);
 assert.match(
   taskItemQml,
-  /contentRow\.implicitWidth \+ contentRow\.horizontalPadding/,
+  /TaskMetricsLogic\.taskNaturalImplicitWidth\(TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\), TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth, contentRow\.horizontalPadding\)/,
 );
 assert.match(
   taskItemQml,
@@ -89,7 +89,7 @@ assert.match(attentionItemQml, /id:\s*contentRow/);
 assert.match(attentionItemQml, /frame:\s*taskFrame/);
 assert.match(
   attentionItemQml,
-  /contentRow\.implicitWidth \+ contentRow\.horizontalPadding/,
+  /TaskMetricsLogic\.taskNaturalImplicitWidth\(TaskMetricsLogic\.attentionNaturalWidthMinimum\(\), TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth, contentRow\.horizontalPadding\)/,
 );
 assert.doesNotMatch(
   attentionItemQml,

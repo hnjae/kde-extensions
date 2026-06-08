@@ -19,6 +19,19 @@ function taskImplicitWidth(slotWidth, naturalImplicitWidth) {
   return width > 0 ? width : Number(naturalImplicitWidth || 0);
 }
 
+function taskNaturalImplicitWidth(
+  minimumWidth,
+  maximumWidth,
+  contentImplicitWidth,
+  horizontalPadding,
+) {
+  const minimum = Number(minimumWidth || 0);
+  const maximum = Number(maximumWidth || 0);
+  const contentWidth =
+    Number(contentImplicitWidth || 0) + Number(horizontalPadding || 0);
+  return Math.max(minimum, Math.min(maximum, contentWidth));
+}
+
 function maximumSlotWidth() {
   return 220;
 }
