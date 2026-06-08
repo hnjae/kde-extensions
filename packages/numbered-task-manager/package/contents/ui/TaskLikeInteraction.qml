@@ -11,11 +11,10 @@ QtQuick.Item {
     id: root
 
     property bool contextMenuOpen: false
-    property var focusTarget: root
     property var modelIndex
     property var taskData: ({})
-    property var visualParent: root.focusTarget
-    readonly property bool highlighted: pointerHandler.hovered || root.activeFocus || root.focusTarget.activeFocus || root.contextMenuOpen
+    property var visualParent: root
+    readonly property bool highlighted: pointerHandler.hovered || root.activeFocus || root.contextMenuOpen
 
     signal activated
     signal contextMenuRequested(var request)
@@ -57,7 +56,7 @@ QtQuick.Item {
         interval: 0
 
         onTriggered: {
-            root.focusTarget.forceActiveFocus(QtQuick.Qt.MouseFocusReason);
+            root.forceActiveFocus(QtQuick.Qt.MouseFocusReason);
             root.contextMenuRequested(TaskInteractionLogic.taskContextMenuRequest(root.modelIndex, root.taskData, root.visualParent));
         }
     }
