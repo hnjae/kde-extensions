@@ -567,7 +567,7 @@ function launcherMutationRequest(action, launcherUrl) {
   );
 }
 
-function launcherMutationResult(requestResult, accepted) {
+function launcherMutationResult(requestResult, accepted, error) {
   const request = requestResult || {};
   if (!request.ok) {
     return request;
@@ -576,6 +576,22 @@ function launcherMutationResult(requestResult, accepted) {
   const context = launcherMutationContext(
     request.launcherUrl || request.context?.launcherUrl,
   );
+  if (error !== undefined && error !== null) {
+    context.error = actionErrorMessage(error);
+    return Object.assign(
+      actionResult(
+        request.action || "launcherMutation",
+        "request-threw",
+        false,
+        true,
+        context,
+      ),
+      {
+        launcherUrl: context.launcherUrl || "",
+      },
+    );
+  }
+
   const code = accepted ? "accepted" : "request-rejected";
   return Object.assign(
     actionResult(

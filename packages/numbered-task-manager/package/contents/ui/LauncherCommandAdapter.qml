@@ -29,7 +29,16 @@ QtQuick.QtObject {
             return false;
         }
 
-        const result = TaskActionLogic.launcherMutationResult(request, requestLauncher(request.launcherUrl));
+        let accepted = false;
+        try {
+            accepted = requestLauncher(request.launcherUrl);
+        } catch (error) {
+            const failedResult = TaskActionLogic.launcherMutationResult(request, undefined, error);
+            actionResult(failedResult);
+            return false;
+        }
+
+        const result = TaskActionLogic.launcherMutationResult(request, accepted);
         if (!result.ok) {
             actionResult(result);
             return false;
