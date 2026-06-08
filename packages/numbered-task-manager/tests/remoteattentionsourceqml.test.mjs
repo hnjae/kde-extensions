@@ -46,6 +46,10 @@ assert.match(sourceQml, /signal attentionPublished\(/);
 assert.match(sourceQml, /signal attentionRemoved\(/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /\bTaskEntryDiagnosticReporter\s*\{/);
+assert.match(
+  sourceQml,
+  /roles:\s*\(\{[\s\S]*?activities:\s*model\.Activities[\s\S]*?index:[\s\S]*?modelIndex:\s*persistentModelIndex[\s\S]*?virtualDesktops:\s*model\.VirtualDesktops[\s\S]*?\}\)/,
+);
 assert.match(sourceQml, /taskEntryDiagnostics\.emitDiagnostics\(\)/);
 assert.match(
   sourceQml,
