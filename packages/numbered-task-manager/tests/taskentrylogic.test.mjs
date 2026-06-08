@@ -88,7 +88,9 @@ assert.deepEqual(
     logic.taskEntryDiagnostics(
       {
         index: "not-a-number",
+        activities: "work",
         modelIndex: {},
+        virtualDesktops: {},
       },
       {
         publicationKey: "normal:1",
@@ -108,6 +110,15 @@ assert.deepEqual(
       field: "index",
     },
     {
+      code: "invalid-list",
+      context: {
+        publicationKey: "normal:1",
+        sourceModel: "normal",
+        sourceRow: 3,
+      },
+      field: "activities",
+    },
+    {
       code: "unknown-model-index-shape",
       context: {
         publicationKey: "normal:1",
@@ -115,6 +126,15 @@ assert.deepEqual(
         sourceRow: 3,
       },
       field: "modelIndex",
+    },
+    {
+      code: "invalid-list",
+      context: {
+        publicationKey: "normal:1",
+        sourceModel: "normal",
+        sourceRow: 3,
+      },
+      field: "virtualDesktops",
     },
   ],
 );
@@ -141,6 +161,17 @@ assert.deepEqual(
       field: "modelIndex",
     },
   ],
+);
+assert.deepEqual(
+  plain(
+    logic.taskEntryDiagnostics({
+      index: 1,
+      activities: ["work"],
+      modelIndex: { valid: true },
+      virtualDesktops: { 0: "desktop-a", length: 1 },
+    }),
+  ),
+  [],
 );
 assert.deepEqual(
   plain(
