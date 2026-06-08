@@ -551,6 +551,17 @@ assert.equal(rejectedLauncherMutation.code, "request-rejected");
 assert.equal(rejectedLauncherMutation.context.launcherUrl, "app.desktop");
 assert.equal(logic.shouldLogActionResult(rejectedLauncherMutation), true);
 
+const thrownLauncherMutation = logic.launcherMutationResult(
+  logic.launcherMutationRequest("pinLauncher", "app.desktop"),
+  undefined,
+  new Error("pin failed"),
+);
+assert.equal(thrownLauncherMutation.ok, false);
+assert.equal(thrownLauncherMutation.code, "request-threw");
+assert.equal(thrownLauncherMutation.context.launcherUrl, "app.desktop");
+assert.equal(thrownLauncherMutation.context.error, "pin failed");
+assert.equal(logic.shouldLogActionResult(thrownLauncherMutation), true);
+
 assert.deepEqual(
   plain(
     logic.dragMoveRejectionResult(

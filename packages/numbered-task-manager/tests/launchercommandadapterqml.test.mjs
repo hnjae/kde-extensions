@@ -56,6 +56,14 @@ assert.match(sourceQml, /taskModel\.requestAddLauncher\(url\)/);
 assert.match(sourceQml, /taskModel\.requestRemoveLauncher\(url\)/);
 assert.match(
   sourceQml,
+  /try\s*\{[\s\S]*?requestLauncher\(request\.launcherUrl\)[\s\S]*?\}\s*catch\s*\(error\)/,
+);
+assert.match(
+  sourceQml,
+  /TaskActionLogic\.launcherMutationResult\(request,\s*undefined,\s*error\)/,
+);
+assert.match(
+  sourceQml,
   /launcherSync\.persistLaunchers\(taskModel\.launcherList\)/,
 );
 assert.match(sourceQml, /launcherSync\.applyLauncherList\(result\.launchers\)/);
