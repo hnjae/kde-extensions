@@ -29,12 +29,6 @@ QtQuick.QtObject {
         return context;
     }
 
-    function diagnosticResult(diagnostic) {
-        return TaskActionLogic.actionResult("projectTaskEntry", diagnostic.code, false, true, Object.assign({
-            field: diagnostic.field
-        }, diagnostic.context || {}));
-    }
-
     function emitDiagnostics() {
         const diagnostics = TaskEntryLogic.taskEntryDiagnostics(root.roles, diagnosticContext());
         const signature = JSON.stringify(diagnostics);
@@ -44,7 +38,7 @@ QtQuick.QtObject {
 
         root.lastDiagnosticSignature = signature;
         for (let i = 0; i < diagnostics.length; ++i) {
-            root.actionResult(diagnosticResult(diagnostics[i]));
+            root.actionResult(TaskActionLogic.taskEntryDiagnosticResult(diagnostics[i]));
         }
     }
 }

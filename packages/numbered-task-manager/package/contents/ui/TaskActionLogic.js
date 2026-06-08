@@ -30,6 +30,22 @@ function actionErrorMessage(error) {
   return String(error);
 }
 
+function taskEntryDiagnosticResult(diagnostic) {
+  const entryDiagnostic = diagnostic || {};
+  return actionResult(
+    "projectTaskEntry",
+    entryDiagnostic.code || "invalid-task-entry",
+    false,
+    true,
+    Object.assign(
+      {
+        field: entryDiagnostic.field || "",
+      },
+      entryDiagnostic.context || {},
+    ),
+  );
+}
+
 function taskContext(task, options) {
   const entry = task || {};
   const requestOptions = options || {};
