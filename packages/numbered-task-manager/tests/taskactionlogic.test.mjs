@@ -13,6 +13,7 @@ const logic = loadQmlJsModule(
     "contextMenuActionDispatchFailure",
     "contextMenuLauncherCommand",
     "contextMenuLauncherCommandDispatchResult",
+    "contextMenuLauncherActivityResult",
     "contextMenuRequestResult",
     "contextMenuTaskCommand",
     "contextMenuTaskExecutionResult",
@@ -507,6 +508,41 @@ const missingMethodRequest = logic.contextMenuTaskRequest(
 assert.equal(missingMethodRequest.ok, false);
 assert.equal(missingMethodRequest.code, "missing-request-method");
 assert.equal(logic.shouldLogActionResult(missingMethodRequest), true);
+
+assert.deepEqual(
+  plain(
+    logic.contextMenuLauncherActivityResult(
+      {
+        changed: false,
+        ok: false,
+        reason: "invalid-position",
+      },
+      "invalid-launcher-activity-update",
+      "app.desktop",
+    ),
+  ),
+  {
+    action: "updateLauncherActivities",
+    code: "invalid-launcher-activity-update",
+    context: {
+      changed: false,
+      launcherUrl: "app.desktop",
+      reason: "invalid-position",
+    },
+    diagnostic: true,
+    ok: false,
+  },
+);
+assert.equal(
+  logic.shouldLogActionResult(
+    logic.contextMenuLauncherActivityResult(
+      { ok: false, reason: "invalid-position" },
+      "invalid-launcher-activity-update",
+      "app.desktop",
+    ),
+  ),
+  true,
+);
 
 assert.deepEqual(
   plain(logic.launcherMutationRequest("pinLauncher", "app.desktop")),

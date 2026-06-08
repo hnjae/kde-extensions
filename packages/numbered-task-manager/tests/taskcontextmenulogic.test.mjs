@@ -3600,6 +3600,12 @@ const launcherActivityAdapterQml = readFileSync(
 );
 assert.equal(
   launcherActivityAdapterQml.includes(
+    'import "TaskActionLogic.js" as TaskActionLogic',
+  ),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
     "TaskContextMenuLogic.launcherActivityListSnapshot",
   ),
   true,
@@ -3620,6 +3626,34 @@ assert.equal(
 );
 assert.equal(launcherActivityAdapterQml.includes("if (!update.ok)"), true);
 assert.equal(launcherActivityAdapterQml.includes("if (!update)"), false);
+assert.equal(
+  launcherActivityAdapterQml.includes("signal actionResult(var result)"),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    "TaskActionLogic.contextMenuLauncherActivityResult",
+  ),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    'launcherActivityFailure(update, "invalid-launcher-activity-update")',
+  ),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    'launcherActivityFailure(update, "missing-launcher-model")',
+  ),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    'launcherActivityFailure(update, "missing-launcher-url")',
+  ),
+  true,
+);
 assert.equal(
   launcherActivityAdapterQml.includes("function applyLauncherActivityAction"),
   true,
@@ -3763,8 +3797,9 @@ assert.equal(
 );
 const menuDispatchesActionResults =
   menuQml.includes("TaskContextMenuActionDispatcher") &&
-  menuQml.includes("onActionResult: result =>") &&
-  menuQml.includes("root.actionResult(result)");
+  /TaskContextMenuActionDispatcher\s*\{[\s\S]*?onActionResult:\s*result\s*=>\s*\{[\s\S]*?root\.actionResult\(result\);[\s\S]*?\}/.test(
+    menuQml,
+  );
 assert.equal(menuDispatchesActionResults, true);
 
 const mainQml = readFileSync(
