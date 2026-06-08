@@ -141,6 +141,57 @@ function taskActivationRequest(action, task, options) {
   );
 }
 
+function activationExecutionContext(requestResult) {
+  const request = requestResult || {};
+  const context = Object.assign({}, request.context || {});
+
+  if (context.modelIndexValid === undefined) {
+    context.modelIndexValid = hasValidModelIndex(request.modelIndex);
+  }
+  if (request.sourceModel && !context.sourceModel) {
+    context.sourceModel = request.sourceModel;
+  }
+
+  return context;
+}
+
+function activationExecutionResult(requestResult, activationTarget, error) {
+  const request = requestResult || {};
+  const requestAction = request.action || "activateTask";
+
+  if (!request.ok) {
+    return request;
+  }
+
+  const context = activationExecutionContext(request);
+  if (!activationTarget) {
+    return actionResult(
+      requestAction,
+      "missing-activation-target",
+      false,
+      true,
+      context,
+    );
+  }
+
+  if (typeof activationTarget.requestActivate !== "function") {
+    return actionResult(
+      requestAction,
+      "missing-request-activate",
+      false,
+      true,
+      context,
+    );
+  }
+
+  if (error !== undefined && error !== null) {
+    context.error = actionErrorMessage(error);
+    return actionResult(requestAction, "request-threw", false, true, context);
+  }
+
+  return actionResult(requestAction, "executed", true, false, context);
+}
+
 function shortcutActivationOptions(targetItem, shortcutIndex) {
   const item = targetItem || {};
   const kind = item.kind || "";

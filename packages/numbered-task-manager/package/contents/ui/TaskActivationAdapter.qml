@@ -55,12 +55,30 @@ QtQuick.QtObject {
         return result;
     }
 
-    function requestActivation(result) {
+    function activationTarget(result) {
         if (result.sourceModel === "remoteAttention") {
-            remoteAttentionSource.requestActivate(result.modelIndex);
-            return;
+            return remoteAttentionSource;
         }
 
-        taskModel.requestActivate(result.modelIndex);
+        return taskModel;
+    }
+
+    function requestActivation(result) {
+        const target = activationTarget(result);
+        let executionResult = TaskActionLogic.activationExecutionResult(result, target);
+        if (!executionResult.ok) {
+            root.actionResult(executionResult);
+            return executionResult;
+        }
+
+        try {
+            target.requestActivate(result.modelIndex);
+        } catch (error) {
+            executionResult = TaskActionLogic.activationExecutionResult(result, target, error);
+            root.actionResult(executionResult);
+            return executionResult;
+        }
+
+        return TaskActionLogic.activationExecutionResult(result, target);
     }
 }
