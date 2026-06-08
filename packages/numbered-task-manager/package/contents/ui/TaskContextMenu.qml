@@ -110,6 +110,9 @@ PlasmaExtras.Menu {
         onLauncherCommandRequested: command => {
             root.launcherCommandRequested(command);
         }
+        onActionResult: result => {
+            root.actionResult(result);
+        }
     }
 
     readonly property TaskContextMenuTaskCommandAdapter _taskCommandAdapter: TaskContextMenuTaskCommandAdapter {

@@ -259,6 +259,40 @@ function contextMenuCreationResult(menu, requestResult) {
   );
 }
 
+function contextMenuActionDispatchContext(route) {
+  const actionRoute = route || {};
+  const command = actionRoute.command || {};
+  const update = actionRoute.update || {};
+  const context = {
+    routeKind: String(actionRoute.kind || ""),
+  };
+
+  if (command.action) {
+    context.commandAction = String(command.action);
+  }
+  if (command.launcherUrl) {
+    context.launcherUrl = String(command.launcherUrl);
+  }
+  if (command.requestMethod) {
+    context.requestMethod = String(command.requestMethod);
+  }
+  if (update.reason) {
+    context.reason = String(update.reason);
+  }
+
+  return context;
+}
+
+function contextMenuActionDispatchFailure(route, code) {
+  return actionResult(
+    "dispatchContextMenuAction",
+    code || "dispatch-failed",
+    false,
+    true,
+    contextMenuActionDispatchContext(route),
+  );
+}
+
 function contextMenuLauncherCommand(action, value) {
   const commandAction = String(action || "");
   const command = {

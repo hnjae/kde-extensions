@@ -4,6 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
+import "TaskActionLogic.js" as TaskActionLogic
 import "TaskContextMenuLogic.js" as TaskContextMenuLogic
 
 QtQuick.QtObject {
@@ -12,13 +13,20 @@ QtQuick.QtObject {
     property var launcherActivityAdapter
     property var taskCommandAdapter
 
+    signal actionResult(var result)
     signal launcherCommandRequested(var command)
+
+    function dispatchFailure(route, code) {
+        const result = TaskActionLogic.contextMenuActionDispatchFailure(route, code);
+        actionResult(result);
+        return false;
+    }
 
     function triggerAction(actionState) {
         const route = TaskContextMenuLogic.contextMenuActionRoute(actionState);
         if (route.kind === "launcher-activity-update") {
             if (!launcherActivityAdapter) {
-                return false;
+                return dispatchFailure(route, "missing-launcher-activity-adapter");
             }
 
             return launcherActivityAdapter.applyLauncherActivityAction(route.update);
@@ -31,13 +39,13 @@ QtQuick.QtObject {
 
         if (route.kind === "task-model-request") {
             if (!taskCommandAdapter) {
-                return false;
+                return dispatchFailure(route, "missing-task-command-adapter");
             }
 
             taskCommandAdapter.requestTaskModelCommand(route.command);
             return true;
         }
 
-        return false;
+        return dispatchFailure(route, "unknown-route");
     }
 }
