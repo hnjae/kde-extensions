@@ -421,10 +421,11 @@ assert.match(
 );
 assert.match(
   taskLikeInteractionQml,
-  /readonly property bool highlighted:\s*pointerHandler\.hovered \|\| root\.activeFocus \|\| root\.focusTarget\.activeFocus \|\| root\.contextMenuOpen/,
+  /readonly property bool highlighted:\s*pointerHandler\.hovered \|\| root\.activeFocus \|\| root\.contextMenuOpen/,
 );
 assert.match(taskLikeInteractionQml, /activeFocusOnTab:\s*true/);
 assert.doesNotMatch(taskLikeInteractionQml, /QtQuick\.Keys\.forwardTo:/);
+assert.doesNotMatch(taskLikeInteractionQml, /property var focusTarget/);
 assert.match(
   taskLikeInteractionQml,
   /KirigamiPlatform\.Theme\.colorSet:\s*KirigamiPlatform\.Theme\.Button/,
@@ -449,5 +450,5 @@ assert.match(
 );
 assert.match(
   taskLikeInteractionQml,
-  /QtQuick\.Timer\s*\{[\s\S]*?id:\s*contextMenuTimer[\s\S]*?interval:\s*0[\s\S]*?root\.focusTarget\.forceActiveFocus\(QtQuick\.Qt\.MouseFocusReason\);[\s\S]*?root\.contextMenuRequested\(TaskInteractionLogic\.taskContextMenuRequest\(root\.modelIndex, root\.taskData, root\.visualParent\)\);[\s\S]*?\}/,
+  /QtQuick\.Timer\s*\{[\s\S]*?id:\s*contextMenuTimer[\s\S]*?interval:\s*0[\s\S]*?root\.forceActiveFocus\(QtQuick\.Qt\.MouseFocusReason\);[\s\S]*?root\.contextMenuRequested\(TaskInteractionLogic\.taskContextMenuRequest\(root\.modelIndex, root\.taskData, root\.visualParent\)\);[\s\S]*?\}/,
 );
