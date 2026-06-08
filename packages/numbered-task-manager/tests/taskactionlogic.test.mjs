@@ -21,6 +21,7 @@ const logic = loadQmlJsModule(
     "shortcutActivationRequest",
     "shouldLogActionResult",
     "taskActivationRequest",
+    "taskEntryDiagnosticResult",
   ],
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
@@ -93,6 +94,29 @@ assert.equal(
   }).ok,
   true,
 );
+
+const projectionDiagnostic = logic.taskEntryDiagnosticResult({
+  code: "unknown-model-index-shape",
+  context: {
+    publicationKey: "normal:1",
+    sourceModel: "normal",
+    sourceRow: 3,
+  },
+  field: "modelIndex",
+});
+assert.deepEqual(plain(projectionDiagnostic), {
+  action: "projectTaskEntry",
+  code: "unknown-model-index-shape",
+  context: {
+    field: "modelIndex",
+    publicationKey: "normal:1",
+    sourceModel: "normal",
+    sourceRow: 3,
+  },
+  diagnostic: true,
+  ok: false,
+});
+assert.equal(logic.shouldLogActionResult(projectionDiagnostic), true);
 
 const visibleItems = [
   {

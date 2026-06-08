@@ -31,7 +31,11 @@ assert.match(sourceQml, /property string lastDiagnosticSignature:\s*""/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /function emitDiagnostics\(\)/);
 assert.match(sourceQml, /TaskEntryLogic\.taskEntryDiagnostics\(root\.roles/);
-assert.match(sourceQml, /TaskActionLogic\.actionResult\("projectTaskEntry"/);
+assert.match(sourceQml, /TaskActionLogic\.taskEntryDiagnosticResult\(/);
+assert.doesNotMatch(
+  sourceQml,
+  /TaskActionLogic\.actionResult\("projectTaskEntry"/,
+);
 assert.match(sourceQml, /JSON\.stringify\(diagnostics\)/);
 
 assert.match(normalSourceQml, /\bTaskEntryDiagnosticReporter\s*\{/);
