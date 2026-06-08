@@ -45,7 +45,7 @@ assert.match(normalSourceQml, /sourceRow:\s*index/);
 assert.match(normalSourceQml, /publicationKey:\s*publishedKey/);
 assert.match(
   normalSourceQml,
-  /roles:\s*\(\{[\s\S]*?activities:\s*model\.Activities[\s\S]*?demandingAttention:\s*model\.IsDemandingAttention[\s\S]*?index:[\s\S]*?isOnAllVirtualDesktops:\s*model\.IsOnAllVirtualDesktops[\s\S]*?isWindow:\s*model\.IsWindow[\s\S]*?modelIndex:\s*persistentModelIndex[\s\S]*?virtualDesktops:\s*model\.VirtualDesktops[\s\S]*?\}\)/,
+  /roles:\s*\(\{[\s\S]*?activities:\s*model\.Activities[\s\S]*?demandingAttention:\s*model\.IsDemandingAttention[\s\S]*?index:[\s\S]*?isLauncher:\s*model\.IsLauncher[\s\S]*?isOnAllVirtualDesktops:\s*model\.IsOnAllVirtualDesktops[\s\S]*?isWindow:\s*model\.IsWindow[\s\S]*?modelIndex:\s*persistentModelIndex[\s\S]*?virtualDesktops:\s*model\.VirtualDesktops[\s\S]*?\}\)/,
 );
 assert.match(normalSourceQml, /taskEntryDiagnostics\.emitDiagnostics\(\)/);
 assert.doesNotMatch(

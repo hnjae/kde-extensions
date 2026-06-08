@@ -91,6 +91,7 @@ assert.deepEqual(
         activities: "work",
         demandingAttention: "yes",
         isOnAllVirtualDesktops: 1,
+        isLauncher: "launcher",
         isWindow: {},
         modelIndex: {},
         virtualDesktops: {},
@@ -129,6 +130,15 @@ assert.deepEqual(
         sourceRow: 3,
       },
       field: "isOnAllVirtualDesktops",
+    },
+    {
+      code: "invalid-boolean",
+      context: {
+        publicationKey: "normal:1",
+        sourceModel: "normal",
+        sourceRow: 3,
+      },
+      field: "isLauncher",
     },
     {
       code: "invalid-boolean",
@@ -199,6 +209,7 @@ assert.deepEqual(
       activities: ["work"],
       demandingAttention: false,
       isOnAllVirtualDesktops: false,
+      isLauncher: false,
       isWindow: true,
       modelIndex: { valid: true },
       virtualDesktops: { 0: "desktop-a", length: 1 },
