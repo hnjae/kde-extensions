@@ -89,6 +89,9 @@ assert.deepEqual(
       {
         index: "not-a-number",
         activities: "work",
+        demandingAttention: "yes",
+        isOnAllVirtualDesktops: 1,
+        isWindow: {},
         modelIndex: {},
         virtualDesktops: {},
       },
@@ -108,6 +111,33 @@ assert.deepEqual(
         sourceRow: 3,
       },
       field: "index",
+    },
+    {
+      code: "invalid-boolean",
+      context: {
+        publicationKey: "normal:1",
+        sourceModel: "normal",
+        sourceRow: 3,
+      },
+      field: "demandingAttention",
+    },
+    {
+      code: "invalid-boolean",
+      context: {
+        publicationKey: "normal:1",
+        sourceModel: "normal",
+        sourceRow: 3,
+      },
+      field: "isOnAllVirtualDesktops",
+    },
+    {
+      code: "invalid-boolean",
+      context: {
+        publicationKey: "normal:1",
+        sourceModel: "normal",
+        sourceRow: 3,
+      },
+      field: "isWindow",
     },
     {
       code: "invalid-list",
@@ -167,6 +197,9 @@ assert.deepEqual(
     logic.taskEntryDiagnostics({
       index: 1,
       activities: ["work"],
+      demandingAttention: false,
+      isOnAllVirtualDesktops: false,
+      isWindow: true,
       modelIndex: { valid: true },
       virtualDesktops: { 0: "desktop-a", length: 1 },
     }),
