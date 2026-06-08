@@ -117,6 +117,7 @@ QtQuick.Item {
                         activities: model.Activities,
                         demandingAttention: model.IsDemandingAttention,
                         index: index,
+                        isLauncher: model.IsLauncher,
                         isOnAllVirtualDesktops: model.IsOnAllVirtualDesktops,
                         isWindow: model.IsWindow,
                         modelIndex: persistentModelIndex,

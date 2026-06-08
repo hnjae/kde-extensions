@@ -115,6 +115,7 @@ function taskEntryDiagnostics(roles, context) {
   const baseBooleanRoleFields = [
     "demandingAttention",
     "isOnAllVirtualDesktops",
+    "isLauncher",
     "isWindow",
   ];
   for (let i = 0; i < baseBooleanRoleFields.length; ++i) {
