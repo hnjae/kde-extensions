@@ -12,17 +12,18 @@ in `SPEC.md`.
 - Advertise Plasma's fill-area constraint and request fill layout on both axes so the widget occupies available panel space; task delegates remain content-sized while the task list viewport absorbs extra long-axis space and clips when content exceeds the panel allocation.
 - Keep the implementation on public QML APIs where possible. Context menu
   actions should call `TasksModel.request*` methods directly.
+- Keep QML JavaScript logic dependencies in `.mjs` ECMAScript modules with named imports and exports. Production QML logic must not use `Qt.include()`, because module boundaries should be explicit and loadable by the QML engine without deprecated include evaluation.
 - Implement drag reordering with a widget-owned task MIME type. Reorder pinned
   rows by rewriting the persisted launcher list so launch-in-place window rows
   cannot collide with `TasksModel.move()` launcher barriers. Keep manually
   reordered unpinned windows in widget state.
-- Keep activity scope primitives in `ActivityScopeLogic.js` so null-activity,
+- Keep activity scope primitives in `ActivityScopeLogic.mjs` so null-activity,
   all-activities, de-duplication, and current-activity membership semantics are
   shared by task and launcher code.
 - Keep applet-wide activity/desktop platform state in `TaskPlatformState.qml`. It should own `ActivityInfo`, `VirtualDesktopInfo`, current activity/current desktop exposure, launcher revision changes, current-activity membership checks, and visible launcher position lookups for source components, while `main.qml` keeps `TasksModel` instantiation and launcher-list write effects.
-- Keep task-model scope policy in `TaskScopeLogic.js`. Normal and remote attention `TasksModel` filter settings and local qualification helpers should be named together so QML does not carry unexplained raw filter booleans or split scope decisions across unrelated modules.
-- Do not re-export scope qualification helpers from task-specific modules once source components consume `TaskScopeLogic.js` directly. `TaskModelLogic.js` should own normal task entry/composition policy, and `RemoteAttentionLogic.js` should own remote-attention entry/state policy.
-- Keep task activity mutation decisions in `TaskActivityLogic.js` so task activity toggles are shared by the task model and context menu. Generic current-activity and all-activities primitives should be imported from `ActivityScopeLogic.js` directly.
+- Keep task-model scope policy in `TaskScopeLogic.mjs`. Normal and remote attention `TasksModel` filter settings and local qualification helpers should be named together so QML does not carry unexplained raw filter booleans or split scope decisions across unrelated modules.
+- Do not re-export scope qualification helpers from task-specific modules once source components consume `TaskScopeLogic.mjs` directly. `TaskModelLogic.mjs` should own normal task entry/composition policy, and `RemoteAttentionLogic.mjs` should own remote-attention entry/state policy.
+- Keep task activity mutation decisions in `TaskActivityLogic.mjs` so task activity toggles are shared by the task model and context menu. Generic current-activity and all-activities primitives should be imported from `ActivityScopeLogic.mjs` directly.
 - Create task context menus per invocation as Plasma-native menus. Do not keep a
   long-lived Qt Quick Controls popup inside `fullRepresentation`, because panel
   delegates need a native menu anchored to the task delegate to avoid clipping
@@ -34,41 +35,41 @@ in `SPEC.md`.
   model index when invoking task actions. Snapshot data may describe the
   visible delegate, but menu mutations should target the current model entry.
 - Keep context-menu live role access and menu-facing role snapshots in
-  `TaskContextMenuLogic.js`. `TaskContextMenu.qml` should render menu sections
+  `TaskContextMenuLogic.mjs`. `TaskContextMenu.qml` should render menu sections
   from helper output and must not call `taskModel.data(...)` directly. Snapshot
   fields such as `isWindow`, `isLauncher`, `launcherUrl`, `activities`, and
   `virtualDesktops` should be consumed from the role snapshot directly instead
   of through menu-local passthrough functions.
-- Keep context-menu launcher-activity menu state in `TaskContextMenuLogic.js`.
+- Keep context-menu launcher-activity menu state in `TaskContextMenuLogic.mjs`.
   Raw launcher activity lists entering the menu should be normalized through the
   same all-activities semantics as launcher serialization before checked-state
   predicates are evaluated. QML menu items should consume the helper output
   directly instead of adding menu-local checked-state wrapper functions.
-- Keep context-menu platform entry snapshots in `TaskContextMenuLogic.js`.
+- Keep context-menu platform entry snapshots in `TaskContextMenuLogic.mjs`.
   `TaskContextMenu.qml` may instantiate `ActivityInfo` and
   `VirtualDesktopInfo`, but activity and virtual-desktop entry construction,
   ordering, and fallback labels should be tested helper output rather than
   inline menu loops.
 - Keep context-menu task-activity checked-state policy in
-  `TaskContextMenuLogic.js`. Task activity mutation decisions remain in
-  `TaskActivityLogic.js`, but menu-facing all-activities and per-activity
+  `TaskContextMenuLogic.mjs`. Task activity mutation decisions remain in
+  `TaskActivityLogic.mjs`, but menu-facing all-activities and per-activity
   checked predicates should come from tested helper output. QML menu items
   should consume that output directly instead of adding menu-local
   checked-state wrapper functions.
 - Keep context-menu virtual-desktop checked-state policy in
-  `TaskContextMenuLogic.js`. The menu may still request `TasksModel`
+  `TaskContextMenuLogic.mjs`. The menu may still request `TasksModel`
   virtual-desktop mutations directly, but all-desktops and per-desktop checked
   predicates should be derived by a tested helper. QML menu items should
   consume that helper output directly instead of adding menu-local
   checked-state wrapper functions.
-- Keep context-menu basic action availability in `TaskContextMenuLogic.js`.
+- Keep context-menu basic action availability in `TaskContextMenuLogic.mjs`.
   Simple item visible/enabled predicates such as New Instance, Move, and Resize
   should be derived by tested helpers while QML keeps rendering order and Plasma
   request dispatch. Live role reads needed by those helpers should enter QML as
   a tested snapshot object instead of as item-local `boolRole(...)` calls. QML
   menu items should consume the helper output directly instead of adding
   menu-local action-state wrapper functions.
-- Keep checkable context-menu window action state in `TaskContextMenuLogic.js`.
+- Keep checkable context-menu window action state in `TaskContextMenuLogic.mjs`.
   Checked, visible, and enabled predicates for actions such as Minimize,
   Maximize, Keep Above, Keep Below, Full Screen, Shade, No Border, and Exclude
   From Capture should be derived by tested helpers while QML keeps labels and
@@ -77,7 +78,7 @@ in `SPEC.md`.
   menu items should consume the helper output directly instead of adding
   menu-local action-state wrapper functions.
 - Keep context-menu section and terminal action availability in
-  `TaskContextMenuLogic.js`. Section visibility and enabled/visible predicates
+  `TaskContextMenuLogic.mjs`. Section visibility and enabled/visible predicates
   for Virtual Desktops, Activities, New Desktop, and Close should be derived by
   tested helpers while QML keeps submenu composition and effect dispatch. QML
   menu items should consume the helper output directly instead of adding
@@ -87,20 +88,20 @@ in `SPEC.md`.
   launcher commands, or launcher-activity adapters, but missing adapters and
   unknown routes should produce structured diagnostic results instead of silent
   false returns.
-- Keep launcher-list transformations in `LauncherListLogic.js` so serialized
+- Keep launcher-list transformations in `LauncherListLogic.mjs` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
   Launcher-specific activity serialization and visibility helpers may use
-  `ActivityScopeLogic.js`, but generic activity primitives should not be
+  `ActivityScopeLogic.mjs`, but generic activity primitives should not be
   re-exported from launcher logic.
-- Keep widget pin membership in `LauncherListLogic.js`, derived from launcher URL, launcher list, current activity, and launcher-position lookup. Context-menu Pin/Unpin state should consume that menu-facing pin state instead of KDE's raw launcher-association role.
-- Keep launcher-list mutation decisions in `LauncherListLogic.js`. QML code may
+- Keep widget pin membership in `LauncherListLogic.mjs`, derived from launcher URL, launcher list, current activity, and launcher-position lookup. Context-menu Pin/Unpin state should consume that menu-facing pin state instead of KDE's raw launcher-association role.
+- Keep launcher-list mutation decisions in `LauncherListLogic.mjs`. QML code may
   apply returned writes to Plasma objects, but normalization, equality checks,
   and derived launcher activity lists should stay in tested helper functions.
   Mutation results should include stable `reason` codes while preserving
   existing transition fields during migration, so invalid launcher activity
   positions are distinguishable from unchanged activity lists.
-- Keep normal-task move and drag acceptance decisions in `TaskModelLogic.js`.
+- Keep normal-task move and drag acceptance decisions in `TaskModelLogic.mjs`.
   Move helpers should expose typed reasons for invalid indexes, stale entries,
   same-entry no-ops, pinned/unpinned boundary crossings, and pinned-launcher
   policy denials while preserving existing boolean fields during migration.
@@ -114,7 +115,7 @@ in `SPEC.md`.
   projection should be covered by pure tests.
 - Keep task-like context-menu request payload construction in the interaction helper so normal and remote-attention delegates emit the same `{ modelIndex, task, visualParent }` shape.
 - Keep shared task-like activation and context-menu trigger wiring in a QML interaction component. Normal and remote-attention delegates should consume that component for hover state, focusability, menu-key handling, Button color-set binding, menu-key/right-click zero-delay context-menu requests, internal focus handoff, and left-click activation while variant delegates keep their own task data, badges, drag/drop, menu visual-parent routing, and visual layout.
-- Keep cross-cutting task-entry mechanics in `TaskEntryLogic.js`. Role
+- Keep cross-cutting task-entry mechanics in `TaskEntryLogic.mjs`. Role
   coercion, launcher URL precedence, title/icon fallback, model-index validity,
   diagnostics for malformed required projection fields, diagnostics for
   malformed base boolean role shapes, diagnostics for malformed normal-task
@@ -125,13 +126,13 @@ in `SPEC.md`.
 - Keep source-side task-entry diagnostic action-result adaptation in
   `TaskEntryDiagnosticReporter.qml`. Normal and remote-attention source
   delegates should provide source model, source row, publication key, and roles;
-  those role snapshots should include any projected fields that `TaskEntryLogic.js`
+  those role snapshots should include any projected fields that `TaskEntryLogic.mjs`
   can diagnose, including activity and virtual-desktop list roles. The reporter
   owns diagnostic context and repeated-signature suppression while
-  `TaskActionLogic.js` owns `projectTaskEntry` action-result mapping.
-- Keep normal-task projection dependencies explicit. `TaskModelLogic.js` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
+  `TaskActionLogic.mjs` owns `projectTaskEntry` action-result mapping.
+- Keep normal-task projection dependencies explicit. `TaskModelLogic.mjs` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
 - Keep normal-task entry schema limited to fields with production consumers or documented purpose. Raw upstream launcher association should not be carried as a separate `hasAnyLauncher` field unless a production consumer is added.
-- Keep normal task publication state transitions in `NormalTaskStoreLogic.js`.
+- Keep normal task publication state transitions in `NormalTaskStoreLogic.mjs`.
   `NormalTaskSource.qml` owns observation of the normal `TasksModel` rows and
   emits explicit publication/removal events into the root-owned store.
   Publication-key allocation, publish/remove events, manual-order pruning,
@@ -143,9 +144,9 @@ in `SPEC.md`.
   the task context menu may compute and request a replacement launcher list, but
   `main.qml` is responsible for applying it to `TasksModel` and persisting it to
   plasmoid configuration.
-- Apply launcher-list writes through a root-owned transaction that always releases its update guard. Keep post-write convergence checks and bounded next-change reconciliation state in `LauncherListLogic.js` so failed model/config writes can be logged and retried once with the attempted launcher list.
+- Apply launcher-list writes through a root-owned transaction that always releases its update guard. Keep post-write convergence checks and bounded next-change reconciliation state in `LauncherListLogic.mjs` so failed model/config writes can be logged and retried once with the attempted launcher list.
 - Keep remote-attention qualification, keying, ordering, state transitions, and
-  count/target snapshots in `RemoteAttentionLogic.js` so the separate attention
+  count/target snapshots in `RemoteAttentionLogic.mjs` so the separate attention
   model remains testable independently from normal task composition.
   `RemoteAttentionSource.qml` owns the attention `TasksModel`, observation of
   its rows, one remote-attention state snapshot, and the narrow activation
@@ -153,7 +154,7 @@ in `SPEC.md`.
   count/target snapshot and model reference for menu routing instead of owning
   hidden attention publication delegates, publication callbacks, or separate
   entry-map, order, count, entries, and target properties.
-- Keep remote-attention projection dependencies explicit. `RemoteAttentionLogic.js` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
+- Keep remote-attention projection dependencies explicit. `RemoteAttentionLogic.mjs` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
 - Keep composed visible item order, slot labels, `Meta+0` target selection, item source metadata, and item count in a visible-item composer instead of reconstructing those policies independently in root activation, layout sizing, and delegates.
 - Route activation decisions for rendered task-like items through composed visible item descriptors where practical. Root QML still executes the unavoidable `TasksModel.requestActivate(...)` side effect, but normal shortcut activation, `Meta+0`, and remote-attention item activation should share the same visible-item metadata contract.
 - Bind rendered remote-attention item metadata from its composed visible item descriptor instead of reconstructing the attention target separately in root layout bindings.
@@ -257,10 +258,10 @@ in `SPEC.md`.
 - Render task delegate state backgrounds with `KSvg.FrameSvgItem` from Plasma's `widgets/tasks` theme asset instead of hand-painted QML rectangles.
 - Keep the themed frame prefix decision in a small tested helper so normal, hover, active, minimized, attention, launcher, drag-drop target, and panel-edge fallbacks stay aligned with KDE task manager behavior.
 - Keep shared task-like frame binding in `TaskLikeFrame.qml`. Normal and remote-attention delegates should provide their variant frame state inputs while `TaskFrame` anchoring, property forwarding, and exposed content margins live in one component.
-- Keep task visual metrics in `TaskMetricsLogic.js`. Delegate size, task-like implicit width selection, title visibility threshold, task-like title visibility, slot width cap, natural-width minima, natural-width clamping, icon extent, and theme-margin adjustment should have one tested owner instead of being duplicated by root layout, normal task, and remote-attention delegates.
-- Keep task item number presentation in `TaskItemPresentationLogic.js`. Slot label text and the `none`, `prefix`, or `overlay` decision should have one tested owner instead of being derived from visual-state side effects in delegates.
+- Keep task visual metrics in `TaskMetricsLogic.mjs`. Delegate size, task-like implicit width selection, title visibility threshold, task-like title visibility, slot width cap, natural-width minima, natural-width clamping, icon extent, and theme-margin adjustment should have one tested owner instead of being duplicated by root layout, normal task, and remote-attention delegates.
+- Keep task item number presentation in `TaskItemPresentationLogic.mjs`. Slot label text and the `none`, `prefix`, or `overlay` decision should have one tested owner instead of being derived from visual-state side effects in delegates.
 - Number presentation must use state-independent cross-axis availability so frame prefix, pinned, launcher, active, hover, and attention state cannot change the fallback threshold for the same slot and panel size.
-- Keep hover-active icon decisions in `TaskVisualLogic.js`. A task model's active-window state selects the frame `focus` prefix only; icon active rendering is controlled by delegate highlight state.
+- Keep hover-active icon decisions in `TaskVisualLogic.mjs`. A task model's active-window state selects the frame `focus` prefix only; icon active rendering is controlled by delegate highlight state.
 - Keep shared task-like icon rendering in `TaskLikeIcon.qml`. Normal and remote-attention delegates should provide their variant fallback/source and active/highlighted inputs, while icon active-state mapping and `KirigamiPrimitives.Icon` setup live in one component.
 - Keep shared task-like icon slot layout in `TaskLikeIconSlot.qml`. Normal and remote-attention delegates should provide icon inputs and variant badge content, while layout alignment, icon extent sizing, and icon anchoring live in one component.
 - Keep shared task-like title text rendering in `TaskLikeTitle.qml`. Normal and remote-attention delegates should provide title text, visibility, and minimized strikeout inputs while eliding, fill-width layout, color, and single-line text setup live in one component.
