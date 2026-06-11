@@ -76,7 +76,7 @@ assert.doesNotMatch(
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(sourceQml, /property var taskModel/);
 assert.match(sourceQml, /property var remoteAttentionSource/);
-assert.match(sourceQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
+assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
 assert.match(sourceQml, /property var visibleTaskItems/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /function activateTaskAtIndex\(index\)/);

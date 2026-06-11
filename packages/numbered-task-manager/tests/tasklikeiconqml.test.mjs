@@ -22,7 +22,7 @@ const attentionItemQml = readFileSync(
 );
 
 assert.match(sourceQml, /KirigamiPrimitives\.Icon\s*\{/);
-assert.match(sourceQml, /import "TaskVisualLogic\.js" as TaskVisualLogic/);
+assert.match(sourceQml, /import "TaskVisualLogic\.mjs" as TaskVisualLogic/);
 assert.match(sourceQml, /property bool activeTask:\s*false/);
 assert.match(sourceQml, /property bool highlighted:\s*false/);
 assert.match(sourceQml, /property var fallback/);

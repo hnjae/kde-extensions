@@ -5,8 +5,8 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import org.kde.taskmanager as TaskManager
-import "ActivityScopeLogic.js" as ActivityScopeLogic
-import "LauncherListLogic.js" as LauncherListLogic
+import "ActivityScopeLogic.mjs" as ActivityScopeLogic
+import "LauncherListLogic.mjs" as LauncherListLogic
 
 QtQuick.QtObject {
     id: root

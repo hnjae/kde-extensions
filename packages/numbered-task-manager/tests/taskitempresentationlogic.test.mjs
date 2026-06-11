@@ -6,9 +6,9 @@ import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const logic = loadQmlJsModule(
+const logic = await loadQmlJsModule(
   new URL(
-    "../package/contents/ui/TaskItemPresentationLogic.js",
+    "../package/contents/ui/TaskItemPresentationLogic.mjs",
     import.meta.url,
   ),
   ["taskItemPresentation"],
@@ -93,7 +93,7 @@ assert.match(taskItemQml, /\bTaskLikeIconSlot\s*\{/);
 assert.match(taskItemQml, /property real slotWidth:\s*0/);
 assert.match(taskItemQml, /property bool showTitle:\s*true/);
 assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
-assert.match(taskItemQml, /import "TaskMetricsLogic\.js" as TaskMetricsLogic/);
+assert.match(taskItemQml, /import "TaskMetricsLogic\.mjs" as TaskMetricsLogic/);
 assert.match(
   taskItemQml,
   /property int titleVisibilityThreshold:\s*TaskMetricsLogic\.titleVisibilityThreshold\(\)/,
@@ -118,7 +118,7 @@ assert.match(
 assert.match(taskItemQml, /z:\s*1/);
 assert.match(
   taskItemQml,
-  /import "TaskItemPresentationLogic\.js" as TaskItemPresentationLogic/,
+  /import "TaskItemPresentationLogic\.mjs" as TaskItemPresentationLogic/,
 );
 assert.match(taskItemQml, /TaskItemPresentationLogic\.taskItemPresentation\(/);
 assert.doesNotMatch(taskItemQml, /BadgeDisplayLogic/);

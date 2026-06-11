@@ -1,27 +1,27 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-const normalSlotLimit = 9;
-const metaZeroShortcutIndex = 9;
+export const normalSlotLimit = 9;
+export const metaZeroShortcutIndex = 9;
 
-function integerValue(value, fallback) {
+export function integerValue(value, fallback) {
   const number = Number(value);
   return Number.isInteger(number) ? number : fallback;
 }
 
-function normalSlotNumberForIndex(index) {
+export function normalSlotNumberForIndex(index) {
   const normalIndex = integerValue(index, -1);
   return normalIndex >= 0 && normalIndex < normalSlotLimit
     ? normalIndex + 1
     : 0;
 }
 
-function hasRemoteAttentionItem(remoteAttentionSnapshot) {
+export function hasRemoteAttentionItem(remoteAttentionSnapshot) {
   const snapshot = remoteAttentionSnapshot || {};
   return Number(snapshot.count || 0) > 0;
 }
 
-function markMetaZeroTarget(items) {
+export function markMetaZeroTarget(items) {
   const visibleItems = Array.from(items || []);
   return visibleItems.map((item, index) =>
     Object.assign({}, item, {
@@ -30,7 +30,10 @@ function markMetaZeroTarget(items) {
   );
 }
 
-function composeVisibleTaskItems(normalEntries, remoteAttentionSnapshot) {
+export function composeVisibleTaskItems(
+  normalEntries,
+  remoteAttentionSnapshot,
+) {
   const visibleItems = [];
   const entries = Array.from(normalEntries || []);
 
@@ -65,12 +68,12 @@ function composeVisibleTaskItems(normalEntries, remoteAttentionSnapshot) {
   return markMetaZeroTarget(visibleItems);
 }
 
-function normalVisibleTaskItems(visibleItems) {
+export function normalVisibleTaskItems(visibleItems) {
   const items = Array.from(visibleItems || []);
   return items.filter((item) => item?.kind === "normal");
 }
 
-function visibleRemoteAttentionItem(visibleItems) {
+export function visibleRemoteAttentionItem(visibleItems) {
   const items = Array.from(visibleItems || []);
   for (let index = 0; index < items.length; ++index) {
     const item = items[index];
@@ -82,7 +85,7 @@ function visibleRemoteAttentionItem(visibleItems) {
   return null;
 }
 
-function activationTargetForShortcutIndex(visibleItems, shortcutIndex) {
+export function activationTargetForShortcutIndex(visibleItems, shortcutIndex) {
   const index = integerValue(shortcutIndex, -1);
   if (index < 0 || index > metaZeroShortcutIndex) {
     return null;

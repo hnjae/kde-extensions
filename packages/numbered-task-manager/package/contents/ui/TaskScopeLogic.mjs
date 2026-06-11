@@ -1,9 +1,12 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-Qt.include("TaskEntryLogic.js");
+import {
+  isOnCurrentVirtualDesktop,
+  isRemoteVirtualDesktop,
+} from "./TaskEntryLogic.mjs";
 
-function normalTaskModelFilterSettings() {
+export function normalTaskModelFilterSettings() {
   return {
     filterByActivity: true,
     filterByScreen: false,
@@ -11,7 +14,7 @@ function normalTaskModelFilterSettings() {
   };
 }
 
-function remoteAttentionModelFilterSettings() {
+export function remoteAttentionModelFilterSettings() {
   return {
     filterByActivity: false,
     filterByScreen: false,
@@ -19,7 +22,7 @@ function remoteAttentionModelFilterSettings() {
   };
 }
 
-function normalTaskQualifies(task, isInCurrentActivity, currentDesktop) {
+export function normalTaskQualifies(task, isInCurrentActivity, currentDesktop) {
   const entry = task || {};
   if (
     typeof isInCurrentActivity === "function" &&
@@ -39,7 +42,11 @@ function normalTaskQualifies(task, isInCurrentActivity, currentDesktop) {
   return Boolean(entry.isLauncher || entry.isStartup);
 }
 
-function remoteAttentionQualifies(task, isInCurrentActivity, currentDesktop) {
+export function remoteAttentionQualifies(
+  task,
+  isInCurrentActivity,
+  currentDesktop,
+) {
   const entry = task || {};
   return (
     Boolean(entry.isWindow) &&

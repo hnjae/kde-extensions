@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "TaskActionLogic.js" as TaskActionLogic
+import "TaskActionLogic.mjs" as TaskActionLogic
 
 QtQuick.Item {
     id: root

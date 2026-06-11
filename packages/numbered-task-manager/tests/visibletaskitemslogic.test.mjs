@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const visibleTaskItemsLogicSource = readFileSync(
-  new URL("../package/contents/ui/VisibleTaskItemsLogic.js", import.meta.url),
+  new URL("../package/contents/ui/VisibleTaskItemsLogic.mjs", import.meta.url),
   "utf8",
 );
 assert.doesNotMatch(
@@ -15,8 +15,8 @@ assert.doesNotMatch(
   /function visibleItemForNormalIndex\b/,
 );
 
-const logic = loadQmlJsModule(
-  new URL("../package/contents/ui/VisibleTaskItemsLogic.js", import.meta.url),
+const logic = await loadQmlJsModule(
+  new URL("../package/contents/ui/VisibleTaskItemsLogic.mjs", import.meta.url),
   [
     "activationTargetForShortcutIndex",
     "composeVisibleTaskItems",

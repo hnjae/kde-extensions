@@ -153,7 +153,7 @@
           buildKPackage
           qmllsWrapper
           (mkDevCommand "numbered-task-manager-lint" ''
-            biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
+            biome lint --error-on-warnings package/contents/ui/*.mjs tests/*.mjs
             find package/contents/ui -name '*.qml' -print0 \
               | sort -z \
               | xargs -0 qmllint \
@@ -169,7 +169,7 @@
             done
           '')
           (mkDevCommand "numbered-task-manager-lint-js" ''
-            biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs
+            biome lint --error-on-warnings package/contents/ui/*.mjs tests/*.mjs
           '')
           (mkDevCommand "numbered-task-manager-lint-qml" ''
             find package/contents/ui -name '*.qml' -print0 \

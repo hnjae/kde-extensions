@@ -7,7 +7,7 @@ import QtQuick as QtQuick
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid
-import "TaskContextMenuLogic.js" as TaskContextMenuLogic
+import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
 
 // qmllint disable incompatible-type
 PlasmaExtras.Menu {

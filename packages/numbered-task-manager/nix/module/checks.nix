@@ -44,7 +44,7 @@
           buildPhase = ''
             runHook preBuild
 
-            biome lint --error-on-warnings ${packageRoot}/package/contents/ui/*.js ${packageRoot}/tests/*.mjs
+            biome lint --error-on-warnings ${packageRoot}/package/contents/ui/*.mjs ${packageRoot}/tests/*.mjs
 
             installed_plasmoid="${package}/share/plasma/plasmoids/${package.pluginId}"
             installed_metainfo="${package}/share/metainfo/${package.pluginId}.metainfo.xml"
@@ -56,17 +56,17 @@
               contents/ui/AttentionItem.qml
               contents/ui/TaskContextMenu.qml
               contents/ui/TaskFrame.qml
-              contents/ui/ActivityScopeLogic.js
-              contents/ui/LauncherListLogic.js
-              contents/ui/TaskActivityLogic.js
-              contents/ui/TaskContextMenuLogic.js
-              contents/ui/TaskEntryLogic.js
-              contents/ui/TaskItemPresentationLogic.js
-              contents/ui/RemoteAttentionLogic.js
-              contents/ui/TaskModelLogic.js
-              contents/ui/TaskMetricsLogic.js
-              contents/ui/TaskVisualLogic.js
-              contents/ui/VisibleTaskItemsLogic.js
+              contents/ui/ActivityScopeLogic.mjs
+              contents/ui/LauncherListLogic.mjs
+              contents/ui/TaskActivityLogic.mjs
+              contents/ui/TaskContextMenuLogic.mjs
+              contents/ui/TaskEntryLogic.mjs
+              contents/ui/TaskItemPresentationLogic.mjs
+              contents/ui/RemoteAttentionLogic.mjs
+              contents/ui/TaskModelLogic.mjs
+              contents/ui/TaskMetricsLogic.mjs
+              contents/ui/TaskVisualLogic.mjs
+              contents/ui/VisibleTaskItemsLogic.mjs
               contents/ui/NumberBadge.qml
               contents/config/main.xml
             "
@@ -82,6 +82,8 @@
             do
               node "$test_file"
             done
+
+            QT_QPA_PLATFORM=offscreen qml ${qmlImportFlags} ${packageRoot}/tests/qml-js-module-smoke.qml
 
             find ${packageRoot}/package/contents/ui -name '*.qml' -print0 \
               | sort -z \

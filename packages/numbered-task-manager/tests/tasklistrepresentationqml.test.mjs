@@ -36,7 +36,7 @@ assert.doesNotMatch(mainQml, /taskSlotWidth:\s*root\.vertical \? taskExtent/);
 assert.match(sourceQml, /import QtQuick as QtQuick/);
 assert.match(sourceQml, /import QtQuick\.Layouts as QtQuickLayouts/);
 assert.match(sourceQml, /import org\.kde\.kirigami as Kirigami/);
-assert.match(sourceQml, /import "TaskMetricsLogic\.js" as TaskMetricsLogic/);
+assert.match(sourceQml, /import "TaskMetricsLogic\.mjs" as TaskMetricsLogic/);
 assert.match(sourceQml, /^QtQuick\.Item\s*\{/m);
 assert.match(sourceQml, /required property var activationAdapter/);
 assert.match(sourceQml, /required property var contextMenuAdapter/);

@@ -5,8 +5,8 @@ import assert from "node:assert/strict";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const logic = loadQmlJsModule(
-  new URL("../package/contents/ui/RemoteAttentionLogic.js", import.meta.url),
+const logic = await loadQmlJsModule(
+  new URL("../package/contents/ui/RemoteAttentionLogic.mjs", import.meta.url),
   [
     "createRemoteAttentionState",
     "createRemoteAttentionEntry",

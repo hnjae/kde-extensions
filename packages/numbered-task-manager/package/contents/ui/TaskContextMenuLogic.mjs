@@ -1,12 +1,22 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-Qt.include("TaskActionLogic.js");
-Qt.include("TaskActivityLogic.js");
-Qt.include("TaskEntryLogic.js");
-Qt.include("LauncherListLogic.js");
+import {
+  contextMenuLauncherCommand,
+  contextMenuTaskCommand,
+} from "./TaskActionLogic.mjs";
+import * as ActivityScopeLogic from "./ActivityScopeLogic.mjs";
+import { taskActivitiesAfterToggle } from "./TaskActivityLogic.mjs";
+import {
+  launcherActivitiesAfterAllToggle,
+  launcherActivitiesAfterToggle,
+  launcherActivityUpdate,
+  launcherPinState,
+  normalizedLauncherList,
+} from "./LauncherListLogic.mjs";
+import { launcherUrlFromRoles } from "./TaskEntryLogic.mjs";
 
-function panelMenuPlacement(location, plasmaCoreTypes, plasmaMenu) {
+export function panelMenuPlacement(location, plasmaCoreTypes, plasmaMenu) {
   if (location === plasmaCoreTypes.LeftEdge) {
     return plasmaMenu.RightPosedTopAlignedPopup;
   }
@@ -22,7 +32,7 @@ function panelMenuPlacement(location, plasmaCoreTypes, plasmaMenu) {
   return plasmaMenu.TopPosedLeftAlignedPopup;
 }
 
-function virtualDesktopEntriesSnapshot(desktopIds, desktopNames) {
+export function virtualDesktopEntriesSnapshot(desktopIds, desktopNames) {
   const ids = Array.from(desktopIds || []);
   const names = Array.from(desktopNames || []);
   const entries = [];
@@ -35,7 +45,11 @@ function virtualDesktopEntriesSnapshot(desktopIds, desktopNames) {
   return entries;
 }
 
-function activityEntriesSnapshot(activityIds, activityName, activityIcon) {
+export function activityEntriesSnapshot(
+  activityIds,
+  activityName,
+  activityIcon,
+) {
   const ids = Array.from(activityIds || []);
   const nameForActivity =
     typeof activityName === "function" ? activityName : null;
@@ -55,7 +69,7 @@ function activityEntriesSnapshot(activityIds, activityName, activityIcon) {
   return entries;
 }
 
-function pinActionState(pinState) {
+export function pinActionState(pinState) {
   const state = pinState || {};
   const isPinned = Boolean(state.isPinned);
 
@@ -66,7 +80,7 @@ function pinActionState(pinState) {
   };
 }
 
-function pinLauncherCommand(pinState) {
+export function pinLauncherCommand(pinState) {
   const state = pinState || {};
   const action = pinActionState(state);
   return contextMenuLauncherCommand(
@@ -75,7 +89,7 @@ function pinLauncherCommand(pinState) {
   );
 }
 
-function pinLauncherAction(pinState) {
+export function pinLauncherAction(pinState) {
   const state = pinState || {};
   const action = pinActionState(state);
 
@@ -84,13 +98,13 @@ function pinLauncherAction(pinState) {
   });
 }
 
-function pinActionsSection(sectionState) {
+export function pinActionsSection(sectionState) {
   return {
     pinLauncher: pinLauncherAction(sectionState),
   };
 }
 
-function launcherPinStateSnapshot(
+export function launcherPinStateSnapshot(
   launcherList,
   launcherUrl,
   currentActivity,
@@ -104,11 +118,11 @@ function launcherPinStateSnapshot(
   );
 }
 
-function replaceLauncherListCommand(launchers) {
+export function replaceLauncherListCommand(launchers) {
   return contextMenuLauncherCommand("replaceLauncherList", launchers);
 }
 
-function newInstanceActionState(taskState) {
+export function newInstanceActionState(taskState) {
   const state = taskState || {};
 
   return {
@@ -117,40 +131,40 @@ function newInstanceActionState(taskState) {
   };
 }
 
-function newInstanceCommand() {
+export function newInstanceCommand() {
   return contextMenuTaskCommand("requestNewInstance");
 }
 
-function newInstanceAction(taskState) {
+export function newInstanceAction(taskState) {
   return Object.assign({}, newInstanceActionState(taskState), {
     command: newInstanceCommand(),
     text: "New Instance",
   });
 }
 
-function moveCommand() {
+export function moveCommand() {
   return contextMenuTaskCommand("requestMove");
 }
 
-function resizeCommand() {
+export function resizeCommand() {
   return contextMenuTaskCommand("requestResize");
 }
 
-function basicMoveAction(taskState) {
+export function basicMoveAction(taskState) {
   return Object.assign({}, windowCapabilityActionState(taskState), {
     command: moveCommand(),
     text: "Move",
   });
 }
 
-function basicResizeAction(taskState) {
+export function basicResizeAction(taskState) {
   return Object.assign({}, windowCapabilityActionState(taskState), {
     command: resizeCommand(),
     text: "Resize",
   });
 }
 
-function basicActionsSection(sectionState) {
+export function basicActionsSection(sectionState) {
   const state = sectionState || {};
   const newInstance = newInstanceAction({
     canLaunchNewInstance: state.canLaunchNewInstance,
@@ -180,29 +194,29 @@ function basicActionsSection(sectionState) {
   };
 }
 
-function minimizeCommand() {
+export function minimizeCommand() {
   return contextMenuTaskCommand("requestToggleMinimized");
 }
 
-function maximizeCommand() {
+export function maximizeCommand() {
   return contextMenuTaskCommand("requestToggleMaximized");
 }
 
-function minimizeAction(taskState) {
+export function minimizeAction(taskState) {
   return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
     command: minimizeCommand(),
     text: "Minimize",
   });
 }
 
-function maximizeAction(taskState) {
+export function maximizeAction(taskState) {
   return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
     command: maximizeCommand(),
     text: "Maximize",
   });
 }
 
-function minimizeMaximizeActionsSection(sectionState) {
+export function minimizeMaximizeActionsSection(sectionState) {
   const state = sectionState || {};
 
   return {
@@ -221,29 +235,29 @@ function minimizeMaximizeActionsSection(sectionState) {
   };
 }
 
-function keepAboveCommand() {
+export function keepAboveCommand() {
   return contextMenuTaskCommand("requestToggleKeepAbove");
 }
 
-function keepBelowCommand() {
+export function keepBelowCommand() {
   return contextMenuTaskCommand("requestToggleKeepBelow");
 }
 
-function keepAboveAction(taskState) {
+export function keepAboveAction(taskState) {
   return Object.assign({}, checkableWindowActionState(taskState), {
     command: keepAboveCommand(),
     text: "Keep Above Others",
   });
 }
 
-function keepBelowAction(taskState) {
+export function keepBelowAction(taskState) {
   return Object.assign({}, checkableWindowActionState(taskState), {
     command: keepBelowCommand(),
     text: "Keep Below Others",
   });
 }
 
-function keepAboveBelowActionsSection(sectionState) {
+export function keepAboveBelowActionsSection(sectionState) {
   const state = sectionState || {};
 
   return {
@@ -260,40 +274,40 @@ function keepAboveBelowActionsSection(sectionState) {
   };
 }
 
-function fullscreenCommand() {
+export function fullscreenCommand() {
   return contextMenuTaskCommand("requestToggleFullScreen");
 }
 
-function shadeCommand() {
+export function shadeCommand() {
   return contextMenuTaskCommand("requestToggleShaded");
 }
 
-function noBorderCommand() {
+export function noBorderCommand() {
   return contextMenuTaskCommand("requestToggleNoBorder");
 }
 
-function fullscreenAction(taskState) {
+export function fullscreenAction(taskState) {
   return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
     command: fullscreenCommand(),
     text: "Fullscreen",
   });
 }
 
-function shadeAction(taskState) {
+export function shadeAction(taskState) {
   return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
     command: shadeCommand(),
     text: "Shade",
   });
 }
 
-function noBorderAction(taskState) {
+export function noBorderAction(taskState) {
   return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
     command: noBorderCommand(),
     text: "No Border",
   });
 }
 
-function fullscreenShadeBorderActionsSection(sectionState) {
+export function fullscreenShadeBorderActionsSection(sectionState) {
   const state = sectionState || {};
 
   return {
@@ -318,22 +332,22 @@ function fullscreenShadeBorderActionsSection(sectionState) {
   };
 }
 
-function excludeFromCaptureCommand() {
+export function excludeFromCaptureCommand() {
   return contextMenuTaskCommand("requestToggleExcludeFromCapture");
 }
 
-function closeCommand() {
+export function closeCommand() {
   return contextMenuTaskCommand("requestClose");
 }
 
-function excludeFromCaptureAction(taskState) {
+export function excludeFromCaptureAction(taskState) {
   return Object.assign({}, checkableWindowActionState(taskState), {
     command: excludeFromCaptureCommand(),
     text: "Hide from Screencasts",
   });
 }
 
-function captureActionsSection(sectionState) {
+export function captureActionsSection(sectionState) {
   const state = sectionState || {};
 
   return {
@@ -345,21 +359,21 @@ function captureActionsSection(sectionState) {
   };
 }
 
-function closeAction(taskState) {
+export function closeAction(taskState) {
   return Object.assign({}, closeActionState(taskState), {
     command: closeCommand(),
     text: "Close",
   });
 }
 
-function closeActionSection(closeActionState) {
+export function closeActionSection(closeActionState) {
   const state = closeActionState || {};
   return {
     visible: Boolean(state.visible),
   };
 }
 
-function closeActionsSection(sectionState) {
+export function closeActionsSection(sectionState) {
   const close = closeAction(sectionState);
 
   return {
@@ -368,11 +382,11 @@ function closeActionsSection(sectionState) {
   };
 }
 
-function allTaskActivitiesCommand() {
+export function allTaskActivitiesCommand() {
   return contextMenuTaskCommand("requestActivities", []);
 }
 
-function windowCapabilityActionState(taskState) {
+export function windowCapabilityActionState(taskState) {
   const state = taskState || {};
   const capable = Boolean(state.capable);
 
@@ -382,7 +396,7 @@ function windowCapabilityActionState(taskState) {
   };
 }
 
-function checkableWindowCapabilityActionState(taskState) {
+export function checkableWindowCapabilityActionState(taskState) {
   const state = taskState || {};
   const actionState = windowCapabilityActionState(state);
 
@@ -391,7 +405,7 @@ function checkableWindowCapabilityActionState(taskState) {
   });
 }
 
-function checkableWindowActionState(taskState) {
+export function checkableWindowActionState(taskState) {
   const state = taskState || {};
 
   return {
@@ -401,7 +415,7 @@ function checkableWindowActionState(taskState) {
   };
 }
 
-function menuActionSectionVisible(sectionState) {
+export function menuActionSectionVisible(sectionState) {
   const state = sectionState || {};
   return Boolean(
     state.launcherActivitiesVisible ||
@@ -410,13 +424,13 @@ function menuActionSectionVisible(sectionState) {
   );
 }
 
-function menuActionSection(sectionState) {
+export function menuActionSection(sectionState) {
   return {
     visible: menuActionSectionVisible(sectionState),
   };
 }
 
-function virtualDesktopsActionState(taskState) {
+export function virtualDesktopsActionState(taskState) {
   const state = taskState || {};
   return windowCapabilityActionState(
     Object.assign({}, state, {
@@ -425,13 +439,13 @@ function virtualDesktopsActionState(taskState) {
   );
 }
 
-function virtualDesktopsAction(taskState) {
+export function virtualDesktopsAction(taskState) {
   return Object.assign({}, virtualDesktopsActionState(taskState), {
     text: "Virtual Desktops",
   });
 }
 
-function newVirtualDesktopActionState(taskState) {
+export function newVirtualDesktopActionState(taskState) {
   const state = taskState || {};
 
   return {
@@ -439,14 +453,14 @@ function newVirtualDesktopActionState(taskState) {
   };
 }
 
-function newVirtualDesktopAction(taskState) {
+export function newVirtualDesktopAction(taskState) {
   return Object.assign({}, newVirtualDesktopActionState(taskState), {
     command: newVirtualDesktopCommand(),
     text: "New Desktop",
   });
 }
 
-function taskActivitiesActionState(taskState) {
+export function taskActivitiesActionState(taskState) {
   const state = taskState || {};
   const activityEntryCount = Number(state.activityEntryCount || 0);
 
@@ -456,13 +470,13 @@ function taskActivitiesActionState(taskState) {
   };
 }
 
-function taskActivitiesAction(taskState) {
+export function taskActivitiesAction(taskState) {
   return Object.assign({}, taskActivitiesActionState(taskState), {
     text: "Activities",
   });
 }
 
-function closeActionState(taskState) {
+export function closeActionState(taskState) {
   const state = taskState || {};
 
   return {
@@ -471,7 +485,7 @@ function closeActionState(taskState) {
   };
 }
 
-function launcherActivitiesVisible(pinState, activityEntryCount) {
+export function launcherActivitiesVisible(pinState, activityEntryCount) {
   const state = pinState || {};
   const count = Number(activityEntryCount || 0);
   return Boolean(
@@ -479,7 +493,7 @@ function launcherActivitiesVisible(pinState, activityEntryCount) {
   );
 }
 
-function launcherActivitiesActionState(
+export function launcherActivitiesActionState(
   pinState,
   activityEntryCount,
   hasTaskModel,
@@ -492,7 +506,11 @@ function launcherActivitiesActionState(
   };
 }
 
-function launcherActivitiesAction(pinState, activityEntryCount, hasTaskModel) {
+export function launcherActivitiesAction(
+  pinState,
+  activityEntryCount,
+  hasTaskModel,
+) {
   return Object.assign(
     {},
     launcherActivitiesActionState(pinState, activityEntryCount, hasTaskModel),
@@ -502,11 +520,11 @@ function launcherActivitiesAction(pinState, activityEntryCount, hasTaskModel) {
   );
 }
 
-function launcherActivityListSnapshot(launcherActivities) {
+export function launcherActivityListSnapshot(launcherActivities) {
   return ActivityScopeLogic.normalizedActivityList(launcherActivities);
 }
 
-function launcherActivityMenuState(launcherActivities, activityId) {
+export function launcherActivityMenuState(launcherActivities, activityId) {
   const activities = launcherActivityListSnapshot(launcherActivities);
   const allActivitiesChecked = ActivityScopeLogic.activitiesAreAll(activities);
 
@@ -519,7 +537,11 @@ function launcherActivityMenuState(launcherActivities, activityId) {
   };
 }
 
-function launcherActivityUpdateCommand(launcherList, position, activities) {
+export function launcherActivityUpdateCommand(
+  launcherList,
+  position,
+  activities,
+) {
   const update = launcherActivityUpdate(launcherList, position, activities);
   return Object.assign({}, update, {
     command:
@@ -529,7 +551,7 @@ function launcherActivityUpdateCommand(launcherList, position, activities) {
   });
 }
 
-function launcherAllActivitiesUpdateCommand(
+export function launcherAllActivitiesUpdateCommand(
   launcherList,
   position,
   launcherActivities,
@@ -553,7 +575,7 @@ function launcherAllActivitiesUpdateCommand(
   return launcherActivityUpdateCommand(launcherList, position, nextActivities);
 }
 
-function launcherActivityToggleUpdateCommand(
+export function launcherActivityToggleUpdateCommand(
   launcherList,
   position,
   launcherActivities,
@@ -571,7 +593,7 @@ function launcherActivityToggleUpdateCommand(
   );
 }
 
-function launcherAllActivitiesAction(
+export function launcherAllActivitiesAction(
   launcherList,
   position,
   launcherActivities,
@@ -591,7 +613,7 @@ function launcherAllActivitiesAction(
   };
 }
 
-function launcherActivityAction(
+export function launcherActivityAction(
   launcherList,
   position,
   launcherActivities,
@@ -614,7 +636,7 @@ function launcherActivityAction(
   };
 }
 
-function launcherActivityActionsSection(sectionState) {
+export function launcherActivityActionsSection(sectionState) {
   const state = sectionState || {};
 
   return {
@@ -640,7 +662,7 @@ function launcherActivityActionsSection(sectionState) {
   };
 }
 
-function taskActivityMenuState(taskActivities, activityId) {
+export function taskActivityMenuState(taskActivities, activityId) {
   const activities = Array.from(taskActivities || []);
   const allActivitiesChecked = ActivityScopeLogic.activitiesAreAll(activities);
 
@@ -652,14 +674,14 @@ function taskActivityMenuState(taskActivities, activityId) {
   };
 }
 
-function taskActivityToggleCommand(taskActivities, activityId) {
+export function taskActivityToggleCommand(taskActivities, activityId) {
   return contextMenuTaskCommand(
     "requestActivities",
     taskActivitiesAfterToggle(taskActivities, activityId),
   );
 }
 
-function allTaskActivitiesAction(taskActivities) {
+export function allTaskActivitiesAction(taskActivities) {
   const activityState = taskActivityMenuState(taskActivities, "");
 
   return {
@@ -669,7 +691,7 @@ function allTaskActivitiesAction(taskActivities) {
   };
 }
 
-function taskActivityAction(taskActivities, activity) {
+export function taskActivityAction(taskActivities, activity) {
   const entry = activity || {};
   const activityState = taskActivityMenuState(taskActivities, entry.id);
 
@@ -680,7 +702,7 @@ function taskActivityAction(taskActivities, activity) {
   };
 }
 
-function taskActivityActionsSection(sectionState) {
+export function taskActivityActionsSection(sectionState) {
   const state = sectionState || {};
 
   return {
@@ -695,7 +717,7 @@ function taskActivityActionsSection(sectionState) {
   };
 }
 
-function virtualDesktopId(desktop) {
+export function virtualDesktopId(desktop) {
   if (!desktop) {
     return "";
   }
@@ -711,7 +733,7 @@ function virtualDesktopId(desktop) {
   return String(desktop);
 }
 
-function virtualDesktopListContains(desktops, desktop) {
+export function virtualDesktopListContains(desktops, desktop) {
   const id = virtualDesktopId(desktop);
   if (!id) {
     return false;
@@ -727,7 +749,11 @@ function virtualDesktopListContains(desktops, desktop) {
   return false;
 }
 
-function virtualDesktopMenuState(virtualDesktops, isOnAllDesktops, desktop) {
+export function virtualDesktopMenuState(
+  virtualDesktops,
+  isOnAllDesktops,
+  desktop,
+) {
   const allDesktopsChecked = Boolean(isOnAllDesktops);
 
   return {
@@ -738,19 +764,19 @@ function virtualDesktopMenuState(virtualDesktops, isOnAllDesktops, desktop) {
   };
 }
 
-function allVirtualDesktopsCommand() {
+export function allVirtualDesktopsCommand() {
   return contextMenuTaskCommand("requestVirtualDesktops", []);
 }
 
-function virtualDesktopCommand(desktopId) {
+export function virtualDesktopCommand(desktopId) {
   return contextMenuTaskCommand("requestVirtualDesktops", [desktopId]);
 }
 
-function newVirtualDesktopCommand() {
+export function newVirtualDesktopCommand() {
   return contextMenuTaskCommand("requestNewVirtualDesktop");
 }
 
-function allVirtualDesktopsAction(virtualDesktops, isOnAllDesktops) {
+export function allVirtualDesktopsAction(virtualDesktops, isOnAllDesktops) {
   const desktopState = virtualDesktopMenuState(
     virtualDesktops,
     isOnAllDesktops,
@@ -764,7 +790,11 @@ function allVirtualDesktopsAction(virtualDesktops, isOnAllDesktops) {
   };
 }
 
-function virtualDesktopAction(virtualDesktops, isOnAllDesktops, desktop) {
+export function virtualDesktopAction(
+  virtualDesktops,
+  isOnAllDesktops,
+  desktop,
+) {
   const entry = desktop || {};
   const desktopState = virtualDesktopMenuState(
     virtualDesktops,
@@ -779,7 +809,7 @@ function virtualDesktopAction(virtualDesktops, isOnAllDesktops, desktop) {
   };
 }
 
-function virtualDesktopActionsSection(sectionState) {
+export function virtualDesktopActionsSection(sectionState) {
   const state = sectionState || {};
 
   return {
@@ -804,7 +834,7 @@ function virtualDesktopActionsSection(sectionState) {
   };
 }
 
-function contextMenuActionRoute(actionState) {
+export function contextMenuActionRoute(actionState) {
   const state = actionState || {};
   if (state.update) {
     return {
@@ -838,7 +868,7 @@ function contextMenuActionRoute(actionState) {
   };
 }
 
-function contextMenuActionSections(menuState) {
+export function contextMenuActionSections(menuState) {
   const state = menuState || {};
   const basicRoles = state.basicActionRoles || {};
   const captureCloseRoles = state.captureCloseRoles || {};
@@ -922,7 +952,7 @@ function contextMenuActionSections(menuState) {
   };
 }
 
-function roleData(roleSource, role, fallback) {
+export function roleData(roleSource, role, fallback) {
   const source = roleSource || {};
   if (
     !source.hasTask ||
@@ -940,11 +970,11 @@ function roleData(roleSource, role, fallback) {
   return value === undefined || value === null ? fallback : value;
 }
 
-function boolRoleData(roleSource, role, fallback) {
+export function boolRoleData(roleSource, role, fallback) {
   return Boolean(roleData(roleSource, role, fallback || false));
 }
 
-function contextMenuRoleSnapshots(roleSource, roles, task) {
+export function contextMenuRoleSnapshots(roleSource, roles, task) {
   return {
     basicActionRoles: basicActionRoleSnapshot(roleSource, roles, task),
     captureCloseRoles: captureCloseRoleSnapshot(roleSource, roles, task),
@@ -964,7 +994,7 @@ function contextMenuRoleSnapshots(roleSource, roles, task) {
   };
 }
 
-function basicActionRoleSnapshot(roleSource, roles, task) {
+export function basicActionRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};
 
@@ -992,7 +1022,7 @@ function basicActionRoleSnapshot(roleSource, roles, task) {
   };
 }
 
-function captureCloseRoleSnapshot(roleSource, roles, task) {
+export function captureCloseRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};
 
@@ -1010,7 +1040,7 @@ function captureCloseRoleSnapshot(roleSource, roles, task) {
   };
 }
 
-function minimizeMaximizeRoleSnapshot(roleSource, roles, task) {
+export function minimizeMaximizeRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};
 
@@ -1038,7 +1068,7 @@ function minimizeMaximizeRoleSnapshot(roleSource, roles, task) {
   };
 }
 
-function keepAboveBelowRoleSnapshot(roleSource, roles, task) {
+export function keepAboveBelowRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};
 
@@ -1056,7 +1086,7 @@ function keepAboveBelowRoleSnapshot(roleSource, roles, task) {
   };
 }
 
-function fullscreenShadeBorderRoleSnapshot(roleSource, roles, task) {
+export function fullscreenShadeBorderRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};
 
@@ -1094,7 +1124,7 @@ function fullscreenShadeBorderRoleSnapshot(roleSource, roles, task) {
   };
 }
 
-function virtualDesktopRoleSnapshot(roleSource, roles, task) {
+export function virtualDesktopRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};
 
@@ -1112,7 +1142,7 @@ function virtualDesktopRoleSnapshot(roleSource, roles, task) {
   };
 }
 
-function taskRoleSnapshot(roleSource, roles, task) {
+export function taskRoleSnapshot(roleSource, roles, task) {
   const roleIds = roles || {};
   const fallback = task || {};
   const fallbackLauncherUrl = roleData(

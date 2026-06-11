@@ -50,9 +50,9 @@ assert.doesNotMatch(mainQml, /root\.launcherRevision \+= 1/);
 assert.match(sourceQml, /import org\.kde\.taskmanager as TaskManager/);
 assert.match(
   sourceQml,
-  /import "ActivityScopeLogic\.js" as ActivityScopeLogic/,
+  /import "ActivityScopeLogic\.mjs" as ActivityScopeLogic/,
 );
-assert.match(sourceQml, /import "LauncherListLogic\.js" as LauncherListLogic/);
+assert.match(sourceQml, /import "LauncherListLogic\.mjs" as LauncherListLogic/);
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(sourceQml, /required property var taskModel/);
 assert.match(

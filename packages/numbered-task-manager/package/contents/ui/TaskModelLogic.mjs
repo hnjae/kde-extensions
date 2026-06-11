@@ -1,9 +1,15 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-Qt.include("TaskEntryLogic.js");
+import {
+  boolValue,
+  createBaseTaskEntry,
+  normalTaskIconFallback,
+  numberValue,
+  stringValue,
+} from "./TaskEntryLogic.mjs";
 
-function createNormalTaskEntry(roles) {
+export function createNormalTaskEntry(roles) {
   const taskRoles = roles || {};
   const baseEntry = createBaseTaskEntry(taskRoles, normalTaskIconFallback());
   const launcherPinned = boolValue(taskRoles.launcherPinned);
@@ -44,7 +50,7 @@ function createNormalTaskEntry(roles) {
   });
 }
 
-function normalTaskSourceOrder(left, right) {
+export function normalTaskSourceOrder(left, right) {
   const leftIndex =
     left && left.sourceIndex !== undefined ? left.sourceIndex : -1;
   const rightIndex =
@@ -52,7 +58,7 @@ function normalTaskSourceOrder(left, right) {
   return leftIndex - rightIndex;
 }
 
-function normalTaskLauncherPosition(entry, visibleLauncherPosition) {
+export function normalTaskLauncherPosition(entry, visibleLauncherPosition) {
   if (!entry?.launcherUrl) {
     return -1;
   }
@@ -68,14 +74,14 @@ function normalTaskLauncherPosition(entry, visibleLauncherPosition) {
   return -1;
 }
 
-function copyNormalTaskEntry(entry, launcherBacked, moveIndex) {
+export function copyNormalTaskEntry(entry, launcherBacked, moveIndex) {
   const task = Object.assign({}, entry);
   task.launcherBacked = launcherBacked;
   task.moveIndex = moveIndex === undefined ? task.sourceIndex : moveIndex;
   return task;
 }
 
-function composeNormalTaskEntries(
+export function composeNormalTaskEntries(
   normalTaskEntryMap,
   normalTaskManualOrder,
   visibleLauncherPosition,
@@ -189,11 +195,11 @@ function composeNormalTaskEntries(
   };
 }
 
-function normalTaskEntryMoveIndex(entry) {
+export function normalTaskEntryMoveIndex(entry) {
   return entry.moveIndex === undefined ? entry.sourceIndex : entry.moveIndex;
 }
 
-function normalTaskEntryForSourceIndex(entries, sourceIndex) {
+export function normalTaskEntryForSourceIndex(entries, sourceIndex) {
   const normalEntries = Array.from(entries || []);
   for (let i = 0; i < normalEntries.length; ++i) {
     if (normalTaskEntryMoveIndex(normalEntries[i]) === sourceIndex) {
@@ -204,7 +210,7 @@ function normalTaskEntryForSourceIndex(entries, sourceIndex) {
   return null;
 }
 
-function moveManualTaskOrder(entries, sourceKey, targetKey) {
+export function moveManualTaskOrder(entries, sourceKey, targetKey) {
   const result = moveManualTaskOrderResult(entries, sourceKey, targetKey);
   return {
     moved: result.moved,
@@ -212,7 +218,7 @@ function moveManualTaskOrder(entries, sourceKey, targetKey) {
   };
 }
 
-function moveManualTaskOrderResult(entries, sourceKey, targetKey) {
+export function moveManualTaskOrderResult(entries, sourceKey, targetKey) {
   const order = Array.from(entries || [])
     .filter((entry) => !entry.launcherBacked)
     .map((entry) => entry.entryKey);
@@ -249,7 +255,12 @@ function moveManualTaskOrderResult(entries, sourceKey, targetKey) {
   };
 }
 
-function canMoveTask(entries, sourceIndex, targetIndex, canMovePinnedLauncher) {
+export function canMoveTask(
+  entries,
+  sourceIndex,
+  targetIndex,
+  canMovePinnedLauncher,
+) {
   return canMoveTaskResult(
     entries,
     sourceIndex,
@@ -258,7 +269,7 @@ function canMoveTask(entries, sourceIndex, targetIndex, canMovePinnedLauncher) {
   ).canMove;
 }
 
-function canMoveTaskResult(
+export function canMoveTaskResult(
   entries,
   sourceIndex,
   targetIndex,

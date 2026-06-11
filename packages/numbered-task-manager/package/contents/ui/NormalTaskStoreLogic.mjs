@@ -1,22 +1,22 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-Qt.include("TaskModelLogic.js");
+import { composeNormalTaskEntries } from "./TaskModelLogic.mjs";
 
-function normalTaskStoreEntryMap(store) {
+export function normalTaskStoreEntryMap(store) {
   return Object.assign({}, store?.entryMap || {});
 }
 
-function normalTaskStoreManualOrder(store) {
+export function normalTaskStoreManualOrder(store) {
   return Array.from(store?.manualOrder || []);
 }
 
-function normalTaskStoreNextPublicationId(store) {
+export function normalTaskStoreNextPublicationId(store) {
   const numericId = Number(store?.nextPublicationId || 0);
   return Number.isFinite(numericId) ? numericId : 0;
 }
 
-function createNormalTaskStore() {
+export function createNormalTaskStore() {
   return {
     entries: [],
     entryMap: {},
@@ -25,7 +25,7 @@ function createNormalTaskStore() {
   };
 }
 
-function createNormalTaskPublicationKey(nextPublicationId) {
+export function createNormalTaskPublicationKey(nextPublicationId) {
   const numericId = Number(nextPublicationId || 0);
   const nextId = Number.isFinite(numericId) ? numericId + 1 : 1;
   return {
@@ -34,7 +34,7 @@ function createNormalTaskPublicationKey(nextPublicationId) {
   };
 }
 
-function allocateNormalTaskPublication(store) {
+export function allocateNormalTaskPublication(store) {
   const publication = createNormalTaskPublicationKey(
     normalTaskStoreNextPublicationId(store),
   );
@@ -50,7 +50,7 @@ function allocateNormalTaskPublication(store) {
   };
 }
 
-function recomputeNormalTaskStore(store, visibleLauncherPosition) {
+export function recomputeNormalTaskStore(store, visibleLauncherPosition) {
   const entryMap = normalTaskStoreEntryMap(store);
   const result = composeNormalTaskEntries(
     entryMap,
@@ -66,7 +66,7 @@ function recomputeNormalTaskStore(store, visibleLauncherPosition) {
   };
 }
 
-function removeNormalTask(store, key, visibleLauncherPosition) {
+export function removeNormalTask(store, key, visibleLauncherPosition) {
   const entryMap = normalTaskStoreEntryMap(store);
   if (!key || !entryMap[key]) {
     return store || createNormalTaskStore();
@@ -83,7 +83,7 @@ function removeNormalTask(store, key, visibleLauncherPosition) {
   );
 }
 
-function publishNormalTask(
+export function publishNormalTask(
   store,
   key,
   qualifies,

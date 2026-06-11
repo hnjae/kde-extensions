@@ -5,10 +5,10 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import org.kde.taskmanager as TaskManager
-import "RemoteAttentionLogic.js" as RemoteAttentionLogic
-import "TaskEntryLogic.js" as TaskEntryLogic
-import "TaskScopeLogic.js" as TaskScopeLogic
-import "VisibleTaskItemsLogic.js" as VisibleTaskItemsLogic
+import "RemoteAttentionLogic.mjs" as RemoteAttentionLogic
+import "TaskEntryLogic.mjs" as TaskEntryLogic
+import "TaskScopeLogic.mjs" as TaskScopeLogic
+import "VisibleTaskItemsLogic.mjs" as VisibleTaskItemsLogic
 
 QtQuick.Item {
     id: root

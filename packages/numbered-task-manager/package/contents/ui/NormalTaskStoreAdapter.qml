@@ -4,8 +4,8 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "NormalTaskStoreLogic.js" as NormalTaskStoreLogic
-import "TaskModelLogic.js" as TaskModelLogic
+import "NormalTaskStoreLogic.mjs" as NormalTaskStoreLogic
+import "TaskModelLogic.mjs" as TaskModelLogic
 
 QtQuick.QtObject {
     id: root

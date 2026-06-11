@@ -1,9 +1,12 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-Qt.include("TaskEntryLogic.js");
+import {
+  createBaseTaskEntry,
+  remoteAttentionIconFallback,
+} from "./TaskEntryLogic.mjs";
 
-function createRemoteAttentionEntry(roles) {
+export function createRemoteAttentionEntry(roles) {
   const taskRoles = roles || {};
 
   return Object.assign(
@@ -15,7 +18,7 @@ function createRemoteAttentionEntry(roles) {
   );
 }
 
-function remoteAttentionKey(winIds, launcherUrl, title, row) {
+export function remoteAttentionKey(winIds, launcherUrl, title, row) {
   const windowIds = Array.from(winIds || []);
   if (windowIds.length > 0) {
     return `window:${windowIds.join(",")}`;
@@ -24,7 +27,7 @@ function remoteAttentionKey(winIds, launcherUrl, title, row) {
   return `row:${row.toString()}:${launcherUrl}:${title}`;
 }
 
-function remoteAttentionSnapshot(entryMap, order) {
+export function remoteAttentionSnapshot(entryMap, order) {
   const entries = [];
   const attentionOrder = Array.from(order || []);
   const attentionEntryMap = entryMap || {};
@@ -43,15 +46,15 @@ function remoteAttentionSnapshot(entryMap, order) {
   };
 }
 
-function remoteAttentionStateEntryMap(state) {
+export function remoteAttentionStateEntryMap(state) {
   return Object.assign({}, state?.entryMap || {});
 }
 
-function remoteAttentionStateOrder(state) {
+export function remoteAttentionStateOrder(state) {
   return Array.from(state?.order || []);
 }
 
-function remoteAttentionStateFromParts(entryMap, order) {
+export function remoteAttentionStateFromParts(entryMap, order) {
   const nextEntryMap = Object.assign({}, entryMap || {});
   const nextOrder = Array.from(order || []);
   const snapshot = remoteAttentionSnapshot(nextEntryMap, nextOrder);
@@ -65,11 +68,11 @@ function remoteAttentionStateFromParts(entryMap, order) {
   };
 }
 
-function createRemoteAttentionState() {
+export function createRemoteAttentionState() {
   return remoteAttentionStateFromParts({}, []);
 }
 
-function publishRemoteAttention(
+export function publishRemoteAttention(
   entryMap,
   order,
   previousKey,
@@ -142,7 +145,7 @@ function publishRemoteAttention(
   };
 }
 
-function publishRemoteAttentionState(
+export function publishRemoteAttentionState(
   state,
   previousKey,
   key,
@@ -166,7 +169,7 @@ function publishRemoteAttentionState(
   };
 }
 
-function removeRemoteAttention(entryMap, order, key) {
+export function removeRemoteAttention(entryMap, order, key) {
   const entries = Object.assign({}, entryMap || {});
   if (!key || !entries[key]) {
     return {
@@ -187,7 +190,7 @@ function removeRemoteAttention(entryMap, order, key) {
   };
 }
 
-function removeRemoteAttentionState(state, key) {
+export function removeRemoteAttentionState(state, key) {
   const entries = remoteAttentionStateEntryMap(state);
   if (!key || !entries[key]) {
     return {
@@ -205,7 +208,7 @@ function removeRemoteAttentionState(state, key) {
   };
 }
 
-function recomputeRemoteAttentionState(state) {
+export function recomputeRemoteAttentionState(state) {
   return remoteAttentionStateFromParts(
     remoteAttentionStateEntryMap(state),
     remoteAttentionStateOrder(state),

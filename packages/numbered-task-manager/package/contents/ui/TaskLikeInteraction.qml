@@ -5,7 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import org.kde.kirigami.platform as KirigamiPlatform
-import "TaskInteractionLogic.js" as TaskInteractionLogic
+import "TaskInteractionLogic.mjs" as TaskInteractionLogic
 
 QtQuick.Item {
     id: root

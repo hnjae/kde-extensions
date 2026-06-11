@@ -6,7 +6,7 @@ pragma ComponentBehavior: Bound
 import org.kde.ksvg as KSvg
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
-import "TaskVisualLogic.js" as TaskVisualLogic
+import "TaskVisualLogic.mjs" as TaskVisualLogic
 
 KSvg.FrameSvgItem {
     id: root

@@ -7,8 +7,8 @@ import QtQuick.Layouts as QtQuickLayouts
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
-import "TaskScopeLogic.js" as TaskScopeLogic
-import "VisibleTaskItemsLogic.js" as VisibleTaskItemsLogic
+import "TaskScopeLogic.mjs" as TaskScopeLogic
+import "VisibleTaskItemsLogic.mjs" as VisibleTaskItemsLogic
 
 PlasmoidItem {
     id: root

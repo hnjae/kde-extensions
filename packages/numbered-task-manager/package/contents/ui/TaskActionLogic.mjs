@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-Qt.include("TaskEntryLogic.js");
-Qt.include("VisibleTaskItemsLogic.js");
+import { hasValidModelIndex } from "./TaskEntryLogic.mjs";
+import { activationTargetForShortcutIndex } from "./VisibleTaskItemsLogic.mjs";
 
-function normalizedStringList(value) {
+export function normalizedStringList(value) {
   if (!value) {
     return [];
   }
@@ -12,7 +12,7 @@ function normalizedStringList(value) {
   return Array.from(value).filter((entry) => entry && entry.length > 0);
 }
 
-function actionResult(action, code, ok, diagnostic, context) {
+export function actionResult(action, code, ok, diagnostic, context) {
   return {
     action,
     code,
@@ -22,7 +22,7 @@ function actionResult(action, code, ok, diagnostic, context) {
   };
 }
 
-function actionErrorMessage(error) {
+export function actionErrorMessage(error) {
   if (error?.message) {
     return String(error.message);
   }
@@ -30,7 +30,7 @@ function actionErrorMessage(error) {
   return String(error);
 }
 
-function taskEntryDiagnosticResult(diagnostic) {
+export function taskEntryDiagnosticResult(diagnostic) {
   const entryDiagnostic = diagnostic || {};
   return actionResult(
     "projectTaskEntry",
@@ -46,7 +46,7 @@ function taskEntryDiagnosticResult(diagnostic) {
   );
 }
 
-function taskContext(task, options) {
+export function taskContext(task, options) {
   const entry = task || {};
   const requestOptions = options || {};
   const context = {};
@@ -76,12 +76,12 @@ function taskContext(task, options) {
   return context;
 }
 
-function hasActivationSourceIndex(task) {
+export function hasActivationSourceIndex(task) {
   const entry = task || {};
   return !(entry.sourceIndex === undefined || entry.sourceIndex < 0);
 }
 
-function rejectedActivation(action, code, diagnostic, task, options) {
+export function rejectedActivation(action, code, diagnostic, task, options) {
   return actionResult(
     action,
     code,
@@ -91,7 +91,7 @@ function rejectedActivation(action, code, diagnostic, task, options) {
   );
 }
 
-function taskActivationRequest(action, task, options) {
+export function taskActivationRequest(action, task, options) {
   const entry = task || null;
   const requestOptions = options || {};
   const requestAction = action || "activateTask";
@@ -141,7 +141,7 @@ function taskActivationRequest(action, task, options) {
   );
 }
 
-function activationExecutionContext(requestResult) {
+export function activationExecutionContext(requestResult) {
   const request = requestResult || {};
   const context = Object.assign({}, request.context || {});
 
@@ -155,7 +155,11 @@ function activationExecutionContext(requestResult) {
   return context;
 }
 
-function activationExecutionResult(requestResult, activationTarget, error) {
+export function activationExecutionResult(
+  requestResult,
+  activationTarget,
+  error,
+) {
   const request = requestResult || {};
   const requestAction = request.action || "activateTask";
 
@@ -192,7 +196,7 @@ function activationExecutionResult(requestResult, activationTarget, error) {
   return actionResult(requestAction, "executed", true, false, context);
 }
 
-function shortcutActivationOptions(targetItem, shortcutIndex) {
+export function shortcutActivationOptions(targetItem, shortcutIndex) {
   const item = targetItem || {};
   const kind = item.kind || "";
 
@@ -204,7 +208,7 @@ function shortcutActivationOptions(targetItem, shortcutIndex) {
   };
 }
 
-function shortcutActivationRequest(visibleItems, shortcutIndex) {
+export function shortcutActivationRequest(visibleItems, shortcutIndex) {
   const targetItem = activationTargetForShortcutIndex(
     visibleItems,
     shortcutIndex,
@@ -236,7 +240,7 @@ function shortcutActivationRequest(visibleItems, shortcutIndex) {
   );
 }
 
-function contextMenuRequestContext(request) {
+export function contextMenuRequestContext(request) {
   const menuRequest = request || {};
   const task = menuRequest.task || {};
   const visualParent = menuRequest.visualParent || {};
@@ -249,7 +253,7 @@ function contextMenuRequestContext(request) {
   };
 }
 
-function contextMenuRequestResult(request) {
+export function contextMenuRequestResult(request) {
   const menuRequest = request || {};
   const context = contextMenuRequestContext(menuRequest);
 
@@ -295,7 +299,7 @@ function contextMenuRequestResult(request) {
   );
 }
 
-function contextMenuCreationResult(menu, requestResult) {
+export function contextMenuCreationResult(menu, requestResult) {
   if (menu) {
     return actionResult("openContextMenu", "created", true, false, {});
   }
@@ -310,7 +314,7 @@ function contextMenuCreationResult(menu, requestResult) {
   );
 }
 
-function contextMenuActionDispatchContext(route) {
+export function contextMenuActionDispatchContext(route) {
   const actionRoute = route || {};
   const command = actionRoute.command || {};
   const update = actionRoute.update || {};
@@ -334,7 +338,7 @@ function contextMenuActionDispatchContext(route) {
   return context;
 }
 
-function contextMenuActionDispatchFailure(route, code) {
+export function contextMenuActionDispatchFailure(route, code) {
   return actionResult(
     "dispatchContextMenuAction",
     code || "dispatch-failed",
@@ -344,7 +348,7 @@ function contextMenuActionDispatchFailure(route, code) {
   );
 }
 
-function contextMenuLauncherCommand(action, value) {
+export function contextMenuLauncherCommand(action, value) {
   const commandAction = String(action || "");
   const command = {
     action: commandAction,
@@ -362,7 +366,7 @@ function contextMenuLauncherCommand(action, value) {
   return command;
 }
 
-function normalizedContextMenuLauncherCommand(command) {
+export function normalizedContextMenuLauncherCommand(command) {
   const launcherCommand = command || {};
   if (launcherCommand.action === "replaceLauncherList") {
     return contextMenuLauncherCommand(
@@ -377,7 +381,7 @@ function normalizedContextMenuLauncherCommand(command) {
   );
 }
 
-function contextMenuLauncherCommandDispatchResult(command) {
+export function contextMenuLauncherCommandDispatchResult(command) {
   const launcherCommand = normalizedContextMenuLauncherCommand(command);
   const context = {};
   if (launcherCommand.launcherUrl) {
@@ -411,7 +415,7 @@ function contextMenuLauncherCommandDispatchResult(command) {
   );
 }
 
-function contextMenuLauncherActivityContext(update, launcherUrl) {
+export function contextMenuLauncherActivityContext(update, launcherUrl) {
   const activityUpdate = update || {};
   const context = {};
   const url = String(launcherUrl || "");
@@ -429,7 +433,7 @@ function contextMenuLauncherActivityContext(update, launcherUrl) {
   return context;
 }
 
-function contextMenuLauncherActivityResult(update, code, launcherUrl) {
+export function contextMenuLauncherActivityResult(update, code, launcherUrl) {
   return actionResult(
     "updateLauncherActivities",
     code || "launcher-activity-update-failed",
@@ -439,7 +443,7 @@ function contextMenuLauncherActivityResult(update, code, launcherUrl) {
   );
 }
 
-function contextMenuTaskRequestContext(modelIndex, task) {
+export function contextMenuTaskRequestContext(modelIndex, task) {
   const entry = task || {};
   const context = {
     modelIndexValid: hasValidModelIndex(modelIndex),
@@ -455,7 +459,7 @@ function contextMenuTaskRequestContext(modelIndex, task) {
   return context;
 }
 
-function contextMenuTaskCommand(requestMethod, argument) {
+export function contextMenuTaskCommand(requestMethod, argument) {
   const command = {
     arguments: [],
     kind: "task-model-request",
@@ -469,7 +473,7 @@ function contextMenuTaskCommand(requestMethod, argument) {
   return command;
 }
 
-function normalizedContextMenuTaskCommand(command) {
+export function normalizedContextMenuTaskCommand(command) {
   if (typeof command === "string") {
     return contextMenuTaskCommand(command);
   }
@@ -482,7 +486,7 @@ function normalizedContextMenuTaskCommand(command) {
   };
 }
 
-function contextMenuTaskRequest(command, taskModel, modelIndex, task) {
+export function contextMenuTaskRequest(command, taskModel, modelIndex, task) {
   const taskCommand = normalizedContextMenuTaskCommand(command);
   const requestAction = taskCommand.requestMethod || "taskRequest";
   const context = contextMenuTaskRequestContext(modelIndex, task);
@@ -527,7 +531,7 @@ function contextMenuTaskRequest(command, taskModel, modelIndex, task) {
   );
 }
 
-function contextMenuTaskExecutionResult(requestResult, error) {
+export function contextMenuTaskExecutionResult(requestResult, error) {
   const request = requestResult || {};
   const requestMethod =
     request.requestMethod || request.action || "taskRequest";
@@ -568,12 +572,12 @@ function contextMenuTaskExecutionResult(requestResult, error) {
   );
 }
 
-function launcherMutationContext(launcherUrl) {
+export function launcherMutationContext(launcherUrl) {
   const url = String(launcherUrl || "");
   return url ? { launcherUrl: url } : {};
 }
 
-function launcherMutationRequest(action, launcherUrl) {
+export function launcherMutationRequest(action, launcherUrl) {
   const requestAction = action || "launcherMutation";
   const context = launcherMutationContext(launcherUrl);
 
@@ -595,7 +599,7 @@ function launcherMutationRequest(action, launcherUrl) {
   );
 }
 
-function launcherMutationResult(requestResult, accepted, error) {
+export function launcherMutationResult(requestResult, accepted, error) {
   const request = requestResult || {};
   if (!request.ok) {
     return request;
@@ -635,7 +639,7 @@ function launcherMutationResult(requestResult, accepted, error) {
   );
 }
 
-function dragMoveRejectionDiagnostic(reason) {
+export function dragMoveRejectionDiagnostic(reason) {
   const expectedReasons = [
     "same-index",
     "boundary-crossing",
@@ -650,7 +654,11 @@ function dragMoveRejectionDiagnostic(reason) {
   return true;
 }
 
-function dragMoveRejectionResult(moveDecision, sourceIndex, targetIndex) {
+export function dragMoveRejectionResult(
+  moveDecision,
+  sourceIndex,
+  targetIndex,
+) {
   const decision = moveDecision || {};
   const reason = String(decision.reason || "");
   const context = {
@@ -672,6 +680,6 @@ function dragMoveRejectionResult(moveDecision, sourceIndex, targetIndex) {
   );
 }
 
-function shouldLogActionResult(result) {
+export function shouldLogActionResult(result) {
   return Boolean(result && !result.ok && result.diagnostic);
 }

@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const logic = loadQmlJsModule(
-  new URL("../package/contents/ui/TaskContextMenuLogic.js", import.meta.url),
+const logic = await loadQmlJsModule(
+  new URL("../package/contents/ui/TaskContextMenuLogic.mjs", import.meta.url),
   [
     "boolRoleData",
     "basicActionRoleSnapshot",
@@ -2845,7 +2845,7 @@ assert.equal(menuQml.includes("TaskContextMenuLauncherState {"), true);
 assert.equal(menuQml.includes("TaskManager.ActivityInfo"), false);
 assert.equal(menuQml.includes("TaskManager.VirtualDesktopInfo"), false);
 assert.equal(menuQml.includes("TaskManager.AbstractTasksModel"), false);
-assert.equal(menuQml.includes('import "TaskEntryLogic.js"'), false);
+assert.equal(menuQml.includes('import "TaskEntryLogic.mjs"'), false);
 assert.equal(menuQml.includes("function refreshActivities()"), false);
 assert.equal(menuQml.includes("function roleIds()"), false);
 assert.equal(menuQml.includes("function roleSource()"), false);
@@ -3101,7 +3101,7 @@ assert.equal(
   true,
 );
 assert.equal(menuQml.includes("pinState: launcherState.pinState"), true);
-assert.equal(menuQml.includes('import "LauncherListLogic.js"'), false);
+assert.equal(menuQml.includes('import "LauncherListLogic.mjs"'), false);
 assert.equal(menuQml.includes("LauncherListLogic.launcherPinState"), false);
 assert.equal(
   menuQml.includes("TaskContextMenuLogic.launcherActivitiesActionState"),
@@ -3183,7 +3183,7 @@ assert.equal(
 );
 assert.equal(menuQml.includes('text: "Activities"'), false);
 assert.equal(
-  menuQml.includes('import "TaskActivityLogic.js" as TaskActivityLogic'),
+  menuQml.includes('import "TaskActivityLogic.mjs" as TaskActivityLogic'),
   false,
 );
 assert.equal(
@@ -3545,7 +3545,7 @@ const roleStateQml = readFileSync(
   "utf8",
 );
 assert.equal(roleStateQml.includes("TaskManager.AbstractTasksModel"), true);
-assert.equal(roleStateQml.includes('import "TaskEntryLogic.js"'), true);
+assert.equal(roleStateQml.includes('import "TaskEntryLogic.mjs"'), true);
 assert.equal(
   roleStateQml.includes("TaskEntryLogic.hasValidModelIndex(modelIndex)"),
   true,
@@ -3600,7 +3600,7 @@ const launcherActivityAdapterQml = readFileSync(
 );
 assert.equal(
   launcherActivityAdapterQml.includes(
-    'import "TaskActionLogic.js" as TaskActionLogic',
+    'import "TaskActionLogic.mjs" as TaskActionLogic',
   ),
   true,
 );
@@ -3748,7 +3748,7 @@ assert.equal(
 );
 assert.equal(
   actionDispatcherQml.includes(
-    'import "TaskActionLogic.js" as TaskActionLogic',
+    'import "TaskActionLogic.mjs" as TaskActionLogic',
   ),
   true,
 );
@@ -3824,11 +3824,11 @@ assert.equal(mainQml.includes("launcherListChangeRequested.connect"), false);
 const sourceFiles = [
   "../package/contents/ui/AttentionItem.qml",
   "../package/contents/ui/NormalTaskSource.qml",
-  "../package/contents/ui/RemoteAttentionLogic.js",
+  "../package/contents/ui/RemoteAttentionLogic.mjs",
   "../package/contents/ui/RemoteAttentionSource.qml",
-  "../package/contents/ui/TaskContextMenuLogic.js",
+  "../package/contents/ui/TaskContextMenuLogic.mjs",
   "../package/contents/ui/TaskItem.qml",
-  "../package/contents/ui/TaskModelLogic.js",
+  "../package/contents/ui/TaskModelLogic.mjs",
   "../package/contents/ui/main.qml",
 ];
 for (const sourceFile of sourceFiles) {

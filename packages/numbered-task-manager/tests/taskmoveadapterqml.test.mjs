@@ -41,7 +41,7 @@ assert.match(
   /root\.moveAdapter\.moveTask\(sourceIndex, targetIndex\)/,
 );
 assert.match(mainQml, /actionLogger\.logActionResult\(result\)/);
-assert.doesNotMatch(mainQml, /import "TaskModelLogic\.js" as TaskModelLogic/);
+assert.doesNotMatch(mainQml, /import "TaskModelLogic\.mjs" as TaskModelLogic/);
 assert.doesNotMatch(mainQml, /function moveTask\(/);
 assert.doesNotMatch(mainQml, /function movePinnedLauncher\(/);
 assert.doesNotMatch(mainQml, /function canMovePinnedLauncher\(/);
@@ -53,9 +53,9 @@ assert.doesNotMatch(mainQml, /TaskModelLogic\.normalTaskEntryForSourceIndex/);
 assert.doesNotMatch(mainQml, /LauncherListLogic\.movePinnedLauncher/);
 assert.doesNotMatch(mainQml, /LauncherListLogic\.canMovePinnedLauncher/);
 
-assert.match(sourceQml, /import "LauncherListLogic\.js" as LauncherListLogic/);
-assert.match(sourceQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
-assert.match(sourceQml, /import "TaskModelLogic\.js" as TaskModelLogic/);
+assert.match(sourceQml, /import "LauncherListLogic\.mjs" as LauncherListLogic/);
+assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
+assert.match(sourceQml, /import "TaskModelLogic\.mjs" as TaskModelLogic/);
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(sourceQml, /property var launcherSync/);
 assert.match(sourceQml, /property var normalEntries:\s*\[\]/);

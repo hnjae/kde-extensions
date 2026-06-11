@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const logic = loadQmlJsModule(
-  new URL("../package/contents/ui/TaskVisualLogic.js", import.meta.url),
+const logic = await loadQmlJsModule(
+  new URL("../package/contents/ui/TaskVisualLogic.mjs", import.meta.url),
   [
     "baseFramePrefix",
     "contentOpacity",
@@ -290,7 +290,7 @@ const taskItemQml = readFileSync(
 );
 assert.match(
   taskItemQml,
-  /import "TaskInteractionLogic\.js" as TaskInteractionLogic/,
+  /import "TaskInteractionLogic\.mjs" as TaskInteractionLogic/,
 );
 assert.match(taskItemQml, /\bTaskLikeFrame\s*\{/);
 assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
@@ -366,7 +366,7 @@ const attentionItemQml = readFileSync(
 );
 assert.doesNotMatch(
   attentionItemQml,
-  /import "TaskInteractionLogic\.js" as TaskInteractionLogic/,
+  /import "TaskInteractionLogic\.mjs" as TaskInteractionLogic/,
 );
 assert.match(attentionItemQml, /\bTaskLikeFrame\s*\{/);
 assert.match(
@@ -417,7 +417,7 @@ const taskLikeInteractionQml = readFileSync(
 );
 assert.match(
   taskLikeInteractionQml,
-  /import "TaskInteractionLogic\.js" as TaskInteractionLogic/,
+  /import "TaskInteractionLogic\.mjs" as TaskInteractionLogic/,
 );
 assert.match(
   taskLikeInteractionQml,

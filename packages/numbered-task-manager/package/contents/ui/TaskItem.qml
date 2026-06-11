@@ -7,11 +7,11 @@ import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
-import "TaskEntryLogic.js" as TaskEntryLogic
-import "TaskInteractionLogic.js" as TaskInteractionLogic
-import "TaskMetricsLogic.js" as TaskMetricsLogic
-import "TaskItemPresentationLogic.js" as TaskItemPresentationLogic
-import "TaskVisualLogic.js" as TaskVisualLogic
+import "TaskEntryLogic.mjs" as TaskEntryLogic
+import "TaskInteractionLogic.mjs" as TaskInteractionLogic
+import "TaskMetricsLogic.mjs" as TaskMetricsLogic
+import "TaskItemPresentationLogic.mjs" as TaskItemPresentationLogic
+import "TaskVisualLogic.mjs" as TaskVisualLogic
 
 QtQuick.Item {
     id: root

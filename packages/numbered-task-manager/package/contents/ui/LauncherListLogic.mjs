@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-Qt.include("ActivityScopeLogic.js");
+import * as ActivityScopeLogic from "./ActivityScopeLogic.mjs";
 
-function normalizedLauncherList(value) {
+export function normalizedLauncherList(value) {
   if (!value) {
     return [];
   }
@@ -13,7 +13,7 @@ function normalizedLauncherList(value) {
   );
 }
 
-function launcherListsEqual(left, right) {
+export function launcherListsEqual(left, right) {
   const leftList = normalizedLauncherList(left);
   const rightList = normalizedLauncherList(right);
   if (leftList.length !== rightList.length) {
@@ -29,7 +29,7 @@ function launcherListsEqual(left, right) {
   return true;
 }
 
-function launcherConfigUpdate(currentLaunchers, nextLaunchers) {
+export function launcherConfigUpdate(currentLaunchers, nextLaunchers) {
   const normalized = normalizedLauncherList(nextLaunchers);
   return {
     changed: !launcherListsEqual(normalized, currentLaunchers),
@@ -37,7 +37,7 @@ function launcherConfigUpdate(currentLaunchers, nextLaunchers) {
   };
 }
 
-function launcherModelUpdate(
+export function launcherModelUpdate(
   currentModelLaunchers,
   currentConfigLaunchers,
   nextLaunchers,
@@ -54,7 +54,7 @@ function launcherModelUpdate(
   };
 }
 
-function launcherSyncCode(changed, failedTargets) {
+export function launcherSyncCode(changed, failedTargets) {
   if (failedTargets.length > 0) {
     return "write-mismatch";
   }
@@ -62,7 +62,7 @@ function launcherSyncCode(changed, failedTargets) {
   return changed ? "converged" : "unchanged";
 }
 
-function launcherConfigConvergence(update, observedConfigLaunchers) {
+export function launcherConfigConvergence(update, observedConfigLaunchers) {
   const launcherUpdate = update || {};
   const launchers = normalizedLauncherList(launcherUpdate.launchers);
   const configLaunchers = normalizedLauncherList(observedConfigLaunchers);
@@ -80,7 +80,7 @@ function launcherConfigConvergence(update, observedConfigLaunchers) {
   };
 }
 
-function launcherModelConvergence(
+export function launcherModelConvergence(
   update,
   observedModelLaunchers,
   observedConfigLaunchers,
@@ -112,7 +112,7 @@ function launcherModelConvergence(
   };
 }
 
-function launcherWriteErrorMessage(error) {
+export function launcherWriteErrorMessage(error) {
   if (error?.message) {
     return String(error.message);
   }
@@ -120,7 +120,7 @@ function launcherWriteErrorMessage(error) {
   return String(error);
 }
 
-function runLauncherListUpdateTransaction(state, action) {
+export function runLauncherListUpdateTransaction(state, action) {
   const updateState = state || {};
   updateState.updatingLauncherConfig = true;
   try {
@@ -137,7 +137,7 @@ function runLauncherListUpdateTransaction(state, action) {
   }
 }
 
-function createLauncherReconciliationState(values) {
+export function createLauncherReconciliationState(values) {
   const state = values || {};
   return {
     attempts: Math.max(0, Number(state.attempts || 0)),
@@ -147,7 +147,7 @@ function createLauncherReconciliationState(values) {
   };
 }
 
-function clearLauncherReconciliationState(state) {
+export function clearLauncherReconciliationState(state) {
   const current = createLauncherReconciliationState(state);
   return {
     attempts: current.attempts,
@@ -157,7 +157,7 @@ function clearLauncherReconciliationState(state) {
   };
 }
 
-function launcherReconciliationAfterResult(state, result) {
+export function launcherReconciliationAfterResult(state, result) {
   const current = createLauncherReconciliationState(state);
   const syncResult = result || {};
   if (syncResult.ok || syncResult.code !== "write-mismatch") {
@@ -176,7 +176,7 @@ function launcherReconciliationAfterResult(state, result) {
   };
 }
 
-function launcherReconciliationDecision(
+export function launcherReconciliationDecision(
   state,
   observedModelLaunchers,
   observedConfigLaunchers,
@@ -226,7 +226,7 @@ function launcherReconciliationDecision(
   };
 }
 
-function parseSerializedLauncher(serializedLauncher) {
+export function parseSerializedLauncher(serializedLauncher) {
   const launcher = String(serializedLauncher || "");
   if (!launcher.startsWith("[")) {
     return {
@@ -252,17 +252,17 @@ function parseSerializedLauncher(serializedLauncher) {
   };
 }
 
-function serializedLauncherActivities(serializedLauncher) {
+export function serializedLauncherActivities(serializedLauncher) {
   return parseSerializedLauncher(serializedLauncher).activities;
 }
 
-function effectiveSerializedLauncherActivities(serializedLauncher) {
+export function effectiveSerializedLauncherActivities(serializedLauncher) {
   return ActivityScopeLogic.normalizedActivityList(
     serializedLauncherActivities(serializedLauncher),
   );
 }
 
-function serializedLauncherVisibleInActivity(
+export function serializedLauncherVisibleInActivity(
   serializedLauncher,
   currentActivity,
 ) {
@@ -272,7 +272,10 @@ function serializedLauncherVisibleInActivity(
   );
 }
 
-function serializeLauncherWithActivities(serializedLauncher, activities) {
+export function serializeLauncherWithActivities(
+  serializedLauncher,
+  activities,
+) {
   const parsed = parseSerializedLauncher(serializedLauncher);
   const activityList = ActivityScopeLogic.normalizedActivityList(activities);
   if (ActivityScopeLogic.activitiesAreAll(activityList)) {
@@ -282,7 +285,10 @@ function serializeLauncherWithActivities(serializedLauncher, activities) {
   return `[${activityList.join(",")}]\n${parsed.url}`;
 }
 
-function launcherActivitiesAfterAllToggle(launcherActivities, currentActivity) {
+export function launcherActivitiesAfterAllToggle(
+  launcherActivities,
+  currentActivity,
+) {
   if (ActivityScopeLogic.activitiesAreAll(launcherActivities)) {
     const current = String(currentActivity || "");
     return current ? [current] : null;
@@ -291,7 +297,7 @@ function launcherActivitiesAfterAllToggle(launcherActivities, currentActivity) {
   return [ActivityScopeLogic.allActivitiesId()];
 }
 
-function launcherActivitiesAfterToggle(
+export function launcherActivitiesAfterToggle(
   launcherActivities,
   activityId,
   currentActivity,
@@ -321,7 +327,11 @@ function launcherActivitiesAfterToggle(
   return activityList.concat([activity]);
 }
 
-function launcherListWithActivitiesAt(launcherList, position, activities) {
+export function launcherListWithActivitiesAt(
+  launcherList,
+  position,
+  activities,
+) {
   const launchers = normalizedLauncherList(launcherList);
   if (position < 0 || position >= launchers.length) {
     return null;
@@ -335,7 +345,7 @@ function launcherListWithActivitiesAt(launcherList, position, activities) {
   return result;
 }
 
-function launcherActivityUpdate(launcherList, position, activities) {
+export function launcherActivityUpdate(launcherList, position, activities) {
   const currentLaunchers = normalizedLauncherList(launcherList);
   const nextLaunchers = launcherListWithActivitiesAt(
     currentLaunchers,
@@ -362,7 +372,7 @@ function launcherActivityUpdate(launcherList, position, activities) {
   };
 }
 
-function launcherPositionForUrl(launcherUrl, launcherPosition) {
+export function launcherPositionForUrl(launcherUrl, launcherPosition) {
   const url = String(launcherUrl || "");
   if (!url) {
     return -1;
@@ -380,7 +390,7 @@ function launcherPositionForUrl(launcherUrl, launcherPosition) {
   return Number.isNaN(numericPosition) ? -1 : numericPosition;
 }
 
-function visibleLauncherPosition(
+export function visibleLauncherPosition(
   launcherList,
   launcherUrl,
   currentActivity,
@@ -408,7 +418,7 @@ function visibleLauncherPosition(
   return -1;
 }
 
-function launcherPinState(
+export function launcherPinState(
   launcherList,
   launcherUrl,
   currentActivity,
@@ -430,7 +440,11 @@ function launcherPinState(
   };
 }
 
-function pinnedLauncherGlobalPosition(launcherList, entry, launcherPosition) {
+export function pinnedLauncherGlobalPosition(
+  launcherList,
+  entry,
+  launcherPosition,
+) {
   const launcherUrl = entry
     ? String(entry.pinnedLauncherUrl || entry.launcherUrl || "")
     : "";
@@ -453,7 +467,7 @@ function pinnedLauncherGlobalPosition(launcherList, entry, launcherPosition) {
   return -1;
 }
 
-function canMovePinnedLauncher(
+export function canMovePinnedLauncher(
   launcherList,
   sourceEntry,
   targetEntry,
@@ -476,7 +490,7 @@ function canMovePinnedLauncher(
   );
 }
 
-function movePinnedLauncher(
+export function movePinnedLauncher(
   launcherList,
   sourceEntry,
   targetEntry,

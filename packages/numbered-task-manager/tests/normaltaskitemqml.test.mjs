@@ -60,7 +60,7 @@ assert.doesNotMatch(
 assert.doesNotMatch(mainQml, /taskMover\.moveTask\(sourceIndex, targetIndex\)/);
 
 assert.match(sourceQml, /^TaskItem\s*\{/m);
-assert.match(sourceQml, /import "TaskEntryLogic\.js" as TaskEntryLogic/);
+assert.match(sourceQml, /import "TaskEntryLogic\.mjs" as TaskEntryLogic/);
 assert.match(sourceQml, /required property var activationAdapter/);
 assert.match(sourceQml, /required property var contextMenuAdapter/);
 assert.match(sourceQml, /required property var moveAdapter/);

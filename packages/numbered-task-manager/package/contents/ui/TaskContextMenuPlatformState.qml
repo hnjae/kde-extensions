@@ -5,7 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import org.kde.taskmanager as TaskManager
-import "TaskContextMenuLogic.js" as TaskContextMenuLogic
+import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
 
 QtQuick.QtObject {
     id: root

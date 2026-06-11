@@ -21,8 +21,8 @@ const remoteSourceQml = readFileSync(
   "utf8",
 );
 
-assert.match(sourceQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
-assert.match(sourceQml, /import "TaskEntryLogic\.js" as TaskEntryLogic/);
+assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
+assert.match(sourceQml, /import "TaskEntryLogic\.mjs" as TaskEntryLogic/);
 assert.match(sourceQml, /property string sourceModel:\s*""/);
 assert.match(sourceQml, /property int sourceRow:\s*-1/);
 assert.match(sourceQml, /property string publicationKey:\s*""/);
@@ -50,7 +50,7 @@ assert.match(
 assert.match(normalSourceQml, /taskEntryDiagnostics\.emitDiagnostics\(\)/);
 assert.doesNotMatch(
   normalSourceQml,
-  /import "TaskActionLogic\.js" as TaskActionLogic/,
+  /import "TaskActionLogic\.mjs" as TaskActionLogic/,
 );
 assert.doesNotMatch(normalSourceQml, /lastDiagnosticSignature/);
 assert.doesNotMatch(normalSourceQml, /function diagnosticResult/);
@@ -72,7 +72,7 @@ assert.match(
 assert.match(remoteSourceQml, /taskEntryDiagnostics\.emitDiagnostics\(\)/);
 assert.doesNotMatch(
   remoteSourceQml,
-  /import "TaskActionLogic\.js" as TaskActionLogic/,
+  /import "TaskActionLogic\.mjs" as TaskActionLogic/,
 );
 assert.doesNotMatch(remoteSourceQml, /lastDiagnosticSignature/);
 assert.doesNotMatch(remoteSourceQml, /function diagnosticResult/);

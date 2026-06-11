@@ -26,7 +26,7 @@ assert.match(
   /normalTaskStore\.publishNormalTask\(key, qualifies, task\)/,
 );
 assert.match(mainQml, /normalTaskStore\.removeNormalTask\(key\)/);
-assert.doesNotMatch(mainQml, /import "NormalTaskStoreLogic\.js"/);
+assert.doesNotMatch(mainQml, /import "NormalTaskStoreLogic\.mjs"/);
 assert.doesNotMatch(mainQml, /property var normalTaskStoreState/);
 assert.doesNotMatch(mainQml, /function createNormalTaskPublicationKey\(/);
 assert.doesNotMatch(mainQml, /function publishNormalTask\(/);
@@ -38,9 +38,9 @@ assert.doesNotMatch(mainQml, /NormalTaskStoreLogic\./);
 
 assert.match(
   sourceQml,
-  /import "NormalTaskStoreLogic\.js" as NormalTaskStoreLogic/,
+  /import "NormalTaskStoreLogic\.mjs" as NormalTaskStoreLogic/,
 );
-assert.match(sourceQml, /import "TaskModelLogic\.js" as TaskModelLogic/);
+assert.match(sourceQml, /import "TaskModelLogic\.mjs" as TaskModelLogic/);
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(
   sourceQml,

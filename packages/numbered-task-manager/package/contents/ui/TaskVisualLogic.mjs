@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-function baseFramePrefix(state) {
+export function baseFramePrefix(state) {
   const taskState = state || {};
   if (taskState.active) {
     return "focus";
@@ -26,7 +26,7 @@ function baseFramePrefix(state) {
   return "normal";
 }
 
-function locationPrefix(location, plasmaCoreTypes) {
+export function locationPrefix(location, plasmaCoreTypes) {
   const types = plasmaCoreTypes || {};
   if (location === types.LeftEdge) {
     return "west";
@@ -43,11 +43,11 @@ function locationPrefix(location, plasmaCoreTypes) {
   return "south";
 }
 
-function taskPrefix(prefix, location, plasmaCoreTypes) {
+export function taskPrefix(prefix, location, plasmaCoreTypes) {
   return [`${locationPrefix(location, plasmaCoreTypes)}-${prefix}`, prefix];
 }
 
-function hoveredFramePrefixes(prefix, location, plasmaCoreTypes) {
+export function hoveredFramePrefixes(prefix, location, plasmaCoreTypes) {
   const hoverPrefix = prefix || "launcher";
   const prefixes = taskPrefix(
     `${hoverPrefix}-hover`,
@@ -63,12 +63,12 @@ function hoveredFramePrefixes(prefix, location, plasmaCoreTypes) {
   return prefixes;
 }
 
-function iconActive(state) {
+export function iconActive(state) {
   const taskState = state || {};
   return Boolean(taskState.highlighted);
 }
 
-function mutedLauncherIdle(state) {
+export function mutedLauncherIdle(state) {
   const taskState = state || {};
   return (
     Boolean(taskState.mutedLauncher) &&
@@ -83,15 +83,15 @@ function mutedLauncherIdle(state) {
   );
 }
 
-function frameOpacity(state) {
+export function frameOpacity(state) {
   return mutedLauncherIdle(state) ? 0.55 : 1;
 }
 
-function contentOpacity(state) {
+export function contentOpacity(state) {
   return mutedLauncherIdle(state) ? 0.78 : 1;
 }
 
-function framePrefixes(state, location, plasmaCoreTypes) {
+export function framePrefixes(state, location, plasmaCoreTypes) {
   const prefix = baseFramePrefix(state);
   if (state?.hovered) {
     return hoveredFramePrefixes(prefix, location, plasmaCoreTypes);

@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-var nullActivityId = "00000000-0000-0000-0000-000000000000";
+export const nullActivityId = "00000000-0000-0000-0000-000000000000";
 
-function allActivitiesId() {
+export function allActivitiesId() {
   return nullActivityId;
 }
 
-function stringListContains(list, value) {
+export function stringListContains(list, value) {
   const needle = String(value);
   const values = Array.from(list || []);
   for (let i = 0; i < values.length; ++i) {
@@ -19,7 +19,7 @@ function stringListContains(list, value) {
   return false;
 }
 
-function uniqueStringList(list) {
+export function uniqueStringList(list) {
   const result = [];
   const values = Array.from(list || []);
   for (let i = 0; i < values.length; ++i) {
@@ -34,7 +34,7 @@ function uniqueStringList(list) {
   return result;
 }
 
-function activitiesAreAll(activities) {
+export function activitiesAreAll(activities) {
   const activityList = Array.from(activities || []);
   return (
     activityList.length === 0 ||
@@ -42,7 +42,7 @@ function activitiesAreAll(activities) {
   );
 }
 
-function normalizedActivityList(activities) {
+export function normalizedActivityList(activities) {
   const activityList = uniqueStringList(activities);
   if (
     activityList.length === 0 ||
@@ -54,7 +54,7 @@ function normalizedActivityList(activities) {
   return activityList;
 }
 
-function isInCurrentActivity(activities, currentActivity) {
+export function isInCurrentActivity(activities, currentActivity) {
   const current = String(currentActivity || "");
   if (!current) {
     return true;
@@ -67,12 +67,3 @@ function isInCurrentActivity(activities, currentActivity) {
 
   return stringListContains(activityList, current);
 }
-
-var ActivityScopeLogic = {
-  activitiesAreAll,
-  allActivitiesId,
-  isInCurrentActivity,
-  normalizedActivityList,
-  stringListContains,
-  uniqueStringList,
-};

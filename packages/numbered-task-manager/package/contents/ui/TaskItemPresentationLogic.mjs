@@ -1,14 +1,14 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-Qt.include("TaskMetricsLogic.js");
+import { iconExtentForTaskFrame } from "./TaskMetricsLogic.mjs";
 
-function validSlotNumber(slotNumber) {
+export function validSlotNumber(slotNumber) {
   const number = Number(slotNumber || 0);
   return number >= 1 && number <= 9 ? number : 0;
 }
 
-function taskItemPresentation(input) {
+export function taskItemPresentation(input) {
   const values = input || {};
   const frameExtent = Number(values.frameExtent || 0);
   const minimumIconExtent = Number(values.minimumIconExtent || 0);

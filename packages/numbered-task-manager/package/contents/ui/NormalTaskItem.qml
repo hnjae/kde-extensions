@@ -3,7 +3,7 @@
 
 pragma ComponentBehavior: Bound
 
-import "TaskEntryLogic.js" as TaskEntryLogic
+import "TaskEntryLogic.mjs" as TaskEntryLogic
 
 TaskItem {
     id: root

@@ -86,7 +86,7 @@ assert.doesNotMatch(
 assert.doesNotMatch(mainQml, /taskModel:\s*remoteAttentionSource\.taskModel/);
 assert.match(
   sourceQml,
-  /import "VisibleTaskItemsLogic\.js" as VisibleTaskItemsLogic/,
+  /import "VisibleTaskItemsLogic\.mjs" as VisibleTaskItemsLogic/,
 );
 assert.match(sourceQml, /property var visibleTaskItems/);
 assert.match(

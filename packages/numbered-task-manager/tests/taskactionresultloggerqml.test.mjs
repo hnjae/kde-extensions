@@ -20,13 +20,16 @@ const sourceQml = readFileSync(sourceUrl, "utf8");
 assert.match(mainQml, /\bTaskActionResultLogger\s*\{/);
 assert.match(mainQml, /id:\s*actionLogger/);
 assert.match(mainQml, /actionLogger\.logActionResult\(result\)/);
-assert.doesNotMatch(mainQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
+assert.doesNotMatch(
+  mainQml,
+  /import "TaskActionLogic\.mjs" as TaskActionLogic/,
+);
 assert.doesNotMatch(mainQml, /function logActionResult\(/);
 assert.doesNotMatch(mainQml, /TaskActionLogic\.shouldLogActionResult/);
 assert.doesNotMatch(mainQml, /console\.warn\("Numbered Task Manager action "/);
 assert.doesNotMatch(mainQml, /root\.logActionResult\(result\)/);
 
-assert.match(sourceQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
+assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(sourceQml, /function logActionResult\(result\)/);
 assert.match(sourceQml, /TaskActionLogic\.shouldLogActionResult\(result\)/);

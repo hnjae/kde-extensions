@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const helpers = loadQmlJsModule(
-  new URL("../package/contents/ui/LauncherListLogic.js", import.meta.url),
+const helpers = await loadQmlJsModule(
+  new URL("../package/contents/ui/LauncherListLogic.mjs", import.meta.url),
   [
     "canMovePinnedLauncher",
     "effectiveSerializedLauncherActivities",
@@ -38,7 +38,7 @@ const helpers = loadQmlJsModule(
 const nullActivityId = "00000000-0000-0000-0000-000000000000";
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const launcherListLogicSource = readFileSync(
-  new URL("../package/contents/ui/LauncherListLogic.js", import.meta.url),
+  new URL("../package/contents/ui/LauncherListLogic.mjs", import.meta.url),
   "utf8",
 );
 

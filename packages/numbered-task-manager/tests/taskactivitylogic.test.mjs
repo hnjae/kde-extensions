@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const logic = loadQmlJsModule(
-  new URL("../package/contents/ui/TaskActivityLogic.js", import.meta.url),
+const logic = await loadQmlJsModule(
+  new URL("../package/contents/ui/TaskActivityLogic.mjs", import.meta.url),
   ["taskActivitiesAfterToggle"],
 );
 
@@ -29,7 +29,7 @@ assert.deepEqual(plain(logic.taskActivitiesAfterToggle(["work"], "chat")), [
 ]);
 
 const taskActivityLogic = readFileSync(
-  new URL("../package/contents/ui/TaskActivityLogic.js", import.meta.url),
+  new URL("../package/contents/ui/TaskActivityLogic.mjs", import.meta.url),
   "utf8",
 );
 const mainQml = readFileSync(
@@ -49,11 +49,11 @@ assert.doesNotMatch(taskActivityLogic, /function normalizedActivityList\b/);
 assert.doesNotMatch(taskActivityLogic, /function isInCurrentActivity\b/);
 assert.doesNotMatch(
   mainQml,
-  /import "ActivityScopeLogic\.js" as ActivityScopeLogic/,
+  /import "ActivityScopeLogic\.mjs" as ActivityScopeLogic/,
 );
 assert.match(
   platformStateQml,
-  /import "ActivityScopeLogic\.js" as ActivityScopeLogic/,
+  /import "ActivityScopeLogic\.mjs" as ActivityScopeLogic/,
 );
 assert.match(
   platformStateQml,

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-function taskDragMimeData(dragMimeType, taskIndex) {
+export function taskDragMimeData(dragMimeType, taskIndex) {
   const mimeType = String(dragMimeType || "");
   if (!mimeType) {
     return {};
@@ -12,7 +12,7 @@ function taskDragMimeData(dragMimeType, taskIndex) {
   return data;
 }
 
-function taskDropSourceIndex(value) {
+export function taskDropSourceIndex(value) {
   if (value === undefined || value === null) {
     return -1;
   }
@@ -26,7 +26,7 @@ function taskDropSourceIndex(value) {
   return Number.isNaN(sourceIndex) ? -1 : sourceIndex;
 }
 
-function canAcceptTaskDrop(sourceIndex, targetIndex, canDropTask) {
+export function canAcceptTaskDrop(sourceIndex, targetIndex, canDropTask) {
   if (sourceIndex < 0 || sourceIndex === targetIndex) {
     return false;
   }
@@ -38,7 +38,7 @@ function canAcceptTaskDrop(sourceIndex, targetIndex, canDropTask) {
   return Boolean(canDropTask(sourceIndex, targetIndex));
 }
 
-function taskContextMenuRequest(modelIndex, taskData, visualParent) {
+export function taskContextMenuRequest(modelIndex, taskData, visualParent) {
   return {
     modelIndex,
     task: taskData || {},

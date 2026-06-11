@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-function desktopId(desktop) {
+export function desktopId(desktop) {
   if (!desktop) {
     return "";
   }
@@ -17,7 +17,7 @@ function desktopId(desktop) {
   return String(desktop);
 }
 
-function desktopListContains(desktops, desktop) {
+export function desktopListContains(desktops, desktop) {
   const currentDesktopId = desktopId(desktop);
   if (!currentDesktopId) {
     return false;
@@ -33,7 +33,11 @@ function desktopListContains(desktops, desktop) {
   return false;
 }
 
-function isOnCurrentVirtualDesktop(desktops, isOnAllDesktops, currentDesktop) {
+export function isOnCurrentVirtualDesktop(
+  desktops,
+  isOnAllDesktops,
+  currentDesktop,
+) {
   if (isOnAllDesktops) {
     return true;
   }
@@ -41,7 +45,11 @@ function isOnCurrentVirtualDesktop(desktops, isOnAllDesktops, currentDesktop) {
   return desktopListContains(desktops, currentDesktop);
 }
 
-function isRemoteVirtualDesktop(desktops, isOnAllDesktops, currentDesktop) {
+export function isRemoteVirtualDesktop(
+  desktops,
+  isOnAllDesktops,
+  currentDesktop,
+) {
   if (isOnAllDesktops) {
     return false;
   }
@@ -52,13 +60,13 @@ function isRemoteVirtualDesktop(desktops, isOnAllDesktops, currentDesktop) {
   );
 }
 
-function hasValidModelIndex(modelIndex) {
+export function hasValidModelIndex(modelIndex) {
   return (
     Boolean(modelIndex) && (modelIndex.valid === undefined || modelIndex.valid)
   );
 }
 
-function taskEntryDiagnostic(code, field, context) {
+export function taskEntryDiagnostic(code, field, context) {
   return {
     code,
     context: Object.assign({}, context || {}),
@@ -66,7 +74,7 @@ function taskEntryDiagnostic(code, field, context) {
   };
 }
 
-function isBooleanRoleValue(value) {
+export function isBooleanRoleValue(value) {
   if (value === undefined || value === null) {
     return true;
   }
@@ -74,7 +82,7 @@ function isBooleanRoleValue(value) {
   return typeof value === "boolean";
 }
 
-function isListRoleValue(value) {
+export function isListRoleValue(value) {
   if (value === undefined || value === null) {
     return true;
   }
@@ -99,7 +107,7 @@ function isListRoleValue(value) {
   return Number.isInteger(listLength) && listLength >= 0;
 }
 
-function taskEntryDiagnostics(roles, context) {
+export function taskEntryDiagnostics(roles, context) {
   const taskRoles = roles || {};
   const diagnostics = [];
   const modelIndex = taskRoles.modelIndex;
@@ -154,27 +162,27 @@ function taskEntryDiagnostics(roles, context) {
   return diagnostics;
 }
 
-function boolValue(value) {
+export function boolValue(value) {
   return Boolean(value);
 }
 
-function stringValue(value) {
+export function stringValue(value) {
   return String(value || "");
 }
 
-function normalTaskIconFallback() {
+export function normalTaskIconFallback() {
   return "application-x-executable";
 }
 
-function remoteAttentionIconFallback() {
+export function remoteAttentionIconFallback() {
   return "dialog-warning";
 }
 
-function launcherUrlFromRoles(launcherUrlWithoutIcon, launcherUrl) {
+export function launcherUrlFromRoles(launcherUrlWithoutIcon, launcherUrl) {
   return stringValue(launcherUrlWithoutIcon || launcherUrl);
 }
 
-function numberValue(value, fallback) {
+export function numberValue(value, fallback) {
   if (value === undefined || value === null) {
     return fallback;
   }
@@ -183,15 +191,15 @@ function numberValue(value, fallback) {
   return Number.isNaN(numericValue) ? fallback : numericValue;
 }
 
-function taskTitle(display, appName) {
+export function taskTitle(display, appName) {
   return stringValue(display || appName);
 }
 
-function taskIconSource(decoration, fallback) {
+export function taskIconSource(decoration, fallback) {
   return decoration || fallback;
 }
 
-function createBaseTaskEntry(roles, iconFallback) {
+export function createBaseTaskEntry(roles, iconFallback) {
   const taskRoles = roles || {};
   const index = numberValue(taskRoles.index, -1);
 

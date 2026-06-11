@@ -48,9 +48,9 @@ lint-js:
 [group('lint')]
 lint-js-host:
     if command -v biome >/dev/null 2>&1; then \
-        biome lint --error-on-warnings package/contents/ui/*.js tests/*.mjs; \
+        biome lint --error-on-warnings package/contents/ui/*.mjs tests/*.mjs; \
     else \
-        npx -y @biomejs/biome@2.4.15 lint --error-on-warnings package/contents/ui/*.js tests/*.mjs; \
+        npx -y @biomejs/biome@2.4.15 lint --error-on-warnings package/contents/ui/*.mjs tests/*.mjs; \
     fi
 
 [group('lint')]

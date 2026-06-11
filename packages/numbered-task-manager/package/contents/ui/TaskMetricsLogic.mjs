@@ -1,25 +1,25 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-function taskExtent() {
+export function taskExtent() {
   return 40;
 }
 
-function titleVisibilityThreshold() {
+export function titleVisibilityThreshold() {
   return 96;
 }
 
-function taskTitleVisible(showTitle, slotWidth, threshold) {
+export function taskTitleVisible(showTitle, slotWidth, threshold) {
   const width = Number(slotWidth || 0);
   return Boolean(showTitle) && (width <= 0 || width >= Number(threshold || 0));
 }
 
-function taskImplicitWidth(slotWidth, naturalImplicitWidth) {
+export function taskImplicitWidth(slotWidth, naturalImplicitWidth) {
   const width = Number(slotWidth || 0);
   return width > 0 ? width : Number(naturalImplicitWidth || 0);
 }
 
-function taskNaturalImplicitWidth(
+export function taskNaturalImplicitWidth(
   minimumWidth,
   maximumWidth,
   contentImplicitWidth,
@@ -32,23 +32,23 @@ function taskNaturalImplicitWidth(
   return Math.max(minimum, Math.min(maximum, contentWidth));
 }
 
-function maximumSlotWidth() {
+export function maximumSlotWidth() {
   return 220;
 }
 
-function normalNaturalWidthMinimum(showTitle) {
+export function normalNaturalWidthMinimum(showTitle) {
   return showTitle ? titleVisibilityThreshold() : 0;
 }
 
-function attentionNaturalWidthMinimum() {
+export function attentionNaturalWidthMinimum() {
   return 112;
 }
 
-function minimumReadableSlotWidth(extent, spacing) {
+export function minimumReadableSlotWidth(extent, spacing) {
   return Number(extent || 0) + 2 * Number(spacing || 0);
 }
 
-function adjustedFrameMargin(
+export function adjustedFrameMargin(
   frameExtent,
   occupiedMargins,
   margin,
@@ -70,12 +70,12 @@ function adjustedFrameMargin(
   return frameMargin;
 }
 
-function nonNegativeNumber(value) {
+export function nonNegativeNumber(value) {
   const number = Number(value || 0);
   return Number.isNaN(number) || number < 0 ? 0 : number;
 }
 
-function taskSlotWidth(
+export function taskSlotWidth(
   availableExtent,
   itemCount,
   minimumExtent,
@@ -93,7 +93,7 @@ function taskSlotWidth(
   return Math.max(minimum, Math.min(maximum, dividedExtent));
 }
 
-function iconExtentForTaskFrame(
+export function iconExtentForTaskFrame(
   frameExtent,
   startMargin,
   endMargin,

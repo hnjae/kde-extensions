@@ -6,7 +6,7 @@ pragma ComponentBehavior: Bound
 import QtQuick as QtQuick
 import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami as Kirigami
-import "TaskMetricsLogic.js" as TaskMetricsLogic
+import "TaskMetricsLogic.mjs" as TaskMetricsLogic
 
 QtQuick.Item {
     id: root

@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "LauncherListLogic.js" as LauncherListLogic
+import "LauncherListLogic.mjs" as LauncherListLogic
 
 QtQuick.QtObject {
     id: root

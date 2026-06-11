@@ -4,10 +4,10 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "LauncherListLogic.js" as LauncherListLogic
-import "TaskEntryLogic.js" as TaskEntryLogic
-import "TaskModelLogic.js" as TaskModelLogic
-import "TaskScopeLogic.js" as TaskScopeLogic
+import "LauncherListLogic.mjs" as LauncherListLogic
+import "TaskEntryLogic.mjs" as TaskEntryLogic
+import "TaskModelLogic.mjs" as TaskModelLogic
+import "TaskScopeLogic.mjs" as TaskScopeLogic
 
 QtQuick.Item {
     id: root

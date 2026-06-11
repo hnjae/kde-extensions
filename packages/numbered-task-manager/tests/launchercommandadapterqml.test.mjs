@@ -34,7 +34,7 @@ assert.doesNotMatch(
 assert.doesNotMatch(mainQml, /TaskActionLogic\.launcherMutationRequest/);
 assert.doesNotMatch(mainQml, /TaskActionLogic\.launcherMutationResult/);
 
-assert.match(sourceQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
+assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(sourceQml, /property var launcherSync/);
 assert.match(sourceQml, /property var taskModel/);

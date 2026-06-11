@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-Qt.include("ActivityScopeLogic.js");
+import * as ActivityScopeLogic from "./ActivityScopeLogic.mjs";
 
-function taskActivitiesAfterToggle(activities, activityId) {
+export function taskActivitiesAfterToggle(activities, activityId) {
   const activity = String(activityId || "");
   if (!activity) {
     return Array.from(activities || []);

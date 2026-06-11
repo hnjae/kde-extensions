@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const logic = loadQmlJsModule(
-  new URL("../package/contents/ui/TaskScopeLogic.js", import.meta.url),
+const logic = await loadQmlJsModule(
+  new URL("../package/contents/ui/TaskScopeLogic.mjs", import.meta.url),
   [
     "normalTaskModelFilterSettings",
     "normalTaskQualifies",
@@ -121,7 +121,7 @@ const normalTaskSourceQml = readFileSync(
   "utf8",
 );
 const taskModelLogic = readFileSync(
-  new URL("../package/contents/ui/TaskModelLogic.js", import.meta.url),
+  new URL("../package/contents/ui/TaskModelLogic.mjs", import.meta.url),
   "utf8",
 );
 const remoteAttentionSourceQml = readFileSync(
@@ -129,11 +129,11 @@ const remoteAttentionSourceQml = readFileSync(
   "utf8",
 );
 const remoteAttentionLogic = readFileSync(
-  new URL("../package/contents/ui/RemoteAttentionLogic.js", import.meta.url),
+  new URL("../package/contents/ui/RemoteAttentionLogic.mjs", import.meta.url),
   "utf8",
 );
 
-assert.match(mainQml, /import "TaskScopeLogic\.js" as TaskScopeLogic/);
+assert.match(mainQml, /import "TaskScopeLogic\.mjs" as TaskScopeLogic/);
 assert.match(
   mainQml,
   /filterByActivity:\s*TaskScopeLogic\.normalTaskModelFilterSettings\(\)\.filterByActivity/,
@@ -148,7 +148,7 @@ assert.match(
 );
 assert.match(
   normalTaskSourceQml,
-  /import "TaskScopeLogic\.js" as TaskScopeLogic/,
+  /import "TaskScopeLogic\.mjs" as TaskScopeLogic/,
 );
 assert.match(
   normalTaskSourceQml,
@@ -156,7 +156,7 @@ assert.match(
 );
 assert.match(
   remoteAttentionSourceQml,
-  /import "TaskScopeLogic\.js" as TaskScopeLogic/,
+  /import "TaskScopeLogic\.mjs" as TaskScopeLogic/,
 );
 assert.match(
   remoteAttentionSourceQml,
@@ -174,11 +174,11 @@ assert.match(
   remoteAttentionSourceQml,
   /property bool qualifies:\s*TaskScopeLogic\.remoteAttentionQualifies\(taskInfo, activities => root\.taskIsInCurrentActivity\(activities\), root\.currentDesktop\)/,
 );
-assert.doesNotMatch(taskModelLogic, /Qt\.include\("TaskScopeLogic\.js"\)/);
+assert.doesNotMatch(taskModelLogic, /Qt\.include\("TaskScopeLogic\.mjs"\)/);
 assert.doesNotMatch(taskModelLogic, /function qualifiesNormalTask\b/);
 assert.doesNotMatch(
   remoteAttentionLogic,
-  /Qt\.include\("TaskScopeLogic\.js"\)/,
+  /Qt\.include\("TaskScopeLogic\.mjs"\)/,
 );
 assert.doesNotMatch(
   remoteAttentionLogic,

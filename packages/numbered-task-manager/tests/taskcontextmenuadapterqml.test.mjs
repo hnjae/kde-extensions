@@ -41,7 +41,7 @@ assert.doesNotMatch(mainQml, /contextMenuComponent\.createObject/);
 assert.doesNotMatch(mainQml, /TaskActionLogic\.contextMenuRequestResult/);
 assert.doesNotMatch(mainQml, /TaskActionLogic\.contextMenuCreationResult/);
 
-assert.match(sourceQml, /import "TaskActionLogic\.js" as TaskActionLogic/);
+assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
 assert.match(sourceQml, /QtQuick\.Item\s*\{/);
 assert.match(sourceQml, /property var launcherModel/);
 assert.match(sourceQml, /property var taskModel/);

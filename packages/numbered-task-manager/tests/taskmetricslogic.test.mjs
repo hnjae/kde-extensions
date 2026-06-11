@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const logic = loadQmlJsModule(
-  new URL("../package/contents/ui/TaskMetricsLogic.js", import.meta.url),
+const logic = await loadQmlJsModule(
+  new URL("../package/contents/ui/TaskMetricsLogic.mjs", import.meta.url),
   [
     "adjustedFrameMargin",
     "attentionNaturalWidthMinimum",
@@ -68,7 +68,7 @@ const attentionItemQml = readFileSync(
 );
 assert.match(
   attentionItemQml,
-  /import "TaskMetricsLogic\.js" as TaskMetricsLogic/,
+  /import "TaskMetricsLogic\.mjs" as TaskMetricsLogic/,
 );
 assert.match(attentionItemQml, /iconExtentForTaskFrame\(/);
 assert.match(attentionItemQml, /property real slotWidth:\s*0/);
@@ -96,12 +96,15 @@ assert.match(
 
 const presentationLogicJs = readFileSync(
   new URL(
-    "../package/contents/ui/TaskItemPresentationLogic.js",
+    "../package/contents/ui/TaskItemPresentationLogic.mjs",
     import.meta.url,
   ),
   "utf8",
 );
-assert.match(presentationLogicJs, /Qt\.include\("TaskMetricsLogic\.js"\)/);
+assert.match(
+  presentationLogicJs,
+  /import \{ iconExtentForTaskFrame \} from "\.\/TaskMetricsLogic\.mjs";/,
+);
 assert.match(presentationLogicJs, /iconExtentForTaskFrame\(/);
 
 const taskListRepresentationQml = readFileSync(
@@ -110,7 +113,7 @@ const taskListRepresentationQml = readFileSync(
 );
 assert.match(
   taskListRepresentationQml,
-  /import "TaskMetricsLogic\.js" as TaskMetricsLogic/,
+  /import "TaskMetricsLogic\.mjs" as TaskMetricsLogic/,
 );
 assert.match(
   taskListRepresentationQml,
@@ -134,7 +137,7 @@ const taskItemQml = readFileSync(
   new URL("../package/contents/ui/TaskItem.qml", import.meta.url),
   "utf8",
 );
-assert.match(taskItemQml, /import "TaskMetricsLogic\.js" as TaskMetricsLogic/);
+assert.match(taskItemQml, /import "TaskMetricsLogic\.mjs" as TaskMetricsLogic/);
 assert.match(
   taskItemQml,
   /property int titleVisibilityThreshold:\s*TaskMetricsLogic\.titleVisibilityThreshold\(\)/,

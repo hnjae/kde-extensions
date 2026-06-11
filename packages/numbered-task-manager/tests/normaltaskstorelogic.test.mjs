@@ -5,8 +5,8 @@ import assert from "node:assert/strict";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const logic = loadQmlJsModule(
-  new URL("../package/contents/ui/NormalTaskStoreLogic.js", import.meta.url),
+const logic = await loadQmlJsModule(
+  new URL("../package/contents/ui/NormalTaskStoreLogic.mjs", import.meta.url),
   [
     "allocateNormalTaskPublication",
     "createNormalTaskPublicationKey",
