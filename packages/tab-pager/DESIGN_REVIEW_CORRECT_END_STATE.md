@@ -6,7 +6,7 @@ The codebase is small and already has useful seams: TaskManager raw-state mappin
 
 The highest-impact remaining issue is that orchestration, state projection, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, mutates the Qt model, reads the Qt model for activation, owns the navigator, consumes wheel deltas, translates navigation results into activation results, and dispatches source activation. That is manageable at the current size, but it is the pressure point where new behavior will become harder to test and reason about.
 
-The second major risk is operational visibility. `TaskManagerDesktopSource::sourceState() const` logs diagnostics during a getter, source diagnostics are discarded from returned state, and public QML activation methods discard structured no-op results. Debugging malformed desktop source data or ignored activation requests currently depends on incidental logs or test-only result APIs.
+The second major risk is operational visibility. `TaskManagerDesktopSource::sourceState() const` logs diagnostics during a getter, and source diagnostics are discarded from returned state. Debugging malformed desktop source data currently depends on incidental logs or test-only result APIs.
 
 No P0 issue was found. The recommended end state is a precise, boring architecture: a small application state store, pure planners for navigation/activation/input mapping, Qt/QML adapters around those seams, and explicit diagnostic/error channels.
 
@@ -252,22 +252,6 @@ Suggested migration: Extend source state with diagnostics/health, or add a diagn
 
 Acceptance criteria: Backend/QML or tests can inspect source health without parsing logs. Repeated reads of unchanged malformed state do not emit duplicate warnings. Tests cover diagnostic appearance, update, and recovery.
 
-### Finding: Public activation API discards structured no-op results
-
-Priority: P2
-
-Evidence: `TabPagerActivationResult` distinguishes `InvalidIndex`, `InvalidDesktopId`, `NoCurrentDesktop`, `StoppedAtEdge`, and `NoWheelStep`; public `activateNext()`, `activatePrevious()`, and `activateByWheelDelta()` discard `WithResult()` return values; `TabPagerBackend` exposes QML invokables as `void`; `TabPagerView.qml` calls `activateByWheelDelta(delta)` without result handling.
-
-Current state: Direct invalid index/invalid desktop ID cases can be logged through `activate()`, but relative and wheel no-ops are discarded in public paths.
-
-Design concern: When scrolling appears to do nothing, the system cannot distinguish benign edge stops from missing current desktop state through the public API.
-
-Correct end state: Structured activation outcomes should be observable where they matter, either through return values, a `lastActivationResult` property, or an `activationFinished(result)` signal. Benign outcomes such as `NoWheelStep` and `StoppedAtEdge` should be distinguishable from degraded outcomes such as `NoCurrentDesktop`.
-
-Suggested migration: Keep existing void invokables if desired, but add result-returning internal/public APIs or a result signal. Classify logging levels by outcome.
-
-Acceptance criteria: Tests can observe each activation result through backend/QML-facing API or a diagnostic signal. Missing current desktop is observable without reading logs. Benign no-ops do not produce warning noise.
-
 ### Finding: Activation result says `Activated` before external confirmation
 
 Priority: P2
@@ -336,7 +320,7 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 
 ## Suggested Refactoring Sequence
 
-1. Add characterization tests around current behavior for wheel pending deltas across context changes, source diagnostics, public activation no-op outcomes, and QML role exposure.
+1. Add characterization tests around current behavior for wheel pending deltas across context changes, source diagnostics, and QML role exposure.
 2. Isolate core domain logic from external effects by extracting activation planning and wheel input mapping from `TabPagerDesktopController`/QML event handlers.
 3. Clarify ownership boundaries by separating desktop source state from navigation settings and by inserting a small state store between controller logic and the Qt list model.
 4. Improve error semantics and observability by making source diagnostics stateful/observable, removing getter-side logging, clarifying activation request versus confirmation, and replacing assertion-only fatal invariants with deterministic diagnostics.
@@ -370,6 +354,6 @@ Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` 
 
 Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout/input testability and activation planning were kept as P2. Getter-side diagnostics were merged into the source diagnostics finding.
 
-Error Handling / Observability Agent: Reported activation success before confirmation, public activation APIs swallowing no-op reasons, source diagnostics as log-only, and assertion-only fatal invariants. Public no-op observability, source diagnostics, and fatal assertions were kept as P2. Activation confirmation was downgraded from P1 to P2 because current public QML methods are void and the immediate issue is naming/observability unless confirmed activation is surfaced.
+Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics and fatal assertions were kept as P2. Activation confirmation was downgraded from P1 to P2 because the immediate issue is naming unless confirmed activation is surfaced.
 
 Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles and wrapping leakage were kept as P2. Parallel navigation APIs and adapter-seam clarity were kept as P3. No broad rewrite recommendation was accepted.

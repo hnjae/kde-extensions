@@ -7,6 +7,7 @@
 
 #include <QFont>
 #include <QObject>
+#include <QString>
 
 #include <memory>
 
@@ -39,8 +40,11 @@ Q_SIGNALS:
   void countChanged();
   void currentIndexChanged();
   void navigationWrappingAroundChanged();
+  void activationFinished(const QString &result);
 
 private:
+  void emitActivationFinished(TabPagerActivationResult result);
+
   TabPagerDesktopModel m_model;
   TabPagerDesktopController m_controller;
 };

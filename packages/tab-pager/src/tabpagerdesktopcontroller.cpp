@@ -46,6 +46,7 @@ bool TabPagerDesktopController::navigationWrappingAround() const {
 void TabPagerDesktopController::activate(int index) {
   const TabPagerActivationResult result = activateWithResult(index);
   logUnexpectedActivationNoOp(result, index);
+  Q_EMIT activationFinished(result);
 }
 
 TabPagerActivationResult
@@ -65,7 +66,7 @@ TabPagerDesktopController::activateWithResult(int index) {
 }
 
 void TabPagerDesktopController::activateNext() {
-  (void)activateNextWithResult();
+  Q_EMIT activationFinished(activateNextWithResult());
 }
 
 TabPagerActivationResult TabPagerDesktopController::activateNextWithResult() {
@@ -73,7 +74,7 @@ TabPagerActivationResult TabPagerDesktopController::activateNextWithResult() {
 }
 
 void TabPagerDesktopController::activatePrevious() {
-  (void)activatePreviousWithResult();
+  Q_EMIT activationFinished(activatePreviousWithResult());
 }
 
 TabPagerActivationResult
@@ -82,7 +83,7 @@ TabPagerDesktopController::activatePreviousWithResult() {
 }
 
 void TabPagerDesktopController::activateByWheelDelta(int delta) {
-  (void)activateByWheelDeltaWithResult(delta);
+  Q_EMIT activationFinished(activateByWheelDeltaWithResult(delta));
 }
 
 TabPagerActivationResult

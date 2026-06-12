@@ -198,11 +198,15 @@ QList<QmlMethod> qmltypesMethods(const QString &qmltypes) {
 QStringList qmltypesSignals(const QString &qmltypes) {
   QStringList signals;
   const QRegularExpression signalExpression(
-      QStringLiteral("Signal\\s*\\{\\s*name:\\s*\"([^\"]+)\"\\s*\\}"));
+      QStringLiteral("Signal\\s*\\{([^{}]*(?:\\{[^{}]*\\}[^{}]*)*)\\}"),
+      QRegularExpression::DotMatchesEverythingOption);
+  const QRegularExpression nameExpression(
+      QStringLiteral("name:\\s*\"([^\"]+)\""));
 
   auto matchIterator = signalExpression.globalMatch(qmltypes);
   while (matchIterator.hasNext()) {
-    signals.append(matchIterator.next().captured(1));
+    signals.append(
+        nameExpression.match(matchIterator.next().captured(1)).captured(1));
   }
   return signals;
 }

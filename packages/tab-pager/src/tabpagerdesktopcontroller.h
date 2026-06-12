@@ -44,6 +44,7 @@ public:
 
 Q_SIGNALS:
   void navigationWrappingAroundChanged();
+  void activationFinished(TabPagerActivationResult result);
 
 private:
   void initializeSource();

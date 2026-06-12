@@ -25,5 +25,9 @@ Module {
         Signal { name: "countChanged" }
         Signal { name: "currentIndexChanged" }
         Signal { name: "navigationWrappingAroundChanged" }
+        Signal {
+            name: "activationFinished"
+            Parameter { name: "result"; type: "QString" }
+        }
     }
 }

@@ -48,6 +48,9 @@ private Q_SLOTS:
   void updatesNavigationWrapping();
   void updatesDesktopAndNavigationStateTogether();
   void activatesDesktopByIndex();
+  void reportsActivationResultByIndex();
+  void reportsRelativeActivationNoOps();
+  void reportsWheelActivationNoOps();
   void ignoresActivationForInvalidDesktopId();
   void ignoresRelativeActivationWithoutCurrentDesktop();
   void stopsAtEdgesWithoutWrapping();
@@ -322,6 +325,67 @@ void TabPagerBackendTest::activatesDesktopByIndex() {
 
   QCOMPARE(fixture.source->activatedDesktops(),
            QList<TabPagerDesktopId>{desktopId("b")});
+}
+
+void TabPagerBackendTest::reportsActivationResultByIndex() {
+  BackendFixture fixture({
+      defaultDesktop("a", 1),
+      defaultDesktop("b", 2),
+  });
+  QSignalSpy activationSpy(&fixture.backend,
+                           SIGNAL(activationFinished(QString)));
+  QVERIFY(activationSpy.isValid());
+
+  fixture.backend.activate(-1);
+  fixture.backend.activate(1);
+
+  QCOMPARE(activationSpy.count(), 2);
+  QCOMPARE(activationSpy.at(0).at(0).toString(),
+           QStringLiteral("InvalidIndex"));
+  QCOMPARE(activationSpy.at(1).at(0).toString(),
+           QStringLiteral("ActivationRequested"));
+}
+
+void TabPagerBackendTest::reportsRelativeActivationNoOps() {
+  BackendFixture fixture(
+      {
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+      },
+      {}, false);
+  QSignalSpy activationSpy(&fixture.backend,
+                           SIGNAL(activationFinished(QString)));
+  QVERIFY(activationSpy.isValid());
+
+  fixture.backend.activateNext();
+  fixture.source->setCurrentDesktop(desktopId("a"));
+  fixture.backend.activatePrevious();
+
+  QCOMPARE(activationSpy.count(), 2);
+  QCOMPARE(activationSpy.at(0).at(0).toString(),
+           QStringLiteral("NoCurrentDesktop"));
+  QCOMPARE(activationSpy.at(1).at(0).toString(),
+           QStringLiteral("StoppedAtEdge"));
+}
+
+void TabPagerBackendTest::reportsWheelActivationNoOps() {
+  BackendFixture fixture(
+      {
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+      },
+      desktopId("a"), false);
+  QSignalSpy activationSpy(&fixture.backend,
+                           SIGNAL(activationFinished(QString)));
+  QVERIFY(activationSpy.isValid());
+
+  fixture.backend.activateByWheelDelta(halfWheelStepDelta);
+  fixture.backend.activateByWheelDelta(wheelStepDelta);
+
+  QCOMPARE(activationSpy.count(), 2);
+  QCOMPARE(activationSpy.at(0).at(0).toString(), QStringLiteral("NoWheelStep"));
+  QCOMPARE(activationSpy.at(1).at(0).toString(),
+           QStringLiteral("StoppedAtEdge"));
 }
 
 void TabPagerBackendTest::ignoresActivationForInvalidDesktopId() {

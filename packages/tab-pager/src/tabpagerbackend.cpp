@@ -4,8 +4,30 @@
 #include "tabpagerbackend.h"
 
 #include <QFontDatabase>
+#include <QString>
 
 #include <utility>
+
+namespace {
+[[nodiscard]] QString activationResultName(TabPagerActivationResult result) {
+  switch (result) {
+  case TabPagerActivationResult::Activated:
+    return QStringLiteral("ActivationRequested");
+  case TabPagerActivationResult::InvalidIndex:
+    return QStringLiteral("InvalidIndex");
+  case TabPagerActivationResult::InvalidDesktopId:
+    return QStringLiteral("InvalidDesktopId");
+  case TabPagerActivationResult::NoCurrentDesktop:
+    return QStringLiteral("NoCurrentDesktop");
+  case TabPagerActivationResult::StoppedAtEdge:
+    return QStringLiteral("StoppedAtEdge");
+  case TabPagerActivationResult::NoWheelStep:
+    return QStringLiteral("NoWheelStep");
+  }
+
+  return QStringLiteral("NoCurrentDesktop");
+}
+} // namespace
 
 TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
                                  QObject *parent)
@@ -17,6 +39,8 @@ TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
   connect(&m_controller,
           &TabPagerDesktopController::navigationWrappingAroundChanged, this,
           &TabPagerBackend::navigationWrappingAroundChanged);
+  connect(&m_controller, &TabPagerDesktopController::activationFinished, this,
+          &TabPagerBackend::emitActivationFinished);
 }
 
 TabPagerBackend::~TabPagerBackend() = default;
@@ -43,4 +67,8 @@ void TabPagerBackend::activatePrevious() { m_controller.activatePrevious(); }
 
 void TabPagerBackend::activateByWheelDelta(int delta) {
   m_controller.activateByWheelDelta(delta);
+}
+
+void TabPagerBackend::emitActivationFinished(TabPagerActivationResult result) {
+  Q_EMIT activationFinished(activationResultName(result));
 }
