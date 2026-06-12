@@ -12,6 +12,9 @@ in `SPEC.md`.
 - Advertise Plasma's fill-area constraint and request fill layout on both axes so the widget occupies available panel space; task delegates remain content-sized while the task list viewport absorbs extra long-axis space and clips when content exceeds the panel allocation.
 - Keep the implementation on public QML APIs where possible. Context menu
   actions should call `TasksModel.request*` methods directly.
+- Use a widget-owned C++ QML backend for task context-menu data that Plasma does not expose through public QML task roles, such as `.desktop` actions. Do not import or depend on another applet's private QML module such as Plasma's built-in task manager backend.
+- Keep owned context-menu backend behavior on public Qt and KDE Frameworks APIs. Desktop actions should be discovered through `KService`/`KDesktopFile` and executed through `KIO::ApplicationLauncherJob` rather than by parsing command lines or copying Plasma's private applet module at runtime.
+- Build the plasmoid through CMake when native QML plugin code is present, and install both the applet package and the owned QML module as package artifacts.
 - Keep QML JavaScript logic dependencies in `.mjs` ECMAScript modules with named imports and exports. Production QML logic must not use `Qt.include()`, because module boundaries should be explicit and loadable by the QML engine without deprecated include evaluation.
 - Implement drag reordering with a widget-owned task MIME type. Reorder pinned
   rows by rewriting the persisted launcher list so launch-in-place window rows
@@ -83,6 +86,8 @@ in `SPEC.md`.
   tested helpers while QML keeps submenu composition and effect dispatch. QML
   menu items should consume the helper output directly instead of adding
   menu-local action-state wrapper functions.
+- Keep context-menu icon names in `TaskContextMenuLogic.mjs` for actions owned by this widget. QML menu items should bind icon names from helper output so labels, visibility, enabled state, checked state, and iconography stay covered by the same tests.
+- Keep dynamic `.desktop` action insertion in `TaskContextMenu.qml`, backed by the owned context-menu backend's `QAction` list. Those actions may use `PlasmaExtras.MenuItem.action`, while widget-owned task actions should continue to flow through typed descriptors and the menu-local dispatcher.
 - Keep context-menu action dispatch failure classification in the action-result
   layer. The dispatcher may route helper-owned actions to task-model adapters,
   launcher commands, or launcher-activity adapters, but missing adapters and
