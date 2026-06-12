@@ -26,16 +26,15 @@ rowDataForDesktop(qsizetype row, const TabPagerDesktop &desktop,
 [[nodiscard]] QList<TabPagerDesktopRowData>
 rowsForSnapshot(const TabPagerDesktopSnapshot &snapshot) {
   QList<TabPagerDesktopRowData> rows;
-  rows.reserve(snapshot.desktops.size());
+  rows.reserve(snapshot.desktops().size());
 
-  for (qsizetype sourceRow = 0; sourceRow < snapshot.desktops.size();
+  for (qsizetype sourceRow = 0; sourceRow < snapshot.desktops().size();
        ++sourceRow) {
-    const TabPagerDesktop &desktop = snapshot.desktops.at(sourceRow);
-    if (!desktop.id.isValid()) {
-      continue;
-    }
+    const TabPagerDesktop &desktop = snapshot.desktops().at(sourceRow);
+    Q_ASSERT(desktop.id.isValid());
 
-    rows.append(rowDataForDesktop(sourceRow, desktop, snapshot.currentDesktop));
+    rows.append(
+        rowDataForDesktop(sourceRow, desktop, snapshot.currentDesktop()));
   }
 
   return rows;

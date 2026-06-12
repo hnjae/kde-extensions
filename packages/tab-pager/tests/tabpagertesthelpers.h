@@ -53,10 +53,8 @@ namespace TabPagerTest {
 [[nodiscard]] inline TabPagerDesktopSnapshot
 desktopSnapshot(QList<TabPagerDesktop> desktops,
                 TabPagerDesktopId currentDesktop = {}) {
-  return TabPagerDesktopSnapshot{
-      .desktops = std::move(desktops),
-      .currentDesktop = std::move(currentDesktop),
-  };
+  return TabPagerDesktopSnapshot::fromDesktops(std::move(desktops),
+                                               std::move(currentDesktop));
 }
 
 [[nodiscard]] inline TabPagerDesktopModelState

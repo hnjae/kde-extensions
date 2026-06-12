@@ -29,6 +29,7 @@ add_library(tabpagermodel STATIC
     src/tabpagerbackend.cpp
     src/tabpagerbackend.h
     src/tabpagerdesktop.h
+    src/tabpagerdesktop.cpp
     src/tabpagerdesktopcontroller.cpp
     src/tabpagerdesktopcontroller.h
     src/tabpagerdesktopid.cpp

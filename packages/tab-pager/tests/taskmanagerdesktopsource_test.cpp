@@ -137,15 +137,15 @@ void TaskManagerDesktopSourceTest::projectsVirtualDesktopInfoToSourceState() {
 
   const TabPagerDesktopSourceState state = fixture.source.sourceState();
 
-  QCOMPARE(state.desktopSnapshot.desktops.size(), 2);
-  QCOMPARE(state.desktopSnapshot.desktops.at(0).id,
+  QCOMPARE(state.desktopSnapshot.desktops().size(), 2);
+  QCOMPARE(state.desktopSnapshot.desktops().at(0).id,
            TabPagerDesktopId::fromVariant(QStringLiteral("a")));
-  QCOMPARE(state.desktopSnapshot.desktops.at(0).name,
+  QCOMPARE(state.desktopSnapshot.desktops().at(0).name,
            QStringLiteral("Desktop 1"));
-  QCOMPARE(state.desktopSnapshot.desktops.at(1).id,
+  QCOMPARE(state.desktopSnapshot.desktops().at(1).id,
            TabPagerDesktopId::fromVariant(QStringLiteral("b")));
-  QCOMPARE(state.desktopSnapshot.desktops.at(1).name, QStringLiteral("Work"));
-  QCOMPARE(state.desktopSnapshot.currentDesktop,
+  QCOMPARE(state.desktopSnapshot.desktops().at(1).name, QStringLiteral("Work"));
+  QCOMPARE(state.desktopSnapshot.currentDesktop(),
            TabPagerDesktopId::fromVariant(QStringLiteral("b")));
   QCOMPARE(state.navigationWrappingAround, true);
 }
@@ -155,14 +155,14 @@ void TaskManagerDesktopSourceTest::projectsMissingDesktopNamesAsEmptyNames() {
       {QStringLiteral("a"), QStringLiteral("b")}, {QStringLiteral("Desktop 1")},
       QStringLiteral("b"));
 
-  QCOMPARE(state.desktopSnapshot.desktops.size(), 2);
-  QCOMPARE(state.desktopSnapshot.desktops.at(0).id,
+  QCOMPARE(state.desktopSnapshot.desktops().size(), 2);
+  QCOMPARE(state.desktopSnapshot.desktops().at(0).id,
            TabPagerDesktopId::fromVariant(QStringLiteral("a")));
-  QCOMPARE(state.desktopSnapshot.desktops.at(0).name,
+  QCOMPARE(state.desktopSnapshot.desktops().at(0).name,
            QStringLiteral("Desktop 1"));
-  QCOMPARE(state.desktopSnapshot.desktops.at(1).id,
+  QCOMPARE(state.desktopSnapshot.desktops().at(1).id,
            TabPagerDesktopId::fromVariant(QStringLiteral("b")));
-  QCOMPARE(state.desktopSnapshot.desktops.at(1).name, QString());
+  QCOMPARE(state.desktopSnapshot.desktops().at(1).name, QString());
 }
 
 void TaskManagerDesktopSourceTest::ignoresExtraDesktopNames() {
@@ -171,10 +171,10 @@ void TaskManagerDesktopSourceTest::ignoresExtraDesktopNames() {
       {QStringLiteral("Desktop 1"), QStringLiteral("Ignored extra name")},
       QStringLiteral("a"));
 
-  QCOMPARE(state.desktopSnapshot.desktops.size(), 1);
-  QCOMPARE(state.desktopSnapshot.desktops.at(0).id,
+  QCOMPARE(state.desktopSnapshot.desktops().size(), 1);
+  QCOMPARE(state.desktopSnapshot.desktops().at(0).id,
            TabPagerDesktopId::fromVariant(QStringLiteral("a")));
-  QCOMPARE(state.desktopSnapshot.desktops.at(0).name,
+  QCOMPARE(state.desktopSnapshot.desktops().at(0).name,
            QStringLiteral("Desktop 1"));
 }
 
@@ -183,10 +183,10 @@ void TaskManagerDesktopSourceTest::dropsInvalidDesktopIds() {
       {QVariant{}, QStringLiteral("b")},
       {QStringLiteral("Broken"), QStringLiteral("Work")}, QStringLiteral("b"));
 
-  QCOMPARE(state.desktopSnapshot.desktops.size(), 1);
-  QCOMPARE(state.desktopSnapshot.desktops.at(0).id,
+  QCOMPARE(state.desktopSnapshot.desktops().size(), 1);
+  QCOMPARE(state.desktopSnapshot.desktops().at(0).id,
            TabPagerDesktopId::fromVariant(QStringLiteral("b")));
-  QCOMPARE(state.desktopSnapshot.desktops.at(0).name, QStringLiteral("Work"));
+  QCOMPARE(state.desktopSnapshot.desktops().at(0).name, QStringLiteral("Work"));
 }
 
 void TaskManagerDesktopSourceTest::dropsDuplicateDesktopIds() {
@@ -196,13 +196,13 @@ void TaskManagerDesktopSourceTest::dropsDuplicateDesktopIds() {
        QStringLiteral("Work")},
       QStringLiteral("a"));
 
-  QCOMPARE(state.desktopSnapshot.desktops.size(), 2);
-  QCOMPARE(state.desktopSnapshot.desktops.at(0).id,
+  QCOMPARE(state.desktopSnapshot.desktops().size(), 2);
+  QCOMPARE(state.desktopSnapshot.desktops().at(0).id,
            TabPagerDesktopId::fromVariant(QStringLiteral("a")));
-  QCOMPARE(state.desktopSnapshot.desktops.at(1).id,
+  QCOMPARE(state.desktopSnapshot.desktops().at(1).id,
            TabPagerDesktopId::fromVariant(QStringLiteral("b")));
-  QCOMPARE(state.desktopSnapshot.desktops.at(1).name, QStringLiteral("Work"));
-  QCOMPARE(state.desktopSnapshot.currentDesktop,
+  QCOMPARE(state.desktopSnapshot.desktops().at(1).name, QStringLiteral("Work"));
+  QCOMPARE(state.desktopSnapshot.currentDesktop(),
            TabPagerDesktopId::fromVariant(QStringLiteral("a")));
 }
 
@@ -212,8 +212,8 @@ void TaskManagerDesktopSourceTest::clearsUnmatchedCurrentDesktop() {
       {QStringLiteral("Desktop 1"), QStringLiteral("Work")},
       QStringLiteral("missing"));
 
-  QCOMPARE(state.desktopSnapshot.desktops.size(), 2);
-  QCOMPARE(state.desktopSnapshot.currentDesktop.isValid(), false);
+  QCOMPARE(state.desktopSnapshot.desktops().size(), 2);
+  QCOMPARE(state.desktopSnapshot.currentDesktop().isValid(), false);
 }
 
 void TaskManagerDesktopSourceTest::reportsNameCountDiagnostics() {
@@ -255,10 +255,10 @@ void TaskManagerDesktopSourceTest::reportsDesktopIdentityDiagnostics() {
           .currentDesktop = QStringLiteral("missing"),
       });
 
-  QCOMPARE(result.state.desktopSnapshot.desktops.size(), 1);
-  QCOMPARE(result.state.desktopSnapshot.desktops.at(0).id,
+  QCOMPARE(result.state.desktopSnapshot.desktops().size(), 1);
+  QCOMPARE(result.state.desktopSnapshot.desktops().at(0).id,
            TabPagerDesktopId::fromVariant(QStringLiteral("a")));
-  QCOMPARE(result.state.desktopSnapshot.currentDesktop.isValid(), false);
+  QCOMPARE(result.state.desktopSnapshot.currentDesktop().isValid(), false);
   QCOMPARE(result.diagnostics.size(), 3);
   QCOMPARE(result.diagnostics.at(0).type,
            TaskManagerDesktopSourceDiagnostic::Type::InvalidDesktopId);

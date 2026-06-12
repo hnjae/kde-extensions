@@ -11,7 +11,6 @@ using TabPagerTest::compareDesktopRow;
 using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
 using TabPagerTest::desktopSnapshot;
-using TabPagerTest::invalidDesktop;
 using TabPagerTest::namedDesktop;
 using TabPagerTest::role;
 using TabPagerTest::unnamedDesktop;
@@ -22,7 +21,6 @@ class TabPagerDesktopRowsTest : public QObject {
 
 private Q_SLOTS:
   void projectsSnapshotToRows();
-  void filtersInvalidDesktopIdsFromRows();
   void detectsStableRowIdentity();
   void detectsChangedRowRanges();
 };
@@ -40,22 +38,6 @@ void TabPagerDesktopRowsTest::projectsSnapshotToRows() {
   compareDesktopRow(rows.rowData(1), desktopId("b"), QStringLiteral("Work"),
                     QStringLiteral("Work"), 2, true);
   QCOMPARE(rows.rowData(2).label, QStringLiteral("3"));
-}
-
-void TabPagerDesktopRowsTest::filtersInvalidDesktopIdsFromRows() {
-  const TabPagerDesktopRows rows =
-      TabPagerDesktopRows::fromSnapshot(desktopSnapshot(
-          {invalidDesktop(QStringLiteral("Broken")), defaultDesktop("b", 2)},
-          desktopId("b")));
-
-  QCOMPARE(rows.count(), 1);
-  QCOMPARE(rows.currentIndex(), 0);
-  compareDesktopRow(rows.rowData(0), desktopId("b"),
-                    QStringLiteral("Desktop 2"), QStringLiteral("2"), 2, true);
-  QCOMPARE(rows.desktopIdForIndex(-1).has_value(), false);
-  QCOMPARE(rows.desktopIdForIndex(1).has_value(), false);
-  QCOMPARE(rows.desktopIdForIndex(0).value_or(TabPagerDesktopId{}),
-           desktopId("b"));
 }
 
 void TabPagerDesktopRowsTest::detectsStableRowIdentity() {

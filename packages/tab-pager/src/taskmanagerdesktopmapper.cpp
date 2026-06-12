@@ -31,16 +31,36 @@ void appendNameCountDiagnostics(
   }
 }
 
-[[nodiscard]] qsizetype
-firstMatchingDesktopIdIndex(const QList<QVariant> &desktopIds,
-                            const QVariant &desktopId) {
-  for (qsizetype row = 0; row < desktopIds.size(); ++row) {
-    if (desktopIds.at(row) == desktopId) {
-      return row;
+void appendDesktopSnapshotDiagnostics(
+    const QList<TabPagerDesktopSnapshotNormalizationIssue> &issues,
+    QList<TaskManagerDesktopSourceDiagnostic> &diagnostics) {
+  for (const TabPagerDesktopSnapshotNormalizationIssue &issue : issues) {
+    switch (issue.type) {
+    case TabPagerDesktopSnapshotNormalizationIssue::Type::InvalidDesktopId:
+      diagnostics.append(TaskManagerDesktopSourceDiagnostic{
+          .type = TaskManagerDesktopSourceDiagnostic::Type::InvalidDesktopId,
+          .row = issue.row,
+          .desktopId = issue.desktopId.toVariant(),
+      });
+      break;
+    case TabPagerDesktopSnapshotNormalizationIssue::Type::DuplicateDesktopId:
+      diagnostics.append(TaskManagerDesktopSourceDiagnostic{
+          .type = TaskManagerDesktopSourceDiagnostic::Type::DuplicateDesktopId,
+          .row = issue.row,
+          .relatedRow = issue.relatedRow,
+          .desktopId = issue.desktopId.toVariant(),
+      });
+      break;
+    case TabPagerDesktopSnapshotNormalizationIssue::Type::
+        UnmatchedCurrentDesktop:
+      diagnostics.append(TaskManagerDesktopSourceDiagnostic{
+          .type =
+              TaskManagerDesktopSourceDiagnostic::Type::UnmatchedCurrentDesktop,
+          .desktopId = issue.desktopId.toVariant(),
+      });
+      break;
     }
   }
-
-  return -1;
 }
 } // namespace
 
@@ -52,65 +72,24 @@ taskManagerDesktopSourceMappingFromRawState(
   QList<TaskManagerDesktopSourceDiagnostic> diagnostics;
   appendNameCountDiagnostics(rawState, diagnostics);
 
-  QList<QVariant> validDesktopIds;
-  QList<qsizetype> validDesktopIdRows;
-  bool currentDesktopMatched = false;
   const TabPagerDesktopId currentDesktop =
       TabPagerDesktopId::fromVariant(rawState.currentDesktop);
 
   for (qsizetype index = 0; index < rawState.desktopIds.size(); ++index) {
-    const QVariant &rawDesktopId = rawState.desktopIds.at(index);
-    const TabPagerDesktopId desktopId =
-        TabPagerDesktopId::fromVariant(rawDesktopId);
-    if (!desktopId.isValid()) {
-      diagnostics.append(TaskManagerDesktopSourceDiagnostic{
-          .type = TaskManagerDesktopSourceDiagnostic::Type::InvalidDesktopId,
-          .row = index,
-          .desktopId = {},
-      });
-      continue;
-    }
-
-    const qsizetype matchingIndex =
-        firstMatchingDesktopIdIndex(validDesktopIds, rawDesktopId);
-    if (matchingIndex >= 0) {
-      diagnostics.append(TaskManagerDesktopSourceDiagnostic{
-          .type = TaskManagerDesktopSourceDiagnostic::Type::DuplicateDesktopId,
-          .row = index,
-          .relatedRow = validDesktopIdRows.at(matchingIndex),
-          .desktopId = rawDesktopId,
-      });
-      continue;
-    }
-
-    validDesktopIds.append(rawDesktopId);
-    validDesktopIdRows.append(index);
-    currentDesktopMatched =
-        currentDesktopMatched || desktopId.matches(currentDesktop);
     desktops.append(TabPagerDesktop{
-        .id = desktopId,
+        .id = TabPagerDesktopId::fromVariant(rawState.desktopIds.at(index)),
         .name = rawState.desktopNames.value(index),
     });
   }
 
-  if (!validDesktopIds.isEmpty() && !currentDesktopMatched) {
-    diagnostics.append(TaskManagerDesktopSourceDiagnostic{
-        .type =
-            TaskManagerDesktopSourceDiagnostic::Type::UnmatchedCurrentDesktop,
-        .desktopId = rawState.currentDesktop,
-    });
-  }
+  TabPagerDesktopSnapshotNormalizationResult snapshot =
+      normalizeTabPagerDesktopSnapshot(std::move(desktops), currentDesktop);
+  appendDesktopSnapshotDiagnostics(snapshot.issues, diagnostics);
 
   return TaskManagerDesktopSourceMappingResult{
       .state =
           TabPagerDesktopSourceState{
-              .desktopSnapshot =
-                  TabPagerDesktopSnapshot{
-                      .desktops = std::move(desktops),
-                      .currentDesktop = currentDesktopMatched
-                                            ? currentDesktop
-                                            : TabPagerDesktopId{},
-                  },
+              .desktopSnapshot = std::move(snapshot.snapshot),
               .navigationWrappingAround = rawState.navigationWrappingAround,
           },
       .diagnostics = std::move(diagnostics),

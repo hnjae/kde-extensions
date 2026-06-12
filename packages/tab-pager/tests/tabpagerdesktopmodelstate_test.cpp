@@ -14,7 +14,6 @@ using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
 using TabPagerTest::desktopModelState;
 using TabPagerTest::desktopSnapshot;
-using TabPagerTest::invalidDesktop;
 using TabPagerTest::namedDesktop;
 using TabPagerTest::role;
 using TabPagerTest::unnamedDesktop;
@@ -51,7 +50,6 @@ class TabPagerDesktopModelStateTest : public QObject {
 
 private Q_SLOTS:
   void projectsDesktopSnapshotToRows();
-  void filtersInvalidDesktopIdsFromRows();
   void plansChangedDesktopRowRoles();
   void tracksDesktopModelStateIndex();
   void plansDesktopModelTransitionState();
@@ -76,18 +74,6 @@ void TabPagerDesktopModelStateTest::projectsDesktopSnapshotToRows() {
                     QStringLiteral("Desktop 1"), QStringLiteral("1"), 1, false);
   compareDesktopRow(state.rowData(1), desktopId("b"), QStringLiteral("Work"),
                     QStringLiteral("Work"), 2, true);
-}
-
-void TabPagerDesktopModelStateTest::filtersInvalidDesktopIdsFromRows() {
-  const TabPagerDesktopModelState state =
-      TabPagerDesktopModelState::fromSnapshot(desktopSnapshot(
-          {invalidDesktop(QStringLiteral("Broken")), defaultDesktop("b", 2)},
-          desktopId("b")));
-
-  QCOMPARE(state.count(), 1);
-  QCOMPARE(state.currentIndex(), 0);
-  compareDesktopRow(state.rowData(0), desktopId("b"),
-                    QStringLiteral("Desktop 2"), QStringLiteral("2"), 2, true);
 }
 
 void TabPagerDesktopModelStateTest::plansChangedDesktopRowRoles() {
