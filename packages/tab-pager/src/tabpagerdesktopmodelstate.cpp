@@ -38,7 +38,9 @@ TabPagerDesktopModelTransition TabPagerDesktopModelState::transitionTo(
   const bool currentIndexChanged =
       m_rows.currentIndex() != nextState.m_rows.currentIndex();
 
-  if (!m_rows.hasSameIdentityAs(nextState.m_rows)) {
+  std::optional<QList<TabPagerDesktopRowsChange>> rowChanges =
+      m_rows.changesTo(nextState.m_rows);
+  if (!rowChanges.has_value()) {
     return TabPagerDesktopModelTransition{
         .nextState = std::move(nextState),
         .type = TabPagerDesktopModelTransition::Type::Reset,
@@ -48,9 +50,7 @@ TabPagerDesktopModelTransition TabPagerDesktopModelState::transitionTo(
     };
   }
 
-  QList<TabPagerDesktopRowsChange> rowChanges =
-      m_rows.changesTo(nextState.m_rows);
-  if (!currentIndexChanged && rowChanges.isEmpty()) {
+  if (!currentIndexChanged && rowChanges->isEmpty()) {
     return TabPagerDesktopModelTransition{
         .nextState = std::move(nextState),
         .type = TabPagerDesktopModelTransition::Type::Unchanged,
@@ -65,6 +65,6 @@ TabPagerDesktopModelTransition TabPagerDesktopModelState::transitionTo(
       .type = TabPagerDesktopModelTransition::Type::RowsChanged,
       .countChanged = false,
       .currentIndexChanged = currentIndexChanged,
-      .rowChanges = std::move(rowChanges),
+      .rowChanges = std::move(*rowChanges),
   };
 }

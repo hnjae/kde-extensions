@@ -21,8 +21,8 @@ class TabPagerDesktopRowsTest : public QObject {
 
 private Q_SLOTS:
   void projectsSnapshotToRows();
-  void detectsStableRowIdentity();
   void detectsChangedRowRanges();
+  void rejectsChangedIdentityForRowDiffs();
 };
 
 void TabPagerDesktopRowsTest::projectsSnapshotToRows() {
@@ -40,22 +40,6 @@ void TabPagerDesktopRowsTest::projectsSnapshotToRows() {
   QCOMPARE(rows.rowData(2).label, QStringLiteral("3"));
 }
 
-void TabPagerDesktopRowsTest::detectsStableRowIdentity() {
-  const TabPagerDesktopRows rows = TabPagerDesktopRows::fromSnapshot(
-      desktopSnapshot({defaultDesktop("a", 1), defaultDesktop("b", 2)}));
-  const TabPagerDesktopRows sameIdentity = TabPagerDesktopRows::fromSnapshot(
-      desktopSnapshot({namedDesktop("a", "Work"), defaultDesktop("b", 2)}));
-  const TabPagerDesktopRows reordered = TabPagerDesktopRows::fromSnapshot(
-      desktopSnapshot({defaultDesktop("b", 1), defaultDesktop("a", 2)}));
-  const TabPagerDesktopRows added = TabPagerDesktopRows::fromSnapshot(
-      desktopSnapshot({defaultDesktop("a", 1), defaultDesktop("b", 2),
-                       defaultDesktop("c", 3)}));
-
-  QCOMPARE(rows.hasSameIdentityAs(sameIdentity), true);
-  QCOMPARE(rows.hasSameIdentityAs(reordered), false);
-  QCOMPARE(rows.hasSameIdentityAs(added), false);
-}
-
 void TabPagerDesktopRowsTest::detectsChangedRowRanges() {
   const TabPagerDesktopRows rows = TabPagerDesktopRows::fromSnapshot(
       desktopSnapshot({defaultDesktop("a", 1), defaultDesktop("b", 2),
@@ -65,19 +49,34 @@ void TabPagerDesktopRowsTest::detectsChangedRowRanges() {
                        defaultDesktop("c", 3)},
                       desktopId("c")));
 
-  const QList<TabPagerDesktopRowsChange> rowChanges = rows.changesTo(nextRows);
+  const std::optional<QList<TabPagerDesktopRowsChange>> rowChanges =
+      rows.changesTo(nextRows);
 
-  QCOMPARE(rowChanges.size(), 2);
-  QCOMPARE(rowChanges.at(0).firstRow, 0);
-  QCOMPARE(rowChanges.at(0).lastRow, 1);
-  QCOMPARE(rowChanges.at(0).roles, (QList<int>{
-                                       role(TabPagerDesktopRowRole::Name),
-                                       role(TabPagerDesktopRowRole::Label),
-                                   }));
-  QCOMPARE(rowChanges.at(1).firstRow, 2);
-  QCOMPARE(rowChanges.at(1).lastRow, 2);
-  QCOMPARE(rowChanges.at(1).roles,
+  QVERIFY(rowChanges.has_value());
+  QCOMPARE(rowChanges->size(), 2);
+  QCOMPARE(rowChanges->at(0).firstRow, 0);
+  QCOMPARE(rowChanges->at(0).lastRow, 1);
+  QCOMPARE(rowChanges->at(0).roles, (QList<int>{
+                                        role(TabPagerDesktopRowRole::Name),
+                                        role(TabPagerDesktopRowRole::Label),
+                                    }));
+  QCOMPARE(rowChanges->at(1).firstRow, 2);
+  QCOMPARE(rowChanges->at(1).lastRow, 2);
+  QCOMPARE(rowChanges->at(1).roles,
            QList<int>{role(TabPagerDesktopRowRole::Active)});
+}
+
+void TabPagerDesktopRowsTest::rejectsChangedIdentityForRowDiffs() {
+  const TabPagerDesktopRows rows = TabPagerDesktopRows::fromSnapshot(
+      desktopSnapshot({defaultDesktop("a", 1), defaultDesktop("b", 2)}));
+  const TabPagerDesktopRows reordered = TabPagerDesktopRows::fromSnapshot(
+      desktopSnapshot({defaultDesktop("b", 1), defaultDesktop("a", 2)}));
+  const TabPagerDesktopRows added = TabPagerDesktopRows::fromSnapshot(
+      desktopSnapshot({defaultDesktop("a", 1), defaultDesktop("b", 2),
+                       defaultDesktop("c", 3)}));
+
+  QCOMPARE(rows.changesTo(reordered).has_value(), false);
+  QCOMPARE(rows.changesTo(added).has_value(), false);
 }
 
 QTEST_MAIN(TabPagerDesktopRowsTest)

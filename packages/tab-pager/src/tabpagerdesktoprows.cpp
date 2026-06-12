@@ -5,8 +5,6 @@
 
 #include "tabpagerdesktoplogic.h"
 
-#include <QtAssert>
-
 #include <utility>
 
 namespace {
@@ -120,9 +118,11 @@ bool TabPagerDesktopRows::hasSameIdentityAs(
   return true;
 }
 
-QList<TabPagerDesktopRowsChange>
+std::optional<QList<TabPagerDesktopRowsChange>>
 TabPagerDesktopRows::changesTo(const TabPagerDesktopRows &nextRows) const {
-  Q_ASSERT(hasSameIdentityAs(nextRows));
+  if (!hasSameIdentityAs(nextRows)) {
+    return std::nullopt;
+  }
 
   QList<TabPagerDesktopRowsChange> rowChanges;
   for (qsizetype row = 0; row < nextRows.m_rows.size(); ++row) {

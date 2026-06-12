@@ -27,11 +27,12 @@ public:
   desktopIdForIndex(int index) const;
   [[nodiscard]] TabPagerDesktopRowData rowData(qsizetype row) const;
 
-  [[nodiscard]] bool hasSameIdentityAs(const TabPagerDesktopRows &other) const;
-  [[nodiscard]] QList<TabPagerDesktopRowsChange>
+  [[nodiscard]] std::optional<QList<TabPagerDesktopRowsChange>>
   changesTo(const TabPagerDesktopRows &nextRows) const;
 
 private:
+  [[nodiscard]] bool hasSameIdentityAs(const TabPagerDesktopRows &other) const;
+
   QList<TabPagerDesktopRowData> m_rows;
   int m_currentIndex = -1;
 };
