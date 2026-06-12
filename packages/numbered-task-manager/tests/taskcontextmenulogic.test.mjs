@@ -270,6 +270,22 @@ assert.deepEqual(
     text: "Pin to Task Manager",
   },
 );
+assert.equal(
+  logic.pinLauncherAction({
+    canPin: true,
+    isPinned: true,
+    launcherUrl: "app.desktop",
+  }).icon,
+  "window-unpin",
+);
+assert.equal(
+  logic.pinLauncherAction({
+    canPin: true,
+    isPinned: false,
+    launcherUrl: "app.desktop",
+  }).icon,
+  "window-pin",
+);
 assert.deepEqual(
   plain(
     logic.pinLauncherAction({
@@ -526,6 +542,14 @@ assert.deepEqual(
     visible: true,
   },
 );
+assert.equal(
+  logic.newInstanceAction({
+    canLaunchNewInstance: true,
+    hasTask: true,
+    isLauncher: false,
+  }).icon,
+  "window-new",
+);
 assert.deepEqual(
   plain(
     logic.newInstanceAction({
@@ -563,6 +587,22 @@ assert.deepEqual(
     text: "Move",
     visible: true,
   },
+);
+assert.equal(
+  logic.basicMoveAction({
+    capable: true,
+    hasWindowTask: true,
+    isWindow: true,
+  }).icon,
+  "transform-move",
+);
+assert.equal(
+  logic.basicResizeAction({
+    capable: true,
+    hasWindowTask: true,
+    isWindow: true,
+  }).icon,
+  "transform-scale",
 );
 assert.deepEqual(
   plain(
@@ -726,6 +766,24 @@ assert.deepEqual(
     text: "Minimize",
     visible: true,
   },
+);
+assert.equal(
+  logic.minimizeAction({
+    capable: true,
+    checked: false,
+    hasWindowTask: true,
+    isWindow: true,
+  }).icon,
+  "window-minimize",
+);
+assert.equal(
+  logic.maximizeAction({
+    capable: true,
+    checked: false,
+    hasWindowTask: true,
+    isWindow: true,
+  }).icon,
+  "window-maximize",
 );
 assert.deepEqual(
   plain(

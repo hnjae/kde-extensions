@@ -12,6 +12,10 @@ const menuQml = readFileSync(
   new URL("../package/contents/ui/TaskContextMenu.qml", import.meta.url),
   "utf8",
 );
+const cmakeSource = readFileSync(
+  new URL("../CMakeLists.txt", import.meta.url),
+  "utf8",
+);
 const sourceUrl = new URL(
   "../package/contents/ui/TaskContextMenuAdapter.qml",
   import.meta.url,
@@ -78,3 +82,17 @@ assert.match(sourceQml, /\bTaskContextMenu\s*\{/);
 assert.match(menuQml, /signal actionResult\(var result\)/);
 assert.match(menuQml, /root\.actionResult\(result\)/);
 assert.doesNotMatch(menuQml, /console\.warn\("Numbered Task Manager action "/);
+assert.match(
+  menuQml,
+  /import io\.github\.hnjae\.numberedtaskmanager as NumberedTaskManager/,
+);
+assert.match(menuQml, /NumberedTaskManager\.TaskContextMenuBackend\s*\{/);
+assert.match(menuQml, /desktopActions\(root\.taskRoles\.launcherUrl/);
+assert.match(menuQml, /item\.action = modelData/);
+assert.match(menuQml, /id:\s*moreActionsItem/);
+assert.match(menuQml, /root\.moreActionsSection\.moreActions/);
+assert.match(menuQml, /icon:\s*actionState\.icon \|\| ""/);
+assert.match(cmakeSource, /project\(numberedtaskmanager\b/);
+assert.match(cmakeSource, /add_library\(numberedtaskmanagerplugin SHARED/);
+assert.match(cmakeSource, /src\/taskcontextmenubackend\.cpp/);
+assert.match(cmakeSource, /install\(DIRECTORY package\//);
