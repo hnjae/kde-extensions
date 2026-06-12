@@ -2,57 +2,21 @@
 
 ## Executive Summary
 
-The codebase is small and already has useful seams: TaskManager raw-state mapping is mostly pure, navigation target calculation is separated from QML rendering, and the model-state transition code has targeted tests. The main architectural risk is not lack of layering; it is that several important contracts are implied by convention instead of being owned by a single type or boundary.
+The codebase is small and already has useful seams: TaskManager raw-state mapping is mostly pure, navigation target calculation is separated from QML rendering, and the model-state transition code has targeted tests. The main architectural risk is not lack of layering; it is that several important contracts are still implied by convention instead of being owned by a focused boundary.
 
-The highest-impact issue is `TabPagerDesktopSnapshot`: it is a plain data shape, but the program behaves as if snapshots should contain valid unique desktop IDs and at most one current desktop. That invariant is enforced in `taskManagerDesktopSourceMappingFromRawState()`, repaired again in `TabPagerDesktopRows`, checked again in `TabPagerDesktopController`, and checked again in `TaskManagerDesktopSource::activateDesktop()`. This makes invalid states representable after normalization and makes future source adapters ambiguous.
+The highest-impact remaining issue is that orchestration, state projection, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, mutates the Qt model, reads the Qt model for activation, owns the navigator, consumes wheel deltas, translates navigation results into activation results, and dispatches source activation. That is manageable at the current size, but it is the pressure point where new behavior will become harder to test and reason about.
 
-The second major risk is that orchestration, state projection, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, mutates the Qt model, reads the Qt model for activation, owns the navigator, consumes wheel deltas, translates navigation results into activation results, and dispatches source activation. That is manageable at the current size, but it is the pressure point where new behavior will become harder to test and reason about.
+The second major risk is operational visibility. `TaskManagerDesktopSource::sourceState() const` logs diagnostics during a getter, source diagnostics are discarded from returned state, and public QML activation methods discard structured no-op results. Debugging malformed desktop source data or ignored activation requests currently depends on incidental logs or test-only result APIs.
 
-The third major risk is operational visibility. `TaskManagerDesktopSource::sourceState() const` logs diagnostics during a getter, source diagnostics are discarded from returned state, and public QML activation methods discard structured no-op results. Debugging malformed desktop source data or ignored activation requests currently depends on incidental logs or test-only result APIs.
-
-No P0 issue was found. The recommended end state is a precise, boring architecture: one normalized desktop snapshot boundary, a small application state store, pure planners for navigation/activation/input mapping, Qt/QML adapters around those seams, generated or checked QML metadata, and explicit diagnostic/error channels.
+No P0 issue was found. The recommended end state is a precise, boring architecture: a small application state store, pure planners for navigation/activation/input mapping, Qt/QML adapters around those seams, and explicit diagnostic/error channels.
 
 ## Top Design Risks
 
-1. `TabPagerDesktopSnapshot` invariants are not centrally enforced, so invalid IDs, duplicate IDs, and ambiguous current-desktop state remain representable after source normalization.
-2. `TabPagerDesktopController` spans source ownership, source reloads, Qt model mutation, model reads, navigation, wheel consumption, result translation, logging, and activation effects.
-3. Source diagnostics are log-only and emitted from a const read path, so degraded source state is not part of the application state contract and repeated reads can repeat warnings.
-4. QML-facing API metadata is manually duplicated in `src/tabpagerplugin.qmltypes`, which can drift from `TabPagerBackend`.
-5. Wheel input semantics are split between QML event normalization and C++ navigation state, with unclear scoping for accumulated partial wheel deltas across desktop/context changes.
+1. `TabPagerDesktopController` spans source ownership, source reloads, Qt model mutation, model reads, navigation, wheel consumption, result translation, logging, and activation effects.
+2. Source diagnostics are log-only and emitted from a const read path, so degraded source state is not part of the application state contract and repeated reads can repeat warnings.
+3. Wheel input semantics are split between QML event normalization and C++ navigation state, with unclear scoping for accumulated partial wheel deltas across desktop/context changes.
 
 ## Single Source of Truth Violations
-
-### Finding: Desktop snapshot validity has multiple owners
-
-Priority: P1
-
-Evidence: `src/tabpagerdesktop.h` defines `TabPagerDesktop` and `TabPagerDesktopSnapshot` as plain structs with any `TabPagerDesktopId`; `src/taskmanagerdesktopmapper.cpp` validates and drops invalid IDs, drops duplicate IDs, and clears unmatched current desktops; `src/tabpagerdesktoprows.cpp` skips invalid IDs again while projecting rows; `src/tabpagerdesktopcontroller.cpp` checks model-derived IDs again before activation; `src/taskmanagerdesktopsource.cpp` checks validity again before forwarding activation.
-
-Current state: Raw TaskManager state is normalized by `taskManagerDesktopSourceMappingFromRawState()`, but the normalized state is not represented by a type with enforced invariants. Any other `TabPagerDesktopSource` can produce invalid IDs, duplicate IDs, or a current desktop that matches multiple rows. Downstream code partially repairs and partially tolerates those cases.
-
-Design concern: The domain rule appears to be “displayable snapshots have valid unique desktop IDs and zero or one current desktop.” Because this rule has no single owner, future changes can drift. For example, duplicate IDs matching `currentDesktop` would make multiple rows active in `rowDataForDesktop()`, while `currentIndexForRows()` returns only the first active row.
-
-Correct end state: Introduce a canonical normalized snapshot boundary, either by making `TabPagerDesktopSnapshot` constructible only through validation or by adding a separate `TabPagerNormalizedDesktopSnapshot`. The normalized type should guarantee valid unique desktop IDs and a `currentDesktop` that is absent/invalid or matches exactly one desktop. `TabPagerDesktopSourceState` should carry the normalized type.
-
-Suggested migration: Move invalid-ID, duplicate-ID, and unmatched-current handling into one normalizer used by source adapters. Keep TaskManager-specific diagnostics at that boundary. Change `TabPagerDesktopRows::fromSnapshot()` to assume normalized input and replace silent repair with assertions or explicit contract failure. Remove unreachable invalid-ID branches from controller/source activation once tests prove model-derived IDs are normalized.
-
-Acceptance criteria: Invalid, duplicate, and unmatched-current cases are tested at one normalization boundary. `TabPagerDesktopRows::fromSnapshot()` no longer silently filters invalid IDs from normalized input. A normalized snapshot cannot expose multiple active rows. Activation by valid model index cannot produce `InvalidDesktopId` unless an external/untrusted API bypasses the normalized state.
-
-### Finding: QML type metadata manually mirrors `TabPagerBackend`
-
-Priority: P1
-
-Evidence: `src/tabpagerbackend.h` declares QML-visible properties `model`, `count`, `currentIndex`, `labelFont`, and `navigationWrappingAround`; it declares invokables `activate`, `activateNext`, `activatePrevious`, and `activateByWheelDelta`; `src/tabpagerplugin.qmltypes` repeats the type name, export URI/version, methods, properties, and signals; `CMakeLists.txt` installs the hand-written `.qmltypes` file.
-
-Current state: `TabPagerBackend` is the runtime API source, while `src/tabpagerplugin.qmltypes` is a manually maintained tooling mirror.
-
-Design concern: The QML-facing contract has two definitions. A C++ property, invokable, signal, type version, or export can change while QML tooling still validates against stale metadata.
-
-Correct end state: Installed QML type metadata should be generated from the C++ meta-object or mechanically checked in CI. `TabPagerBackend` should remain the authoritative API declaration.
-
-Suggested migration: Use Qt/CMake QML type generation if practical. Otherwise add a build-time or CI check that regenerates/dumps type info and diffs it against the committed file.
-
-Acceptance criteria: Adding, removing, or renaming a `Q_PROPERTY`, `Q_INVOKABLE`, or signal fails CI unless installed QML metadata matches. QML lint still resolves `io.github.hnjae.tabpager/TabPagerBackend`.
 
 ### Finding: Package identity and module metadata are repeated
 
@@ -87,22 +51,6 @@ Suggested migration: Make `PagerDesktopStrip.desktopGap` required. Introduce nam
 Acceptance criteria: `desktopGap` has one production definition. Minimum extent literals are named at the owner. Tests assert behavior through the owner rather than child defaults.
 
 ## Invariant and Correctness Risks
-
-### Finding: Row diff identity precondition is public and assert-only
-
-Priority: P2
-
-Evidence: `src/tabpagerdesktoprows.h` exposes both `hasSameIdentityAs()` and `changesTo()` publicly; `src/tabpagerdesktoprows.cpp` guards `changesTo()` only with `Q_ASSERT(hasSameIdentityAs(nextRows))`; `src/tabpagerdesktopmodelstate.cpp` manually checks identity before calling `changesTo()`.
-
-Current state: The rule “only compute row role diffs when row identity is unchanged” is enforced as a call-site convention. A caller can call `changesTo()` on incompatible row sets.
-
-Design concern: In builds where assertions are disabled or non-fatal, an incompatible call can produce invalid diff semantics or out-of-range access if row counts differ.
-
-Correct end state: Identity compatibility should be encoded in the diff operation. Callers should request a transition and receive either “reset required” or “row changes,” without performing a separate precheck.
-
-Suggested migration: Make `changesTo()` private behind `TabPagerDesktopModelState::transitionTo()`, or change it to return an explicit result such as `std::optional<QList<TabPagerDesktopRowsChange>>`.
-
-Acceptance criteria: No production caller can generate row diffs without handling incompatible identity. A test covers incompatible identity at the public transition boundary. `Q_ASSERT(hasSameIdentityAs(...))` is not the only protection.
 
 ### Finding: Wheel delta accumulation is not scoped to navigation context
 
@@ -372,28 +320,27 @@ Acceptance criteria: The ownership rule for label formatting and font selection 
 
 ## Recommended Correct End-State Architecture
 
-Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces a normalized desktop snapshot plus explicit diagnostics. A desktop state store owns the current normalized snapshot and transition planning. A Qt model adapts the state store into QML model notifications. A navigation/activation planner owns pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
+Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces desktop state plus explicit diagnostics. A desktop state store owns the current desktop state and transition planning. A Qt model adapts the state store into QML model notifications. A navigation/activation planner owns pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
 
-Where domain rules should live: Valid/unique desktop IDs and matched current-desktop rules should live in the normalized snapshot factory. Default-name label behavior should live either in a documented view-model/presentation boundary or in QML presentation helpers, not half in semantic model code and half in backend UI properties. Wrapping behavior should live in navigator/controller policy, not in desktop inventory state.
+Where domain rules should live: Default-name label behavior should live either in a documented view-model/presentation boundary or in QML presentation helpers, not half in semantic model code and half in backend UI properties. Wrapping behavior should live in navigator/controller policy, not in desktop inventory state.
 
-Where state should be defined: `TabPagerNormalizedDesktopSnapshot` or equivalent should define desktop list/current-desktop invariants. `TabPagerDesktopStateStore` should own current state and transition results. Wheel delta pending state should live in a wheel-input adapter with explicit context scoping. Source diagnostics should be part of source health state or a dedicated diagnostic stream.
+Where state should be defined: `TabPagerDesktopStateStore` should own current state and transition results. Wheel delta pending state should live in a wheel-input adapter with explicit context scoping. Source diagnostics should be part of source health state or a dedicated diagnostic stream.
 
-Where validation should happen: Raw external state validation should happen once at source-adapter normalization. Downstream code should assert normalized invariants rather than silently re-normalizing. Public APIs that accept untrusted indexes or IDs should still validate those inputs.
+Where validation should happen: Public APIs that accept untrusted indexes or IDs should still validate those inputs.
 
 How external effects should be isolated: TaskManager reads and activation requests should remain behind source/provider interfaces. Activation planning should return commands without executing them. The controller should execute commands and report outcomes. QML event handling should convert UI events into semantic inputs through a small tested adapter.
 
 How errors should be represented: Source diagnostics should be structured and observable, not log-only. Activation results should distinguish invalid input, benign no-op, degraded state, request sent, and optionally confirmation/timeout. Fatal programmer errors should fail deterministically with critical diagnostics, not rely only on debug assertions.
 
-How tests should be structured: Keep pure tests for snapshot normalization, row transition planning, navigation target calculation, wheel delta mapping, activation planning, and layout metrics. Keep focused Qt/QML integration smoke tests for model notifications, QML binding load, and event wiring. Avoid repeating the same activation behavior matrix at controller and backend layers unless each test proves different wiring.
+How tests should be structured: Keep pure tests for navigation target calculation, wheel delta mapping, activation planning, and layout metrics. Keep focused Qt/QML integration smoke tests for model notifications, QML binding load, and event wiring. Avoid repeating the same activation behavior matrix at controller and backend layers unless each test proves different wiring.
 
 ## Suggested Refactoring Sequence
 
-1. Add characterization tests around current behavior for snapshot normalization, duplicate IDs, unmatched current desktops, wheel pending deltas across context changes, source diagnostics, public activation no-op outcomes, and QML role exposure.
-2. Centralize duplicated rules/state by introducing a normalized snapshot boundary and moving invalid/duplicate/unmatched-current handling there.
-3. Isolate core domain logic from external effects by extracting activation planning and wheel input mapping from `TabPagerDesktopController`/QML event handlers.
-4. Clarify ownership boundaries by separating desktop source state from navigation settings and by inserting a small state store between controller logic and the Qt list model.
-5. Improve error semantics and observability by making source diagnostics stateful/observable, removing getter-side logging, clarifying activation request versus confirmation, and replacing assertion-only fatal invariants with deterministic diagnostics.
-6. Remove or simplify premature abstractions by narrowing public QML roles, removing unused/convenience navigation wrappers, and deciding whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a test seam.
+1. Add characterization tests around current behavior for wheel pending deltas across context changes, source diagnostics, public activation no-op outcomes, and QML role exposure.
+2. Isolate core domain logic from external effects by extracting activation planning and wheel input mapping from `TabPagerDesktopController`/QML event handlers.
+3. Clarify ownership boundaries by separating desktop source state from navigation settings and by inserting a small state store between controller logic and the Qt list model.
+4. Improve error semantics and observability by making source diagnostics stateful/observable, removing getter-side logging, clarifying activation request versus confirmation, and replacing assertion-only fatal invariants with deterministic diagnostics.
+5. Remove or simplify premature abstractions by narrowing public QML roles, removing unused/convenience navigation wrappers, and deciding whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a test seam.
 
 ## Things Not To Change Yet
 
@@ -413,16 +360,16 @@ Do not optimize QML layout implementation before centralizing the contract and t
 
 ## Appendix: Subagent Reports
 
-Single Source of Truth / Duplication Agent: Reported manual duplication in `src/tabpagerplugin.qmltypes`, repeated package identity/module metadata, duplicated navigation no-op result states, and repeated QML layout constants. The qmltypes duplication was kept as P1. Package metadata was kept as P2. Navigation no-op enum duplication and layout constants were kept as P3. No findings were rejected.
+Single Source of Truth / Duplication Agent: Reported repeated package identity/module metadata, duplicated navigation no-op result states, and repeated QML layout constants. Package metadata was kept as P2. Navigation no-op enum duplication and layout constants were kept as P3. No findings were rejected.
 
-Invariant / Correctness Agent: Reported non-centralized snapshot invariants, assert-only row diff preconditions, and uncertain wheel-delta context scoping. Snapshot validity was merged with duplication, ownership, and modularity reports into the top P1 finding. Row diff precondition was kept as P2. Wheel context behavior was kept as P2 uncertain because the spec does not define intended behavior.
+Invariant / Correctness Agent: Reported uncertain wheel-delta context scoping, kept as P2 uncertain because the spec does not define intended behavior.
 
-Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, split presentation formatting, and duplicated desktop validity normalization. Controller ownership and navigation policy were kept as P2. Presentation formatting was kept as P2 but framed as a boundary decision rather than a mandatory move to QML. Desktop validity was merged into the top snapshot invariant finding.
+Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, and split presentation formatting. Controller ownership and navigation policy were kept as P2. Presentation formatting was kept as P2 but framed as a boundary decision rather than a mandatory move to QML.
 
-Logic Placement / Flow Readability Agent: Reported logging from `sourceState()`, invalid normalization across layers, and split wheel navigation policy. Getter-side logging was merged with observability findings and kept as P2. Invalid normalization was merged into snapshot invariants. Wheel flow readability was kept as P3 and linked to the stronger P2 wheel context issue.
+Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging was merged with observability findings and kept as P2. Wheel flow readability was kept as P3 and linked to the stronger P2 wheel context issue.
 
 Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout/input testability and activation planning were kept as P2. Getter-side diagnostics were merged into the source diagnostics finding.
 
 Error Handling / Observability Agent: Reported activation success before confirmation, public activation APIs swallowing no-op reasons, source diagnostics as log-only, and assertion-only fatal invariants. Public no-op observability, source diagnostics, and fatal assertions were kept as P2. Activation confirmation was downgraded from P1 to P2 because current public QML methods are void and the immediate issue is naming/observability unless confirmed activation is surfaced.
 
-Deletion / Modularity / Abstraction Agent: Reported repeated snapshot normalization, public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Snapshot normalization was merged into the top P1 finding. Public row roles and wrapping leakage were kept as P2. Parallel navigation APIs and adapter-seam clarity were kept as P3. No broad rewrite recommendation was accepted.
+Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles and wrapping leakage were kept as P2. Parallel navigation APIs and adapter-seam clarity were kept as P3. No broad rewrite recommendation was accepted.
