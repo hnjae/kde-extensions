@@ -6,3 +6,6 @@ locale = "en"
 [default.extend-identifiers]
 Q_INVOKABLE = "Q_INVOKABLE"
 invokable = "invokable"
+
+[default.extend-words]
+invokable = "invokable"

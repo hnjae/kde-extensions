@@ -143,6 +143,11 @@ if(BUILD_TESTING)
         Qt6::Qml
         Qt6::Quick
     )
+    add_tabpager_test(tabpagerqmltypes tests/tabpagerqmltypes_test.cpp)
+    target_compile_definitions(tabpagerqmltypes_test PRIVATE
+        TABPAGER_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+        TABPAGER_QML_URI="${QML_MODULE_URI}"
+    )
     add_tabpager_test(tabpagerbackend tests/tabpagerbackend_test.cpp
         tests/tabpagerbackendtesthelpers.h
     )
