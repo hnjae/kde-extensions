@@ -1504,7 +1504,7 @@ assert.deepEqual(
         },
         virtualDesktops: {
           enabled: true,
-          text: "Virtual Desktops",
+          text: "Move to Desktop",
           visible: true,
         },
       },
@@ -1751,7 +1751,7 @@ assert.deepEqual(
   ),
   {
     enabled: true,
-    text: "Virtual Desktops",
+    text: "Move to Desktop",
     visible: true,
   },
 );
@@ -1828,7 +1828,7 @@ assert.deepEqual(
       },
       virtualDesktops: {
         enabled: false,
-        text: "Virtual Desktops",
+        text: "Move to Desktop",
         visible: true,
       },
     },

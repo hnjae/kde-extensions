@@ -7,6 +7,7 @@ import QtQuick as QtQuick
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid
+import io.github.hnjae.numberedtaskmanager as NumberedTaskManager
 import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
 
 // qmllint disable incompatible-type
@@ -52,9 +53,11 @@ PlasmaExtras.Menu {
     readonly property var keepAboveBelowActionsSection: actionSections.keepAboveBelowActions
     readonly property var launcherActivityActionsSection: actionSections.launcherActivityActions
     readonly property var minimizeMaximizeActionsSection: actionSections.minimizeMaximizeActions
+    readonly property var moreActionsSection: actionSections.moreActions
     readonly property var pinActionsSection: actionSections.pinActions
     readonly property var taskActivityActionsSection: actionSections.taskActivityActions
     readonly property var virtualDesktopActionsSection: actionSections.virtualDesktopActions
+    readonly property var desktopActions: contextMenuBackend.desktopActions(root.taskRoles.launcherUrl || "", root)
     property var launcherModel: taskModel
     property var modelIndex
     property var task: ({})
@@ -142,13 +145,43 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        id: pinActionItem
         readonly property var pinAction: root.pinActionsSection.pinLauncher
 
         enabled: pinAction.enabled
+        icon: pinAction.icon || ""
         text: pinAction.text
 
         onClicked: {
             actionDispatcher.triggerAction(pinAction);
+        }
+    }
+
+    readonly property NumberedTaskManager.TaskContextMenuBackend _contextMenuBackend: NumberedTaskManager.TaskContextMenuBackend {
+        id: contextMenuBackend
+    }
+
+    readonly property QtQuick.Instantiator _desktopActionItems: QtQuick.Instantiator {
+        active: root.desktopActions.length > 0
+        model: root.desktopActions
+
+        delegate: PlasmaExtras.MenuItem {
+            id: item
+            required property var modelData
+
+            action: modelData
+
+            onModelDataChanged: {
+                item.action = modelData;
+            }
+        }
+
+        onObjectAdded: (index, object) => {
+            root.addMenuItem(object, pinActionItem);
+        }
+
+        onObjectRemoved: (index, object) => {
+            root.removeMenuItem(object);
         }
     }
 
@@ -158,6 +191,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: root.launcherActivityActionsSection.launcherActivities
 
         enabled: actionState.enabled
+        icon: actionState.icon || ""
         text: actionState.text
         visible: actionState.visible
 
@@ -221,6 +255,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: root.basicActionsSection.newInstance
 
         enabled: actionState.enabled
+        icon: actionState.icon || ""
         text: actionState.text
         visible: actionState.visible
 
@@ -230,138 +265,165 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var actionState: root.basicActionsSection.move
+        id: moreActionsItem
+        readonly property var actionState: root.moreActionsSection.moreActions
 
         enabled: actionState.enabled
+        icon: actionState.icon || ""
         text: actionState.text
         visible: actionState.visible
 
-        onClicked: {
-            actionDispatcher.triggerAction(actionState);
-        }
-    }
+        readonly property PlasmaExtras.Menu _moreActionsMenu: PlasmaExtras.Menu {
+            id: moreActionsMenu
 
-    PlasmaExtras.MenuItem {
-        readonly property var actionState: root.basicActionsSection.resize
+            placement: PlasmaExtras.Menu.RightPosedTopAlignedPopup
+            visualParent: moreActionsItem.action
 
-        enabled: actionState.enabled
-        text: actionState.text
-        visible: actionState.visible
+            PlasmaExtras.MenuItem {
+                readonly property var actionState: root.basicActionsSection.move
 
-        onClicked: {
-            actionDispatcher.triggerAction(actionState);
-        }
-    }
+                enabled: actionState.enabled
+                icon: actionState.icon || ""
+                text: actionState.text
+                visible: actionState.visible
 
-    PlasmaExtras.MenuItem {
-        readonly property var actionState: root.minimizeMaximizeActionsSection.minimize
+                onClicked: {
+                    actionDispatcher.triggerAction(actionState);
+                }
+            }
 
-        checkable: true
-        checked: actionState.checked
-        enabled: actionState.enabled
-        text: actionState.text
-        visible: actionState.visible
+            PlasmaExtras.MenuItem {
+                readonly property var actionState: root.basicActionsSection.resize
 
-        onClicked: {
-            actionDispatcher.triggerAction(actionState);
-        }
-    }
+                enabled: actionState.enabled
+                icon: actionState.icon || ""
+                text: actionState.text
+                visible: actionState.visible
 
-    PlasmaExtras.MenuItem {
-        readonly property var actionState: root.minimizeMaximizeActionsSection.maximize
+                onClicked: {
+                    actionDispatcher.triggerAction(actionState);
+                }
+            }
 
-        checkable: true
-        checked: actionState.checked
-        enabled: actionState.enabled
-        text: actionState.text
-        visible: actionState.visible
+            PlasmaExtras.MenuItem {
+                readonly property var actionState: root.minimizeMaximizeActionsSection.maximize
 
-        onClicked: {
-            actionDispatcher.triggerAction(actionState);
-        }
-    }
+                checkable: true
+                checked: actionState.checked
+                enabled: actionState.enabled
+                icon: actionState.icon || ""
+                text: actionState.text
+                visible: actionState.visible
 
-    PlasmaExtras.MenuItem {
-        readonly property var actionState: root.keepAboveBelowActionsSection.keepAbove
+                onClicked: {
+                    actionDispatcher.triggerAction(actionState);
+                }
+            }
 
-        checkable: true
-        checked: actionState.checked
-        enabled: actionState.enabled
-        text: actionState.text
-        visible: actionState.visible
+            PlasmaExtras.MenuItem {
+                readonly property var actionState: root.minimizeMaximizeActionsSection.minimize
 
-        onClicked: {
-            actionDispatcher.triggerAction(actionState);
-        }
-    }
+                checkable: true
+                checked: actionState.checked
+                enabled: actionState.enabled
+                icon: actionState.icon || ""
+                text: actionState.text
+                visible: actionState.visible
 
-    PlasmaExtras.MenuItem {
-        readonly property var actionState: root.keepAboveBelowActionsSection.keepBelow
+                onClicked: {
+                    actionDispatcher.triggerAction(actionState);
+                }
+            }
 
-        checkable: true
-        checked: actionState.checked
-        enabled: actionState.enabled
-        text: actionState.text
-        visible: actionState.visible
+            PlasmaExtras.MenuItem {
+                readonly property var actionState: root.keepAboveBelowActionsSection.keepAbove
 
-        onClicked: {
-            actionDispatcher.triggerAction(actionState);
-        }
-    }
+                checkable: true
+                checked: actionState.checked
+                enabled: actionState.enabled
+                icon: actionState.icon || ""
+                text: actionState.text
+                visible: actionState.visible
 
-    PlasmaExtras.MenuItem {
-        readonly property var actionState: root.fullscreenShadeBorderActionsSection.fullscreen
+                onClicked: {
+                    actionDispatcher.triggerAction(actionState);
+                }
+            }
 
-        checkable: true
-        checked: actionState.checked
-        enabled: actionState.enabled
-        text: actionState.text
-        visible: actionState.visible
+            PlasmaExtras.MenuItem {
+                readonly property var actionState: root.keepAboveBelowActionsSection.keepBelow
 
-        onClicked: {
-            actionDispatcher.triggerAction(actionState);
-        }
-    }
+                checkable: true
+                checked: actionState.checked
+                enabled: actionState.enabled
+                icon: actionState.icon || ""
+                text: actionState.text
+                visible: actionState.visible
 
-    PlasmaExtras.MenuItem {
-        readonly property var actionState: root.fullscreenShadeBorderActionsSection.shade
+                onClicked: {
+                    actionDispatcher.triggerAction(actionState);
+                }
+            }
 
-        checkable: true
-        checked: actionState.checked
-        enabled: actionState.enabled
-        text: actionState.text
-        visible: actionState.visible
+            PlasmaExtras.MenuItem {
+                readonly property var actionState: root.fullscreenShadeBorderActionsSection.fullscreen
 
-        onClicked: {
-            actionDispatcher.triggerAction(actionState);
-        }
-    }
+                checkable: true
+                checked: actionState.checked
+                enabled: actionState.enabled
+                icon: actionState.icon || ""
+                text: actionState.text
+                visible: actionState.visible
 
-    PlasmaExtras.MenuItem {
-        readonly property var actionState: root.fullscreenShadeBorderActionsSection.noBorder
+                onClicked: {
+                    actionDispatcher.triggerAction(actionState);
+                }
+            }
 
-        checkable: true
-        checked: actionState.checked
-        enabled: actionState.enabled
-        text: actionState.text
-        visible: actionState.visible
+            PlasmaExtras.MenuItem {
+                readonly property var actionState: root.fullscreenShadeBorderActionsSection.shade
 
-        onClicked: {
-            actionDispatcher.triggerAction(actionState);
-        }
-    }
+                checkable: true
+                checked: actionState.checked
+                enabled: actionState.enabled
+                icon: actionState.icon || ""
+                text: actionState.text
+                visible: actionState.visible
 
-    PlasmaExtras.MenuItem {
-        readonly property var actionState: root.captureActionsSection.excludeFromCapture
+                onClicked: {
+                    actionDispatcher.triggerAction(actionState);
+                }
+            }
 
-        checkable: true
-        checked: actionState.checked
-        enabled: actionState.enabled
-        text: actionState.text
-        visible: actionState.visible
+            PlasmaExtras.MenuItem {
+                readonly property var actionState: root.fullscreenShadeBorderActionsSection.noBorder
 
-        onClicked: {
-            actionDispatcher.triggerAction(actionState);
+                checkable: true
+                checked: actionState.checked
+                enabled: actionState.enabled
+                icon: actionState.icon || ""
+                text: actionState.text
+                visible: actionState.visible
+
+                onClicked: {
+                    actionDispatcher.triggerAction(actionState);
+                }
+            }
+
+            PlasmaExtras.MenuItem {
+                readonly property var actionState: root.captureActionsSection.excludeFromCapture
+
+                checkable: true
+                checked: actionState.checked
+                enabled: actionState.enabled
+                icon: actionState.icon || ""
+                text: actionState.text
+                visible: actionState.visible
+
+                onClicked: {
+                    actionDispatcher.triggerAction(actionState);
+                }
+            }
         }
     }
 
@@ -370,6 +432,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: root.virtualDesktopActionsSection.virtualDesktops
 
         enabled: actionState.enabled
+        icon: actionState.icon || ""
         text: actionState.text
         visible: actionState.visible
 
@@ -422,6 +485,7 @@ PlasmaExtras.Menu {
                 readonly property var actionState: root.virtualDesktopActionsSection.newVirtualDesktop
 
                 enabled: actionState.enabled
+                icon: actionState.icon || ""
                 text: actionState.text
 
                 onClicked: {
@@ -436,6 +500,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: root.taskActivityActionsSection.taskActivities
 
         enabled: actionState.enabled
+        icon: actionState.icon || ""
         text: actionState.text
         visible: actionState.visible
 
@@ -487,6 +552,36 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        separator: true
+    }
+
+    PlasmaExtras.MenuItem {
+        readonly property var configureAction: Plasmoid.internalAction("configure")
+
+        enabled: configureAction && configureAction.enabled
+        icon: configureAction ? configureAction.icon : ""
+        text: configureAction ? configureAction.text : ""
+        visible: configureAction && configureAction.visible
+
+        onClicked: {
+            configureAction.trigger();
+        }
+    }
+
+    PlasmaExtras.MenuItem {
+        readonly property var editModeAction: Plasmoid.containment ? Plasmoid.containment.internalAction("configure") : null
+
+        enabled: editModeAction && editModeAction.enabled
+        icon: editModeAction ? editModeAction.icon : ""
+        text: editModeAction ? editModeAction.text : ""
+        visible: editModeAction && editModeAction.visible
+
+        onClicked: {
+            editModeAction.trigger();
+        }
+    }
+
+    PlasmaExtras.MenuItem {
         readonly property var sectionState: root.closeActionsSection.separator
 
         separator: true
@@ -498,6 +593,7 @@ PlasmaExtras.Menu {
         readonly property var actionState: root.closeActionsSection.close
 
         enabled: actionState.enabled
+        icon: actionState.icon || ""
         text: actionState.text
         visible: actionState.visible
 

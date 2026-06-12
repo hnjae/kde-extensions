@@ -1,0 +1,3 @@
+module io.github.hnjae.numberedtaskmanager
+plugin numberedtaskmanagerplugin
+typeinfo numberedtaskmanagerplugin.qmltypes

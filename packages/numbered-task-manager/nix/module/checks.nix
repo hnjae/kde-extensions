@@ -11,8 +11,9 @@
       }:
       let
         package = config.packages.numbered-task-manager;
-        packageRoot = "packages/numbered-task-manager";
+        packageRoot = ".";
         qmlImportPaths = [
+          "${package}/lib/qt-6/qml"
           "${pkgs.kdePackages.qtdeclarative}/lib/qt-6/qml"
           "${pkgs.kdePackages.kconfig}/lib/qt-6/qml"
           "${pkgs.kdePackages.kirigami.unwrapped}/lib/qt-6/qml"

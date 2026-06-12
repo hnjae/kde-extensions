@@ -1,0 +1,15 @@
+import QtQuick.tooling 1.2
+
+Module {
+    Component {
+        name: "TaskContextMenuBackend"
+        prototype: "QObject"
+        exports: ["io.github.hnjae.numberedtaskmanager/TaskContextMenuBackend 1.0"]
+        Method {
+            name: "desktopActions"
+            type: "QVariantList"
+            Parameter { name: "launcherUrl"; type: "QUrl" }
+            Parameter { name: "parent"; type: "QObject"; isPointer: true }
+        }
+    }
+}

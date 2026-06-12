@@ -23,8 +23,8 @@ path = [
   "**/statix.toml",
   "**/tsconfig.json",
   "cog.toml",
-  "packages/*/src/*.qmltypes",
-  "packages/*/src/qmldir",
+  "packages/*/src/**/*.qmltypes",
+  "packages/*/src/**/qmldir",
 ]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 KIM Hyunjae"

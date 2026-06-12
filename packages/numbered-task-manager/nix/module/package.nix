@@ -7,46 +7,49 @@
       packages.numbered-task-manager =
         let
           metadataJson = builtins.fromJSON (builtins.readFile ../../package/metadata.json);
+          clangToolchain = pkgs.llvmPackages.clang;
           pluginId = metadataJson.KPlugin.Id;
           version = metadataJson.KPlugin.Version;
 
-          packageRoot = "packages/numbered-task-manager";
-          sourceRoot = ../../../..;
+          sourceRoot = ../../.;
           source = lib.fileset.toSource {
             root = sourceRoot;
             fileset = lib.fileset.unions [
-              ../../../../biome.json
+              ../../CMakeLists.txt
               ../../LICENSES
-              ../../README.md
               ../../metainfo
               ../../package
+              ../../src
               ../../tests
             ];
           };
         in
-        pkgs.stdenvNoCC.mkDerivation {
+        pkgs.kdePackages.mkKdeDerivation {
           pname = "numbered-task-manager";
-          inherit version;
+          inherit version source;
           src = source;
 
-          dontConfigure = true;
-          dontBuild = true;
+          extraNativeBuildInputs = [
+            clangToolchain
+            pkgs.kdePackages.extra-cmake-modules
+          ];
 
-          installPhase = ''
-            runHook preInstall
+          extraBuildInputs = [
+            pkgs.kdePackages.kconfig
+            pkgs.kdePackages.kio
+            pkgs.kdePackages.knotifications
+            pkgs.kdePackages.kservice
+            pkgs.kdePackages.qtbase
+            pkgs.kdePackages.qtdeclarative
+          ];
 
-            install -d "$out/share/plasma/plasmoids/${pluginId}"
-            cp -R --no-preserve=mode ${packageRoot}/package/. "$out/share/plasma/plasmoids/${pluginId}/"
-
-            install -D -m 0644 \
-              ${packageRoot}/metainfo/${pluginId}.metainfo.xml \
-              "$out/share/metainfo/${pluginId}.metainfo.xml"
-
-            install -d "$out/share/licenses/numbered-task-manager"
-            install -m 0644 ${packageRoot}/LICENSES/*.txt "$out/share/licenses/numbered-task-manager/"
-
-            runHook postInstall
-          '';
+          extraCmakeFlags = [
+            "-DCMAKE_CXX_COMPILER=${clangToolchain}/bin/clang++"
+            "-DECM_DIR=${pkgs.kdePackages.extra-cmake-modules}/share/ECM/cmake"
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+            "-DBUILD_TESTING=OFF"
+            "-DKDE_INSTALL_QMLDIR=lib/qt-6/qml"
+          ];
 
           passthru = {
             inherit

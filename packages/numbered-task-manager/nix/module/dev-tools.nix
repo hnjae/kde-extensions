@@ -12,6 +12,7 @@
       let
         package = config.packages.numbered-task-manager;
         qmlImportPaths = [
+          "${package}/lib/qt-6/qml"
           "${pkgs.kdePackages.qtdeclarative}/lib/qt-6/qml"
           "${pkgs.kdePackages.kconfig}/lib/qt-6/qml"
           "${pkgs.kdePackages.kirigami.unwrapped}/lib/qt-6/qml"

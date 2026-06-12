@@ -45,6 +45,16 @@ export function virtualDesktopEntriesSnapshot(desktopIds, desktopNames) {
   return entries;
 }
 
+function actionWithIcon(action, icon) {
+  const actionState = Object.assign({}, action || {});
+  Object.defineProperty(actionState, "icon", {
+    configurable: true,
+    enumerable: false,
+    value: icon || "",
+  });
+  return actionState;
+}
+
 export function activityEntriesSnapshot(
   activityIds,
   activityName,
@@ -93,9 +103,12 @@ export function pinLauncherAction(pinState) {
   const state = pinState || {};
   const action = pinActionState(state);
 
-  return Object.assign({}, action, {
-    command: pinLauncherCommand(state),
-  });
+  return actionWithIcon(
+    Object.assign({}, action, {
+      command: pinLauncherCommand(state),
+    }),
+    action.action === "unpin" ? "window-unpin" : "window-pin",
+  );
 }
 
 export function pinActionsSection(sectionState) {
@@ -136,10 +149,13 @@ export function newInstanceCommand() {
 }
 
 export function newInstanceAction(taskState) {
-  return Object.assign({}, newInstanceActionState(taskState), {
-    command: newInstanceCommand(),
-    text: "New Instance",
-  });
+  return actionWithIcon(
+    Object.assign({}, newInstanceActionState(taskState), {
+      command: newInstanceCommand(),
+      text: "New Instance",
+    }),
+    "window-new",
+  );
 }
 
 export function moveCommand() {
@@ -151,17 +167,23 @@ export function resizeCommand() {
 }
 
 export function basicMoveAction(taskState) {
-  return Object.assign({}, windowCapabilityActionState(taskState), {
-    command: moveCommand(),
-    text: "Move",
-  });
+  return actionWithIcon(
+    Object.assign({}, windowCapabilityActionState(taskState), {
+      command: moveCommand(),
+      text: "Move",
+    }),
+    "transform-move",
+  );
 }
 
 export function basicResizeAction(taskState) {
-  return Object.assign({}, windowCapabilityActionState(taskState), {
-    command: resizeCommand(),
-    text: "Resize",
-  });
+  return actionWithIcon(
+    Object.assign({}, windowCapabilityActionState(taskState), {
+      command: resizeCommand(),
+      text: "Resize",
+    }),
+    "transform-scale",
+  );
 }
 
 export function basicActionsSection(sectionState) {
@@ -203,17 +225,23 @@ export function maximizeCommand() {
 }
 
 export function minimizeAction(taskState) {
-  return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
-    command: minimizeCommand(),
-    text: "Minimize",
-  });
+  return actionWithIcon(
+    Object.assign({}, checkableWindowCapabilityActionState(taskState), {
+      command: minimizeCommand(),
+      text: "Minimize",
+    }),
+    "window-minimize",
+  );
 }
 
 export function maximizeAction(taskState) {
-  return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
-    command: maximizeCommand(),
-    text: "Maximize",
-  });
+  return actionWithIcon(
+    Object.assign({}, checkableWindowCapabilityActionState(taskState), {
+      command: maximizeCommand(),
+      text: "Maximize",
+    }),
+    "window-maximize",
+  );
 }
 
 export function minimizeMaximizeActionsSection(sectionState) {
@@ -244,17 +272,23 @@ export function keepBelowCommand() {
 }
 
 export function keepAboveAction(taskState) {
-  return Object.assign({}, checkableWindowActionState(taskState), {
-    command: keepAboveCommand(),
-    text: "Keep Above Others",
-  });
+  return actionWithIcon(
+    Object.assign({}, checkableWindowActionState(taskState), {
+      command: keepAboveCommand(),
+      text: "Keep Above Others",
+    }),
+    "window-keep-above",
+  );
 }
 
 export function keepBelowAction(taskState) {
-  return Object.assign({}, checkableWindowActionState(taskState), {
-    command: keepBelowCommand(),
-    text: "Keep Below Others",
-  });
+  return actionWithIcon(
+    Object.assign({}, checkableWindowActionState(taskState), {
+      command: keepBelowCommand(),
+      text: "Keep Below Others",
+    }),
+    "window-keep-below",
+  );
 }
 
 export function keepAboveBelowActionsSection(sectionState) {
@@ -287,24 +321,33 @@ export function noBorderCommand() {
 }
 
 export function fullscreenAction(taskState) {
-  return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
-    command: fullscreenCommand(),
-    text: "Fullscreen",
-  });
+  return actionWithIcon(
+    Object.assign({}, checkableWindowCapabilityActionState(taskState), {
+      command: fullscreenCommand(),
+      text: "Fullscreen",
+    }),
+    "view-fullscreen",
+  );
 }
 
 export function shadeAction(taskState) {
-  return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
-    command: shadeCommand(),
-    text: "Shade",
-  });
+  return actionWithIcon(
+    Object.assign({}, checkableWindowCapabilityActionState(taskState), {
+      command: shadeCommand(),
+      text: "Shade",
+    }),
+    "window-shade",
+  );
 }
 
 export function noBorderAction(taskState) {
-  return Object.assign({}, checkableWindowCapabilityActionState(taskState), {
-    command: noBorderCommand(),
-    text: "No Border",
-  });
+  return actionWithIcon(
+    Object.assign({}, checkableWindowCapabilityActionState(taskState), {
+      command: noBorderCommand(),
+      text: "No Border",
+    }),
+    "edit-none-border",
+  );
 }
 
 export function fullscreenShadeBorderActionsSection(sectionState) {
@@ -341,10 +384,13 @@ export function closeCommand() {
 }
 
 export function excludeFromCaptureAction(taskState) {
-  return Object.assign({}, checkableWindowActionState(taskState), {
-    command: excludeFromCaptureCommand(),
-    text: "Hide from Screencasts",
-  });
+  return actionWithIcon(
+    Object.assign({}, checkableWindowActionState(taskState), {
+      command: excludeFromCaptureCommand(),
+      text: "Hide from Screencasts",
+    }),
+    "view-private",
+  );
 }
 
 export function captureActionsSection(sectionState) {
@@ -360,10 +406,13 @@ export function captureActionsSection(sectionState) {
 }
 
 export function closeAction(taskState) {
-  return Object.assign({}, closeActionState(taskState), {
-    command: closeCommand(),
-    text: "Close",
-  });
+  return actionWithIcon(
+    Object.assign({}, closeActionState(taskState), {
+      command: closeCommand(),
+      text: "Close",
+    }),
+    "window-close",
+  );
 }
 
 export function closeActionSection(closeActionState) {
@@ -440,9 +489,12 @@ export function virtualDesktopsActionState(taskState) {
 }
 
 export function virtualDesktopsAction(taskState) {
-  return Object.assign({}, virtualDesktopsActionState(taskState), {
-    text: "Virtual Desktops",
-  });
+  return actionWithIcon(
+    Object.assign({}, virtualDesktopsActionState(taskState), {
+      text: "Move to Desktop",
+    }),
+    "virtual-desktops",
+  );
 }
 
 export function newVirtualDesktopActionState(taskState) {
@@ -454,10 +506,13 @@ export function newVirtualDesktopActionState(taskState) {
 }
 
 export function newVirtualDesktopAction(taskState) {
-  return Object.assign({}, newVirtualDesktopActionState(taskState), {
-    command: newVirtualDesktopCommand(),
-    text: "New Desktop",
-  });
+  return actionWithIcon(
+    Object.assign({}, newVirtualDesktopActionState(taskState), {
+      command: newVirtualDesktopCommand(),
+      text: "New Desktop",
+    }),
+    "list-add",
+  );
 }
 
 export function taskActivitiesActionState(taskState) {
@@ -471,9 +526,12 @@ export function taskActivitiesActionState(taskState) {
 }
 
 export function taskActivitiesAction(taskState) {
-  return Object.assign({}, taskActivitiesActionState(taskState), {
-    text: "Activities",
-  });
+  return actionWithIcon(
+    Object.assign({}, taskActivitiesActionState(taskState), {
+      text: "Activities",
+    }),
+    "activities",
+  );
 }
 
 export function closeActionState(taskState) {
@@ -511,13 +569,33 @@ export function launcherActivitiesAction(
   activityEntryCount,
   hasTaskModel,
 ) {
-  return Object.assign(
-    {},
-    launcherActivitiesActionState(pinState, activityEntryCount, hasTaskModel),
-    {
-      text: "Launcher Activities",
-    },
+  return actionWithIcon(
+    Object.assign(
+      {},
+      launcherActivitiesActionState(pinState, activityEntryCount, hasTaskModel),
+      {
+        text: "Launcher Activities",
+      },
+    ),
+    "window-pin",
   );
+}
+
+export function moreActionsSection(sectionState) {
+  const state = sectionState || {};
+  const actions = Array.from(state.actions || []);
+  const visible = actions.some((action) => Boolean(action?.visible));
+
+  return {
+    moreActions: actionWithIcon(
+      {
+        enabled: visible,
+        text: "More",
+        visible,
+      },
+      "view-more-symbolic",
+    ),
+  };
 }
 
 export function launcherActivityListSnapshot(launcherActivities) {
@@ -888,53 +966,58 @@ export function contextMenuActionSections(menuState) {
     pinState: state.pinState,
   });
 
-  return {
-    basicActions: basicActionsSection({
-      canLaunchNewInstance: basicRoles.canLaunchNewInstance,
-      hasTask: state.hasTask,
-      hasWindowTask: state.hasWindowTask,
-      isLauncher: basicRoles.isLauncher,
-      isMovable: basicRoles.isMovable,
-      isResizable: basicRoles.isResizable,
-      isWindow: state.isWindow,
-      launcherActivitiesVisible:
-        launcherActivityActions.launcherActivities.visible,
-    }),
-    captureActions: captureActionsSection({
-      hasWindowTask: state.hasWindowTask,
-      isExcludedFromCapture: captureCloseRoles.isExcludedFromCapture,
-      isWindow: state.isWindow,
-    }),
+  const basicActions = basicActionsSection({
+    canLaunchNewInstance: basicRoles.canLaunchNewInstance,
+    hasTask: state.hasTask,
+    hasWindowTask: state.hasWindowTask,
+    isLauncher: basicRoles.isLauncher,
+    isMovable: basicRoles.isMovable,
+    isResizable: basicRoles.isResizable,
+    isWindow: state.isWindow,
+    launcherActivitiesVisible:
+      launcherActivityActions.launcherActivities.visible,
+  });
+  const captureActions = captureActionsSection({
+    hasWindowTask: state.hasWindowTask,
+    isExcludedFromCapture: captureCloseRoles.isExcludedFromCapture,
+    isWindow: state.isWindow,
+  });
+  const fullscreenShadeBorderActions = fullscreenShadeBorderActionsSection({
+    canSetNoBorder: fullscreenShadeBorderRoles.canSetNoBorder,
+    fullScreenable: fullscreenShadeBorderRoles.fullScreenable,
+    hasNoBorder: fullscreenShadeBorderRoles.hasNoBorder,
+    hasWindowTask: state.hasWindowTask,
+    isFullScreen: fullscreenShadeBorderRoles.isFullScreen,
+    isShadeable: fullscreenShadeBorderRoles.isShadeable,
+    isShaded: fullscreenShadeBorderRoles.isShaded,
+    isWindow: state.isWindow,
+  });
+  const keepAboveBelowActions = keepAboveBelowActionsSection({
+    hasWindowTask: state.hasWindowTask,
+    isKeepAbove: keepAboveBelowRoles.isKeepAbove,
+    isKeepBelow: keepAboveBelowRoles.isKeepBelow,
+    isWindow: state.isWindow,
+  });
+  const minimizeMaximizeActions = minimizeMaximizeActionsSection({
+    hasWindowTask: state.hasWindowTask,
+    isMaximizable: minimizeMaximizeRoles.isMaximizable,
+    isMaximized: minimizeMaximizeRoles.isMaximized,
+    isMinimizable: minimizeMaximizeRoles.isMinimizable,
+    isMinimized: minimizeMaximizeRoles.isMinimized,
+    isWindow: state.isWindow,
+  });
+  const sections = {
+    basicActions,
+    captureActions,
     closeActions: closeActionsSection({
       closable: captureCloseRoles.closable,
       hasTask: state.hasTask,
       isWindow: state.isWindow,
     }),
-    fullscreenShadeBorderActions: fullscreenShadeBorderActionsSection({
-      canSetNoBorder: fullscreenShadeBorderRoles.canSetNoBorder,
-      fullScreenable: fullscreenShadeBorderRoles.fullScreenable,
-      hasNoBorder: fullscreenShadeBorderRoles.hasNoBorder,
-      hasWindowTask: state.hasWindowTask,
-      isFullScreen: fullscreenShadeBorderRoles.isFullScreen,
-      isShadeable: fullscreenShadeBorderRoles.isShadeable,
-      isShaded: fullscreenShadeBorderRoles.isShaded,
-      isWindow: state.isWindow,
-    }),
-    keepAboveBelowActions: keepAboveBelowActionsSection({
-      hasWindowTask: state.hasWindowTask,
-      isKeepAbove: keepAboveBelowRoles.isKeepAbove,
-      isKeepBelow: keepAboveBelowRoles.isKeepBelow,
-      isWindow: state.isWindow,
-    }),
+    fullscreenShadeBorderActions,
+    keepAboveBelowActions,
     launcherActivityActions,
-    minimizeMaximizeActions: minimizeMaximizeActionsSection({
-      hasWindowTask: state.hasWindowTask,
-      isMaximizable: minimizeMaximizeRoles.isMaximizable,
-      isMaximized: minimizeMaximizeRoles.isMaximized,
-      isMinimizable: minimizeMaximizeRoles.isMinimizable,
-      isMinimized: minimizeMaximizeRoles.isMinimized,
-      isWindow: state.isWindow,
-    }),
+    minimizeMaximizeActions,
     pinActions: pinActionsSection(state.pinState),
     taskActivityActions: taskActivityActionsSection({
       activities: taskRoles.activities,
@@ -950,6 +1033,25 @@ export function contextMenuActionSections(menuState) {
       virtualDesktops: taskRoles.virtualDesktops,
     }),
   };
+  Object.defineProperty(sections, "moreActions", {
+    configurable: true,
+    enumerable: false,
+    value: moreActionsSection({
+      actions: [
+        basicActions.move,
+        basicActions.resize,
+        minimizeMaximizeActions.maximize,
+        minimizeMaximizeActions.minimize,
+        keepAboveBelowActions.keepAbove,
+        keepAboveBelowActions.keepBelow,
+        fullscreenShadeBorderActions.fullscreen,
+        fullscreenShadeBorderActions.shade,
+        fullscreenShadeBorderActions.noBorder,
+        captureActions.excludeFromCapture,
+      ],
+    }),
+  });
+  return sections;
 }
 
 export function roleData(roleSource, role, fallback) {
