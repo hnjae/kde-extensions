@@ -110,6 +110,7 @@ in `SPEC.md`.
   only at the visual delegate boundary. Rejected drag moves should be converted
   to action results only at the effect/diagnostic boundary, logging stale or
   invalid state while keeping expected policy rejections quiet.
+- Keep pinned-launcher move reads behind a narrow task-move port. `TaskMoveAdapter.qml` may consume launcher-list and launcher-position state through that port while keeping move policy in `TaskModelLogic.mjs` and pinned-launcher reordering in `LauncherListLogic.mjs`, but it should not receive the full `TasksModel` only to reorder pinned launchers.
 - Keep task drag/drop event policy in a small interaction helper. `TaskItem.qml`
   may translate Qt drag/drop events, but MIME payload creation, source-index
   parsing, self-drop rejection, missing-callback rejection, and callback
