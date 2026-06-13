@@ -121,9 +121,13 @@ const taskContextMenuLogicSource = readFileSync(
   "utf8",
 );
 
-assert.match(
+assert.doesNotMatch(
   taskContextMenuLogicSource,
   /import \* as VirtualDesktopLogic from "\.\/VirtualDesktopLogic\.mjs"/,
+);
+assert.match(
+  taskContextMenuLogicSource,
+  /import \* as VirtualDesktopActionLogic from "\.\/TaskContextMenuVirtualDesktopLogic\.mjs"/,
 );
 assert.doesNotMatch(taskContextMenuLogicSource, /function virtualDesktopId\b/);
 assert.doesNotMatch(
