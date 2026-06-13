@@ -21,6 +21,7 @@ const logic = await loadQmlJsModule(
     "dragMoveRejectionResult",
     "launcherMutationRequest",
     "launcherMutationResult",
+    "launcherMutationPersistenceResult",
     "shortcutActivationRequest",
     "shouldLogActionResult",
     "taskActivationRequest",
@@ -577,6 +578,86 @@ assert.deepEqual(plain(acceptedLauncherMutation), {
   launcherUrl: "app.desktop",
   ok: true,
 });
+
+const launcherPersistenceRequest = logic.launcherMutationRequest(
+  "pinLauncher",
+  "app.desktop",
+);
+assert.deepEqual(
+  plain(
+    logic.launcherMutationPersistenceResult(launcherPersistenceRequest, {
+      code: "write-mismatch",
+      configLaunchers: ["old.desktop"],
+      failedTargets: ["config"],
+      launchers: ["app.desktop"],
+      modelLaunchers: ["app.desktop"],
+      ok: false,
+    }),
+  ),
+  {
+    action: "pinLauncher",
+    code: "write-mismatch",
+    context: {
+      configLaunchers: ["old.desktop"],
+      failedTargets: ["config"],
+      launchers: ["app.desktop"],
+      launcherUrl: "app.desktop",
+      modelLaunchers: ["app.desktop"],
+      syncCode: "write-mismatch",
+    },
+    diagnostic: true,
+    launcherUrl: "app.desktop",
+    ok: false,
+  },
+);
+
+const missingLauncherSync = logic.launcherMutationPersistenceResult(
+  launcherPersistenceRequest,
+  {
+    code: "missing-launcher-sync",
+    failedTargets: ["sync"],
+    launchers: ["app.desktop"],
+    ok: false,
+  },
+);
+assert.equal(missingLauncherSync.ok, false);
+assert.equal(missingLauncherSync.code, "missing-launcher-sync");
+assert.equal(missingLauncherSync.context.launcherUrl, "app.desktop");
+assert.deepEqual(missingLauncherSync.context.failedTargets, ["sync"]);
+
+const thrownLauncherPersistence = logic.launcherMutationPersistenceResult(
+  launcherPersistenceRequest,
+  {
+    code: "launcher-persistence-threw",
+    error: new Error("persist failed"),
+    failedTargets: ["sync"],
+    launchers: ["app.desktop"],
+    ok: false,
+  },
+);
+assert.equal(thrownLauncherPersistence.ok, false);
+assert.equal(thrownLauncherPersistence.code, "launcher-persistence-threw");
+assert.equal(thrownLauncherPersistence.context.error, "persist failed");
+assert.equal(logic.shouldLogActionResult(thrownLauncherPersistence), true);
+
+assert.deepEqual(
+  plain(
+    logic.launcherMutationPersistenceResult(launcherPersistenceRequest, {
+      code: "converged",
+      configLaunchers: ["app.desktop"],
+      failedTargets: [],
+      launchers: ["app.desktop"],
+      ok: true,
+    }),
+  ),
+  {
+    code: "converged",
+    configLaunchers: ["app.desktop"],
+    failedTargets: [],
+    launchers: ["app.desktop"],
+    ok: true,
+  },
+);
 
 const rejectedLauncherMutation = logic.launcherMutationResult(
   logic.launcherMutationRequest("unpinLauncher", "app.desktop"),

@@ -44,7 +44,39 @@ QtQuick.QtObject {
             return false;
         }
 
-        launcherSync.persistLaunchers(taskModel.launcherList);
+        const launcherList = taskModel && taskModel.launcherList ? taskModel.launcherList : [];
+        if (!launcherSync || typeof launcherSync.persistLaunchers !== "function") {
+            const missingSyncResult = TaskActionLogic.launcherMutationPersistenceResult(result, {
+                code: "missing-launcher-sync",
+                failedTargets: ["sync"],
+                launchers: launcherList,
+                ok: false
+            });
+            actionResult(missingSyncResult);
+            return false;
+        }
+
+        let persistResult;
+        try {
+            persistResult = launcherSync.persistLaunchers(launcherList);
+        } catch (error) {
+            const failedResult = TaskActionLogic.launcherMutationPersistenceResult(result, {
+                code: "launcher-persistence-threw",
+                error: error,
+                failedTargets: ["sync"],
+                launchers: launcherList,
+                ok: false
+            });
+            actionResult(failedResult);
+            return false;
+        }
+
+        const persistenceResult = TaskActionLogic.launcherMutationPersistenceResult(result, persistResult);
+        if (!persistenceResult.ok) {
+            actionResult(persistenceResult);
+            return false;
+        }
+
         return true;
     }
 

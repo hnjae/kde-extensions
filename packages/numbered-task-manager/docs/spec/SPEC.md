@@ -58,6 +58,7 @@ item order with `Meta+0`.
 - A new widget starts with no pinned applications.
 - Users can pin and unpin applications from the task context menu.
 - The Pin/Unpin task context menu action reflects whether the task's launcher URL is pinned in this widget for the current activity, not whether KDE can associate the task with any launcher.
+- Pin and unpin only count as successful after launcher-list persistence succeeds; if persistence fails, the action reports a failure instead of silently succeeding.
 - Launcher activity menu changes only affect where a pinned launcher appears.
   They do not unpin or delete the launcher.
 - Pinned applications form a continuous pinned area at the start of the normal

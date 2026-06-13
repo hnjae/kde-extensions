@@ -52,6 +52,7 @@ assert.match(
 );
 assert.match(sourceQml, /TaskActionLogic\.launcherMutationRequest/);
 assert.match(sourceQml, /TaskActionLogic\.launcherMutationResult/);
+assert.match(sourceQml, /TaskActionLogic\.launcherMutationPersistenceResult/);
 assert.match(sourceQml, /taskModel\.requestAddLauncher\(url\)/);
 assert.match(sourceQml, /taskModel\.requestRemoveLauncher\(url\)/);
 assert.match(
@@ -64,7 +65,19 @@ assert.match(
 );
 assert.match(
   sourceQml,
-  /launcherSync\.persistLaunchers\(taskModel\.launcherList\)/,
+  /const launcherList = taskModel && taskModel\.launcherList \? taskModel\.launcherList : \[\];/,
 );
+assert.match(
+  sourceQml,
+  /if \(!launcherSync \|\| typeof launcherSync\.persistLaunchers !== "function"\)/,
+);
+assert.match(sourceQml, /missing-launcher-sync/);
+assert.match(sourceQml, /launcher-persistence-threw/);
+assert.match(sourceQml, /launcherSync\.persistLaunchers\(launcherList\)/);
+assert.match(
+  sourceQml,
+  /const persistenceResult = TaskActionLogic\.launcherMutationPersistenceResult\(result, persistResult\);/,
+);
+assert.match(sourceQml, /if \(!persistenceResult\.ok\)/);
 assert.match(sourceQml, /launcherSync\.applyLauncherList\(result\.launchers\)/);
 assert.match(sourceQml, /actionResult\(result\)/);

@@ -639,6 +639,57 @@ export function launcherMutationResult(requestResult, accepted, error) {
   );
 }
 
+export function launcherMutationPersistenceResult(
+  requestResult,
+  persistResult,
+) {
+  const request = requestResult || {};
+  if (!request.ok) {
+    return request;
+  }
+
+  const persistence = persistResult || {};
+  if (persistence.ok) {
+    return persistence;
+  }
+
+  const context = Object.assign({}, request.context || {});
+  if (request.launcherUrl) {
+    context.launcherUrl = request.launcherUrl;
+  }
+  if (persistence.code) {
+    context.syncCode = String(persistence.code);
+  }
+  if (persistence.failedTargets) {
+    context.failedTargets = normalizedStringList(persistence.failedTargets);
+  }
+  if (persistence.launchers) {
+    context.launchers = normalizedStringList(persistence.launchers);
+  }
+  if (persistence.configLaunchers) {
+    context.configLaunchers = normalizedStringList(persistence.configLaunchers);
+  }
+  if (persistence.modelLaunchers) {
+    context.modelLaunchers = normalizedStringList(persistence.modelLaunchers);
+  }
+  if (persistence.error !== undefined && persistence.error !== null) {
+    context.error = actionErrorMessage(persistence.error);
+  }
+
+  return Object.assign(
+    actionResult(
+      request.action || "launcherMutation",
+      persistence.code || "launcher-persistence-failed",
+      false,
+      true,
+      context,
+    ),
+    {
+      launcherUrl: context.launcherUrl || "",
+    },
+  );
+}
+
 export function dragMoveRejectionDiagnostic(reason) {
   const expectedReasons = [
     "same-index",

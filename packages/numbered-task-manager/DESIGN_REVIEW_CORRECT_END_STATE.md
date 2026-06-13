@@ -7,7 +7,7 @@
 
 The codebase has a strong existing direction: external behavior is specified in `docs/spec/SPEC.md`, architectural intent is documented in `docs/architecture/ARCHITECTURE.md`, and most domain decisions already have pure `.mjs` helpers with focused tests. The most important remaining design risks are not a lack of architecture, but several places where the current implementation has outgrown its boundaries.
 
-The highest-impact risks are around action/effect boundaries. Launcher pin/unpin can report success after the Plasma model accepts a request even when configuration persistence fails. Context-menu action descriptors can remain executable even when their rendered menu items are disabled or hidden. Desktop actions and footer actions bypass the structured action-result path used by the rest of the task actions.
+The highest-impact risks are around action/effect boundaries. Context-menu action descriptors can remain executable even when their rendered menu items are disabled or hidden. Model-index shape is diagnosed as malformed but still treated as actionable. Desktop actions and footer actions bypass the structured action-result path used by the rest of the task actions.
 
 The second major risk is weakly centralized invariants. Model-index shape is diagnosed as malformed but still treated as actionable, visible-item descriptors rely on matching string fields that are not validated, virtual desktop identity is implemented twice, and source/model kind strings are repeated across activation, diagnostics, and composition code.
 
@@ -17,11 +17,11 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 ## Top Design Risks
 
-1. **Launcher mutation durability is not represented as one outcome.** `LauncherCommandAdapter.qml` ignores failed `LauncherSyncAdapter.persistLaunchers(...)` results, so pin/unpin can return success even when persistence reports `ok: false`.
-2. **Context-menu commandability is not centrally protected.** `TaskContextMenuLogic.mjs` attaches commands to disabled or invisible actions, and `TaskContextMenuActionDispatcher.qml` dispatches by route without checking action availability.
-3. **Core descriptor invariants are implicit.** `TaskEntryLogic.hasValidModelIndex({})` returns true while diagnostics report `unknown-model-index-shape`, and activation routing trusts `sourceModel` even when it could disagree with visible-item `kind`.
-4. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
-5. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, launcher sync orchestration is mostly QML imperative code, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
+1. **Context-menu commandability is not centrally protected.** `TaskContextMenuLogic.mjs` attaches commands to disabled or invisible actions, and `TaskContextMenuActionDispatcher.qml` dispatches by route without checking action availability.
+2. **Core descriptor invariants are implicit.** `TaskEntryLogic.hasValidModelIndex({})` returns true while diagnostics report `unknown-model-index-shape`, and activation routing trusts `sourceModel` even when it could disagree with visible-item `kind`.
+3. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
+4. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, launcher sync orchestration is mostly QML imperative code, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
+5. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance flows into activation, context menu, launcher commands, launcher sync, task movement, launcher activity, and task command adapters.
 
 ## Single Source of Truth Violations
 
@@ -111,15 +111,15 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `package/contents/ui/LauncherCommandAdapter.qml` calls `taskModel.requestAddLauncher(...)` and `taskModel.requestRemoveLauncher(...)` in `pinLauncher(...)` and `unpinLauncher(...)`; `requestLauncherMutation(...)` calls `launcherSync.persistLaunchers(taskModel.launcherList)` and returns `true` without inspecting the returned sync result; `LauncherSyncAdapter.qml` returns structured convergence results from `persistLaunchers(...)`; `LauncherListLogic.mjs` can produce `ok: false` with `code: "write-mismatch"` or `code: "write-failed"`.
+**Evidence:** `package/contents/ui/LauncherCommandAdapter.qml` calls `taskModel.requestAddLauncher(...)` and `taskModel.requestRemoveLauncher(...)` in `pinLauncher(...)` and `unpinLauncher(...)`; `requestLauncherMutation(...)` now captures `launcherSync.persistLaunchers(taskModel.launcherList)` and routes `ok: false` sync results through `TaskActionLogic.launcherMutationPersistenceResult(...)`; `LauncherSyncAdapter.qml` returns structured convergence results from `persistLaunchers(...)`; `LauncherListLogic.mjs` can produce `ok: false` with `code: "write-mismatch"` or `code: "write-failed"`.
 
-**Current state:** Pin/unpin has two outcome channels. Model request failures are action results, but configuration persistence failures are logged by `LauncherSyncAdapter.qml` and ignored by `LauncherCommandAdapter.qml`.
+**Current state:** Pin/unpin now has one user-visible outcome channel. Model request failures remain action results, and configuration persistence failures are converted into structured launcher-command failures by `LauncherCommandAdapter.qml`.
 
-**Design concern:** A caller can observe success for a user action that is not durable. This blurs accepted model mutation, persisted configuration, recoverable sync failure, and fatal sync failure.
+**Design concern:** The remaining launcher-sync orchestration still lives in QML, and retry/observability behavior is still encoded in string comparisons and broad warning paths.
 
 **Correct end state:** Launcher command execution should produce one structured outcome for the whole pin/unpin command. `LauncherCommandAdapter.qml` should combine model request result and persistence result, or delegate the full transaction to a launcher command/sync owner that returns a single typed result.
 
-**Suggested migration:** Capture the `persistLaunchers(...)` return value in `requestLauncherMutation(...)`. If `!persistResult.ok`, emit or return a structured diagnostic containing the launcher action, launcher URL, sync code, failed targets, and attempted launcher list. Guard missing `launcherSync` explicitly. Keep existing sync logging during migration, then remove duplicate warning paths after action results cover the failure.
+**Suggested migration:** Keep future launcher-sync cleanup on the same structured result boundary so pin/unpin does not regress to a silent-success path.
 
 **Acceptance criteria:** `pinLauncher(...)` and `unpinLauncher(...)` return or emit failure when persistence fails. Tests cover request failure, request rejection, accepted model mutation plus failed config convergence, missing `launcherSync`, and full success. No call site ignores an `ok: false` launcher persistence result.
 
@@ -523,7 +523,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 2. Centralize duplicated rules/state. Move virtual desktop identity into one owner, centralize slot numbering, centralize visible-item/source identity constants, and centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Extract launcher sync orchestration into fakeable pure functions or port-based helpers. Extract source lifecycle state machines from hidden QML delegate event ordering. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, split launcher sync from launcher list domain rules, and introduce narrow ports around raw `TasksModel`.
-5. Improve error semantics and observability. Add structured error context, connect desktop action launch failures to diagnostics, carry retry classification in launcher sync results, and route launcher persistence failures through the launcher command result boundary.
+5. Improve error semantics and observability. Add structured error context, connect desktop action launch failures to diagnostics, and carry retry classification in launcher sync results.
 6. Remove or simplify premature abstractions. After the behavior boundaries are stable, consider extracting `TaskLikeItemShell.qml` if the duplicated visual shell still creates real maintenance pressure. Keep compatibility re-exports only temporarily and remove them once QML and tests consume focused modules directly.
 
 ## Things Not To Change Yet
