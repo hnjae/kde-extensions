@@ -39,7 +39,7 @@ in `SPEC.md`.
   model index when invoking task actions. Snapshot data may describe the
   visible delegate, but menu mutations should target the current model entry.
 - Keep context-menu live role access and menu-facing role snapshots in
-  `TaskContextMenuLogic.mjs`. `TaskContextMenu.qml` should render menu sections
+  `TaskContextMenuRoleLogic.mjs`. `TaskContextMenu.qml` should render menu sections
   from helper output and must not call `taskModel.data(...)` directly. Snapshot
   fields such as `isWindow`, `isLauncher`, `launcherUrl`, `activities`, and
   `virtualDesktops` should be consumed from the role snapshot directly instead

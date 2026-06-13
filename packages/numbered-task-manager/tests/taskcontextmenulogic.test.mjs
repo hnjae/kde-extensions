@@ -3701,7 +3701,11 @@ assert.equal(
   true,
 );
 assert.equal(
-  roleStateQml.includes("TaskContextMenuLogic.contextMenuRoleSnapshots"),
+  roleStateQml.includes('import "TaskContextMenuRoleLogic.mjs"'),
+  true,
+);
+assert.equal(
+  roleStateQml.includes("TaskContextMenuRoleLogic.contextMenuRoleSnapshots"),
   true,
 );
 assert.equal(roleStateQml.includes("function roleIds()"), true);

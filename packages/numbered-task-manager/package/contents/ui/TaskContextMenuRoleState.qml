@@ -5,7 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import org.kde.taskmanager as TaskManager
-import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
+import "TaskContextMenuRoleLogic.mjs" as TaskContextMenuRoleLogic
 import "TaskEntryLogic.mjs" as TaskEntryLogic
 
 QtQuick.QtObject {
@@ -14,7 +14,7 @@ QtQuick.QtObject {
     readonly property var atm: TaskManager.AbstractTasksModel
     readonly property bool hasTask: Boolean(taskModel) && TaskEntryLogic.hasValidModelIndex(modelIndex)
     readonly property bool hasWindowTask: hasTask && taskRoles.isWindow
-    readonly property var snapshots: TaskContextMenuLogic.contextMenuRoleSnapshots(roleSource(), roleIds(), task)
+    readonly property var snapshots: TaskContextMenuRoleLogic.contextMenuRoleSnapshots(roleSource(), roleIds(), task)
     readonly property var taskRoles: snapshots.taskRoles
     property var modelIndex
     property var task: ({})
