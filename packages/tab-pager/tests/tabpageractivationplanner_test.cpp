@@ -105,13 +105,13 @@ void TabPagerActivationPlannerTest::mapsNavigationNoOpResults() {
 }
 
 void TabPagerActivationPlannerTest::mapsWheelNavigationResults() {
-  const TabPagerActivationPlan noWheelStep =
+  const TabPagerWheelActivationPlan noWheelStep =
       tabPagerActivationPlanForWheelNavigationResult(
           TabPagerWheelNavigationResult{
               .type = TabPagerWheelNavigationResultType::NoWheelStep,
               .offset = 0,
           });
-  const TabPagerActivationPlan offset =
+  const TabPagerWheelActivationPlan offset =
       tabPagerActivationPlanForWheelNavigationResult(
           TabPagerWheelNavigationResult{
               .type = TabPagerWheelNavigationResultType::Offset,
@@ -119,11 +119,9 @@ void TabPagerActivationPlannerTest::mapsWheelNavigationResults() {
           });
 
   QCOMPARE(noWheelStep.result, TabPagerActivationResult::NoWheelStep);
-  QCOMPARE(noWheelStep.targetIndex.has_value(), false);
-  QCOMPARE(noWheelStep.desktopId.has_value(), false);
+  QCOMPARE(noWheelStep.offset.has_value(), false);
   QCOMPARE(offset.result, TabPagerActivationResult::ActivationRequested);
-  QCOMPARE(offset.targetIndex, -1);
-  QCOMPARE(offset.desktopId.has_value(), false);
+  QCOMPARE(offset.offset, -1);
 }
 
 QTEST_MAIN(TabPagerActivationPlannerTest)

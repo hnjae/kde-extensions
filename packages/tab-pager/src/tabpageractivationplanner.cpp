@@ -75,3 +75,24 @@ TabPagerActivationPlan tabPagerActivationPlanForNavigationTarget(
 
   return tabPagerActivationPlanForIndex(desktopId);
 }
+
+TabPagerWheelActivationPlan tabPagerActivationPlanForWheelNavigationResult(
+    const TabPagerWheelNavigationResult &wheelNavigationResult) {
+  switch (wheelNavigationResult.type) {
+  case TabPagerWheelNavigationResultType::Offset:
+    return TabPagerWheelActivationPlan{
+        .result = TabPagerActivationResult::ActivationRequested,
+        .offset = wheelNavigationResult.offset,
+    };
+  case TabPagerWheelNavigationResultType::NoWheelStep:
+    return TabPagerWheelActivationPlan{
+        .result = TabPagerActivationResult::NoWheelStep,
+        .offset = std::nullopt,
+    };
+  }
+
+  return TabPagerWheelActivationPlan{
+      .result = TabPagerActivationResult::NoWheelStep,
+      .offset = std::nullopt,
+  };
+}
