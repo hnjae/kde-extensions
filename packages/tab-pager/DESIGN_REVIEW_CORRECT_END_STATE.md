@@ -21,9 +21,9 @@ No P0 issue was found. The recommended end state is a precise, boring architectu
 
 Priority: P2
 
-Evidence: `package/metadata.json` defines the package ID and version; `src/qmldir` repeats the QML module URI; `src/tabpagerplugin.qmltypes` repeats the QML module URI and type version.
+Evidence: `package/metadata.json` defines the package ID and version; `src/tabpagerplugin.qmltypes` repeats the QML module URI and type version.
 
-Current state: One release/install contract is declared across KPackage metadata, QML metadata, CMake, and Nix packaging/check code. CMake and Nix derive package ID, version, and QML module path from `package/metadata.json`, and a metadata drift test verifies the repeated declarations agree.
+Current state: One release/install contract is declared across KPackage metadata, QML metadata, CMake, and Nix packaging/check code. CMake and Nix derive package ID, version, and QML module path from `package/metadata.json`; `qmldir` is configured from CMake's derived QML module URI; and a metadata drift test verifies the repeated declarations agree.
 
 Design concern: A mismatch can produce a package whose Plasma ID, install destination, QML import URI, qmltypes export, and Nix metadata disagree.
 

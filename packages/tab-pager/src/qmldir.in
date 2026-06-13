@@ -1,4 +1,4 @@
-module io.github.hnjae.tabpager
+module @QML_MODULE_URI@
 depends QtQml.Models
 depends QtQuick
 plugin tabpagerplugin

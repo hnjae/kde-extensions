@@ -12,6 +12,8 @@ project(tabpager VERSION "${TABPAGER_VERSION}" LANGUAGES C CXX)
 set(QML_MODULE_URI "${PLASMOID_ID}")
 string(REPLACE "." "/" QML_MODULE_DIR "${QML_MODULE_URI}")
 
+configure_file(src/qmldir.in src/qmldir @ONLY)
+
 find_package(ECM 6.0 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
 
@@ -185,6 +187,7 @@ if(BUILD_TESTING)
     )
     add_tabpager_test(tabpagermetadata tests/tabpagermetadata_test.cpp)
     target_compile_definitions(tabpagermetadata_test PRIVATE
+        TABPAGER_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}"
         TABPAGER_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         TABPAGER_PLASMOID_ID="${PLASMOID_ID}"
         TABPAGER_VERSION="${PROJECT_VERSION}"
@@ -205,7 +208,7 @@ endif()
 install(TARGETS tabpagerplugin
     LIBRARY DESTINATION "${KDE_INSTALL_QMLDIR}/${QML_MODULE_DIR}"
 )
-install(FILES src/qmldir
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/src/qmldir"
     src/tabpagerplugin.qmltypes
     DESTINATION "${KDE_INSTALL_QMLDIR}/${QML_MODULE_DIR}"
 )

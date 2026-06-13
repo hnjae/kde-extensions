@@ -18,6 +18,15 @@ QString readSourceFile(const QString &relativePath) {
   return QString::fromUtf8(file.readAll());
 }
 
+QString readBuildFile(const QString &relativePath) {
+  QFile file(QStringLiteral(TABPAGER_BUILD_DIR) + QLatin1Char('/') +
+             relativePath);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    qFatal("Unable to read build file %s", qPrintable(relativePath));
+  }
+  return QString::fromUtf8(file.readAll());
+}
+
 QString firstCapturedValue(const QString &text, const QString &pattern,
                            const QString &description) {
   const QRegularExpression expression(pattern);
@@ -55,10 +64,16 @@ void TabPagerMetadataTest::packageMetadataMatchesCMakeIdentity() {
 }
 
 void TabPagerMetadataTest::qmlModuleMetadataMatchesCMakeIdentity() {
-  const QString qmldir = readSourceFile(QStringLiteral("src/qmldir"));
+  const QString qmldirTemplate =
+      readSourceFile(QStringLiteral("src/qmldir.in"));
+  const QString qmldir = readBuildFile(QStringLiteral("src/qmldir"));
   const QString qmltypes =
       readSourceFile(QStringLiteral("src/tabpagerplugin.qmltypes"));
 
+  QVERIFY2(qmldirTemplate.contains(QStringLiteral("module @QML_MODULE_URI@")),
+           "qmldir template should derive module URI from CMake");
+  QVERIFY2(!qmldirTemplate.contains(QStringLiteral(TABPAGER_QML_URI)),
+           "qmldir template should not repeat the concrete QML module URI");
   QCOMPARE(firstCapturedValue(qmldir, QStringLiteral("^module\\s+([^\\n]+)"),
                               QStringLiteral("qmldir module")),
            QStringLiteral(TABPAGER_QML_URI));
@@ -108,6 +123,12 @@ void TabPagerMetadataTest::cmakeInstallPathsUseCMakeIdentity() {
   QVERIFY2(
       cmake.contains(QStringLiteral("${KDE_INSTALL_QMLDIR}/${QML_MODULE_DIR}")),
       "CMake QML install destination should use QML_MODULE_DIR");
+  QVERIFY2(cmake.contains(QStringLiteral(
+               "configure_file(src/qmldir.in src/qmldir @ONLY)")),
+           "CMake should configure qmldir from QML_MODULE_URI");
+  QVERIFY2(
+      cmake.contains(QStringLiteral("${CMAKE_CURRENT_BINARY_DIR}/src/qmldir")),
+      "CMake should install the generated qmldir");
   QVERIFY2(cmake.contains(QStringLiteral(
                "${KDE_INSTALL_DATADIR}/plasma/plasmoids/${PLASMOID_ID}")),
            "CMake plasmoid install destination should use PLASMOID_ID");

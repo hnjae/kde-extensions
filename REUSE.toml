@@ -25,6 +25,7 @@ path = [
   "cog.toml",
   "packages/*/src/**/*.qmltypes",
   "packages/*/src/**/qmldir",
+  "packages/*/src/**/qmldir.in",
 ]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 KIM Hyunjae"

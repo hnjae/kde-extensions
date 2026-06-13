@@ -37,6 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - Nix package metadata now derives `pluginId` and `version` from `package/metadata.json`.
 - Layout metrics formulas now live in `PagerLayoutMetricsLogic.js`, are directly tested without `QQmlEngine`, and keep a focused QML binding smoke test.
 - CMake package metadata now derives `PLASMOID_ID`, project version, QML module URI, and QML module path from `package/metadata.json`.
+- `qmldir` is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
 
 ## Remaining
 
@@ -53,16 +54,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: derived CMake package identity and QML module metadata from `package/metadata.json`.
-- Files changed: `docs/architecture/README.md`, `CMakeLists.txt`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: package `PLASMOID_ID` remains `io.github.hnjae.tabpager`; project version remains `0.1.0`; `QML_MODULE_URI` remains `io.github.hnjae.tabpager`; `QML_MODULE_DIR` remains `io/github/hnjae/tabpager`; CMake install destinations, plugin registration URI, package metadata, `qmldir`, and qmltypes export remain semantically unchanged.
-- Target-doc cleanup: removed the now-obsolete statement that `CMakeLists.txt` owns repeated concrete project version, package ID, QML module URI, and QML module path literals; recorded the current CMake package-metadata derivation; kept the broader P2 package identity finding open because `qmldir` and qmltypes still repeat QML module metadata.
-- Target-doc edits: no architectural principles were removed; only completed CMake-specific tactical evidence was updated.
-- Architecture-doc edits: extended the `Package Metadata Boundary` note so `package/metadata.json` owns package identity and release version for build metadata as well as Nix packaging.
-- Commands passed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/docs/architecture/README.md packages/tab-pager/CMakeLists.txt packages/tab-pager/tests/tabpagermetadata_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
-- Commands failed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the metadata guard and before implementation because CMake did not yet read `package/metadata.json`; the first pre-commit run failed because `treefmt` reformatted `tests/tabpagermetadata_test.cpp`, then passed after rerunning the focused metadata test.
-- Deviations: this checkpoint intentionally did not generate or configure `src/qmldir` or `src/tabpagerplugin.qmltypes`; that remains unresolved P2 work.
-- Ambiguity: no blocking ambiguity found. The target explicitly called out repeated package identity/module metadata, and this checkpoint removes the CMake-side literals without changing generated values or install behavior.
+- Checkpoint: configured `qmldir` from CMake's derived QML module URI.
+- Files changed: `CMakeLists.txt`, `src/qmldir`, `src/qmldir.in`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`, repository-root `REUSE.toml`.
+- Behavior preserved: generated `qmldir` still declares `module io.github.hnjae.tabpager`, still depends on `QtQml.Models` and `QtQuick`, still names `tabpagerplugin`, and still points to `tabpagerplugin.qmltypes`; qmltypes export remains unchanged.
+- Target-doc cleanup: removed the now-obsolete statement that `src/qmldir` repeats the concrete QML module URI, recorded that `qmldir` is configured from CMake's derived module URI, and kept the broader P2 package identity finding open because `src/tabpagerplugin.qmltypes` still repeats QML module metadata and type version.
+- Target-doc edits: no architectural principles were removed; only completed `qmldir`-specific tactical evidence was updated.
+- Commands passed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata`; `cmake --build build --target tabpagerqmltypes_test tabpagermetadata_test && ctest --test-dir build --output-on-failure -R 'tabpager(qmltypes|metadata)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files REUSE.toml packages/tab-pager/CMakeLists.txt packages/tab-pager/src/qmldir.in packages/tab-pager/tests/tabpagermetadata_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
+- Commands failed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the metadata guard and before implementation because `src/qmldir.in` did not exist yet; the first pre-commit run failed because `qmldir.in` needed REUSE coverage and `treefmt` reformatted `tests/tabpagermetadata_test.cpp`, then passed after updating root `REUSE.toml` and rerunning focused tests.
+- Deviations: this checkpoint intentionally did not generate or configure `src/tabpagerplugin.qmltypes`; that remains unresolved P2 work.
+- Ambiguity: no blocking ambiguity found. The target explicitly called out repeated QML module metadata, and this checkpoint removes the `qmldir` source literal without changing generated QML module metadata.
 
 ## Notes
 
