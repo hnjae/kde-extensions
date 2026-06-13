@@ -193,7 +193,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `TaskContextMenuLogic.mjs` imports `TaskActionLogic.mjs`, `ActivityScopeLogic.mjs`, `TaskActivityLogic.mjs`, and `LauncherListLogic.mjs`; it owns panel placement, platform snapshots, pin actions, launcher activity updates, task activity actions, virtual desktop actions, action route classification, and section aggregation; `TaskContextMenuRoleLogic.mjs` now owns live role snapshotting; `TaskContextMenu.qml` consumes one aggregate `contextMenuActionSections(...)`; `tests/taskcontextmenulogic.test.mjs` remains much larger than other logic tests and exercises many unrelated exports.
+**Evidence:** `TaskContextMenuLogic.mjs` imports `TaskActionLogic.mjs`, `TaskContextMenuLauncherActivityLogic.mjs`, `TaskContextMenuTaskActivityLogic.mjs`, `VirtualDesktopLogic.mjs`, and `LauncherListLogic.mjs`; it owns panel placement, platform snapshots, pin actions, window actions, virtual desktop actions, action route classification, and section aggregation while composing focused launcher-activity and task-activity owners; `TaskContextMenuRoleLogic.mjs` now owns live role snapshotting; `TaskContextMenu.qml` consumes one aggregate `contextMenuActionSections(...)`; `tests/taskcontextmenulogic.test.mjs` remains much larger than other logic tests and exercises many unrelated exports.
 
 **Current state:** Role snapshotting has been extracted into `TaskContextMenuRoleLogic.mjs`, but one module still owns several context-menu feature families and cross-domain concerns.
 
@@ -201,7 +201,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Correct end state:** Split pure menu policy by ownership. `TaskContextMenuRoleLogic.mjs` should own role reads and snapshots. `TaskContextMenuActionSectionsLogic.mjs` should own labels, icons, visibility, enabled, and checked descriptors. `TaskContextMenuLauncherActivityLogic.mjs` should own launcher activity menu state and update descriptors. Virtual desktop primitives should move to the shared virtual desktop owner. A retained `TaskContextMenuLogic.mjs` should be a thin facade or final composer only.
 
-**Suggested migration:** Continue extracting one family at a time. Role snapshots have a focused owner; next candidates include launcher activity helpers, virtual desktop helpers, and task activity helpers. Keep compatibility re-exports while migrating tests.
+**Suggested migration:** Continue extracting one family at a time. Role snapshots, launcher activity helpers, and task activity helpers have focused owners; next candidates include remaining window action, pin, and final section-composition helpers. Keep compatibility re-exports while migrating tests.
 
 **Acceptance criteria:** `TaskContextMenuLogic.mjs` no longer imports launcher list mutation helpers and task activity mutation helpers together. Each menu feature family has focused pure tests. `contextMenuActionSections(...)` is an assembly function, not the owner of per-action policy.
 
@@ -441,7 +441,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `TaskContextMenuLogic.mjs` contains pin actions, launcher activities, task activities, virtual desktops, window actions, route classification, and section composition; `TaskContextMenuRoleLogic.mjs` now contains role snapshots; `TaskContextMenu.qml` consumes one aggregate `actionSections`; `tests/taskcontextmenulogic.test.mjs` imports many unrelated exports from the same module.
+**Evidence:** `TaskContextMenuLogic.mjs` contains pin actions, virtual desktops, window actions, route classification, and section composition while composing focused launcher-activity and task-activity owners; `TaskContextMenuRoleLogic.mjs` now contains role snapshots; `TaskContextMenu.qml` consumes one aggregate `actionSections`; `tests/taskcontextmenulogic.test.mjs` imports many unrelated exports from the same module.
 
 **Current state:** Removing launcher activities, virtual desktops, or a window action requires editing and testing a shared monolith.
 

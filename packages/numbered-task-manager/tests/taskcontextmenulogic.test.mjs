@@ -130,6 +130,22 @@ assert.doesNotMatch(
   taskContextMenuLogicSource,
   /function virtualDesktopListContains\b/,
 );
+assert.match(
+  taskContextMenuLogicSource,
+  /import \* as TaskActivityLogic from "\.\/TaskContextMenuTaskActivityLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /import .*"\.\/TaskActivityLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /function taskActivityMenuState\b/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /function taskActivityToggleCommand\b/,
+);
 
 assert.equal(
   logic.panelMenuPlacement(
