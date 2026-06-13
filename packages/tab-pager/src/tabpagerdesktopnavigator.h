@@ -29,10 +29,7 @@ public:
   [[nodiscard]] TabPagerDesktopNavigationResult
   targetForOffset(const TabPagerDesktopNavigationContext &context,
                   int offset) const;
-  [[nodiscard]] TabPagerDesktopNavigationResult
-  consumeWheelDelta(const TabPagerDesktopNavigationContext &context, int delta);
 
 private:
   bool m_navigationWrappingAround = false;
-  int m_pendingWheelDelta = 0;
 };

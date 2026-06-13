@@ -4,13 +4,6 @@
 #include "tabpagerdesktopnavigator.h"
 
 namespace {
-constexpr int wheelDeltaPerStep = 120;
-
-struct WheelDeltaResult {
-  int remainingDelta = 0;
-  int steps = 0;
-};
-
 [[nodiscard]] int wrappedIndexForOffset(int currentIndex, int desktopCount,
                                         int offset) {
   const int wrappedOffset = offset % desktopCount;
@@ -21,17 +14,6 @@ struct WheelDeltaResult {
   }
 
   return wrappedIndex;
-}
-
-[[nodiscard]] WheelDeltaResult consumeWheelDeltaValue(int pendingDelta,
-                                                      int delta) {
-  const long long accumulatedDelta =
-      static_cast<long long>(pendingDelta) + delta;
-
-  return WheelDeltaResult{
-      .remainingDelta = static_cast<int>(accumulatedDelta % wheelDeltaPerStep),
-      .steps = static_cast<int>(accumulatedDelta / wheelDeltaPerStep),
-  };
 }
 } // namespace
 
@@ -73,19 +55,4 @@ TabPagerDesktopNavigationResult TabPagerDesktopNavigator::targetForOffset(
       .targetIndex = wrappedIndexForOffset(context.currentIndex,
                                            context.desktopCount, offset),
   };
-}
-
-TabPagerDesktopNavigationResult TabPagerDesktopNavigator::consumeWheelDelta(
-    const TabPagerDesktopNavigationContext &context, int delta) {
-  const WheelDeltaResult result =
-      consumeWheelDeltaValue(m_pendingWheelDelta, delta);
-  m_pendingWheelDelta = result.remainingDelta;
-
-  if (result.steps == 0) {
-    return TabPagerDesktopNavigationResult{
-        .type = TabPagerDesktopNavigationResultType::NoWheelStep,
-    };
-  }
-
-  return targetForOffset(context, -result.steps);
 }

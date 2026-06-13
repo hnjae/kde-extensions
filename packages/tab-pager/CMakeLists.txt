@@ -44,6 +44,8 @@ add_library(tabpagermodel STATIC
     src/tabpagerdesktopmodelstate.h
     src/tabpagerdesktopnavigator.cpp
     src/tabpagerdesktopnavigator.h
+    src/tabpagerwheelnavigation.cpp
+    src/tabpagerwheelnavigation.h
     src/tabpagerdesktoprow.cpp
     src/tabpagerdesktoprow.h
     src/tabpagerdesktoprows.cpp

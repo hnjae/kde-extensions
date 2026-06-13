@@ -8,6 +8,7 @@
 #include "tabpagerdesktopsource.h"
 #include "tabpagerdesktopstatestore.h"
 #include "tabpagernavigationsettingssource.h"
+#include "tabpagerwheelnavigation.h"
 
 #include <QObject>
 
@@ -57,4 +58,5 @@ private:
   std::unique_ptr<TabPagerDesktopSource> m_source;
   std::unique_ptr<TabPagerNavigationSettingsSource> m_navigationSettings;
   TabPagerDesktopNavigator m_navigator;
+  TabPagerWheelNavigation m_wheelNavigation;
 };
