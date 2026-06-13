@@ -11,7 +11,7 @@
 namespace {
 [[nodiscard]] QString activationResultName(TabPagerActivationResult result) {
   switch (result) {
-  case TabPagerActivationResult::Activated:
+  case TabPagerActivationResult::ActivationRequested:
     return QStringLiteral("ActivationRequested");
   case TabPagerActivationResult::InvalidIndex:
     return QStringLiteral("InvalidIndex");

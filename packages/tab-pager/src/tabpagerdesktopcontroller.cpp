@@ -21,7 +21,7 @@ void logUnexpectedActivationNoOp(TabPagerActivationResult result, int index) {
         << "Ignoring desktop activation for invalid desktop id at index "
         << index;
     break;
-  case TabPagerActivationResult::Activated:
+  case TabPagerActivationResult::ActivationRequested:
   case TabPagerActivationResult::NoCurrentDesktop:
   case TabPagerActivationResult::StoppedAtEdge:
   case TabPagerActivationResult::NoWheelStep:
@@ -62,7 +62,7 @@ TabPagerDesktopController::activateWithResult(int index) {
   }
 
   m_source->activateDesktop(*desktopId);
-  return TabPagerActivationResult::Activated;
+  return TabPagerActivationResult::ActivationRequested;
 }
 
 void TabPagerDesktopController::activateNext() {

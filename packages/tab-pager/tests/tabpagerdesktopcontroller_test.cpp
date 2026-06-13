@@ -125,7 +125,7 @@ void TabPagerDesktopControllerTest::reportsActivationResults() {
   expectActivationResult(fixture.controller.activateWithResult(2),
                          TabPagerActivationResult::InvalidIndex);
   expectActivationResult(fixture.controller.activateWithResult(1),
-                         TabPagerActivationResult::Activated);
+                         TabPagerActivationResult::ActivationRequested);
 
   QCOMPARE(fixture.source->activatedDesktops(),
            QList<TabPagerDesktopId>{desktopId("b")});
@@ -162,7 +162,7 @@ void TabPagerDesktopControllerTest::reportsNavigationNoOpResults() {
   expectActivationResult(
       wheelNavigation.controller.activateByWheelDeltaWithResult(
           halfWheelStepDelta),
-      TabPagerActivationResult::Activated);
+      TabPagerActivationResult::ActivationRequested);
 
   QCOMPARE(wheelNavigation.source->activatedDesktops(),
            QList<TabPagerDesktopId>{desktopId("a")});

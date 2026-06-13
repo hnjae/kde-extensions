@@ -12,7 +12,7 @@
 #include <memory>
 
 enum class TabPagerActivationResult {
-  Activated,
+  ActivationRequested,
   InvalidIndex,
   InvalidDesktopId,
   NoCurrentDesktop,

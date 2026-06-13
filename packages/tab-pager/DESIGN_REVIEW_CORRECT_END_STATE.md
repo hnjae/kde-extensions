@@ -252,22 +252,6 @@ Suggested migration: Extend source state with diagnostics/health, or add a diagn
 
 Acceptance criteria: Backend/QML or tests can inspect source health without parsing logs. Repeated reads of unchanged malformed state do not emit duplicate warnings. Tests cover diagnostic appearance, update, and recovery.
 
-### Finding: Activation result says `Activated` before external confirmation
-
-Priority: P2
-
-Evidence: `TabPagerDesktopController::activateWithResult()` calls `m_source->activateDesktop(*desktopId)` and immediately returns `TabPagerActivationResult::Activated`; `TaskManagerDesktopSource::activateDesktop()` forwards to `m_info->requestActivate()`; `TabPagerVirtualDesktopInfo::requestActivate()` is `void`.
-
-Current state: The result named `Activated` means “activation request was issued,” not “current desktop changed to the requested desktop.”
-
-Design concern: If Plasma ignores, rejects, races, or delays a request, the result naming overstates what the system knows. This is currently mostly internal/test-facing, but it will become misleading if surfaced to QML or diagnostics.
-
-Correct end state: Either rename the result to `Requested`/`ActivationRequested`, or implement a two-phase activation lifecycle with request and confirmation by source state.
-
-Suggested migration: First rename or document the result as request-level success. Only add pending activation tracking and timeout semantics if UI or diagnostics need confirmed activation.
-
-Acceptance criteria: Tests and API names distinguish request dispatch from confirmed desktop change. If confirmation is implemented, tests cover success, timeout, and mismatch.
-
 ## Deletion, Modularity, and Abstraction Problems
 
 ### Finding: Navigation wrapping leaks through data, controller, backend API, and QML metadata
@@ -333,8 +317,6 @@ Do not rewrite the entire widget into a new architecture. The current code is sm
 Do not introduce migrations or backward-compatibility layers for pre-release internal formats unless specifically requested.
 
 Do not remove `TabPagerVirtualDesktopInfo` until a replacement test strategy preserves TaskManager signal wiring coverage.
-
-Do not add activation confirmation/timeouts unless the public API or UX will actually consume confirmed outcomes. First clarify whether `Activated` means request sent or confirmed activation.
 
 Do not move label formatting to QML just because it is presentation-related. First decide whether the C++ model is intentionally a QML view model.
 
