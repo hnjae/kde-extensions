@@ -43,6 +43,15 @@ QString readSourceFile(const QString &relativePath) {
   return QString::fromUtf8(file.readAll());
 }
 
+QString readBuildFile(const QString &relativePath) {
+  QFile file(QStringLiteral(TABPAGER_BUILD_DIR) + QLatin1Char('/') +
+             relativePath);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    qFatal("Unable to read build file %s", qPrintable(relativePath));
+  }
+  return QString::fromUtf8(file.readAll());
+}
+
 QStringList splitArguments(const QString &arguments) {
   if (arguments.trimmed().isEmpty()) {
     return {};
@@ -264,8 +273,8 @@ void TabPagerQmlTypesTest::backendExportMatchesRegisteredType() {
       readSourceFile(QStringLiteral("src/"
                                     "tabpagerplugin.cpp")));
   const auto actual = qmltypesBackendExport(
-      readSourceFile(QStringLiteral("src/"
-                                    "tabpagerplugin.qmltypes")));
+      readBuildFile(QStringLiteral("src/"
+                                   "tabpagerplugin.qmltypes")));
 
   QCOMPARE(actual, expected);
 }
@@ -275,8 +284,8 @@ void TabPagerQmlTypesTest::backendPropertiesMatchInstalledQmlTypes() {
       readSourceFile(QStringLiteral("src/"
                                     "tabpagerbackend.h")));
   auto actual = qmltypesProperties(
-      readSourceFile(QStringLiteral("src/"
-                                    "tabpagerplugin.qmltypes")));
+      readBuildFile(QStringLiteral("src/"
+                                   "tabpagerplugin.qmltypes")));
 
   sortByName(expected);
   sortByName(actual);
@@ -287,9 +296,9 @@ void TabPagerQmlTypesTest::backendInvokablesMatchInstalledQmlTypes() {
   auto expected = backendHeaderInvokables(
       readSourceFile(QStringLiteral("src/"
                                     "tabpagerbackend.h")));
-  auto actual = qmltypesMethods(
-      readSourceFile(QStringLiteral("src/"
-                                    "tabpagerplugin.qmltypes")));
+  auto actual =
+      qmltypesMethods(readBuildFile(QStringLiteral("src/"
+                                                   "tabpagerplugin.qmltypes")));
 
   sortMethods(expected);
   sortMethods(actual);
@@ -300,9 +309,9 @@ void TabPagerQmlTypesTest::backendSignalsMatchInstalledQmlTypes() {
   auto expected =
       backendHeaderSignals(readSourceFile(QStringLiteral("src/"
                                                          "tabpagerbackend.h")));
-  auto actual = qmltypesSignals(
-      readSourceFile(QStringLiteral("src/"
-                                    "tabpagerplugin.qmltypes")));
+  auto actual =
+      qmltypesSignals(readBuildFile(QStringLiteral("src/"
+                                                   "tabpagerplugin.qmltypes")));
 
   expected.sort();
   actual.sort();

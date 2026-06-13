@@ -182,6 +182,7 @@ if(BUILD_TESTING)
     )
     add_tabpager_test(tabpagerqmltypes tests/tabpagerqmltypes_test.cpp)
     target_compile_definitions(tabpagerqmltypes_test PRIVATE
+        TABPAGER_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}"
         TABPAGER_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         TABPAGER_QML_URI="${QML_MODULE_URI}"
     )

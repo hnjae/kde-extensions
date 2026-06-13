@@ -67,13 +67,20 @@ void TabPagerMetadataTest::qmlModuleMetadataMatchesCMakeIdentity() {
   const QString qmldirTemplate =
       readSourceFile(QStringLiteral("src/qmldir.in"));
   const QString qmldir = readBuildFile(QStringLiteral("src/qmldir"));
+  const QString qmltypesTemplate =
+      readSourceFile(QStringLiteral("src/tabpagerplugin.qmltypes.in"));
   const QString qmltypes =
-      readSourceFile(QStringLiteral("src/tabpagerplugin.qmltypes"));
+      readBuildFile(QStringLiteral("src/tabpagerplugin.qmltypes"));
 
   QVERIFY2(qmldirTemplate.contains(QStringLiteral("module @QML_MODULE_URI@")),
            "qmldir template should derive module URI from CMake");
   QVERIFY2(!qmldirTemplate.contains(QStringLiteral(TABPAGER_QML_URI)),
            "qmldir template should not repeat the concrete QML module URI");
+  QVERIFY2(qmltypesTemplate.contains(
+               QStringLiteral("@QML_MODULE_URI@/TabPagerBackend 1.0")),
+           "qmltypes template should derive export URI from CMake");
+  QVERIFY2(!qmltypesTemplate.contains(QStringLiteral(TABPAGER_QML_URI)),
+           "qmltypes template should not repeat the concrete QML module URI");
   QCOMPARE(firstCapturedValue(qmldir, QStringLiteral("^module\\s+([^\\n]+)"),
                               QStringLiteral("qmldir module")),
            QStringLiteral(TABPAGER_QML_URI));
@@ -129,6 +136,13 @@ void TabPagerMetadataTest::cmakeInstallPathsUseCMakeIdentity() {
   QVERIFY2(
       cmake.contains(QStringLiteral("${CMAKE_CURRENT_BINARY_DIR}/src/qmldir")),
       "CMake should install the generated qmldir");
+  QVERIFY2(cmake.contains(
+               QStringLiteral("configure_file(src/tabpagerplugin.qmltypes.in "
+                              "src/tabpagerplugin.qmltypes @ONLY)")),
+           "CMake should configure qmltypes from QML_MODULE_URI");
+  QVERIFY2(cmake.contains(QStringLiteral(
+               "${CMAKE_CURRENT_BINARY_DIR}/src/tabpagerplugin.qmltypes")),
+           "CMake should install the generated qmltypes");
   QVERIFY2(cmake.contains(QStringLiteral(
                "${KDE_INSTALL_DATADIR}/plasma/plasmoids/${PLASMOID_ID}")),
            "CMake plasmoid install destination should use PLASMOID_ID");
