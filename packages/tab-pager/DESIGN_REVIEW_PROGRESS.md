@@ -18,6 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - Backend activation result reporting is public, uses `ActivationRequested` for dispatched requests, and distinguishes invalid input, missing current desktop, edge stops, and partial wheel input.
 - Fatal constructor/plugin invariants use runtime `qFatal` diagnostics rather than assertion-only guards.
 - Wheel pending-delta behavior is characterized across current-desktop changes, desktop-count changes, wrapping changes, no-current contexts, and non-wrapping edge stops.
+- The interaction spec defines pending wheel-delta behavior across current-desktop changes, desktop-count changes, wrapping changes, no-current contexts, and non-wrapping edge stops.
 - `TaskManagerDesktopSource::sourceDiagnostics()` exposes structured diagnostics without parsing logs.
 - Repeated unchanged `TaskManagerDesktopSource::sourceState()` diagnostic reads no longer duplicate warning logs.
 - `TabPagerActivationPlanner` covers direct index activation, navigation-result translation, and navigation-target command planning.
@@ -30,7 +31,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Remaining
 
-- Decide and document whether pending wheel deltas should persist across navigation context changes, or change the navigator to reset/drop stale partial deltas.
 - Extract wheel input mapping/sign handling from QML and navigator state if the dedicated wheel adapter remains the desired end state.
 - Make source diagnostics observable through the generic source/controller/backend contract and remove diagnostic reporting from the getter-shaped `sourceState()` path.
 - Reduce remaining controller orchestration by moving any residual activation/wheel decision logic into pure planners.
@@ -46,14 +46,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: documented the C++ backend/model/row projection stack as an intentional QML view-model boundary.
-- Files changed: `docs/architecture/README.md`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: no source, model, QML, activation, label text, label font, layout, or navigation runtime behavior changed.
-- Target-doc cleanup: removed the resolved presentation-formatting ambiguity finding, kept the resulting architectural boundary as an invariant in the recommended architecture and things-not-to-change guidance, and did not edit unresolved P0/P1/P2/P3 content outside that checkpoint.
-- Commands passed: `git diff --check`; `ctest --test-dir build --output-on-failure`; `nix develop "path:../..#default" -c rumdl check DESIGN_REVIEW_CORRECT_END_STATE.md DESIGN_REVIEW_PROGRESS.md docs/architecture/README.md`; `nix develop ".#default" -c reuse lint` from the repository root; `nix develop "path:../..#default" -c typos DESIGN_REVIEW_CORRECT_END_STATE.md DESIGN_REVIEW_PROGRESS.md docs/architecture/README.md`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md packages/tab-pager/docs/architecture/README.md` from the repository root.
-- Commands failed: `just lint` failed in the full clang-tidy stack on existing C++ findings unrelated to this docs-only checkpoint, including enum-size warnings in `src/tabpageractivationplanner.h` and `src/tabpagerdesktopnavigator.h`, metadata/navigation/source test cognitive-complexity findings, unchecked optional access in `tests/tabpagerdesktoprows_test.cpp`, and magic-number/designated-initializer findings in QML-related tests.
-- Deviations: no characterization tests were added because this checkpoint is documentation-only.
-- Ambiguity: no ambiguity found for this checkpoint after choosing the C++ backend/model stack as the documented QML view-model boundary.
+- Checkpoint: documented the already-characterized pending wheel-delta behavior in the user-facing interaction spec.
+- Files changed: `docs/spec/SPEC.md`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: no source, model, QML, activation, label text, label font, layout, or navigation runtime behavior changed; wheel accumulation continues to persist across navigation context changes and completed stopped-at-edge wheel steps remain consumed.
+- Target-doc cleanup: removed the resolved P2 uncertain wheel-delta context-scoping finding, kept the user-visible accumulation contract as an invariant for any future wheel-input extraction, and left the separate wheel input mapping/sign-handling refactor open.
+- Commands passed: `ctest --test-dir build --output-on-failure -R tabpagerdesktopnavigator`; `git diff --check`; `nix develop "path:../..#default" -c rumdl check DESIGN_REVIEW_CORRECT_END_STATE.md DESIGN_REVIEW_PROGRESS.md docs/spec/SPEC.md`; `nix develop "path:../..#default" -c typos DESIGN_REVIEW_CORRECT_END_STATE.md DESIGN_REVIEW_PROGRESS.md docs/spec/SPEC.md`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md packages/tab-pager/docs/spec/SPEC.md` from the repository root; `nix develop ".#default" -c reuse lint` from the repository root.
+- Commands failed: `ctest --test-dir build --output-on-failure` failed in existing non-wheel tests unrelated to this docs-only checkpoint. `tabpagerdesktoprows` and `tabpagerdesktopmodelstate` still expect `Name` role updates, while the current model behavior exposes narrowed public roles.
+- Deviations: no new characterization tests were added because existing navigator tests already cover current-desktop changes, desktop-count changes, wrapping changes, no-current contexts, and non-wrapping edge stops.
+- Ambiguity: no remaining ambiguity for this checkpoint; the spec now chooses the existing characterized behavior rather than changing runtime behavior.
 
 ## Notes
 

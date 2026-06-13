@@ -14,7 +14,7 @@ No P0 issue was found. The recommended end state is a precise, boring architectu
 
 1. `TabPagerDesktopController` spans source ownership, source/settings reloads, state-store reads/writes, navigation, wheel consumption, result translation, logging, and activation effects.
 2. Source diagnostics are still emitted from a const read path, and degraded source state is not part of the application state contract. A source-specific structured read seam exists, and unchanged repeated diagnostics are logged only once per diagnostic state.
-3. Wheel input semantics are split between QML event normalization and C++ navigation state, with unclear scoping for accumulated partial wheel deltas across desktop/context changes.
+3. Wheel input semantics are split between QML event normalization and C++ navigation state.
 
 ## Single Source of Truth Violations
 
@@ -49,24 +49,6 @@ Correct end state: Layout constants should be owned by one layout metrics compon
 Suggested migration: Make `PagerDesktopStrip.desktopGap` required. Introduce named constants for minimum extent and unset preferred extent at the layout-metrics layer.
 
 Acceptance criteria: `desktopGap` has one production definition. Minimum extent literals are named at the owner. Tests assert behavior through the owner rather than child defaults.
-
-## Invariant and Correctness Risks
-
-### Finding: Wheel delta accumulation is not scoped to navigation context
-
-Priority: P2, uncertain
-
-Evidence: `src/tabpagerdesktopnavigator.h` stores `m_pendingWheelDelta`; `src/tabpagerdesktopnavigator.cpp` combines pending and new delta, stores the remainder, then validates navigation context through `targetForOffset()`; `src/tabpagerdesktopcontroller.cpp` updates state-store data and wrapping state without resetting pending wheel delta; navigator characterization tests now cover current-desktop changes, desktop-count changes, wrapping changes, no-current states, and stopped-at-edge states.
-
-Current state: Partial wheel deltas survive changes to current desktop, desktop count, and wrapping behavior. They can also survive contexts where there is no current desktop. Characterization tests now lock this as current behavior rather than intended policy.
-
-Design concern: The spec says scrolling moves one desktop at a time, but it does not define whether sub-step wheel accumulation should survive model/current-desktop changes. If persistence is not intended, stale input from a previous context can trigger activation later under a different context.
-
-Correct end state: Wheel accumulation scope should be explicit. Either document and test that pending deltas intentionally survive context changes, or reset/drop pending deltas when navigation context changes or when no navigation target can be produced.
-
-Suggested migration: Use the characterization tests for half-step input before current desktop appears, before desktop count changes, before wrapping changes, and at non-wrapping edges to decide whether this persistence is intended. If it is intended, document it in the user-facing interaction spec; if not, change the navigator to clear pending delta on context identity changes.
-
-Acceptance criteria: The spec defines pending wheel behavior across current desktop changes, desktop count changes, wrapping changes, no-current states, and stopped-at-edge states. No activation is caused solely by stale partial wheel delta unless explicitly specified.
 
 ## Cohesion, Coupling, and Ownership Problems
 
@@ -194,7 +176,7 @@ Ownership boundaries: A source adapter boundary ingests external TaskManager/Pla
 
 Where domain rules should live: Default-name label behavior belongs to the documented QML view-model boundary, not to source-state normalization. Wrapping behavior should live in navigator/controller policy, not in desktop inventory state.
 
-Where state should be defined: `TabPagerDesktopStateStore` should own current desktop state and transition results. Wheel delta pending state should live in a wheel-input adapter with explicit context scoping or be documented as part of navigator state. Source diagnostics should be part of source health state or a dedicated diagnostic stream.
+Where state should be defined: `TabPagerDesktopStateStore` should own current desktop state and transition results. Pending wheel-delta behavior is user-visible and specified; if wheel handling is extracted from the navigator, the extracted helper must preserve that accumulation contract unless the spec changes first. Source diagnostics should be part of source health state or a dedicated diagnostic stream.
 
 Where validation should happen: Public APIs that accept untrusted indexes or IDs should still validate those inputs.
 
@@ -229,7 +211,7 @@ Do not optimize QML layout implementation before centralizing the contract and t
 
 Single Source of Truth / Duplication Agent: Reported repeated package identity/module metadata, duplicated navigation no-op result states, and repeated QML layout constants. Package metadata was kept as P2. Layout constants were kept as P3. Navigation no-op enum duplication was dropped because the typed navigation and activation result APIs are now the canonical internal shapes.
 
-Invariant / Correctness Agent: Reported uncertain wheel-delta context scoping, kept as P2 uncertain because the spec does not define intended behavior.
+Invariant / Correctness Agent: Reported uncertain wheel-delta context scoping. The spec now defines the current behavior: partial wheel input persists across navigation context changes and completed stopped-at-edge steps are consumed.
 
 Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, and split presentation formatting. Controller ownership remains P2, but the source/navigation policy finding was removed because desktop source state and navigation settings are now separated and tested. Presentation formatting is now documented as part of the intentional QML view-model boundary.
 
