@@ -10,7 +10,7 @@ QtQuick.QtObject {
     id: root
 
     property var remoteAttentionSource
-    property var taskModel
+    property var taskActivationPort
     property var visibleTaskItems
 
     signal actionResult(var result)
@@ -60,7 +60,7 @@ QtQuick.QtObject {
             return remoteAttentionSource;
         }
 
-        return taskModel;
+        return taskActivationPort;
     }
 
     function requestActivation(result) {

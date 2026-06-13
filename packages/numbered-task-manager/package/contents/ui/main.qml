@@ -66,11 +66,17 @@ PlasmoidItem {
         taskModel: tasksModel
     }
 
+    TaskActivationPort {
+        id: taskActivationPort
+
+        taskModel: tasksModel
+    }
+
     TaskActivationAdapter {
         id: taskActivation
 
         remoteAttentionSource: remoteAttentionSource
-        taskModel: tasksModel
+        taskActivationPort: taskActivationPort
         visibleTaskItems: root.visibleTaskItems
 
         onActionResult: result => {
