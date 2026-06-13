@@ -21,7 +21,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 2. **Core descriptor invariants are implicit.** `TaskEntryLogic.hasValidModelIndex({})` returns true while diagnostics report `unknown-model-index-shape`, and activation routing trusts `sourceModel` even when it could disagree with visible-item `kind`.
 3. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
 4. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, launcher sync orchestration is mostly QML imperative code, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
-5. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance flows into activation, context menu, launcher commands, launcher sync, task movement, launcher activity, and task command adapters.
+5. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into activation, context menu, launcher sync, task movement, launcher activity, and task command adapters, while launcher pin/unpin commands now use a narrow add/remove/list port.
 
 ## Single Source of Truth Violations
 
@@ -111,7 +111,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `package/contents/ui/LauncherCommandAdapter.qml` calls `taskModel.requestAddLauncher(...)` and `taskModel.requestRemoveLauncher(...)` in `pinLauncher(...)` and `unpinLauncher(...)`; `requestLauncherMutation(...)` now captures `launcherSync.persistLaunchers(taskModel.launcherList)` and routes `ok: false` sync results through `TaskActionLogic.launcherMutationPersistenceResult(...)`; `LauncherSyncAdapter.qml` returns structured convergence results from `persistLaunchers(...)`; `LauncherListLogic.mjs` can produce `ok: false` with `code: "write-mismatch"` or `code: "write-failed"`.
+**Evidence:** `package/contents/ui/LauncherCommandAdapter.qml` calls a narrow launcher command port for `requestAddLauncher(...)`, `requestRemoveLauncher(...)`, and `launcherList` reads in `pinLauncher(...)` and `unpinLauncher(...)`; `requestLauncherMutation(...)` captures the port's launcher list, calls `launcherSync.persistLaunchers(...)`, and routes `ok: false` sync results through `TaskActionLogic.launcherMutationPersistenceResult(...)`; `LauncherSyncAdapter.qml` returns structured convergence results from `persistLaunchers(...)`; `LauncherListLogic.mjs` can produce `ok: false` with `code: "write-mismatch"` or `code: "write-failed"`.
 
 **Current state:** Pin/unpin now has one user-visible outcome channel. Model request failures remain action results, and configuration persistence failures are converted into structured launcher-command failures by `LauncherCommandAdapter.qml`.
 
@@ -241,7 +241,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `main.qml` passes the same `tasksModel` as `taskModel` and `launcherModel`; `LauncherCommandAdapter.qml` calls `requestAddLauncher(...)`, `requestRemoveLauncher(...)`, and reads `launcherList`; `LauncherSyncAdapter.qml` reads and writes `taskModel.launcherList`; `TaskMoveAdapter.qml` reads `taskModel.launcherList` and calls `launcherPosition(...)`; `TaskContextMenuLauncherActivityAdapter.qml` calls `launcherModel.launcherActivities(...)`; `TaskContextMenuTaskCommandAdapter.qml` now uses an explicit supported-method map, but still receives the raw task model for context-menu task requests.
+**Evidence:** `main.qml` still passes the same `tasksModel` as `taskModel` and `launcherModel` to several adapters; `LauncherCommandAdapter.qml` now uses `LauncherCommandPort.qml` for add/remove/list access; `LauncherSyncAdapter.qml` reads and writes `taskModel.launcherList`; `TaskMoveAdapter.qml` reads `taskModel.launcherList` and calls `launcherPosition(...)`; `TaskContextMenuLauncherActivityAdapter.qml` calls `launcherModel.launcherActivities(...)`; `TaskContextMenuTaskCommandAdapter.qml` now uses an explicit supported-method map, but still receives the raw task model for context-menu task requests.
 
 **Current state:** Several adapters receive the full Plasma `TasksModel` and use different slices of its API.
 
@@ -249,7 +249,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Correct end state:** Use narrow ports around the raw Plasma model. A task command executor should expose explicit supported task request methods. A launcher port should expose launcher list, position, activities, add/remove, and list write operations. A sync owner should handle config persistence. The raw `TasksModel` should be contained at root/platform wiring boundaries.
 
-**Suggested migration:** Introduce wrapper ports without changing behavior. Context-menu task requests now have an explicit allowlist; continue by wrapping launcher model access used by pin/activity/reorder code. Finally update adapters to depend on those wrappers.
+**Suggested migration:** Introduce wrapper ports without changing behavior. Context-menu task requests now have an explicit allowlist, and launcher pin/unpin commands now use a narrow add/remove/list port; continue by wrapping launcher model access used by activity and reorder code. Finally update adapters to depend on those wrappers.
 
 **Acceptance criteria:** No adapter except the root/platform adapter receives raw `TasksModel` for unrelated purposes. Context-menu task execution has an explicit supported-method map. Unit tests can mock each port with only the methods that feature uses.
 
@@ -473,7 +473,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** The same `TasksModel` instance flows into activation, context menu, launcher commands, launcher sync, task movement, launcher activity, and task command adapters.
+**Evidence:** The same `TasksModel` instance still flows into activation, context menu, launcher sync, task movement, launcher activity, and task command adapters. Launcher pin/unpin commands now use a narrow add/remove/list port.
 
 **Current state:** Feature ownership is inferred from which object methods an adapter happens to call.
 
