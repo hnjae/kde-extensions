@@ -24,6 +24,7 @@ path = [
   "**/tsconfig.json",
   "cog.toml",
   "packages/*/src/**/*.qmltypes",
+  "packages/*/src/**/*.qmltypes.in",
   "packages/*/src/**/qmldir",
   "packages/*/src/**/qmldir.in",
 ]
