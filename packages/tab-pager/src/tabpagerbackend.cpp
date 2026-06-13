@@ -4,30 +4,8 @@
 #include "tabpagerbackend.h"
 
 #include <QFontDatabase>
-#include <QString>
 
 #include <utility>
-
-namespace {
-[[nodiscard]] QString activationResultName(TabPagerActivationResult result) {
-  switch (result) {
-  case TabPagerActivationResult::ActivationRequested:
-    return QStringLiteral("ActivationRequested");
-  case TabPagerActivationResult::InvalidIndex:
-    return QStringLiteral("InvalidIndex");
-  case TabPagerActivationResult::InvalidDesktopId:
-    return QStringLiteral("InvalidDesktopId");
-  case TabPagerActivationResult::NoCurrentDesktop:
-    return QStringLiteral("NoCurrentDesktop");
-  case TabPagerActivationResult::StoppedAtEdge:
-    return QStringLiteral("StoppedAtEdge");
-  case TabPagerActivationResult::NoWheelStep:
-    return QStringLiteral("NoWheelStep");
-  }
-
-  return QStringLiteral("NoCurrentDesktop");
-}
-} // namespace
 
 TabPagerBackend::TabPagerBackend(
     std::unique_ptr<TabPagerDesktopSource> source,
@@ -66,5 +44,5 @@ void TabPagerBackend::activateByWheelDelta(int delta) {
 }
 
 void TabPagerBackend::emitActivationFinished(TabPagerActivationResult result) {
-  Q_EMIT activationFinished(activationResultName(result));
+  Q_EMIT activationFinished(tabPagerActivationResultName(result));
 }

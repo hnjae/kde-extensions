@@ -3,19 +3,11 @@
 
 #pragma once
 
+#include "tabpageractivationresult.h"
 #include "tabpagerdesktopid.h"
 #include "tabpagerdesktopnavigator.h"
 
 #include <optional>
-
-enum class TabPagerActivationResult {
-  ActivationRequested,
-  InvalidIndex,
-  InvalidDesktopId,
-  NoCurrentDesktop,
-  StoppedAtEdge,
-  NoWheelStep,
-};
 
 struct TabPagerActivationPlan {
   TabPagerActivationResult result = TabPagerActivationResult::InvalidIndex;

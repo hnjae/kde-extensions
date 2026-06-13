@@ -33,6 +33,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(tabpagermodel STATIC
+    src/tabpageractivationresult.cpp
+    src/tabpageractivationresult.h
     src/tabpageractivationplanner.cpp
     src/tabpageractivationplanner.h
     src/tabpagerbackend.cpp
