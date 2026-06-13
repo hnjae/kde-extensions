@@ -74,15 +74,15 @@ Acceptance criteria: Tests define pending wheel behavior across current desktop 
 
 Priority: P2
 
-Evidence: `src/tabpagerdesktopcontroller.h` includes `tabpagerdesktopmodel.h`, accepts both `std::unique_ptr<TabPagerDesktopSource>` and `TabPagerDesktopModel &`, stores a non-owning model reference, and owns the source; `src/tabpagerdesktopcontroller.cpp` connects source changes, reloads source state, mutates the model with `setDesktopSnapshot()`, reads model IDs for activation, reads model `currentIndex()`/`count()` for navigation context, owns the navigator, translates navigation results, logs no-ops, and calls source activation.
+Evidence: `src/tabpagerdesktopcontroller.h` depends on `TabPagerDesktopStateStore` rather than `TabPagerDesktopModel`, accepts `std::unique_ptr<TabPagerDesktopSource>`, `std::unique_ptr<TabPagerNavigationSettingsSource>`, and a non-owning state-store reference; `src/tabpagerdesktopcontroller.cpp` connects source/settings changes, reloads source state, mutates the state store with `setDesktopSnapshot()`, reads desktop IDs/current index/count through the state store, owns the navigator, translates navigation results, logs no-ops, and calls source activation.
 
-Current state: The controller is source owner, source subscriber, source reloader, model writer, model reader, navigation coordinator, wheel consumer, activation planner, result translator, logger, and effect dispatcher.
+Current state: The controller is source owner, source subscriber, source reloader, state-store writer/reader, navigation coordinator, wheel consumer, activation planner, result translator, logger, and effect dispatcher.
 
-Design concern: The controller couples application behavior to the Qt list model. This makes `TabPagerDesktopModel` part of the application logic contract rather than a replaceable projection of desktop state.
+Design concern: The controller no longer couples directly to the Qt list model, but it still combines source ownership, source synchronization, navigation coordination, wheel consumption, result translation, logging, and effect dispatch.
 
 Correct end state: The controller should depend on a small desktop state/navigation port, not directly on a `QAbstractListModel`-backed model. The Qt model should adapt state transitions into `beginResetModel()`, `endResetModel()`, and `dataChanged()` notifications.
 
-Suggested migration: Introduce a `TabPagerDesktopStateStore` or equivalent with `setSnapshot`, `desktopIdForIndex`, `currentIndex`, and `count`. Let the controller mutate/read that store. Let `TabPagerDesktopModel` observe or adapt the store/state transitions for QML.
+Suggested migration: Continue moving decision logic toward pure planners and keep Qt model notification semantics isolated in `TabPagerDesktopModel`. Evaluate whether the state-store transition ownership should move out of the Qt model if more non-QML state consumers appear.
 
 Acceptance criteria: `tabpagerdesktopcontroller.h` no longer includes `tabpagerdesktopmodel.h`. Controller tests can instantiate the controller without constructing `TabPagerDesktopModel`. Qt model notification semantics stay inside `TabPagerDesktopModel`.
 

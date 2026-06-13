@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tabpagerdesktopcontroller.h"
+#include "tabpagerdesktopmodel.h"
 
 #include <QFont>
 #include <QObject>

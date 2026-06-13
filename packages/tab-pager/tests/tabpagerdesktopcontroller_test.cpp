@@ -3,6 +3,7 @@
 
 #include "tabpagerbackendtesthelpers.h"
 #include "tabpagerdesktopcontroller.h"
+#include "tabpagerdesktopstatestore.h"
 #include "tabpagertesthelpers.h"
 
 #include <QSignalSpy>
@@ -24,6 +25,46 @@ void expectActivationResult(TabPagerActivationResult actual,
   QCOMPARE(static_cast<int>(actual), static_cast<int>(expected));
 }
 
+class FakeDesktopStateStore final : public TabPagerDesktopStateStore {
+public:
+  [[nodiscard]] int count() const override { return m_desktops.size(); }
+
+  [[nodiscard]] int currentIndex() const override {
+    if (!m_currentDesktop.isValid()) {
+      return -1;
+    }
+
+    for (qsizetype index = 0; index < m_desktops.size(); ++index) {
+      if (m_desktops.at(index).id == m_currentDesktop) {
+        return static_cast<int>(index);
+      }
+    }
+
+    return -1;
+  }
+
+  [[nodiscard]] std::optional<TabPagerDesktopId>
+  desktopIdForIndex(int index) const override {
+    if (index < 0 || index >= m_desktops.size()) {
+      return std::nullopt;
+    }
+
+    return m_desktops.at(index).id;
+  }
+
+  void setDesktopSnapshot(const TabPagerDesktopSnapshot &snapshot) override {
+    ++setSnapshotCount;
+    m_desktops = snapshot.desktops();
+    m_currentDesktop = snapshot.currentDesktop();
+  }
+
+  int setSnapshotCount = 0;
+
+private:
+  QList<TabPagerDesktop> m_desktops;
+  TabPagerDesktopId m_currentDesktop;
+};
+
 struct ControllerFixture {
 private:
   struct AdoptSources {};
@@ -40,7 +81,7 @@ public:
 
   FakeDesktopSource *source = nullptr;
   FakeNavigationSettingsSource *settings = nullptr;
-  TabPagerDesktopModel model;
+  FakeDesktopStateStore stateStore;
   TabPagerDesktopController controller;
 
 private:
@@ -49,7 +90,8 @@ private:
       std::unique_ptr<FakeDesktopSource> fakeSource,
       std::unique_ptr<FakeNavigationSettingsSource> fakeSettings)
       : source(fakeSource.get()), settings(fakeSettings.get()),
-        controller(std::move(fakeSource), std::move(fakeSettings), model) {}
+        controller(std::move(fakeSource), std::move(fakeSettings), stateStore) {
+  }
 };
 } // namespace
 
@@ -70,9 +112,6 @@ void TabPagerDesktopControllerTest::
   ControllerFixture fixture({
       defaultDesktop("a", 1),
   });
-  QSignalSpy countSpy(&fixture.model, &TabPagerDesktopModel::countChanged);
-  QSignalSpy currentSpy(&fixture.model,
-                        &TabPagerDesktopModel::currentIndexChanged);
   QSignalSpy wrappingSpy(
       &fixture.controller,
       &TabPagerDesktopController::navigationWrappingAroundChanged);
@@ -85,11 +124,10 @@ void TabPagerDesktopControllerTest::
       desktopId("b"));
   fixture.settings->setNavigationWrappingAround(true);
 
-  QCOMPARE(fixture.model.count(), 2);
-  QCOMPARE(fixture.model.currentIndex(), 1);
+  QCOMPARE(fixture.stateStore.count(), 2);
+  QCOMPARE(fixture.stateStore.currentIndex(), 1);
   QCOMPARE(fixture.controller.navigationWrappingAround(), true);
-  QCOMPARE(countSpy.count(), 1);
-  QCOMPARE(currentSpy.count(), 1);
+  QCOMPARE(fixture.stateStore.setSnapshotCount, 2);
   QCOMPARE(wrappingSpy.count(), 1);
 }
 
@@ -98,20 +136,16 @@ void TabPagerDesktopControllerTest::
   ControllerFixture fixture({
       defaultDesktop("a", 1),
   });
-  QSignalSpy countSpy(&fixture.model, &TabPagerDesktopModel::countChanged);
-  QSignalSpy currentSpy(&fixture.model,
-                        &TabPagerDesktopModel::currentIndexChanged);
   QSignalSpy wrappingSpy(
       &fixture.controller,
       &TabPagerDesktopController::navigationWrappingAroundChanged);
 
   fixture.settings->setNavigationWrappingAround(true);
 
-  QCOMPARE(fixture.model.count(), 1);
-  QCOMPARE(fixture.model.currentIndex(), -1);
+  QCOMPARE(fixture.stateStore.count(), 1);
+  QCOMPARE(fixture.stateStore.currentIndex(), -1);
   QCOMPARE(fixture.controller.navigationWrappingAround(), true);
-  QCOMPARE(countSpy.count(), 0);
-  QCOMPARE(currentSpy.count(), 0);
+  QCOMPARE(fixture.stateStore.setSnapshotCount, 1);
   QCOMPARE(wrappingSpy.count(), 1);
 }
 

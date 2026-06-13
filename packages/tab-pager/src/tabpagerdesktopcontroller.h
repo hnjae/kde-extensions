@@ -4,9 +4,9 @@
 #pragma once
 
 #include "tabpageractivationplanner.h"
-#include "tabpagerdesktopmodel.h"
 #include "tabpagerdesktopnavigator.h"
 #include "tabpagerdesktopsource.h"
+#include "tabpagerdesktopstatestore.h"
 #include "tabpagernavigationsettingssource.h"
 
 #include <QObject>
@@ -20,7 +20,7 @@ public:
   explicit TabPagerDesktopController(
       std::unique_ptr<TabPagerDesktopSource> source,
       std::unique_ptr<TabPagerNavigationSettingsSource> navigationSettings,
-      TabPagerDesktopModel &model, QObject *parent = nullptr);
+      TabPagerDesktopStateStore &stateStore, QObject *parent = nullptr);
   ~TabPagerDesktopController() override;
 
   [[nodiscard]] bool navigationWrappingAround() const;
@@ -51,7 +51,7 @@ private:
   activateNavigationTarget(const TabPagerDesktopNavigationResult &target);
   [[nodiscard]] TabPagerActivationResult activateOffsetWithResult(int offset);
 
-  TabPagerDesktopModel &m_model;
+  TabPagerDesktopStateStore &m_stateStore;
   std::unique_ptr<TabPagerDesktopSource> m_source;
   std::unique_ptr<TabPagerNavigationSettingsSource> m_navigationSettings;
   TabPagerDesktopNavigator m_navigator;

@@ -33,8 +33,8 @@ void logUnexpectedActivationNoOp(TabPagerActivationResult result, int index) {
 TabPagerDesktopController::TabPagerDesktopController(
     std::unique_ptr<TabPagerDesktopSource> source,
     std::unique_ptr<TabPagerNavigationSettingsSource> navigationSettings,
-    TabPagerDesktopModel &model, QObject *parent)
-    : QObject(parent), m_model(model), m_source(std::move(source)),
+    TabPagerDesktopStateStore &stateStore, QObject *parent)
+    : QObject(parent), m_stateStore(stateStore), m_source(std::move(source)),
       m_navigationSettings(std::move(navigationSettings)) {
   initializeSource();
 }
@@ -54,7 +54,7 @@ void TabPagerDesktopController::activate(int index) {
 TabPagerActivationResult
 TabPagerDesktopController::activateWithResult(int index) {
   const TabPagerActivationPlan plan =
-      tabPagerActivationPlanForIndex(m_model.desktopIdForIndex(index));
+      tabPagerActivationPlanForIndex(m_stateStore.desktopIdForIndex(index));
   if (plan.desktopId.has_value()) {
     m_source->activateDesktop(*plan.desktopId);
   }
@@ -120,7 +120,7 @@ void TabPagerDesktopController::reloadSourceState() {
 
 void TabPagerDesktopController::applySourceState(
     const TabPagerDesktopSourceState &state) {
-  m_model.setDesktopSnapshot(state.desktopSnapshot);
+  m_stateStore.setDesktopSnapshot(state.desktopSnapshot);
   applyNavigationWrappingAround(
       m_navigationSettings->navigationWrappingAround());
 }
@@ -138,8 +138,8 @@ void TabPagerDesktopController::applyNavigationWrappingAround(
 TabPagerDesktopNavigationContext
 TabPagerDesktopController::navigationContext() const {
   return TabPagerDesktopNavigationContext{
-      .currentIndex = m_model.currentIndex(),
-      .desktopCount = m_model.count(),
+      .currentIndex = m_stateStore.currentIndex(),
+      .desktopCount = m_stateStore.count(),
   };
 }
 
