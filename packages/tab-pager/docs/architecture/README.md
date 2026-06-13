@@ -18,3 +18,13 @@ Label text formatting belongs to the view-model boundary while the widget's publ
 `labelFont` belongs to `TabPagerBackend` because QML needs the same font for metrics and rendering. Keep additional presentation decisions in this boundary only when they are stable widget contract or QML adapter concerns; rendering geometry and event delivery remain QML responsibilities unless a pure helper is introduced for testability.
 
 If future behavior needs a reusable domain model outside QML, introduce a separate semantic API instead of widening the QML row roles or treating `TabPagerBackend` as command-only.
+
+## Source Diagnostics Boundary
+
+`TabPagerDesktopSource` owns the generic source health read/signal boundary through `sourceHasDiagnostics()` and `sourceDiagnosticsChanged()`.
+
+Source implementations may keep richer provider-specific diagnostics for tests and provider-local logging, but controller-level code should observe source health through the generic source interface rather than downcasting to a concrete provider or parsing logs.
+
+TaskManager diagnostics are transition-based: unchanged malformed source data should not repeatedly emit generic diagnostic changes or duplicate warning logs, while appearance, material update, and recovery should be observable.
+
+Do not expose source diagnostics through the QML-facing backend until there is a concrete display or configuration requirement.

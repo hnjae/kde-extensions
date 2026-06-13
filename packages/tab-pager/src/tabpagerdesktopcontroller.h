@@ -24,6 +24,7 @@ public:
   ~TabPagerDesktopController() override;
 
   [[nodiscard]] bool navigationWrappingAround() const;
+  [[nodiscard]] bool sourceHasDiagnostics() const;
 
   void activate(int index);
   void activateNext();
@@ -38,6 +39,7 @@ public:
 
 Q_SIGNALS:
   void navigationWrappingAroundChanged();
+  void sourceDiagnosticsChanged();
   void activationFinished(TabPagerActivationResult result);
 
 private:

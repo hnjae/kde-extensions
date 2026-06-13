@@ -6,14 +6,14 @@ The codebase is small and already has useful seams: TaskManager raw-state mappin
 
 The highest-impact remaining issue is that orchestration, state synchronization, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, subscribes to source/settings changes, writes and reads the state-store port, owns the navigator, consumes wheel deltas, translates navigation results into activation results, logs selected no-ops, and dispatches source activation. That is manageable at the current size, but it is the pressure point where new behavior will become harder to test and reason about.
 
-The second major risk is operational visibility. `TaskManagerDesktopSource` has a structured diagnostics read seam and suppresses unchanged duplicate warning logs, but generic source state still does not carry diagnostic health, and backend/controller observability remains incomplete.
+Operational visibility now has an explicit source/controller health channel. `TaskManagerDesktopSource` keeps structured provider diagnostics for tests and provider-local transition logging, while generic controller code can observe degraded source state without parsing logs or downcasting. User-facing backend/QML diagnostic display remains intentionally absent until there is a concrete display requirement.
 
 No P0 issue was found. The recommended end state is a precise, boring architecture: a small application state store, pure planners for navigation/activation/input mapping, Qt/QML adapters around those seams, and explicit diagnostic/error channels.
 
 ## Top Design Risks
 
 1. `TabPagerDesktopController` spans source ownership, source/settings reloads, state-store reads/writes, navigation, wheel consumption, result translation, logging, and activation effects.
-2. Degraded source state is not part of the application state contract. A source-specific structured read seam exists, and TaskManager source diagnostics are logged only on diagnostic transitions.
+2. Package identity, version, QML module URI, and install-path metadata are still repeated across build, package, QML, and Nix metadata.
 3. Wheel input semantics are split between QML event normalization and C++ navigation state.
 
 ## Single Source of Truth Violations
@@ -136,37 +136,19 @@ Suggested migration: Introduce a pure layout calculator, either C++ or a small d
 
 Acceptance criteria: Layout and wheel-normalization cases can be tested without `QQmlEngine`, `QUrl::fromLocalFile`, `TABPAGER_SOURCE_DIR`, `QQuickWindow`, or `qWaitForWindowExposed`. One integration smoke test remains.
 
-## Error Handling and Observability Problems
-
-### Finding: Source diagnostics are log-only and not stateful
-
-Priority: P2
-
-Evidence: `TaskManagerDesktopSourceDiagnostic` and `TaskManagerDesktopSourceMappingResult` carry structured diagnostics from the mapper; `TaskManagerDesktopSource::sourceState()` returns only `result.state`; `TabPagerDesktopSourceState` contains only the desktop snapshot.
-
-Current state: Malformed TaskManager data is converted into best-effort state. `TaskManagerDesktopSource::sourceDiagnostics()` can inspect the current structured diagnostics directly, and TaskManager source diagnostic transitions are logged outside `sourceState()`, but diagnostics are not part of generic source/controller/backend state.
-
-Design concern: The backend and UI cannot distinguish healthy state from degraded state without parsing logs or downcasting to a TaskManager-specific source. Diagnostics have no generic lifecycle or recovery signal outside source-local warning suppression.
-
-Correct end state: Source state should include health/degraded status or diagnostics, or diagnostics should be emitted through a dedicated observable channel. Logging should occur on diagnostic transitions, not every read.
-
-Suggested migration: Extend source state with diagnostics/health, or add a diagnostic signal/sink. The source-local warning cache logs only when diagnostics appear, disappear, or materially change; remaining work should expose diagnostics through a generic observable contract.
-
-Acceptance criteria: Backend/QML or tests can inspect source health without parsing logs. Tests cover diagnostic appearance, update, and recovery through an explicit diagnostic channel rather than getter-side log capture.
-
 ## Recommended Correct End-State Architecture
 
 Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces desktop state plus explicit diagnostics. A desktop state store owns the current desktop state and transition planning. A Qt model and backend form an intentional QML view-model boundary that owns row projection, label formatting, QML roles, model notifications, facade properties, and the fixed-width label font. Navigation, activation, and wheel-input helpers own pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
 
 Where domain rules should live: Default-name label behavior belongs to the documented QML view-model boundary, not to source-state normalization. Wrapping behavior should live in navigator/controller policy, not in desktop inventory state.
 
-Where state should be defined: `TabPagerDesktopStateStore` should own current desktop state and transition results. Pending wheel-delta behavior is user-visible and specified; if wheel handling is extracted from the navigator, the extracted helper must preserve that accumulation contract unless the spec changes first. Source diagnostics should be part of source health state or a dedicated diagnostic stream.
+Where state should be defined: `TabPagerDesktopStateStore` should own current desktop state and transition results. Pending wheel-delta behavior is user-visible and specified; if wheel handling is extracted from the navigator, the extracted helper must preserve that accumulation contract unless the spec changes first. Source diagnostics should remain observable through the generic source/controller health channel.
 
 Where validation should happen: Public APIs that accept untrusted indexes or IDs should still validate those inputs.
 
 How external effects should be isolated: TaskManager reads and activation requests should remain behind source/provider interfaces. Activation planning should return commands without executing them. The controller should execute commands and report outcomes. QML event handling should convert UI events into semantic inputs through a small tested adapter.
 
-How errors should be represented: Source diagnostics should be structured and observable, not log-only. Activation results should distinguish invalid input, benign no-op, degraded state, request sent, and optionally confirmation/timeout. Fatal programmer errors should fail deterministically with critical diagnostics, not rely only on debug assertions.
+How errors should be represented: Source diagnostics should stay structured and observable, not log-only. Provider-specific diagnostic details can remain provider-local until there is a user-facing display requirement, but controller-level health should remain available through the generic source boundary. Activation results should distinguish invalid input, benign no-op, degraded state, request sent, and optionally confirmation/timeout. Fatal programmer errors should fail deterministically with critical diagnostics, not rely only on debug assertions.
 
 How tests should be structured: Keep pure tests for navigation target calculation, wheel delta mapping, activation planning, and layout metrics. Keep focused Qt/QML integration smoke tests for model notifications, QML binding load, and event wiring. Avoid repeating the same activation behavior matrix at controller and backend layers unless each test proves different wiring.
 
@@ -174,7 +156,7 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 
 1. Isolate remaining input and activation decisions from external effects by extracting wheel input mapping from QML event handlers and moving any remaining activation decision logic out of `TabPagerDesktopController`.
 2. Clarify the remaining ownership boundary for whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
-3. Improve error semantics and observability by making source diagnostics stateful/observable and clarifying activation request versus confirmation.
+3. Improve error semantics by clarifying activation request versus confirmation.
 4. Remove or simplify remaining premature abstractions by narrowing public QML roles if they are not part of the chosen view-model boundary.
 
 ## Things Not To Change Yet
@@ -199,10 +181,10 @@ Invariant / Correctness Agent: Reported uncertain wheel-delta context scoping. T
 
 Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, and split presentation formatting. Controller ownership remains P2, but the source/navigation policy finding was removed because desktop source state and navigation settings are now separated and tested. Presentation formatting is now documented as part of the intentional QML view-model boundary.
 
-Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging has been removed from `sourceState()`; the remaining observability work is tracked by the source diagnostics finding. Wheel flow readability was kept as P3 and linked to the stronger P2 wheel context issue.
+Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging has been removed from `sourceState()`, and source/controller diagnostics health is now observable through a generic source boundary. Wheel flow readability was kept as P3 and linked to the stronger P2 wheel context issue.
 
-Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout/input testability and activation planning were kept as P2. Getter-side diagnostics were merged into the source diagnostics finding.
+Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout/input testability and activation planning were kept as P2. Getter-side diagnostics were resolved by the generic source/controller diagnostics channel.
 
-Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics were kept as P2. Activation confirmation was downgraded from P1 to P2 because the immediate issue is naming unless confirmed activation is surfaced.
+Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics now have generic source/controller health observability while provider-specific details remain provider-local. Activation confirmation was downgraded from P1 to P2 because the immediate issue is naming unless confirmed activation is surfaced.
 
 Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles were narrowed and the remaining row projection is documented as an intentional QML view-model boundary. Wrapping leakage was removed because wrapping is no longer public backend/QML API and no longer reloads desktop source state. Parallel navigation APIs were removed because optional/test-only wrappers are gone; the remaining silent commands are QML-facing entry points over result-returning internals. Adapter-seam clarity remains P3.

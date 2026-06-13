@@ -115,7 +115,7 @@ void TaskManagerDesktopSource::connectDesktopInfo() {
           this, &TaskManagerDesktopSource::handleDesktopInfoChanged);
   connect(m_info.get(), &TabPagerVirtualDesktopInfo::currentDesktopChanged,
           this, &TaskManagerDesktopSource::handleDesktopInfoChanged);
-  refreshDiagnostics();
+  static_cast<void>(refreshDiagnostics());
 }
 
 TaskManagerDesktopSource::~TaskManagerDesktopSource() = default;
@@ -129,25 +129,32 @@ TaskManagerDesktopSource::sourceDiagnostics() const {
   return mapDesktopSourceState(*m_info).diagnostics;
 }
 
+bool TaskManagerDesktopSource::sourceHasDiagnostics() const {
+  return !sourceDiagnostics().isEmpty();
+}
+
 void TaskManagerDesktopSource::handleDesktopInfoChanged() {
-  refreshDiagnostics();
+  if (refreshDiagnostics()) {
+    Q_EMIT sourceDiagnosticsChanged();
+  }
   Q_EMIT sourceStateChanged();
 }
 
-void TaskManagerDesktopSource::refreshDiagnostics() {
-  logDiagnosticsIfChanged(mapDesktopSourceState(*m_info).diagnostics);
+bool TaskManagerDesktopSource::refreshDiagnostics() {
+  return logDiagnosticsIfChanged(mapDesktopSourceState(*m_info).diagnostics);
 }
 
-void TaskManagerDesktopSource::logDiagnosticsIfChanged(
+bool TaskManagerDesktopSource::logDiagnosticsIfChanged(
     const QList<TaskManagerDesktopSourceDiagnostic> &diagnostics) const {
   if (m_hasLoggedDiagnostics &&
       diagnosticsEqual(m_loggedDiagnostics, diagnostics)) {
-    return;
+    return false;
   }
 
   m_hasLoggedDiagnostics = true;
   m_loggedDiagnostics = diagnostics;
   logDesktopSourceDiagnostics(diagnostics);
+  return true;
 }
 
 void TaskManagerDesktopSource::activateDesktop(

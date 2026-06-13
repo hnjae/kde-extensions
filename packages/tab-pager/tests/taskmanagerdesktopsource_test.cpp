@@ -189,6 +189,8 @@ private Q_SLOTS:
   void reportsNameCountDiagnostics();
   void reportsDesktopIdentityDiagnostics();
   void exposesCurrentSourceDiagnostics();
+  void exposesGenericSourceDiagnosticsHealth();
+  void emitsGenericSourceDiagnosticsChangedWhenHealthChanges();
   void doesNotLogSourceDiagnosticsOnStateReads();
   void logsSourceDiagnosticsWhenDiagnosticStateChanges();
   void emitsSourceStateChangedWhenVirtualDesktopInfoChanges();
@@ -362,6 +364,31 @@ void TaskManagerDesktopSourceTest::exposesCurrentSourceDiagnostics() {
   QCOMPARE(diagnostics.at(3).type,
            TaskManagerDesktopSourceDiagnostic::Type::UnmatchedCurrentDesktop);
   QCOMPARE(diagnostics.at(3).desktopId, QVariant{QStringLiteral("missing")});
+}
+
+void TaskManagerDesktopSourceTest::exposesGenericSourceDiagnosticsHealth() {
+  SourceFixture healthyFixture({QStringLiteral("a")}, {QStringLiteral("Work")},
+                               QStringLiteral("a"));
+  SourceFixture degradedFixture({QVariant{}}, {QStringLiteral("Broken")});
+
+  QCOMPARE(healthyFixture.source.sourceHasDiagnostics(), false);
+  QCOMPARE(degradedFixture.source.sourceHasDiagnostics(), true);
+}
+
+void TaskManagerDesktopSourceTest::
+    emitsGenericSourceDiagnosticsChangedWhenHealthChanges() {
+  SourceFixture fixture({QStringLiteral("a")}, {QStringLiteral("Work")},
+                        QStringLiteral("a"));
+  QSignalSpy spy(&fixture.source,
+                 &TabPagerDesktopSource::sourceDiagnosticsChanged);
+
+  fixture.info->setDesktopState({QVariant{}}, {QStringLiteral("Broken")});
+  fixture.info->setDesktopState({QVariant{}}, {QStringLiteral("Broken")});
+  fixture.info->setDesktopState({QStringLiteral("a")}, {QStringLiteral("Work")},
+                                QStringLiteral("a"));
+
+  QCOMPARE(spy.count(), 2);
+  QCOMPARE(fixture.source.sourceHasDiagnostics(), false);
 }
 
 void TaskManagerDesktopSourceTest::doesNotLogSourceDiagnosticsOnStateReads() {

@@ -21,6 +21,7 @@ public:
   ~TaskManagerDesktopSource() override;
 
   [[nodiscard]] TabPagerDesktopSourceState sourceState() const override;
+  [[nodiscard]] bool sourceHasDiagnostics() const override;
   [[nodiscard]] QList<TaskManagerDesktopSourceDiagnostic>
   sourceDiagnostics() const;
   void activateDesktop(const TabPagerDesktopId &desktopId) override;
@@ -28,8 +29,8 @@ public:
 private:
   void connectDesktopInfo();
   void handleDesktopInfoChanged();
-  void refreshDiagnostics();
-  void logDiagnosticsIfChanged(
+  [[nodiscard]] bool refreshDiagnostics();
+  [[nodiscard]] bool logDiagnosticsIfChanged(
       const QList<TaskManagerDesktopSourceDiagnostic> &diagnostics) const;
 
   std::unique_ptr<TabPagerVirtualDesktopInfo> m_info;

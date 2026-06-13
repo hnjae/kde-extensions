@@ -24,6 +24,10 @@ public:
     };
   }
 
+  [[nodiscard]] bool sourceHasDiagnostics() const override {
+    return m_sourceHasDiagnostics;
+  }
+
   void activateDesktop(const TabPagerDesktopId &desktopId) override {
     m_activatedDesktops.append(desktopId);
   }
@@ -52,6 +56,15 @@ public:
     Q_EMIT sourceStateChanged();
   }
 
+  void setSourceHasDiagnostics(bool sourceHasDiagnostics) {
+    if (m_sourceHasDiagnostics == sourceHasDiagnostics) {
+      return;
+    }
+
+    m_sourceHasDiagnostics = sourceHasDiagnostics;
+    Q_EMIT sourceDiagnosticsChanged();
+  }
+
   [[nodiscard]] QList<TabPagerDesktopId> activatedDesktops() const {
     return m_activatedDesktops;
   }
@@ -60,6 +73,7 @@ private:
   QList<TabPagerDesktop> m_desktops;
   QList<TabPagerDesktopId> m_activatedDesktops;
   TabPagerDesktopId m_currentDesktop;
+  bool m_sourceHasDiagnostics = false;
 };
 
 class FakeNavigationSettingsSource final

@@ -45,6 +45,10 @@ bool TabPagerDesktopController::navigationWrappingAround() const {
   return m_navigator.navigationWrappingAround();
 }
 
+bool TabPagerDesktopController::sourceHasDiagnostics() const {
+  return m_source->sourceHasDiagnostics();
+}
+
 void TabPagerDesktopController::activate(int index) {
   const TabPagerActivationResult result = activateWithResult(index);
   logUnexpectedActivationNoOp(result, index);
@@ -106,6 +110,8 @@ void TabPagerDesktopController::initializeSource() {
 void TabPagerDesktopController::connectSource() {
   connect(m_source.get(), &TabPagerDesktopSource::sourceStateChanged, this,
           &TabPagerDesktopController::reloadSourceState);
+  connect(m_source.get(), &TabPagerDesktopSource::sourceDiagnosticsChanged,
+          this, &TabPagerDesktopController::sourceDiagnosticsChanged);
   connect(m_navigationSettings.get(),
           &TabPagerNavigationSettingsSource::navigationWrappingAroundChanged,
           this, [this]() {

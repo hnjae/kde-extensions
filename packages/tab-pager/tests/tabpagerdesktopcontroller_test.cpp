@@ -101,6 +101,7 @@ class TabPagerDesktopControllerTest : public QObject {
 private Q_SLOTS:
   void synchronizesSourceStateToModelAndNavigation();
   void synchronizesNavigationWrappingWithoutModelReload();
+  void forwardsSourceDiagnosticsHealth();
   void activatesDesktopsThroughModelIndexes();
   void activatesRelativeNavigationTargets();
   void reportsActivationResults();
@@ -147,6 +148,25 @@ void TabPagerDesktopControllerTest::
   QCOMPARE(fixture.controller.navigationWrappingAround(), true);
   QCOMPARE(fixture.stateStore.setSnapshotCount, 1);
   QCOMPARE(wrappingSpy.count(), 1);
+}
+
+void TabPagerDesktopControllerTest::forwardsSourceDiagnosticsHealth() {
+  ControllerFixture fixture({
+      defaultDesktop("a", 1),
+  });
+  QSignalSpy spy(&fixture.controller,
+                 &TabPagerDesktopController::sourceDiagnosticsChanged);
+
+  QCOMPARE(fixture.controller.sourceHasDiagnostics(), false);
+
+  fixture.source->setSourceHasDiagnostics(true);
+
+  QCOMPARE(fixture.controller.sourceHasDiagnostics(), true);
+  QCOMPARE(spy.count(), 1);
+
+  fixture.source->setSourceHasDiagnostics(true);
+
+  QCOMPARE(spy.count(), 1);
 }
 
 void TabPagerDesktopControllerTest::activatesDesktopsThroughModelIndexes() {

@@ -19,8 +19,10 @@ public:
   ~TabPagerDesktopSource() override;
 
   [[nodiscard]] virtual TabPagerDesktopSourceState sourceState() const = 0;
+  [[nodiscard]] virtual bool sourceHasDiagnostics() const = 0;
   virtual void activateDesktop(const TabPagerDesktopId &desktopId) = 0;
 
 Q_SIGNALS:
   void sourceStateChanged();
+  void sourceDiagnosticsChanged();
 };
