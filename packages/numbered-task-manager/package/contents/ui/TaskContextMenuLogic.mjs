@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-export { contextMenuActionSections } from "./TaskContextMenuActionSectionsLogic.mjs";
+import * as ActionSectionsLogic from "./TaskContextMenuActionSectionsLogic.mjs";
 export {
   CONTEXT_MENU_LAUNCHER_COMMAND_KIND,
   CONTEXT_MENU_ROUTE_LAUNCHER_ACTIVITY_UPDATE,
@@ -166,4 +166,8 @@ export function activityEntriesSnapshot(
     });
   }
   return entries;
+}
+
+export function contextMenuActionSections(menuState) {
+  return ActionSectionsLogic.contextMenuActionSections(menuState);
 }

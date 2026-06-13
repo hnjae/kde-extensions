@@ -127,11 +127,11 @@ assert.doesNotMatch(
 );
 assert.match(
   taskContextMenuLogicSource,
-  /export \{ contextMenuActionSections \} from "\.\/TaskContextMenuActionSectionsLogic\.mjs"/,
+  /import \* as ActionSectionsLogic from "\.\/TaskContextMenuActionSectionsLogic\.mjs"/,
 );
-assert.doesNotMatch(
+assert.match(
   taskContextMenuLogicSource,
-  /function contextMenuActionSections\b/,
+  /return ActionSectionsLogic\.contextMenuActionSections\(menuState\)/,
 );
 assert.doesNotMatch(
   taskContextMenuLogicSource,
