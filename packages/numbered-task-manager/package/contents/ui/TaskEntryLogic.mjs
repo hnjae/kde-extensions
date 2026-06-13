@@ -61,9 +61,27 @@ export function isRemoteVirtualDesktop(
 }
 
 export function hasValidModelIndex(modelIndex) {
-  return (
-    Boolean(modelIndex) && (modelIndex.valid === undefined || modelIndex.valid)
-  );
+  return isActionableModelIndex(modelIndex);
+}
+
+export function modelIndexState(modelIndex) {
+  if (!modelIndex) {
+    return "missing";
+  }
+
+  if (modelIndex.valid === undefined) {
+    return "unknown-shape";
+  }
+
+  return modelIndex.valid ? "valid" : "invalid";
+}
+
+export function isActionableModelIndexState(state) {
+  return state === "valid" || state === "unknown-shape";
+}
+
+export function isActionableModelIndex(modelIndex) {
+  return isActionableModelIndexState(modelIndexState(modelIndex));
 }
 
 export function taskEntryDiagnostic(code, field, context) {
@@ -139,15 +157,16 @@ export function taskEntryDiagnostics(roles, context) {
     );
   }
 
-  if (!modelIndex) {
+  const indexState = modelIndexState(modelIndex);
+  if (indexState === "missing") {
     diagnostics.push(
       taskEntryDiagnostic("missing-model-index", "modelIndex", context),
     );
-  } else if (modelIndex.valid === undefined) {
+  } else if (indexState === "unknown-shape") {
     diagnostics.push(
       taskEntryDiagnostic("unknown-model-index-shape", "modelIndex", context),
     );
-  } else if (!modelIndex.valid) {
+  } else if (indexState === "invalid") {
     diagnostics.push(
       taskEntryDiagnostic("invalid-model-index", "modelIndex", context),
     );

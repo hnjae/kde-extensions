@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { hasValidModelIndex } from "./TaskEntryLogic.mjs";
+import { isActionableModelIndex } from "./TaskEntryLogic.mjs";
 import { activationTargetForShortcutIndex } from "./VisibleTaskItemsLogic.mjs";
 
 export function normalizedStringList(value) {
@@ -116,7 +116,7 @@ export function taskActivationRequest(action, task, options) {
     );
   }
 
-  if (!hasValidModelIndex(entry.modelIndex)) {
+  if (!isActionableModelIndex(entry.modelIndex)) {
     return rejectedActivation(
       requestAction,
       "invalid-model-index",
@@ -146,7 +146,7 @@ export function activationExecutionContext(requestResult) {
   const context = Object.assign({}, request.context || {});
 
   if (context.modelIndexValid === undefined) {
-    context.modelIndexValid = hasValidModelIndex(request.modelIndex);
+    context.modelIndexValid = isActionableModelIndex(request.modelIndex);
   }
   if (request.sourceModel && !context.sourceModel) {
     context.sourceModel = request.sourceModel;
@@ -247,7 +247,7 @@ export function contextMenuRequestContext(request) {
 
   return {
     entryKey: task.entryKey || "",
-    modelIndexValid: hasValidModelIndex(menuRequest.modelIndex),
+    modelIndexValid: isActionableModelIndex(menuRequest.modelIndex),
     title: task.title || "",
     visualParentWidth: visualParent.width || 0,
   };
@@ -277,7 +277,7 @@ export function contextMenuRequestResult(request) {
     );
   }
 
-  if (!hasValidModelIndex(menuRequest.modelIndex)) {
+  if (!isActionableModelIndex(menuRequest.modelIndex)) {
     return actionResult(
       "openContextMenu",
       "invalid-model-index",
@@ -446,7 +446,7 @@ export function contextMenuLauncherActivityResult(update, code, launcherUrl) {
 export function contextMenuTaskRequestContext(modelIndex, task) {
   const entry = task || {};
   const context = {
-    modelIndexValid: hasValidModelIndex(modelIndex),
+    modelIndexValid: isActionableModelIndex(modelIndex),
   };
 
   if (entry.entryKey) {
@@ -501,7 +501,7 @@ export function contextMenuTaskRequest(command, taskModel, modelIndex, task) {
     );
   }
 
-  if (!hasValidModelIndex(modelIndex)) {
+  if (!isActionableModelIndex(modelIndex)) {
     return actionResult(
       requestAction,
       "invalid-model-index",

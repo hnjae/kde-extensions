@@ -31,6 +31,7 @@ const logic = await loadQmlJsModule(
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const validModelIndex = { valid: true, row: 4 };
 const invalidModelIndex = { valid: false, row: 4 };
+const unknownShapeModelIndex = { row: 4 };
 const normalTask = {
   entryKey: "normal-task",
   modelIndex: validModelIndex,
@@ -97,6 +98,36 @@ assert.equal(
     sourceModel: "remoteAttention",
   }).ok,
   true,
+);
+
+assert.deepEqual(
+  plain(
+    logic.taskActivationRequest(
+      "activateTask",
+      Object.assign({}, normalTask, {
+        modelIndex: unknownShapeModelIndex,
+      }),
+      {
+        requireSourceIndex: true,
+        sourceModel: "normal",
+      },
+    ),
+  ),
+  {
+    action: "activateTask",
+    code: "ready",
+    context: {
+      entryKey: "normal-task",
+      requireSourceIndex: true,
+      sourceIndex: 1,
+      sourceModel: "normal",
+      title: "Normal Task",
+    },
+    diagnostic: false,
+    modelIndex: unknownShapeModelIndex,
+    ok: true,
+    sourceModel: "normal",
+  },
 );
 
 const readyNormalActivation = logic.taskActivationRequest(
@@ -252,6 +283,34 @@ const invalidMenuRequest = logic.contextMenuRequestResult({
 assert.equal(invalidMenuRequest.ok, false);
 assert.equal(invalidMenuRequest.code, "invalid-model-index");
 assert.equal(logic.shouldLogActionResult(invalidMenuRequest), true);
+
+assert.deepEqual(
+  plain(
+    logic.contextMenuRequestResult({
+      modelIndex: unknownShapeModelIndex,
+      task: normalTask,
+      taskModel,
+      visualParent,
+    }),
+  ),
+  {
+    action: "openContextMenu",
+    code: "ready",
+    context: {
+      entryKey: "normal-task",
+      modelIndexValid: true,
+      title: "Normal Task",
+      visualParentWidth: 128,
+    },
+    diagnostic: false,
+    modelIndex: unknownShapeModelIndex,
+    ok: true,
+    task: normalTask,
+    taskModel,
+    visualParent,
+    visualParentWidth: 128,
+  },
+);
 
 const creationFailure = logic.contextMenuCreationResult(null, {
   context: { entryKey: "normal-task" },
@@ -509,6 +568,16 @@ const missingMethodRequest = logic.contextMenuTaskRequest(
 assert.equal(missingMethodRequest.ok, false);
 assert.equal(missingMethodRequest.code, "missing-request-method");
 assert.equal(logic.shouldLogActionResult(missingMethodRequest), true);
+
+assert.equal(
+  logic.contextMenuTaskRequest(
+    logic.contextMenuTaskCommand("requestMove"),
+    taskRequestModel,
+    unknownShapeModelIndex,
+    normalTask,
+  ).ok,
+  true,
+);
 
 assert.deepEqual(
   plain(

@@ -143,9 +143,9 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `TaskEntryLogic.hasValidModelIndex(...)` returns true when `modelIndex.valid === undefined`; `TaskEntryLogic.taskEntryDiagnostics(...)` reports the same shape as `unknown-model-index-shape`; `TaskActionLogic.taskActivationRequest(...)` and `contextMenuRequestResult(...)` use the permissive validity check before returning ready requests; `tests/taskentrylogic.test.mjs` asserts `hasValidModelIndex({}) === true`.
+**Evidence:** `TaskEntryLogic.modelIndexState(...)` now names `modelIndex.valid === undefined` as `unknown-shape`, and the actionability policy still allows that state for activation and context-menu effects until the real Plasma persistent model-index shape is confirmed.
 
-**Current state:** A model-index object with no `valid` property is accepted for activation and context-menu effects, but diagnosed as malformed.
+**Current state:** A model-index object with no `valid` property is explicitly classified as `unknown-shape` and remains accepted for activation and context-menu effects under a named preservation policy.
 
 **Design concern:** The model-index invariant is split between “diagnose” and “allow effects.” That makes stale or malformed model-index handling dependent on which boundary sees the object first.
 

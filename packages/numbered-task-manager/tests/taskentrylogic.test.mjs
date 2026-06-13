@@ -13,9 +13,12 @@ const logic = await loadQmlJsModule(
     "desktopId",
     "desktopListContains",
     "hasValidModelIndex",
+    "isActionableModelIndex",
+    "isActionableModelIndexState",
     "isOnCurrentVirtualDesktop",
     "isRemoteVirtualDesktop",
     "launcherUrlFromRoles",
+    "modelIndexState",
     "normalTaskIconFallback",
     "numberValue",
     "remoteAttentionIconFallback",
@@ -62,6 +65,18 @@ assert.equal(logic.hasValidModelIndex(null), false);
 assert.equal(logic.hasValidModelIndex({ valid: false }), false);
 assert.equal(logic.hasValidModelIndex({ valid: true }), true);
 assert.equal(logic.hasValidModelIndex({}), true);
+assert.equal(logic.modelIndexState(null), "missing");
+assert.equal(logic.modelIndexState({ valid: false }), "invalid");
+assert.equal(logic.modelIndexState({ valid: true }), "valid");
+assert.equal(logic.modelIndexState({}), "unknown-shape");
+assert.equal(logic.isActionableModelIndex(null), false);
+assert.equal(logic.isActionableModelIndex({ valid: false }), false);
+assert.equal(logic.isActionableModelIndex({ valid: true }), true);
+assert.equal(logic.isActionableModelIndex({}), true);
+assert.equal(logic.isActionableModelIndexState("missing"), false);
+assert.equal(logic.isActionableModelIndexState("invalid"), false);
+assert.equal(logic.isActionableModelIndexState("valid"), true);
+assert.equal(logic.isActionableModelIndexState("unknown-shape"), true);
 
 assert.equal(logic.boolValue(1), true);
 assert.equal(logic.boolValue(0), false);
