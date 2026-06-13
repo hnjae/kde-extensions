@@ -88,7 +88,6 @@ mapDesktopSourceState(const TabPagerVirtualDesktopInfo &info) {
       .desktopIds = info.desktopIds(),
       .desktopNames = info.desktopNames(),
       .currentDesktop = info.currentDesktop(),
-      .navigationWrappingAround = info.navigationWrappingAround(),
   });
 }
 } // namespace
@@ -118,7 +117,7 @@ void TaskManagerDesktopSource::connectDesktopInfo() {
           this, &TabPagerDesktopSource::sourceStateChanged);
   connect(m_info.get(),
           &TabPagerVirtualDesktopInfo::navigationWrappingAroundChanged, this,
-          &TabPagerDesktopSource::sourceStateChanged);
+          &TabPagerDesktopSource::navigationWrappingAroundChanged);
 }
 
 TaskManagerDesktopSource::~TaskManagerDesktopSource() = default;
@@ -128,6 +127,10 @@ TabPagerDesktopSourceState TaskManagerDesktopSource::sourceState() const {
       mapDesktopSourceState(*m_info);
   logDiagnosticsIfChanged(result.diagnostics);
   return result.state;
+}
+
+bool TaskManagerDesktopSource::navigationWrappingAround() const {
+  return m_info->navigationWrappingAround();
 }
 
 QList<TaskManagerDesktopSourceDiagnostic>

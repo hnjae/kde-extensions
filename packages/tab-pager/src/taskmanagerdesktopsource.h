@@ -20,6 +20,7 @@ public:
   ~TaskManagerDesktopSource() override;
 
   [[nodiscard]] TabPagerDesktopSourceState sourceState() const override;
+  [[nodiscard]] bool navigationWrappingAround() const override;
   [[nodiscard]] QList<TaskManagerDesktopSourceDiagnostic>
   sourceDiagnostics() const;
   void activateDesktop(const TabPagerDesktopId &desktopId) override;

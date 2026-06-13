@@ -90,17 +90,17 @@ Acceptance criteria: `tabpagerdesktopcontroller.h` no longer includes `tabpagerd
 
 Priority: P2
 
-Evidence: `src/tabpagerdesktopsource.h` defines `TabPagerDesktopSourceState` with both `desktopSnapshot` and `navigationWrappingAround`; `TaskManagerDesktopSource::connectDesktopInfo()` wires `navigationWrappingAroundChanged` into the same `sourceStateChanged` signal as desktop IDs, names, count, and current desktop; `TabPagerDesktopController::applySourceState()` applies both desktop snapshot and navigation wrapping from the same source state.
+Evidence: `src/tabpagerdesktopsource.h` defines `TabPagerDesktopSourceState` for desktop snapshot data and exposes navigation wrapping through a separate source read/signal; `TaskManagerDesktopSource::connectDesktopInfo()` wires `navigationWrappingAroundChanged` separately from desktop IDs, names, count, and current desktop; `TabPagerDesktopController` applies source state and navigation wrapping through separate update paths.
 
-Current state: A `TabPagerDesktopSource` provides desktop data and interaction policy.
+Current state: A `TabPagerDesktopSource` provides desktop data and a separate navigation wrapping input.
 
-Design concern: Desktop topology/current-desktop state and navigation policy have different ownership. A wrapping-setting change currently drives a generic source reload and model snapshot application even if desktop data is unchanged.
+Design concern: Desktop topology/current-desktop state and navigation policy have different ownership. Wrapping no longer lives inside the desktop snapshot state or drives model snapshot application, but it still lives on the generic desktop source abstraction.
 
 Correct end state: Desktop state and navigation settings should be separate inputs. The controller/backend can compose them, but the desktop source abstraction should not own interaction behavior policy.
 
-Suggested migration: Split `navigationWrappingAround` out of `TabPagerDesktopSourceState` into a dedicated provider or signal, such as `TabPagerNavigationSettingsSource`. `TaskManagerDesktopSource` can still adapt TaskManager APIs internally, but should expose desktop and settings updates through separate contracts.
+Suggested migration: Move the separate navigation wrapping read/signal to a dedicated provider, such as `TabPagerNavigationSettingsSource`. `TaskManagerDesktopSource` can still adapt TaskManager APIs internally, but desktop and settings updates should remain separate contracts.
 
-Acceptance criteria: `TabPagerDesktopSourceState` contains only desktop snapshot data. Wrapping changes do not require `m_source->sourceState()` reload. Tests distinguish desktop-source updates from navigation-setting updates.
+Acceptance criteria: `TabPagerDesktopSourceState` contains only desktop snapshot data. Wrapping changes do not require `m_source->sourceState()` reload. Tests distinguish desktop-source updates from navigation-setting updates. A future non-TaskManager desktop source should not need to own navigation policy unless it explicitly also implements the settings provider.
 
 ### Finding: Two adapter seams wrap the same LibTaskManager dependency
 
@@ -226,15 +226,15 @@ Acceptance criteria: Backend/QML or tests can inspect source health without pars
 
 Priority: P2
 
-Evidence: The spec requires wrapping behavior for scrolling; `navigationWrappingAround` is stored beside desktop snapshot data in `TabPagerDesktopSourceState`; `TaskManagerDesktopSource` maps the TaskManager wrapping signal into generic source state changes; `TabPagerDesktopController` applies wrapping to the navigator; shipped QML only calls `activateByWheelDelta(delta)` and does not read wrapping state. `TabPagerBackend` and `src/tabpagerplugin.qmltypes` no longer expose wrapping publicly.
+Evidence: The spec requires wrapping behavior for scrolling; `TabPagerDesktopSource` exposes navigation wrapping beside the desktop source contract through a separate read/signal; `TaskManagerDesktopSource` maps the TaskManager wrapping signal into that separate navigation signal; `TabPagerDesktopController` applies wrapping to the navigator; shipped QML only calls `activateByWheelDelta(delta)` and does not read wrapping state. `TabPagerBackend` and `src/tabpagerplugin.qmltypes` no longer expose wrapping publicly.
 
-Current state: A controller-only navigation policy is still carried through the desktop data source, but not through the public backend/QML API.
+Current state: A controller-only navigation policy is still carried through the desktop source abstraction, but no longer through desktop snapshot state or the public backend/QML API.
 
 Design concern: This makes wrapping hard to remove or replace cleanly. Any change still touches LibTaskManager wrapper, mapper, source state, controller, and tests.
 
 Correct end state: Treat wrapping as navigator/controller policy. Expose it to QML only if QML needs to render or configure it.
 
-Suggested migration: Split source updates into desktop snapshot changes and private navigation-policy changes.
+Suggested migration: Move the private navigation-policy read/signal behind a dedicated settings provider instead of the desktop data source abstraction.
 
 Acceptance criteria: Scrolling still follows KDE wrapping behavior. Desktop model reloads are not required solely to update navigation policy. Tests verify wrapping through activation outcomes.
 

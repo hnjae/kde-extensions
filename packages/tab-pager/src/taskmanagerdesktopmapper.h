@@ -16,7 +16,6 @@ struct TaskManagerDesktopRawState {
   QVariantList desktopIds;
   QStringList desktopNames;
   QVariant currentDesktop;
-  bool navigationWrappingAround = false;
 };
 
 struct TaskManagerDesktopSourceDiagnostic {

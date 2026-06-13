@@ -90,7 +90,6 @@ taskManagerDesktopSourceMappingFromRawState(
       .state =
           TabPagerDesktopSourceState{
               .desktopSnapshot = std::move(snapshot.snapshot),
-              .navigationWrappingAround = rawState.navigationWrappingAround,
           },
       .diagnostics = std::move(diagnostics),
   };

@@ -22,8 +22,11 @@ public:
     return TabPagerDesktopSourceState{
         .desktopSnapshot =
             TabPagerTest::desktopSnapshot(m_desktops, m_currentDesktop),
-        .navigationWrappingAround = m_navigationWrappingAround,
     };
+  }
+
+  [[nodiscard]] bool navigationWrappingAround() const override {
+    return m_navigationWrappingAround;
   }
 
   void activateDesktop(const TabPagerDesktopId &desktopId) override {
@@ -49,7 +52,7 @@ public:
 
   void setNavigationWrappingAround(bool navigationWrappingAround) {
     m_navigationWrappingAround = navigationWrappingAround;
-    Q_EMIT sourceStateChanged();
+    Q_EMIT navigationWrappingAroundChanged();
   }
 
   void setSourceState(const QList<TabPagerDesktop> &desktops,
@@ -59,6 +62,7 @@ public:
     m_currentDesktop = currentDesktop;
     m_navigationWrappingAround = navigationWrappingAround;
     Q_EMIT sourceStateChanged();
+    Q_EMIT navigationWrappingAroundChanged();
   }
 
   [[nodiscard]] QList<TabPagerDesktopId> activatedDesktops() const {

@@ -100,6 +100,11 @@ void TabPagerDesktopController::initializeSource() {
 void TabPagerDesktopController::connectSource() {
   connect(m_source.get(), &TabPagerDesktopSource::sourceStateChanged, this,
           &TabPagerDesktopController::reloadSourceState);
+  connect(m_source.get(),
+          &TabPagerDesktopSource::navigationWrappingAroundChanged, this,
+          [this]() {
+            applyNavigationWrappingAround(m_source->navigationWrappingAround());
+          });
 }
 
 void TabPagerDesktopController::reloadSourceState() {
@@ -109,7 +114,7 @@ void TabPagerDesktopController::reloadSourceState() {
 void TabPagerDesktopController::applySourceState(
     const TabPagerDesktopSourceState &state) {
   m_model.setDesktopSnapshot(state.desktopSnapshot);
-  applyNavigationWrappingAround(state.navigationWrappingAround);
+  applyNavigationWrappingAround(m_source->navigationWrappingAround());
 }
 
 void TabPagerDesktopController::applyNavigationWrappingAround(
