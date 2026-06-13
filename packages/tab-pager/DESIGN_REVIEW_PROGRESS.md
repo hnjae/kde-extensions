@@ -42,6 +42,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - The plasmoid `main.qml` import is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
 - Wheel navigation no-step/offset target translation now lives in `TabPagerDesktopNavigator` and is directly covered by pure navigator tests.
 - Activation result-name mapping now lives in a pure helper and is directly covered without backend/source fixtures.
+- Backend activation tests now cover facade forwarding and no longer repeat the lower-level controller/navigation/wheel activation matrix.
 
 ## Remaining
 
@@ -57,15 +58,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: extracted activation result-name mapping into a pure helper.
-- Files changed: `CMakeLists.txt`, `src/tabpageractivationresult.h`, `src/tabpageractivationresult.cpp`, `src/tabpageractivationplanner.h`, `src/tabpagerbackend.cpp`, `tests/tabpageractivationresult_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: backend `activationFinished(QString)` still emits the same result names for every `TabPagerActivationResult` value.
-- Target-doc cleanup: kept the controller/backend activation P2 open and updated its current-state/design-concern text to say result-name mapping is now pure while backend facade forwarding still requires integration coverage.
+- Checkpoint: trimmed backend activation tests down to facade coverage.
+- Files changed: `tests/tabpagerbackend_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: no production code changed; backend facade tests still cover direct activation forwarding and `activationFinished(QString)` forwarding for direct, relative, and wheel entry points.
+- Target-doc cleanup: kept the controller/backend activation P2 open and removed the stale statement that backend tests repeat controller activation scenarios through the facade.
 - Target-doc edits: no architectural principles or unresolved P2 content were removed.
-- Commands passed: `cmake --build build --target tabpageractivationresult_test tabpageractivationplanner_test tabpagerbackend_test tabpagerdesktopcontroller_test`; `ctest --test-dir build --output-on-failure -R 'tabpager(activationresult|activationplanner|backend|desktopcontroller)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/CMakeLists.txt packages/tab-pager/src/tabpageractivationresult.h packages/tab-pager/src/tabpageractivationresult.cpp packages/tab-pager/src/tabpageractivationplanner.h packages/tab-pager/src/tabpagerbackend.cpp packages/tab-pager/tests/tabpageractivationresult_test.cpp` from the repository root.
-- Commands failed: `cmake --build build --target tabpageractivationresult_test` failed after adding the pure helper test and before implementation because `tabpageractivationresult.h` did not exist yet; the first test-layer commit attempt failed because `treefmt` reformatted `tests/tabpageractivationresult_test.cpp`, then passed after restaging.
-- Deviations: none.
-- Ambiguity: no blocking ambiguity found. The remaining P2 is still open because controller source execution, backend facade forwarding, and some activation behavior coverage still require integration-style fixtures.
+- Commands passed: `cmake --build build --target tabpagerbackend_test tabpagerdesktopcontroller_test tabpagerdesktopnavigator_test tabpagerwheelnavigation_test tabpageractivationplanner_test`; `ctest --test-dir build --output-on-failure -R 'tabpager(backend|desktopcontroller|desktopnavigator|wheelnavigation|activationplanner)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/tests/tabpagerbackend_test.cpp` from the repository root.
+- Commands failed: none.
+- Deviations: this checkpoint intentionally removed duplicate tests instead of changing production code.
+- Ambiguity: no blocking ambiguity found. The remaining P2 is still open because controller source execution and backend facade forwarding still require integration-style fixtures.
 
 ## Notes
 
