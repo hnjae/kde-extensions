@@ -69,6 +69,7 @@ QtQuick.Item {
         desktopGap: layoutMetrics.desktopGap
         horizontalPadding: root.horizontalPadding
         labelFont: root.backend.labelFont
+        minimumExtent: layoutMetrics.fillMinimumExtent
         model: root.model
         verticalPanel: root.verticalPanel
         verticalPadding: root.verticalPadding

@@ -10,7 +10,8 @@ QtQuick.Item {
     id: root
 
     required property bool verticalPanel
-    property int desktopGap: 1
+    required property int desktopGap
+    required property real minimumExtent
     property int horizontalPadding: 0
     property var labelFont
     property var model
@@ -18,8 +19,8 @@ QtQuick.Item {
 
     signal activated(int desktopIndex)
 
-    implicitHeight: Math.max(layoutLoader.implicitHeight, 1)
-    implicitWidth: Math.max(layoutLoader.implicitWidth, 1)
+    implicitHeight: Math.max(layoutLoader.implicitHeight, minimumExtent)
+    implicitWidth: Math.max(layoutLoader.implicitWidth, minimumExtent)
 
     QtQuick.Loader {
         id: layoutLoader
@@ -97,7 +98,7 @@ QtQuick.Item {
             QtQuickLayouts.Layout.maximumHeight: implicitHeight
             QtQuickLayouts.Layout.maximumWidth: Infinity
             QtQuickLayouts.Layout.minimumHeight: implicitHeight
-            QtQuickLayouts.Layout.minimumWidth: 1
+            QtQuickLayouts.Layout.minimumWidth: root.minimumExtent
             QtQuickLayouts.Layout.preferredHeight: implicitHeight
             QtQuickLayouts.Layout.preferredWidth: implicitWidth
 

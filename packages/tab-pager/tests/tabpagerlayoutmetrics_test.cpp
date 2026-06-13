@@ -20,7 +20,9 @@ namespace {
 
 constexpr double contentImplicitHeight = 17.0;
 constexpr double contentImplicitWidth = 42.0;
+constexpr double fillMinimumExtent = 1.0;
 constexpr double horizontalPreferredWidth = contentImplicitWidth;
+constexpr double unsetPreferredExtent = -1.0;
 constexpr double verticalMinimumHeight = contentImplicitHeight;
 
 std::unique_ptr<QObject> createPagerLayoutMetrics(QQmlEngine &engine,
@@ -82,7 +84,11 @@ void TabPagerLayoutMetricsTest::bindsLayoutMetricsHelper() {
       createPagerLayoutMetrics(engine, verticalPanel, &errorString);
   QVERIFY2(metrics != nullptr, qPrintable(errorString));
   QCOMPARE(metrics->property("desktopGap").toInt(), 1);
+  QCOMPARE(metrics->property("fillMinimumExtent").toDouble(),
+           fillMinimumExtent);
   QCOMPARE(metrics->property("panelCrossAxisInset").toInt(), 0);
+  QCOMPARE(metrics->property("unsetPreferredExtent").toDouble(),
+           unsetPreferredExtent);
   QCOMPARE(metrics->property("fillWidth").toBool(), fillWidth);
   QCOMPARE(metrics->property("fillHeight").toBool(), fillHeight);
   QCOMPARE(metrics->property(qPrintable(extentPropertyName)).toDouble(),

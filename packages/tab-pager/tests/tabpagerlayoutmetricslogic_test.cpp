@@ -70,20 +70,20 @@ class TabPagerLayoutMetricsLogicTest : public QObject {
   Q_OBJECT
 
 private Q_SLOTS:
-  void exposesKdePagerSpacing_data();
-  void exposesKdePagerSpacing();
+  void exposesLayoutConstants_data();
+  void exposesLayoutConstants();
   void calculatesPanelSizingContract_data();
   void calculatesPanelSizingContract();
 };
 
-void TabPagerLayoutMetricsLogicTest::exposesKdePagerSpacing_data() {
+void TabPagerLayoutMetricsLogicTest::exposesLayoutConstants_data() {
   QTest::addColumn<bool>("verticalPanel");
 
   QTest::newRow("horizontal panel") << false;
   QTest::newRow("vertical panel") << true;
 }
 
-void TabPagerLayoutMetricsLogicTest::exposesKdePagerSpacing() {
+void TabPagerLayoutMetricsLogicTest::exposesLayoutConstants() {
   QFETCH(bool, verticalPanel);
 
   QJSEngine engine;
@@ -93,7 +93,11 @@ void TabPagerLayoutMetricsLogicTest::exposesKdePagerSpacing() {
       {QJSValue(verticalPanel), contentImplicitWidth, contentImplicitHeight});
 
   QCOMPARE(metrics.property(QStringLiteral("desktopGap")).toInt(), 1);
+  QCOMPARE(metrics.property(QStringLiteral("fillMinimumExtent")).toNumber(),
+           fillMinimumExtent);
   QCOMPARE(metrics.property(QStringLiteral("panelCrossAxisInset")).toInt(), 0);
+  QCOMPARE(metrics.property(QStringLiteral("unsetPreferredExtent")).toNumber(),
+           unsetPreferredExtent);
 }
 
 void TabPagerLayoutMetricsLogicTest::calculatesPanelSizingContract_data() {

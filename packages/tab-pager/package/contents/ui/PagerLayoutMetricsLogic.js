@@ -30,6 +30,7 @@ function calculateLayoutMetrics(
     boundedContentImplicitWidth,
     desktopGap,
     fillHeight: !verticalPanel,
+    fillMinimumExtent,
     fillWidth: verticalPanel,
     horizontalPanelCrossAxisInset,
     leftInset: verticalPanel ? panelCrossAxisInset : 0,
@@ -50,6 +51,7 @@ function calculateLayoutMetrics(
       : boundedContentImplicitWidth,
     rightInset: verticalPanel ? panelCrossAxisInset : 0,
     topInset: verticalPanel ? 0 : panelCrossAxisInset,
+    unsetPreferredExtent,
     useFillAreaConstraintHint: verticalPanel,
     verticalPanelCrossAxisInset,
   };

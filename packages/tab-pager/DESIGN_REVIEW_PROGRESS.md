@@ -33,6 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - Row/model-state tests now expect only public `label` and `active` role updates after the desktop model role narrowing.
 - Wheel accumulation and sign conversion now live in `TabPagerWheelNavigation`; `TabPagerDesktopNavigator` owns only semantic offset target selection and wrapping policy.
 - QML wheel-event normalization now lives in `TabPagerWheelInput.js` and is directly tested without Quick-window event dispatch.
+- QML layout constants such as `desktopGap`, fill minimum extent, and unset preferred extent are owned by `PagerLayoutMetricsLogic.js`/`PagerLayoutMetrics.qml` and passed explicitly to layout consumers.
 - Nix package metadata now derives `qmlModuleDir` from `pluginId`, exposes it through package passthru, and uses it for QML install-path checks.
 - Nix package metadata now derives `pluginId` and `version` from `package/metadata.json`.
 - Layout metrics formulas now live in `PagerLayoutMetricsLogic.js`, are directly tested without `QQmlEngine`, and keep a focused QML binding smoke test.
@@ -47,7 +48,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Remaining
 
-- Consolidate layout constants such as `desktopGap` and minimum extents.
 - Clarify whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
 - Keep controller orchestration from growing when new source synchronization, navigation, or activation behavior is added.
 
@@ -59,14 +59,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: removed the stale wheel-activation P2 from the correct-end-state document because wheel accumulation, sign conversion, semantic target selection, activation planning, and activation result-name mapping now have direct pure coverage.
-- Files changed: `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: documentation-only update.
-- Target-doc cleanup: kept remaining findings for controller orchestration, layout constants, and the LibTaskManager adapter boundary; removed resolved wheel-activation testability text.
-- Target-doc edits: no remaining unresolved design-review finding was removed.
-- Commands passed: `git diff --check -- DESIGN_REVIEW_CORRECT_END_STATE.md DESIGN_REVIEW_PROGRESS.md`; `nix develop ".#default" -c prek run --hook-stage pre-commit --files packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
-- Commands failed: `devenv shell -- prek run --hook-stage pre-commit --files packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root because this repository has no `devenv.nix`.
-- Deviations: no code, public API, or helper changed.
+- Checkpoint: consolidated QML layout constants under the layout-metrics owner.
+- Files changed: `package/contents/ui/PagerLayoutMetricsLogic.js`, `package/contents/ui/PagerLayoutMetrics.qml`, `package/contents/ui/PagerDesktopStrip.qml`, `package/contents/ui/TabPagerView.qml`, `tests/tabpagerlayoutmetricslogic_test.cpp`, `tests/tabpagerlayoutmetrics_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: desktop gap remains `1`; fill minimum extent remains `1`; unset preferred extent remains `-1`; horizontal/vertical layout sizing, click dispatch, and wheel dispatch remain unchanged.
+- Target-doc cleanup: removed only the resolved layout-constants finding and its direct sequence note from `DESIGN_REVIEW_CORRECT_END_STATE.md`; kept remaining controller orchestration and LibTaskManager adapter-boundary findings.
+- Target-doc edits: no unresolved controller or adapter-boundary design-review finding was removed.
+- Commands passed: `ctest --test-dir build --output-on-failure -R 'tabpagerlayoutmetricslogic|tabpagerlayoutmetrics|tabpagerview'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" -c prek run --hook-stage pre-commit --files packages/tab-pager/package/contents/ui/PagerLayoutMetricsLogic.js packages/tab-pager/package/contents/ui/PagerLayoutMetrics.qml packages/tab-pager/package/contents/ui/PagerDesktopStrip.qml packages/tab-pager/package/contents/ui/TabPagerView.qml packages/tab-pager/tests/tabpagerlayoutmetricslogic_test.cpp packages/tab-pager/tests/tabpagerlayoutmetrics_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
+- Commands failed: none.
+- Deviations: no public backend/model/source/controller API changed.
 - Ambiguity: no blocking ambiguity found.
 
 ## Notes

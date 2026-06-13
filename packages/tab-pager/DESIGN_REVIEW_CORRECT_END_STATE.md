@@ -14,24 +14,6 @@ No P0/P1 issue remains. The recommended end state is a precise, boring architect
 
 1. `TabPagerDesktopController` spans source ownership, source/settings reloads, state-store reads/writes, navigation, wheel consumption, activation-planner delegation, logging, and activation effects.
 
-## Single Source of Truth Violations
-
-### Finding: Layout constants have local duplicate defaults
-
-Priority: P3
-
-Evidence: `package/contents/ui/PagerLayoutMetrics.qml` defines `desktopGap: 1`; `package/contents/ui/PagerDesktopStrip.qml` also defaults `desktopGap: 1`; `TabPagerView.qml` passes `layoutMetrics.desktopGap` into `PagerDesktopStrip`; `PagerLayoutMetrics.qml` repeats `1` as minimum extent; `PagerDesktopStrip.qml` repeats minimum extent in implicit size clamps and `Layout.minimumWidth: 1`; `tests/tabpagerlayoutmetrics_test.cpp` repeats `fillMinimumExtent = 1.0`.
-
-Current state: `PagerLayoutMetrics` is effectively the production owner when assembled, but child components still carry independent defaults and repeated literals.
-
-Design concern: If KDE pager spacing or minimum extent rules change, several QML components and tests need synchronized edits.
-
-Correct end state: Layout constants should be owned by one layout metrics component or constants object. Consumers should receive values explicitly.
-
-Suggested migration: Make `PagerDesktopStrip.desktopGap` required. Introduce named constants for minimum extent and unset preferred extent at the layout-metrics layer.
-
-Acceptance criteria: `desktopGap` has one production definition. Minimum extent literals are named at the owner. Tests assert behavior through the owner rather than child defaults.
-
 ## Cohesion, Coupling, and Ownership Problems
 
 ### Finding: `TabPagerDesktopController` owns too many responsibilities
@@ -87,9 +69,8 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 ## Suggested Refactoring Sequence
 
 1. Clarify the remaining ownership boundary for whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
-2. Consolidate the remaining QML layout constants under the layout-metrics owner.
-3. Improve error semantics by clarifying activation request versus confirmation.
-4. Keep reducing `TabPagerDesktopController` only when new behavior would otherwise add decision logic there.
+2. Improve error semantics by clarifying activation request versus confirmation.
+3. Keep reducing `TabPagerDesktopController` only when new behavior would otherwise add decision logic there.
 
 ## Things Not To Change Yet
 
@@ -102,8 +83,6 @@ Do not remove `TabPagerVirtualDesktopInfo` until a replacement test strategy pre
 Do not move label formatting to QML just because it is presentation-related. The current C++ backend/model stack is an intentional QML view-model boundary.
 
 Do not expose more diagnostics to QML than the UI needs. Make diagnostics structured and testable first; only surface user-facing status when there is a display requirement.
-
-Do not optimize QML layout implementation before centralizing the contract and tests. The current visual behavior should be preserved.
 
 ## Appendix: Subagent Reports
 

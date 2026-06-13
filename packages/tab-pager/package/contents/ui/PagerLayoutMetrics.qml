@@ -16,6 +16,7 @@ QtQuick.QtObject {
 
     readonly property int desktopGap: calculatedMetrics.desktopGap
     readonly property bool fillHeight: calculatedMetrics.fillHeight
+    readonly property real fillMinimumExtent: calculatedMetrics.fillMinimumExtent
     readonly property bool fillWidth: calculatedMetrics.fillWidth
     readonly property int horizontalPanelCrossAxisInset: calculatedMetrics.horizontalPanelCrossAxisInset
     readonly property int panelCrossAxisInset: calculatedMetrics.panelCrossAxisInset
@@ -29,6 +30,7 @@ QtQuick.QtObject {
     readonly property real minimumWidth: calculatedMetrics.minimumWidth
     readonly property real preferredHeight: calculatedMetrics.preferredHeight
     readonly property real preferredWidth: calculatedMetrics.preferredWidth
+    readonly property real unsetPreferredExtent: calculatedMetrics.unsetPreferredExtent
 
     readonly property int bottomInset: calculatedMetrics.bottomInset
     readonly property int leftInset: calculatedMetrics.leftInset
