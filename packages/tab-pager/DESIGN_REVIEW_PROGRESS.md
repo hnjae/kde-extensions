@@ -40,6 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - `qmldir` is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
 - `tabpagerplugin.qmltypes` is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
 - The plasmoid `main.qml` import is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
+- Wheel activation no-step/offset classification now lives in `TabPagerActivationPlanner` and is directly covered by pure planner tests.
 
 ## Remaining
 
@@ -55,15 +56,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: configured the plasmoid `main.qml` import from CMake's derived QML module URI.
-- Files changed: `CMakeLists.txt`, `nix/lib/tab-pager-ci.nix`, `package/contents/ui/main.qml`, `package/contents/ui/main.qml.in`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`, repository-root `REUSE.toml`.
-- Behavior preserved: generated and installed `main.qml` still imports `io.github.hnjae.tabpager as TabPager`, still instantiates `TabPager.TabPagerBackend`, and the installed plasmoid package still contains `contents/ui/main.qml`.
-- Target-doc cleanup: removed the now-resolved P2 package identity/module metadata finding and preserved its architectural rule as a package metadata invariant under the recommended architecture.
-- Target-doc edits: removed only tactical resolved evidence and migration text for repeated package/QML module metadata; kept the invariant that package metadata remains authoritative and CI guards drift.
-- Commands passed: `cmake --build build --target tabpagermetadata_test`; `ctest --test-dir build --output-on-failure -R tabpagermetadata`; `cmake --install build`; `ctest --test-dir build --output-on-failure`; `nix develop ".#default" --command tab-pager-lint-qml`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files REUSE.toml packages/tab-pager/CMakeLists.txt packages/tab-pager/nix/lib/tab-pager-ci.nix packages/tab-pager/package/contents/ui/main.qml.in packages/tab-pager/tests/tabpagermetadata_test.cpp` from the repository root.
-- Commands failed: `ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the metadata guard and before implementation because `package/contents/ui/main.qml.in` did not exist yet; the first test-layer commit attempt failed because `treefmt` reformatted `tests/tabpagermetadata_test.cpp`, then passed after restaging; `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the Nix qml-lint guard and before updating `nix/lib/tab-pager-ci.nix`; `nix develop ".#default" --command tab-pager-lint-qml` initially failed because linting the build-tree generated `main.qml` could not resolve sibling local QML types, then passed after the lint source changed to the installed generated `main.qml`.
-- Deviations: none.
-- Ambiguity: no blocking ambiguity found. `src/tabpagerlogging.cpp` still uses `io.github.hnjae.tabpager` as a logging category, but it is not package identity, install-path, or QML module metadata.
+- Checkpoint: moved wheel activation no-step/offset classification into the pure activation planner.
+- Files changed: `src/tabpageractivationplanner.h`, `src/tabpageractivationplanner.cpp`, `src/tabpagerdesktopcontroller.cpp`, `tests/tabpageractivationplanner_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: half-wheel deltas still report `NoWheelStep`; completed wheel steps still activate the same resolved desktop through the source; source activation still occurs only after a valid desktop ID is resolved.
+- Target-doc cleanup: kept the controller/wheel activation P2 open and updated its evidence/current-state text to include the new pure wheel-result activation classification boundary.
+- Target-doc edits: no architectural principles or unresolved P2 content were removed.
+- Commands passed: `cmake --build build --target tabpageractivationplanner_test tabpagerdesktopcontroller_test`; `ctest --test-dir build --output-on-failure -R 'tabpager(activationplanner|desktopcontroller)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/src/tabpageractivationplanner.h packages/tab-pager/src/tabpageractivationplanner.cpp packages/tab-pager/src/tabpagerdesktopcontroller.cpp packages/tab-pager/tests/tabpageractivationplanner_test.cpp` from the repository root.
+- Commands failed: `cmake --build build --target tabpageractivationplanner_test` failed after adding the planner characterization and before implementation because `TabPagerWheelNavigationResult` and `tabPagerActivationPlanForWheelNavigationResult()` were not yet part of the activation planner boundary.
+- Deviations: the implementation uses a wheel-specific `TabPagerWheelActivationPlan` instead of overloading `TabPagerActivationPlan::targetIndex` with a semantic offset, so the planner API preserves type meaning.
+- Ambiguity: no blocking ambiguity found. The remaining P2 is still open because the controller still composes wheel navigation state, semantic navigation, state-store desktop ID lookup, result reporting, and source effect execution.
 
 ## Notes
 
