@@ -4,7 +4,7 @@
 
 The codebase is small and already has useful seams: TaskManager raw-state mapping is mostly pure, navigation target calculation is separated from QML rendering, and the model-state transition code has targeted tests. The main architectural risk is not lack of layering; it is that several important contracts are still implied by convention instead of being owned by a focused boundary.
 
-The highest-impact remaining issue is that orchestration, state synchronization, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, subscribes to source/settings changes, writes and reads the state-store port, owns the navigator, consumes wheel deltas, translates navigation results into activation results, logs selected no-ops, and dispatches source activation. That is manageable at the current size, but it is the pressure point where new behavior will become harder to test and reason about.
+The highest-impact remaining issue is that orchestration, state synchronization, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, subscribes to source/settings changes, writes and reads the state-store port, owns the navigator, consumes wheel deltas, delegates activation planning, logs selected no-ops, and dispatches source activation. That is manageable at the current size, but it is the pressure point where new behavior will become harder to test and reason about.
 
 Operational visibility now has an explicit source/controller health channel. `TaskManagerDesktopSource` keeps structured provider diagnostics for tests and provider-local transition logging, while generic controller code can observe degraded source state without parsing logs or downcasting. User-facing backend/QML diagnostic display remains intentionally absent until there is a concrete display requirement.
 
@@ -12,7 +12,7 @@ No P0 issue was found. The recommended end state is a precise, boring architectu
 
 ## Top Design Risks
 
-1. `TabPagerDesktopController` spans source ownership, source/settings reloads, state-store reads/writes, navigation, wheel consumption, result translation, logging, and activation effects.
+1. `TabPagerDesktopController` spans source ownership, source/settings reloads, state-store reads/writes, navigation, wheel consumption, activation-planner delegation, logging, and activation effects.
 2. Package identity, version, QML module URI, and install-path metadata are still repeated across build, package, QML, and Nix metadata.
 3. Wheel input semantics are split between QML event normalization and C++ navigation state.
 
@@ -22,7 +22,7 @@ No P0 issue was found. The recommended end state is a precise, boring architectu
 
 Priority: P2
 
-Evidence: `CMakeLists.txt` defines project version, `QML_MODULE_URI`, and `PLASMOID_ID`; `package/metadata.json` repeats the ID and version; `src/qmldir` repeats the QML module URI; `src/tabpagerplugin.qmltypes` repeats the module URI and type version; `nix/module/package.nix` repeats `pluginId` and `version`; `nix/lib/tab-pager-ci.nix` hard-codes the installed QML module path.
+Evidence: `CMakeLists.txt` defines project version, `QML_MODULE_URI`, `QML_MODULE_DIR`, and `PLASMOID_ID`; `package/metadata.json` repeats the ID and version; `src/qmldir` repeats the QML module URI; `src/tabpagerplugin.qmltypes` repeats the module URI and type version; `nix/module/package.nix` repeats `pluginId` and `version`; `nix/lib/tab-pager-ci.nix` still repeats the configured QML module path even though the plasmoid install check now uses `package.pluginId`.
 
 Current state: One release/install contract is declared across CMake, KPackage metadata, QML metadata, and Nix packaging/check code. A metadata drift test now verifies the repeated declarations agree.
 
@@ -56,11 +56,11 @@ Acceptance criteria: `desktopGap` has one production definition. Minimum extent 
 
 Priority: P2
 
-Evidence: `src/tabpagerdesktopcontroller.h` depends on `TabPagerDesktopStateStore` rather than `TabPagerDesktopModel`, accepts `std::unique_ptr<TabPagerDesktopSource>`, `std::unique_ptr<TabPagerNavigationSettingsSource>`, and a non-owning state-store reference; `src/tabpagerdesktopcontroller.cpp` connects source/settings changes, reloads source state, mutates the state store with `setDesktopSnapshot()`, reads desktop IDs/current index/count through the state store, owns the navigator, translates navigation results, logs no-ops, and calls source activation.
+Evidence: `src/tabpagerdesktopcontroller.h` depends on `TabPagerDesktopStateStore` rather than `TabPagerDesktopModel`, accepts `std::unique_ptr<TabPagerDesktopSource>`, `std::unique_ptr<TabPagerNavigationSettingsSource>`, and a non-owning state-store reference; `src/tabpagerdesktopcontroller.cpp` connects source/settings changes, reloads source state, mutates the state store with `setDesktopSnapshot()`, reads desktop IDs/current index/count through the state store, owns the navigator, calls the activation planner, logs no-ops, and calls source activation.
 
-Current state: The controller is source owner, source subscriber, source/settings reloader, state-store writer/reader, navigation coordinator, wheel consumer, activation planner caller, result translator, logger, and effect dispatcher. It no longer depends directly on `TabPagerDesktopModel`; Qt model notification semantics are isolated behind the state-store implementation.
+Current state: The controller is source owner, source subscriber, source/settings reloader, state-store writer/reader, navigation coordinator, wheel consumer, activation planner caller, logger, and effect dispatcher. It no longer depends directly on `TabPagerDesktopModel`; Qt model notification semantics are isolated behind the state-store implementation.
 
-Design concern: The controller no longer couples directly to the Qt list model, but it still combines source ownership, source synchronization, navigation coordination, wheel consumption, result translation, logging, and effect dispatch.
+Design concern: The controller no longer couples directly to the Qt list model, but it still combines source ownership, source synchronization, navigation coordination, wheel consumption, planner delegation, logging, and effect dispatch.
 
 Correct end state: The controller should remain isolated from the `QAbstractListModel` implementation and should become mostly orchestration: synchronize source/settings state, call pure planners, report outcomes, and execute returned source commands. The Qt model should continue adapting state transitions into `beginResetModel()`, `endResetModel()`, and `dataChanged()` notifications.
 
@@ -104,7 +104,7 @@ Acceptance criteria: A test verifies full spec mapping for wheel up/down. `TabPa
 
 ## Testability Problems
 
-### Finding: Activation planning requires effectful controller tests
+### Finding: Wheel activation still requires effectful controller tests
 
 Priority: P2
 
@@ -114,11 +114,11 @@ Current state: Navigation target calculation, direct activation result classific
 
 Design concern: Direct invalid-index, invalid-ID, valid activation-command planning, navigation no-op result translation, and navigation target desktop-command planning no longer require integration-style fixtures. Behavior tests for wrapping target selection, wheel remainder, source execution, and backend facade reporting still require integration-style fixtures, and backend tests repeat some controller activation scenarios through the facade.
 
-Correct end state: A pure activation planner should return `{result, optional desktopId}` or an activation command from state/navigation input. The controller should synchronize source state, call the planner, log/report no-ops, and execute the returned command.
+Correct end state: Wheel-device accumulation and semantic navigation target selection should be testable without source effects. The activation planner should continue returning activation commands from resolved state/navigation input, and the controller should synchronize source state, call pure helpers, log/report no-ops, and execute returned commands.
 
-Suggested migration: Extend `TabPagerActivationPlanner` beyond direct index activation, navigation-result translation, and navigation-target command planning so wheel/context activation planning can be tested without controller fixtures, then reduce controller tests to source synchronization and command execution.
+Suggested migration: Extract wheel accumulation/sign handling into a pure helper and route wheel activation through semantic offsets or navigation results that are already independently tested. Keep `TabPagerActivationPlanner` focused on converting resolved IDs/navigation results into activation plans, then reduce controller tests to source synchronization, helper delegation, logging/reporting, and source command execution.
 
-Acceptance criteria: All activation decision cases are testable without `QObject`, `QSignalSpy`, or fake sources. Controller tests only assert wiring, state synchronization, logging/reporting, and source execution.
+Acceptance criteria: Wheel accumulation, sign conversion, navigation target selection, and activation planning are testable without `QObject`, `QSignalSpy`, or fake sources. Controller tests only assert wiring, state synchronization, helper delegation, logging/reporting, and source execution.
 
 ### Finding: Layout metrics and wheel input mapping are tested through QML integration
 
@@ -154,7 +154,7 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 
 ## Suggested Refactoring Sequence
 
-1. Isolate remaining input and activation decisions from external effects by extracting wheel input mapping from QML event handlers and moving any remaining activation decision logic out of `TabPagerDesktopController`.
+1. Isolate remaining wheel input decisions from external effects by extracting wheel input mapping from QML event handlers and wheel accumulation/sign handling from `TabPagerDesktopNavigator`.
 2. Clarify the remaining ownership boundary for whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
 3. Improve error semantics by clarifying activation request versus confirmation.
 4. Remove or simplify remaining premature abstractions by narrowing public QML roles if they are not part of the chosen view-model boundary.
@@ -181,9 +181,9 @@ Invariant / Correctness Agent: Reported uncertain wheel-delta context scoping. T
 
 Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, and split presentation formatting. Controller ownership remains P2, but the source/navigation policy finding was removed because desktop source state and navigation settings are now separated and tested. Presentation formatting is now documented as part of the intentional QML view-model boundary.
 
-Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging has been removed from `sourceState()`, and source/controller diagnostics health is now observable through a generic source boundary. Wheel flow readability was kept as P3 and linked to the stronger P2 wheel context issue.
+Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging has been removed from `sourceState()`, and source/controller diagnostics health is now observable through a generic source boundary. Wheel flow readability remains because QML still normalizes wheel events while `TabPagerDesktopNavigator` still stores wheel-specific pending state and performs sign conversion.
 
-Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout/input testability and activation planning were kept as P2. Getter-side diagnostics were resolved by the generic source/controller diagnostics channel.
+Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout/input testability and wheel activation testability were kept as P2. Getter-side diagnostics were resolved by the generic source/controller diagnostics channel.
 
 Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics now have generic source/controller health observability while provider-specific details remain provider-local. Activation confirmation was downgraded from P1 to P2 because the immediate issue is naming unless confirmed activation is surfaced.
 
