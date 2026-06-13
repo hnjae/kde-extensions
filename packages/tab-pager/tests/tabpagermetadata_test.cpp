@@ -50,6 +50,7 @@ class TabPagerMetadataTest : public QObject {
 private Q_SLOTS:
   void packageMetadataMatchesCMakeIdentity();
   void qmlModuleMetadataMatchesCMakeIdentity();
+  void plasmoidMainQmlUsesCMakeIdentity();
   void cmakeInstallPathsUseCMakeIdentity();
   void nixMetadataMatchesCMakeIdentity();
 };
@@ -92,6 +93,24 @@ void TabPagerMetadataTest::qmlModuleMetadataMatchesCMakeIdentity() {
   QCOMPARE(QStringLiteral(TABPAGER_QML_MODULE_DIR),
            QStringLiteral(TABPAGER_QML_URI)
                .replace(QLatin1Char('.'), QLatin1Char('/')));
+}
+
+void TabPagerMetadataTest::plasmoidMainQmlUsesCMakeIdentity() {
+  const QString mainQmlTemplate =
+      readSourceFile(QStringLiteral("package/contents/ui/main.qml.in"));
+  const QString mainQml =
+      readBuildFile(QStringLiteral("package/contents/ui/main.qml"));
+
+  QVERIFY2(mainQmlTemplate.contains(
+               QStringLiteral("import @QML_MODULE_URI@ as TabPager")),
+           "main.qml template should derive import URI from CMake");
+  QVERIFY2(!mainQmlTemplate.contains(QStringLiteral(TABPAGER_QML_URI)),
+           "main.qml template should not repeat the concrete QML module URI");
+  QVERIFY2(mainQml.contains(
+               QStringLiteral("import " TABPAGER_QML_URI " as TabPager")),
+           "generated main.qml should import the configured QML module URI");
+  QVERIFY2(mainQml.contains(QStringLiteral("TabPager.TabPagerBackend")),
+           "generated main.qml should still instantiate the backend");
 }
 
 void TabPagerMetadataTest::cmakeInstallPathsUseCMakeIdentity() {
@@ -143,6 +162,13 @@ void TabPagerMetadataTest::cmakeInstallPathsUseCMakeIdentity() {
   QVERIFY2(cmake.contains(QStringLiteral(
                "${CMAKE_CURRENT_BINARY_DIR}/src/tabpagerplugin.qmltypes")),
            "CMake should install the generated qmltypes");
+  QVERIFY2(cmake.contains(
+               QStringLiteral("configure_file(package/contents/ui/main.qml.in "
+                              "package/contents/ui/main.qml @ONLY)")),
+           "CMake should configure main.qml from QML_MODULE_URI");
+  QVERIFY2(cmake.contains(QStringLiteral(
+               "${CMAKE_CURRENT_BINARY_DIR}/package/contents/ui/main.qml")),
+           "CMake should install the generated main.qml");
   QVERIFY2(cmake.contains(QStringLiteral(
                "${KDE_INSTALL_DATADIR}/plasma/plasmoids/${PLASMOID_ID}")),
            "CMake plasmoid install destination should use PLASMOID_ID");
