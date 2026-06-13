@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 #include "tabpagerdesktopid.h"
+#include "tabpagerlogging.h"
 #include "taskmanagerdesktopmapper.h"
 #include "taskmanagerdesktopsource.h"
 
@@ -12,6 +13,41 @@
 #include <utility>
 
 namespace {
+class CapturedTabPagerWarnings {
+public:
+  CapturedTabPagerWarnings()
+      : m_previousHandler(qInstallMessageHandler(capture)) {
+    s_previousHandler = m_previousHandler;
+    s_warningCount = 0;
+  }
+
+  ~CapturedTabPagerWarnings() {
+    qInstallMessageHandler(m_previousHandler);
+    s_previousHandler = nullptr;
+  }
+
+  [[nodiscard]] int warningCount() const { return s_warningCount; }
+
+private:
+  static void capture(QtMsgType type, const QMessageLogContext &context,
+                      const QString &message) {
+    if (type == QtWarningMsg &&
+        QString::fromUtf8(context.category) ==
+            QString::fromUtf8(tabPagerLog().categoryName())) {
+      ++s_warningCount;
+      return;
+    }
+
+    if (s_previousHandler != nullptr) {
+      s_previousHandler(type, context, message);
+    }
+  }
+
+  QtMessageHandler m_previousHandler = nullptr;
+  inline static QtMessageHandler s_previousHandler = nullptr;
+  inline static int s_warningCount = 0;
+};
+
 class FakeVirtualDesktopInfo final : public TabPagerVirtualDesktopInfo {
 public:
   explicit FakeVirtualDesktopInfo(QVariantList desktopIds = {},
@@ -127,6 +163,8 @@ private Q_SLOTS:
   void reportsNameCountDiagnostics();
   void reportsDesktopIdentityDiagnostics();
   void exposesCurrentSourceDiagnostics();
+  void doesNotRepeatUnchangedSourceDiagnosticsOnRepeatedStateReads();
+  void logsSourceDiagnosticsWhenDiagnosticStateChanges();
   void emitsSourceStateChangedWhenVirtualDesktopInfoChanges();
   void requestsActivationForValidDesktopIdsOnly();
 };
@@ -298,6 +336,52 @@ void TaskManagerDesktopSourceTest::exposesCurrentSourceDiagnostics() {
   QCOMPARE(diagnostics.at(3).type,
            TaskManagerDesktopSourceDiagnostic::Type::UnmatchedCurrentDesktop);
   QCOMPARE(diagnostics.at(3).desktopId, QVariant{QStringLiteral("missing")});
+}
+
+void TaskManagerDesktopSourceTest::
+    doesNotRepeatUnchangedSourceDiagnosticsOnRepeatedStateReads() {
+  SourceFixture fixture({QVariant{}, QStringLiteral("a")},
+                        {QStringLiteral("Broken"), QStringLiteral("Work")},
+                        QStringLiteral("a"));
+  CapturedTabPagerWarnings warnings;
+
+  [[maybe_unused]] const TabPagerDesktopSourceState firstState =
+      fixture.source.sourceState();
+  [[maybe_unused]] const TabPagerDesktopSourceState secondState =
+      fixture.source.sourceState();
+
+  QCOMPARE(warnings.warningCount(), 1);
+}
+
+void TaskManagerDesktopSourceTest::
+    logsSourceDiagnosticsWhenDiagnosticStateChanges() {
+  SourceFixture fixture({QVariant{}}, {QStringLiteral("Broken")});
+  CapturedTabPagerWarnings warnings;
+
+  [[maybe_unused]] const TabPagerDesktopSourceState invalidIdState =
+      fixture.source.sourceState();
+  QCOMPARE(warnings.warningCount(), 1);
+
+  fixture.info->setDesktopIds({QStringLiteral("a"), QStringLiteral("a")});
+  fixture.info->setDesktopNames(
+      {QStringLiteral("Work"), QStringLiteral("Duplicate")});
+  fixture.info->setCurrentDesktop(QStringLiteral("a"));
+  [[maybe_unused]] const TabPagerDesktopSourceState duplicateIdState =
+      fixture.source.sourceState();
+  QCOMPARE(warnings.warningCount(), 2);
+
+  fixture.info->setDesktopIds({QStringLiteral("a")});
+  fixture.info->setDesktopNames({QStringLiteral("Work")});
+  [[maybe_unused]] const TabPagerDesktopSourceState recoveredState =
+      fixture.source.sourceState();
+  QCOMPARE(warnings.warningCount(), 2);
+
+  fixture.info->setDesktopIds({QStringLiteral("a"), QStringLiteral("a")});
+  fixture.info->setDesktopNames(
+      {QStringLiteral("Work"), QStringLiteral("Duplicate")});
+  [[maybe_unused]] const TabPagerDesktopSourceState reappearedState =
+      fixture.source.sourceState();
+  QCOMPARE(warnings.warningCount(), 3);
 }
 
 void TaskManagerDesktopSourceTest::

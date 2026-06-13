@@ -58,6 +58,30 @@ void logDesktopSourceDiagnostics(
   }
 }
 
+bool diagnosticEquals(const TaskManagerDesktopSourceDiagnostic &left,
+                      const TaskManagerDesktopSourceDiagnostic &right) {
+  return left.type == right.type && left.row == right.row &&
+         left.relatedRow == right.relatedRow &&
+         left.desktopIdCount == right.desktopIdCount &&
+         left.desktopNameCount == right.desktopNameCount &&
+         left.desktopId == right.desktopId;
+}
+
+bool diagnosticsEqual(const QList<TaskManagerDesktopSourceDiagnostic> &left,
+                      const QList<TaskManagerDesktopSourceDiagnostic> &right) {
+  if (left.size() != right.size()) {
+    return false;
+  }
+
+  for (qsizetype index = 0; index < left.size(); ++index) {
+    if (!diagnosticEquals(left.at(index), right.at(index))) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 TaskManagerDesktopSourceMappingResult
 mapDesktopSourceState(const TabPagerVirtualDesktopInfo &info) {
   return taskManagerDesktopSourceMappingFromRawState(TaskManagerDesktopRawState{
@@ -102,13 +126,25 @@ TaskManagerDesktopSource::~TaskManagerDesktopSource() = default;
 TabPagerDesktopSourceState TaskManagerDesktopSource::sourceState() const {
   const TaskManagerDesktopSourceMappingResult result =
       mapDesktopSourceState(*m_info);
-  logDesktopSourceDiagnostics(result.diagnostics);
+  logDiagnosticsIfChanged(result.diagnostics);
   return result.state;
 }
 
 QList<TaskManagerDesktopSourceDiagnostic>
 TaskManagerDesktopSource::sourceDiagnostics() const {
   return mapDesktopSourceState(*m_info).diagnostics;
+}
+
+void TaskManagerDesktopSource::logDiagnosticsIfChanged(
+    const QList<TaskManagerDesktopSourceDiagnostic> &diagnostics) const {
+  if (m_hasLoggedDiagnostics &&
+      diagnosticsEqual(m_loggedDiagnostics, diagnostics)) {
+    return;
+  }
+
+  m_hasLoggedDiagnostics = true;
+  m_loggedDiagnostics = diagnostics;
+  logDesktopSourceDiagnostics(diagnostics);
 }
 
 void TaskManagerDesktopSource::activateDesktop(

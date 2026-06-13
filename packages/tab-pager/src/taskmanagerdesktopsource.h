@@ -26,6 +26,10 @@ public:
 
 private:
   void connectDesktopInfo();
+  void logDiagnosticsIfChanged(
+      const QList<TaskManagerDesktopSourceDiagnostic> &diagnostics) const;
 
   std::unique_ptr<TabPagerVirtualDesktopInfo> m_info;
+  mutable QList<TaskManagerDesktopSourceDiagnostic> m_loggedDiagnostics;
+  mutable bool m_hasLoggedDiagnostics = false;
 };
