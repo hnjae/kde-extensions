@@ -129,6 +129,9 @@ if(BUILD_TESTING)
     endfunction()
 
     add_tabpager_test(tabpagerdesktop tests/tabpagerdesktop_test.cpp)
+    add_tabpager_test(tabpageractivationresult
+        tests/tabpageractivationresult_test.cpp
+    )
     add_tabpager_test(tabpageractivationplanner
         tests/tabpageractivationplanner_test.cpp
     )
