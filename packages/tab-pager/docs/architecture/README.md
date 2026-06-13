@@ -28,3 +28,9 @@ Source implementations may keep richer provider-specific diagnostics for tests a
 TaskManager diagnostics are transition-based: unchanged malformed source data should not repeatedly emit generic diagnostic changes or duplicate warning logs, while appearance, material update, and recovery should be observable.
 
 Do not expose source diagnostics through the QML-facing backend until there is a concrete display or configuration requirement.
+
+## Wheel Navigation Boundary
+
+Wheel input handling is split by responsibility: UI adapters normalize Qt wheel events into raw deltas, `TabPagerWheelNavigation` owns pending-delta accumulation and conversion from complete wheel steps to semantic desktop offsets, and `TabPagerDesktopNavigator` owns target selection for semantic offsets under the current wrapping policy.
+
+Pending wheel-delta accumulation is user-visible behavior. It must remain independent of the current desktop, desktop count, and wrapping setting until a complete step is consumed against the then-current navigation context.
