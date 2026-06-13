@@ -5,6 +5,7 @@
 
 #include "tabpagerdesktopsource.h"
 #include "tabpagervirtualdesktopinfo.h"
+#include "taskmanagerdesktopmapper.h"
 
 #include <memory>
 
@@ -19,6 +20,8 @@ public:
   ~TaskManagerDesktopSource() override;
 
   [[nodiscard]] TabPagerDesktopSourceState sourceState() const override;
+  [[nodiscard]] QList<TaskManagerDesktopSourceDiagnostic>
+  sourceDiagnostics() const;
   void activateDesktop(const TabPagerDesktopId &desktopId) override;
 
 private:

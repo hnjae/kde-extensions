@@ -14,6 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - P2 activation request naming: renamed the internal successful activation result from `Activated` to `ActivationRequested`, preserving activation side effects and the existing backend-facing `"ActivationRequested"` signal payload. Files changed: `src/tabpagerdesktopcontroller.h`, `src/tabpagerdesktopcontroller.cpp`, `src/tabpagerbackend.cpp`, `tests/tabpagerdesktopcontroller_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
 - P2 deterministic fatal invariant handling: replaced assertion-only guards for null `TaskManagerDesktopSource` info, null `TabPagerDesktopController` source, and mismatched `TabPagerPlugin` QML URI with runtime `qFatal` diagnostics while preserving valid-path behavior. Files changed: `src/taskmanagerdesktopsource.cpp`, `src/tabpagerdesktopcontroller.cpp`, `src/tabpagerplugin.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
 - P2 wheel pending-delta characterization: added navigator tests that prove the current pending wheel delta is preserved across no-current context, current-desktop changes, desktop-count changes, wrapping changes, and that a completed wheel step stopped at a non-wrapping edge is consumed. Files changed: `tests/tabpagerdesktopnavigator_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
+- P2 structured source diagnostics read seam: added `TaskManagerDesktopSource::sourceDiagnostics()` using the same mapper path as `sourceState()`, with source tests proving malformed current TaskManager data can be inspected as structured diagnostics without parsing logs. Files changed: `src/taskmanagerdesktopsource.h`, `src/taskmanagerdesktopsource.cpp`, `tests/taskmanagerdesktopsource_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
 
 ## Verification
 
@@ -38,10 +39,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - `ctest --test-dir build --output-on-failure -R '^tabpagerdesktopnavigator$'` passed.
 - `just format` passed and reformatted `tests/tabpagerdesktopnavigator_test.cpp`.
 - `ctest --test-dir build --output-on-failure` passed.
+- `cmake --build build --target taskmanagerdesktopsource_test` failed as expected before implementation because `TaskManagerDesktopSource` had no `sourceDiagnostics()` member.
+- `cmake --build build --target taskmanagerdesktopsource_test && ctest --test-dir build --output-on-failure -R '^taskmanagerdesktopsource$'` passed.
+- `ctest --test-dir build --output-on-failure` passed.
+- `just format` passed and reformatted touched C++ files.
+- `cmake --build build --target taskmanagerdesktopsource_test && ctest --test-dir build --output-on-failure` passed.
 
 ## Remaining Follow-Up Work
 
 - P2 controller orchestration, state-store separation, navigation settings separation, source diagnostics observability, activation planning, and wheel context scoping remain open.
+- Source diagnostics are now directly readable from `TaskManagerDesktopSource`, but the generic `TabPagerDesktopSource` contract, controller/backend state, diagnostic lifecycle, and getter-side logging cleanup remain open.
 - Wheel context scoping is now characterized but not resolved; a future checkpoint still needs to decide whether preserving pending wheel deltas across navigation context changes is intended or should be replaced with explicit reset/drop behavior.
 - P2/P3 API cleanup items remain open: public model role narrowing, wrapping API leakage, wheel input adapter extraction, parallel navigation API cleanup, layout constant consolidation, package metadata de-duplication, and `TabPagerVirtualDesktopInfo` boundary clarification.
 
@@ -52,3 +59,4 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - The current target document has no remaining P0/P1 findings, so this checkpoint addressed the smallest remaining P2 item with direct proof instead of inventing a higher-priority task.
 - This checkpoint did not add subprocess death tests for fatal paths because the current Qt test harness has no existing crash-test seam; valid-path regression coverage was run, and the fatal branches are direct runtime guards before dereference or QML registration.
 - This checkpoint intentionally did not change wheel behavior because the design review marks context scoping as uncertain; it records the current behavior so a later behavior change can be deliberate and reviewable.
+- This checkpoint intentionally did not remove diagnostic logging from `sourceState()` or add a generic source diagnostic signal; it only creates a structured read seam that later lifecycle/logging work can use.

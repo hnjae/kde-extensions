@@ -57,6 +57,16 @@ void logDesktopSourceDiagnostics(
     logDesktopSourceDiagnostic(diagnostic);
   }
 }
+
+TaskManagerDesktopSourceMappingResult
+mapDesktopSourceState(const TabPagerVirtualDesktopInfo &info) {
+  return taskManagerDesktopSourceMappingFromRawState(TaskManagerDesktopRawState{
+      .desktopIds = info.desktopIds(),
+      .desktopNames = info.desktopNames(),
+      .currentDesktop = info.currentDesktop(),
+      .navigationWrappingAround = info.navigationWrappingAround(),
+  });
+}
 } // namespace
 
 TaskManagerDesktopSource::TaskManagerDesktopSource(QObject *parent)
@@ -91,14 +101,14 @@ TaskManagerDesktopSource::~TaskManagerDesktopSource() = default;
 
 TabPagerDesktopSourceState TaskManagerDesktopSource::sourceState() const {
   const TaskManagerDesktopSourceMappingResult result =
-      taskManagerDesktopSourceMappingFromRawState(TaskManagerDesktopRawState{
-          .desktopIds = m_info->desktopIds(),
-          .desktopNames = m_info->desktopNames(),
-          .currentDesktop = m_info->currentDesktop(),
-          .navigationWrappingAround = m_info->navigationWrappingAround(),
-      });
+      mapDesktopSourceState(*m_info);
   logDesktopSourceDiagnostics(result.diagnostics);
   return result.state;
+}
+
+QList<TaskManagerDesktopSourceDiagnostic>
+TaskManagerDesktopSource::sourceDiagnostics() const {
+  return mapDesktopSourceState(*m_info).diagnostics;
 }
 
 void TaskManagerDesktopSource::activateDesktop(

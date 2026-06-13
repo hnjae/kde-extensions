@@ -126,6 +126,7 @@ private Q_SLOTS:
   void clearsUnmatchedCurrentDesktop();
   void reportsNameCountDiagnostics();
   void reportsDesktopIdentityDiagnostics();
+  void exposesCurrentSourceDiagnostics();
   void emitsSourceStateChangedWhenVirtualDesktopInfoChanges();
   void requestsActivationForValidDesktopIdsOnly();
 };
@@ -272,6 +273,31 @@ void TaskManagerDesktopSourceTest::reportsDesktopIdentityDiagnostics() {
            TaskManagerDesktopSourceDiagnostic::Type::UnmatchedCurrentDesktop);
   QCOMPARE(result.diagnostics.at(2).desktopId,
            QVariant{QStringLiteral("missing")});
+}
+
+void TaskManagerDesktopSourceTest::exposesCurrentSourceDiagnostics() {
+  SourceFixture fixture({QVariant{}, QStringLiteral("a"), QStringLiteral("a")},
+                        {QStringLiteral("Broken"), QStringLiteral("Work")},
+                        QStringLiteral("missing"));
+
+  const QList<TaskManagerDesktopSourceDiagnostic> diagnostics =
+      fixture.source.sourceDiagnostics();
+
+  QCOMPARE(diagnostics.size(), 4);
+  QCOMPARE(diagnostics.at(0).type,
+           TaskManagerDesktopSourceDiagnostic::Type::MissingDesktopNames);
+  QCOMPARE(diagnostics.at(0).row, 2);
+  QCOMPARE(diagnostics.at(1).type,
+           TaskManagerDesktopSourceDiagnostic::Type::InvalidDesktopId);
+  QCOMPARE(diagnostics.at(1).row, 0);
+  QCOMPARE(diagnostics.at(2).type,
+           TaskManagerDesktopSourceDiagnostic::Type::DuplicateDesktopId);
+  QCOMPARE(diagnostics.at(2).row, 2);
+  QCOMPARE(diagnostics.at(2).relatedRow, 1);
+  QCOMPARE(diagnostics.at(2).desktopId, QVariant{QStringLiteral("a")});
+  QCOMPARE(diagnostics.at(3).type,
+           TaskManagerDesktopSourceDiagnostic::Type::UnmatchedCurrentDesktop);
+  QCOMPARE(diagnostics.at(3).desktopId, QVariant{QStringLiteral("missing")});
 }
 
 void TaskManagerDesktopSourceTest::
