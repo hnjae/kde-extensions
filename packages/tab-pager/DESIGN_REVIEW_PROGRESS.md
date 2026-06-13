@@ -43,12 +43,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - Wheel navigation no-step/offset target translation now lives in `TabPagerDesktopNavigator` and is directly covered by pure navigator tests.
 - Activation result-name mapping now lives in a pure helper and is directly covered without backend/source fixtures.
 - Backend activation tests now cover facade forwarding and no longer repeat the lower-level controller/navigation/wheel activation matrix.
+- Controller navigation activation uses the activation planner's target-index plan for state-store lookup instead of reading navigation-result sentinel values directly.
 
 ## Remaining
 
-- Reduce remaining controller orchestration by moving any residual activation/wheel decision logic into pure planners.
 - Consolidate layout constants such as `desktopGap` and minimum extents.
 - Clarify whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
+- Keep controller orchestration from growing when new source synchronization, navigation, or activation behavior is added.
 
 ## Verification Baseline
 
@@ -58,15 +59,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: trimmed backend activation tests down to facade coverage.
-- Files changed: `tests/tabpagerbackend_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: no production code changed; backend facade tests still cover direct activation forwarding and `activationFinished(QString)` forwarding for direct, relative, and wheel entry points.
-- Target-doc cleanup: kept the controller/backend activation P2 open and removed the stale statement that backend tests repeat controller activation scenarios through the facade.
-- Target-doc edits: no architectural principles or unresolved P2 content were removed.
-- Commands passed: `cmake --build build --target tabpagerbackend_test tabpagerdesktopcontroller_test tabpagerdesktopnavigator_test tabpagerwheelnavigation_test tabpageractivationplanner_test`; `ctest --test-dir build --output-on-failure -R 'tabpager(backend|desktopcontroller|desktopnavigator|wheelnavigation|activationplanner)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/tests/tabpagerbackend_test.cpp` from the repository root.
-- Commands failed: none.
-- Deviations: this checkpoint intentionally removed duplicate tests instead of changing production code.
-- Ambiguity: no blocking ambiguity found. The remaining P2 is still open because controller source execution and backend facade forwarding still require integration-style fixtures.
+- Checkpoint: removed the stale wheel-activation P2 from the correct-end-state document because wheel accumulation, sign conversion, semantic target selection, activation planning, and activation result-name mapping now have direct pure coverage.
+- Files changed: `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: documentation-only update.
+- Target-doc cleanup: kept remaining findings for controller orchestration, layout constants, and the LibTaskManager adapter boundary; removed resolved wheel-activation testability text.
+- Target-doc edits: no remaining unresolved design-review finding was removed.
+- Commands passed: `git diff --check -- DESIGN_REVIEW_CORRECT_END_STATE.md DESIGN_REVIEW_PROGRESS.md`; `nix develop ".#default" -c prek run --hook-stage pre-commit --files packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
+- Commands failed: `devenv shell -- prek run --hook-stage pre-commit --files packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root because this repository has no `devenv.nix`.
+- Deviations: no code, public API, or helper changed.
+- Ambiguity: no blocking ambiguity found.
 
 ## Notes
 

@@ -4,11 +4,11 @@
 
 The codebase is small and already has useful seams: TaskManager raw-state mapping is mostly pure, navigation target calculation is separated from QML rendering, and the model-state transition code has targeted tests. The main architectural risk is not lack of layering; it is that several important contracts are still implied by convention instead of being owned by a focused boundary.
 
-The highest-impact remaining issue is that orchestration, state synchronization, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, subscribes to source/settings changes, writes and reads the state-store port, owns the navigator, consumes wheel deltas, delegates activation planning, logs selected no-ops, and dispatches source activation. That is manageable at the current size, but it is the pressure point where new behavior will become harder to test and reason about.
+The highest-impact remaining issue is that orchestration, state synchronization, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, subscribes to source/settings changes, writes and reads the state-store port, owns the navigator, consumes wheel deltas, delegates activation planning, logs selected no-ops, and dispatches source activation. That is manageable at the current size, but it remains the pressure point where new behavior can accumulate.
 
 Operational visibility now has an explicit source/controller health channel. `TaskManagerDesktopSource` keeps structured provider diagnostics for tests and provider-local transition logging, while generic controller code can observe degraded source state without parsing logs or downcasting. User-facing backend/QML diagnostic display remains intentionally absent until there is a concrete display requirement.
 
-No P0 issue was found. The recommended end state is a precise, boring architecture: a small application state store, pure planners for navigation/activation/input mapping, Qt/QML adapters around those seams, and explicit diagnostic/error channels.
+No P0/P1 issue remains. The recommended end state is a precise, boring architecture: a small application state store, pure planners for navigation/activation/input mapping, Qt/QML adapters around those seams, and explicit diagnostic/error channels.
 
 ## Top Design Risks
 
@@ -66,24 +66,6 @@ Suggested migration: If no second raw provider is planned, remove `TabPagerVirtu
 
 Acceptance criteria: Adding a non-LibTaskManager source requires implementing one documented interface. Tests still cover raw mapping and signal wiring without duplicating provider concepts.
 
-## Testability Problems
-
-### Finding: Wheel activation still requires effectful controller tests
-
-Priority: P2
-
-Evidence: `TabPagerDesktopController::activateWithResult()` delegates direct index classification to `TabPagerActivationPlanner`, then executes any returned desktop activation command through `m_source->activateDesktop()`; navigation result translation and navigation-target desktop command planning also live in `TabPagerActivationPlanner`; wheel activation still consumes `TabPagerWheelNavigation` state in the controller, routes wheel navigation results through `TabPagerDesktopNavigator`, and passes that navigation result plus a state-store desktop ID lookup into the planner; controller tests still use fake `QObject` sources, signal wiring, and side-effect assertions.
-
-Current state: Navigation target calculation, wheel accumulation/sign conversion, wheel no-step/offset target translation, direct activation result classification, navigation-result translation, navigation-target desktop command planning, and activation result-name mapping are pure. Desktop ID lookup, helper composition, source effect execution, and some activation behavior coverage are still bound together in the controller.
-
-Design concern: Direct invalid-index, invalid-ID, valid activation-command planning, navigation no-op result translation, navigation target desktop-command planning, wrapping target selection, wheel remainder handling, and activation result-name mapping no longer require integration-style fixtures. Source execution and backend facade forwarding still require integration-style fixtures.
-
-Correct end state: Wheel-device accumulation and semantic navigation target selection should be testable without source effects. The activation planner should continue returning activation commands from resolved state/navigation input, and the controller should synchronize source state, call pure helpers, log/report no-ops, and execute returned commands.
-
-Suggested migration: Keep wheel activation routed through independently tested semantic offsets and navigation results. Keep `TabPagerActivationPlanner` focused on converting resolved IDs/navigation results into activation plans, then reduce controller tests to source synchronization, helper delegation, logging/reporting, and source command execution.
-
-Acceptance criteria: Wheel accumulation, sign conversion, navigation target selection, and activation planning are testable without `QObject`, `QSignalSpy`, or fake sources. Controller tests only assert wiring, state synchronization, helper delegation, logging/reporting, and source execution.
-
 ## Recommended Correct End-State Architecture
 
 Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces desktop state plus explicit diagnostics. A desktop state store owns the current desktop state and transition planning. A Qt model and backend form an intentional QML view-model boundary that owns row projection, label formatting, QML roles, model notifications, facade properties, and the fixed-width label font. Navigation, activation, and wheel-input helpers own pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
@@ -100,13 +82,14 @@ How external effects should be isolated: TaskManager reads and activation reques
 
 How errors should be represented: Source diagnostics should stay structured and observable, not log-only. Provider-specific diagnostic details can remain provider-local until there is a user-facing display requirement, but controller-level health should remain available through the generic source boundary. Activation results should distinguish invalid input, benign no-op, degraded state, request sent, and optionally confirmation/timeout. Fatal programmer errors should fail deterministically with critical diagnostics, not rely only on debug assertions.
 
-How tests should be structured: Keep pure tests for navigation target calculation, wheel delta mapping, activation planning, and layout metrics. Keep focused Qt/QML integration smoke tests for model notifications, QML binding load, and event wiring. Avoid repeating the same activation behavior matrix at controller and backend layers unless each test proves different wiring.
+How tests should be structured: Keep pure tests for navigation target calculation, wheel delta mapping, activation planning, activation result-name mapping, and layout metrics. Keep focused Qt/QML integration smoke tests for model notifications, QML binding load, facade forwarding, source command execution, and event wiring. Avoid repeating the same activation behavior matrix at controller and backend layers unless each test proves different wiring.
 
 ## Suggested Refactoring Sequence
 
 1. Clarify the remaining ownership boundary for whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
-2. Improve error semantics by clarifying activation request versus confirmation.
-3. Remove or simplify remaining premature abstractions by narrowing public QML roles if they are not part of the chosen view-model boundary.
+2. Consolidate the remaining QML layout constants under the layout-metrics owner.
+3. Improve error semantics by clarifying activation request versus confirmation.
+4. Keep reducing `TabPagerDesktopController` only when new behavior would otherwise add decision logic there.
 
 ## Things Not To Change Yet
 
@@ -124,7 +107,7 @@ Do not optimize QML layout implementation before centralizing the contract and t
 
 ## Appendix: Subagent Reports
 
-Single Source of Truth / Duplication Agent: Reported repeated package identity/module metadata, duplicated navigation no-op result states, and repeated QML layout constants. Package metadata was kept as P2. Layout constants were kept as P3. Navigation no-op enum duplication was dropped because the typed navigation and activation result APIs are now the canonical internal shapes.
+Single Source of Truth / Duplication Agent: Reported repeated package identity/module metadata, duplicated navigation no-op result states, and repeated QML layout constants. Package metadata drift was resolved by deriving package identity, version, QML module URI, and QML module path from `package/metadata.json` with CI drift checks. Layout constants remain P3. Navigation no-op enum duplication was dropped because the typed navigation and activation result APIs are now the canonical internal shapes.
 
 Invariant / Correctness Agent: Reported uncertain wheel-delta context scoping. The spec now defines the current behavior: partial wheel input persists across navigation context changes and completed stopped-at-edge steps are consumed.
 
@@ -132,8 +115,8 @@ Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, sour
 
 Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging has been removed from `sourceState()`, and source/controller diagnostics health is now observable through a generic source boundary. Wheel input normalization, pending wheel state, sign conversion, and semantic navigation now have named boundaries.
 
-Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout metrics and wheel input normalization now have direct tests without QML-engine or Quick-window event dispatch. Wheel activation testability remains P2. Getter-side diagnostics were resolved by the generic source/controller diagnostics channel.
+Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout metrics, wheel input normalization, wheel accumulation/sign conversion, semantic wheel navigation target selection, navigation activation planning, and activation result-name mapping now have direct tests without QML-engine, Quick-window event dispatch, or fake source effects. Remaining controller/backend tests cover integration wiring, state synchronization, reporting, facade forwarding, and source command execution. Getter-side diagnostics were resolved by the generic source/controller diagnostics channel.
 
-Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics now have generic source/controller health observability while provider-specific details remain provider-local. Activation confirmation was downgraded from P1 to P2 because the immediate issue is naming unless confirmed activation is surfaced.
+Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics now have generic source/controller health observability while provider-specific details remain provider-local. Activation result reporting now uses request-oriented naming; confirmation/timeout semantics remain optional future work unless confirmed activation is surfaced.
 
 Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles were narrowed and the remaining row projection is documented as an intentional QML view-model boundary. Wrapping leakage was removed because wrapping is no longer public backend/QML API and no longer reloads desktop source state. Parallel navigation APIs were removed because optional/test-only wrappers are gone; the remaining silent commands are QML-facing entry points over result-returning internals. Adapter-seam clarity remains P3.
