@@ -26,7 +26,13 @@ assert.match(mainQml, /id:\s*taskMover/);
 assert.match(mainQml, /launcherSync:\s*launcherSync/);
 assert.match(mainQml, /normalEntries:\s*root\.normalTaskEntries/);
 assert.match(mainQml, /normalTaskStore:\s*normalTaskStore/);
-assert.match(mainQml, /taskModel:\s*tasksModel/);
+assert.match(mainQml, /\bTaskMovePort\s*\{/);
+assert.match(mainQml, /id:\s*taskMovePort/);
+assert.match(mainQml, /taskMovePort:\s*taskMovePort/);
+assert.doesNotMatch(
+  mainQml,
+  /TaskMoveAdapter\s*\{[^}]*taskModel:\s*tasksModel/s,
+);
 assert.doesNotMatch(
   mainQml,
   /taskMover\.canMoveTaskResult\(sourceIndex, targetIndex\)/,
@@ -60,7 +66,8 @@ assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(sourceQml, /property var launcherSync/);
 assert.match(sourceQml, /property var normalEntries:\s*\[\]/);
 assert.match(sourceQml, /property var normalTaskStore/);
-assert.match(sourceQml, /property var taskModel/);
+assert.match(sourceQml, /property var taskMovePort/);
+assert.doesNotMatch(sourceQml, /property var taskModel/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /function moveTask\(sourceIndex, targetIndex\)/);
 assert.match(
@@ -86,4 +93,8 @@ assert.match(sourceQml, /TaskModelLogic\.normalTaskEntryForSourceIndex/);
 assert.match(sourceQml, /normalTaskStore\.moveManualTask/);
 assert.match(sourceQml, /LauncherListLogic\.movePinnedLauncher/);
 assert.match(sourceQml, /LauncherListLogic\.canMovePinnedLauncher/);
+assert.match(sourceQml, /taskMovePort\.launcherList/);
+assert.match(sourceQml, /taskMovePort\.launcherPosition\(launcherUrl\)/);
+assert.doesNotMatch(sourceQml, /taskModel\.launcherList/);
+assert.doesNotMatch(sourceQml, /taskModel\.launcherPosition/);
 assert.match(sourceQml, /launcherSync\.applyLauncherList\(result\.launchers\)/);
