@@ -151,9 +151,11 @@ TabPagerDesktopController::navigationContext() const {
 
 TabPagerActivationResult TabPagerDesktopController::activateNavigationTarget(
     const TabPagerDesktopNavigationResult &target) {
+  const TabPagerActivationPlan navigationPlan =
+      tabPagerActivationPlanForNavigationResult(target);
   const TabPagerActivationPlan plan = tabPagerActivationPlanForNavigationTarget(
-      target, target.targetIndex >= 0
-                  ? m_stateStore.desktopIdForIndex(target.targetIndex)
+      target, navigationPlan.targetIndex.has_value()
+                  ? m_stateStore.desktopIdForIndex(*navigationPlan.targetIndex)
                   : std::optional<TabPagerDesktopId>{});
   if (plan.desktopId.has_value()) {
     m_source->activateDesktop(*plan.desktopId);
