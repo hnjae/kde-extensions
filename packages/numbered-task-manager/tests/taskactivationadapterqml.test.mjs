@@ -23,7 +23,9 @@ const sourceQml = readFileSync(sourceUrl, "utf8");
 
 assert.match(mainQml, /\bTaskActivationAdapter\s*\{/);
 assert.match(mainQml, /id:\s*taskActivation/);
-assert.match(mainQml, /taskModel:\s*tasksModel/);
+assert.match(mainQml, /\bTaskActivationPort\s*\{/);
+assert.match(mainQml, /id:\s*taskActivationPort/);
+assert.match(mainQml, /taskActivationPort:\s*taskActivationPort/);
 assert.match(mainQml, /remoteAttentionSource:\s*remoteAttentionSource/);
 assert.match(mainQml, /visibleTaskItems:\s*root\.visibleTaskItems/);
 assert.match(
@@ -74,7 +76,8 @@ assert.doesNotMatch(
 );
 
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
-assert.match(sourceQml, /property var taskModel/);
+assert.match(sourceQml, /property var taskActivationPort/);
+assert.doesNotMatch(sourceQml, /property var taskModel/);
 assert.match(sourceQml, /property var remoteAttentionSource/);
 assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
 assert.match(sourceQml, /property var visibleTaskItems/);
@@ -99,7 +102,7 @@ assert.match(sourceQml, /function activationTarget\(result\)/);
 assert.match(sourceQml, /function requestActivation\(result\)/);
 assert.match(sourceQml, /result\.sourceModel === "remoteAttention"/);
 assert.match(sourceQml, /return remoteAttentionSource/);
-assert.match(sourceQml, /return taskModel/);
+assert.match(sourceQml, /return taskActivationPort/);
 assert.match(
   sourceQml,
   /TaskActionLogic\.activationExecutionResult\(result,\s*target\)/,
