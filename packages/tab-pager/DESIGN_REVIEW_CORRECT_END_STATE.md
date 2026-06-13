@@ -101,22 +101,6 @@ Suggested migration: Keep wheel activation routed through independently tested s
 
 Acceptance criteria: Wheel accumulation, sign conversion, navigation target selection, and activation planning are testable without `QObject`, `QSignalSpy`, or fake sources. Controller tests only assert wiring, state synchronization, helper delegation, logging/reporting, and source execution.
 
-### Finding: Layout metrics are tested through QML integration
-
-Priority: P2
-
-Evidence: `PagerLayoutMetrics.qml` contains deterministic sizing formulas and constants; `tests/tabpagerlayoutmetrics_test.cpp` creates a `QQmlEngine`, sets import paths, and loads QML from `TABPAGER_SOURCE_DIR`.
-
-Current state: Pure numeric layout rules are tested through QML engine/filesystem integration.
-
-Design concern: These tests are slower and more brittle than necessary because they depend on QML import paths, source-tree layout, and KDE/Qt Quick imports.
-
-Correct end state: Pure layout metrics should have a direct test seam. QML should bind to that seam and keep one smoke/integration test for wiring.
-
-Suggested migration: Introduce a pure layout calculator, either C++ or a small directly testable QML/JS helper. Keep a minimal QML smoke test for binding.
-
-Acceptance criteria: Layout cases can be tested without `QQmlEngine`, `QUrl::fromLocalFile`, or `TABPAGER_SOURCE_DIR`. One integration smoke test remains.
-
 ## Recommended Correct End-State Architecture
 
 Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces desktop state plus explicit diagnostics. A desktop state store owns the current desktop state and transition planning. A Qt model and backend form an intentional QML view-model boundary that owns row projection, label formatting, QML roles, model notifications, facade properties, and the fixed-width label font. Navigation, activation, and wheel-input helpers own pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
@@ -163,7 +147,7 @@ Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, sour
 
 Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging has been removed from `sourceState()`, and source/controller diagnostics health is now observable through a generic source boundary. Wheel input normalization, pending wheel state, sign conversion, and semantic navigation now have named boundaries.
 
-Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout testability and wheel activation testability were kept as P2. Wheel input normalization now has direct tests without Quick-window event dispatch. Getter-side diagnostics were resolved by the generic source/controller diagnostics channel.
+Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout metrics and wheel input normalization now have direct tests without QML-engine or Quick-window event dispatch. Wheel activation testability remains P2. Getter-side diagnostics were resolved by the generic source/controller diagnostics channel.
 
 Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics now have generic source/controller health observability while provider-specific details remain provider-local. Activation confirmation was downgraded from P1 to P2 because the immediate issue is naming unless confirmed activation is surfaced.
 

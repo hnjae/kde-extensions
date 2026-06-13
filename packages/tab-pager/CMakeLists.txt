@@ -145,6 +145,18 @@ if(BUILD_TESTING)
         tests/tabpagerdesktopcontroller_test.cpp
         tests/tabpagerbackendtesthelpers.h
     )
+    add_tabpager_test(tabpagerlayoutmetricslogic
+        tests/tabpagerlayoutmetricslogic_test.cpp
+    )
+    qt_add_resources(tabpagerlayoutmetricslogic_test
+        tabpagerlayoutmetricslogic_test_resources
+        PREFIX "/"
+        FILES
+            package/contents/ui/PagerLayoutMetricsLogic.js
+    )
+    target_link_libraries(tabpagerlayoutmetricslogic_test PRIVATE
+        Qt6::Qml
+    )
     add_tabpager_test(tabpagerlayoutmetrics tests/tabpagerlayoutmetrics_test.cpp)
     get_filename_component(QT6_QML_INSTALL_PREFIX "${Qt6Qml_DIR}/../../.." ABSOLUTE)
     target_compile_definitions(tabpagerlayoutmetrics_test PRIVATE

@@ -35,6 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - QML wheel-event normalization now lives in `TabPagerWheelInput.js` and is directly tested without Quick-window event dispatch.
 - Nix package metadata now derives `qmlModuleDir` from `pluginId`, exposes it through package passthru, and uses it for QML install-path checks.
 - Nix package metadata now derives `pluginId` and `version` from `package/metadata.json`.
+- Layout metrics formulas now live in `PagerLayoutMetricsLogic.js`, are directly tested without `QQmlEngine`, and keep a focused QML binding smoke test.
 
 ## Remaining
 
@@ -51,16 +52,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: derived Nix `pluginId` and `version` from `package/metadata.json`.
-- Files changed: `docs/architecture/README.md`, `nix/module/package.nix`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: package `pluginId` remains `io.github.hnjae.tabpager`; package version remains `0.1.0`; the derived QML module path remains `io/github/hnjae/tabpager`; CMake identity, KPackage metadata, `qmldir`, qmltypes export, and installed QML file checks remain semantically unchanged.
-- Target-doc cleanup: removed the now-obsolete statement that `nix/module/package.nix` repeats concrete `pluginId` and `version` literals, recorded the current Nix package-metadata derivation, and kept the broader P2 package identity finding open because CMake, KPackage metadata, `qmldir`, and qmltypes still do not share one authoritative declaration.
-- Target-doc edits: no architectural principles were removed; only completed Nix-specific tactical evidence was updated.
-- Architecture-doc edits: added a `Package Metadata Boundary` note that `package/metadata.json` owns package identity and release version for Nix packaging.
-- Commands passed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata`; `nix eval .#packages.x86_64-linux.tab-pager.pluginId && nix eval .#packages.x86_64-linux.tab-pager.version && nix eval .#packages.x86_64-linux.tab-pager.qmlModuleDir` from the repository root; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/docs/architecture/README.md packages/tab-pager/nix/module/package.nix packages/tab-pager/tests/tabpagermetadata_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
-- Commands failed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the metadata guard and before implementation because Nix did not yet read `package/metadata.json`; the first pre-commit run failed because `treefmt` reformatted `tests/tabpagermetadata_test.cpp`, then passed after rerunning the focused metadata test.
-- Deviations: this checkpoint intentionally did not choose a single repository-wide authority for CMake, KPackage metadata, QML metadata, and qmltypes generation; that remains unresolved P2 work.
-- Ambiguity: no blocking ambiguity found. The target explicitly called out repeated package identity/version metadata, and this checkpoint removes the Nix-side duplication without changing package identity or version.
+- Checkpoint: extracted layout metrics formulas into the directly tested `PagerLayoutMetricsLogic.js` helper.
+- Files changed: `docs/architecture/README.md`, `CMakeLists.txt`, `package/contents/ui/PagerLayoutMetrics.qml`, `package/contents/ui/PagerLayoutMetricsLogic.js`, `tests/tabpagerlayoutmetricslogic_test.cpp`, `tests/tabpagerlayoutmetrics_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: `desktopGap` remains `1`; fill/minimum extent remains `1`; unset preferred extent remains `-1`; horizontal panels still fill height and use bounded content width; vertical panels still fill width and use bounded content height; existing QML-facing `PagerLayoutMetrics` properties remain available.
+- Target-doc cleanup: removed the completed P2 layout-metrics QML-integration testability finding and rewrote the Testability Agent appendix note to record direct layout-metrics coverage; kept the separate P3 layout-constants duplication finding open because child defaults and literals still remain.
+- Target-doc edits: no architectural principles were removed; completed tactical wording about introducing a direct layout test seam was removed.
+- Architecture-doc edits: added a `Layout Metrics Boundary` note that pure layout metrics helpers own deterministic sizing constants/formulas while QML owns binding and rendering.
+- Commands passed: `cmake --build build --target tabpagerlayoutmetricslogic_test tabpagerlayoutmetrics_test`; `ctest --test-dir build --output-on-failure -R 'tabpagerlayoutmetrics(logic)?'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/docs/architecture/README.md packages/tab-pager/CMakeLists.txt packages/tab-pager/package/contents/ui/PagerLayoutMetrics.qml packages/tab-pager/package/contents/ui/PagerLayoutMetricsLogic.js packages/tab-pager/tests/tabpagerlayoutmetricslogic_test.cpp packages/tab-pager/tests/tabpagerlayoutmetrics_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
+- Commands failed: `cmake --build build --target tabpagerlayoutmetricslogic_test` failed after adding the characterization test and before implementation because `package/contents/ui/PagerLayoutMetricsLogic.js` did not exist yet; the first pre-commit run failed because `treefmt` reformatted `PagerLayoutMetricsLogic.js` and `tests/tabpagerlayoutmetrics_test.cpp`, then passed after rerunning focused layout tests.
+- Deviations: this checkpoint intentionally did not consolidate `PagerDesktopStrip.desktopGap` or all remaining child minimum extent literals; that remains separate P3 work.
+- Ambiguity: no blocking ambiguity found. The target explicitly asked for a pure layout test seam and a QML smoke test, and this checkpoint provides that shape without changing visual behavior.
 
 ## Notes
 
