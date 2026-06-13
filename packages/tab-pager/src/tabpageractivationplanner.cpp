@@ -9,6 +9,7 @@ TabPagerActivationPlan tabPagerActivationPlanForIndex(
     return TabPagerActivationPlan{
         .result = TabPagerActivationResult::InvalidIndex,
         .desktopId = std::nullopt,
+        .targetIndex = std::nullopt,
     };
   }
 
@@ -16,11 +17,49 @@ TabPagerActivationPlan tabPagerActivationPlanForIndex(
     return TabPagerActivationPlan{
         .result = TabPagerActivationResult::InvalidDesktopId,
         .desktopId = std::nullopt,
+        .targetIndex = std::nullopt,
     };
   }
 
   return TabPagerActivationPlan{
       .result = TabPagerActivationResult::ActivationRequested,
       .desktopId = *desktopId,
+      .targetIndex = std::nullopt,
+  };
+}
+
+TabPagerActivationPlan tabPagerActivationPlanForNavigationResult(
+    const TabPagerDesktopNavigationResult &navigationResult) {
+  switch (navigationResult.type) {
+  case TabPagerDesktopNavigationResultType::Target:
+    return TabPagerActivationPlan{
+        .result = TabPagerActivationResult::ActivationRequested,
+        .desktopId = std::nullopt,
+        .targetIndex = navigationResult.targetIndex,
+    };
+  case TabPagerDesktopNavigationResultType::NoCurrentDesktop:
+    return TabPagerActivationPlan{
+        .result = TabPagerActivationResult::NoCurrentDesktop,
+        .desktopId = std::nullopt,
+        .targetIndex = std::nullopt,
+    };
+  case TabPagerDesktopNavigationResultType::StoppedAtEdge:
+    return TabPagerActivationPlan{
+        .result = TabPagerActivationResult::StoppedAtEdge,
+        .desktopId = std::nullopt,
+        .targetIndex = std::nullopt,
+    };
+  case TabPagerDesktopNavigationResultType::NoWheelStep:
+    return TabPagerActivationPlan{
+        .result = TabPagerActivationResult::NoWheelStep,
+        .desktopId = std::nullopt,
+        .targetIndex = std::nullopt,
+    };
+  }
+
+  return TabPagerActivationPlan{
+      .result = TabPagerActivationResult::NoCurrentDesktop,
+      .desktopId = std::nullopt,
+      .targetIndex = std::nullopt,
   };
 }

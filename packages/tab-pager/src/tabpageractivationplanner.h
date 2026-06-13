@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tabpagerdesktopid.h"
+#include "tabpagerdesktopnavigator.h"
 
 #include <optional>
 
@@ -19,7 +20,10 @@ enum class TabPagerActivationResult {
 struct TabPagerActivationPlan {
   TabPagerActivationResult result = TabPagerActivationResult::InvalidIndex;
   std::optional<TabPagerDesktopId> desktopId;
+  std::optional<int> targetIndex;
 };
 
 [[nodiscard]] TabPagerActivationPlan tabPagerActivationPlanForIndex(
     const std::optional<TabPagerDesktopId> &desktopId);
+[[nodiscard]] TabPagerActivationPlan tabPagerActivationPlanForNavigationResult(
+    const TabPagerDesktopNavigationResult &navigationResult);

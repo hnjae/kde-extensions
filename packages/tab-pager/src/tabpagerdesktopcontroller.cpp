@@ -132,18 +132,13 @@ TabPagerDesktopController::navigationContext() const {
 
 TabPagerActivationResult TabPagerDesktopController::activateNavigationTarget(
     const TabPagerDesktopNavigationResult &target) {
-  switch (target.type) {
-  case TabPagerDesktopNavigationResultType::Target:
-    return activateWithResult(target.targetIndex);
-  case TabPagerDesktopNavigationResultType::NoCurrentDesktop:
-    return TabPagerActivationResult::NoCurrentDesktop;
-  case TabPagerDesktopNavigationResultType::StoppedAtEdge:
-    return TabPagerActivationResult::StoppedAtEdge;
-  case TabPagerDesktopNavigationResultType::NoWheelStep:
-    return TabPagerActivationResult::NoWheelStep;
+  const TabPagerActivationPlan plan =
+      tabPagerActivationPlanForNavigationResult(target);
+  if (plan.targetIndex.has_value()) {
+    return activateWithResult(*plan.targetIndex);
   }
 
-  return TabPagerActivationResult::NoCurrentDesktop;
+  return plan.result;
 }
 
 TabPagerActivationResult
