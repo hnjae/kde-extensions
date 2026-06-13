@@ -44,7 +44,7 @@ in `SPEC.md`.
   fields such as `isWindow`, `isLauncher`, `launcherUrl`, `activities`, and
   `virtualDesktops` should be consumed from the role snapshot directly instead
   of through menu-local passthrough functions.
-- Keep context-menu launcher-activity menu state in `TaskContextMenuLogic.mjs`.
+- Keep context-menu launcher-activity menu state in `TaskContextMenuLauncherActivityLogic.mjs`.
   Raw launcher activity lists entering the menu should be normalized through the
   same all-activities semantics as launcher serialization before checked-state
   predicates are evaluated. QML menu items should consume the helper output
