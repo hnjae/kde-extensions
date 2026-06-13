@@ -45,7 +45,7 @@ private Q_SLOTS:
   void emitsChangedRolesForUpdatedDesktopRows();
   void tracksCurrentDesktopFromDesktopReload();
   void tracksCurrentDesktop();
-  void updatesNavigationWrapping();
+  void doesNotExposeNavigationWrapping();
   void updatesDesktopAndNavigationStateTogether();
   void activatesDesktopByIndex();
   void reportsActivationResultByIndex();
@@ -92,7 +92,6 @@ void TabPagerBackendTest::exposesModelState() {
   QCOMPARE(backend.count(), 3);
   QCOMPARE(model.rowCount(), 3);
   QCOMPARE(backend.currentIndex(), 1);
-  QCOMPARE(backend.navigationWrappingAround(), true);
 }
 
 void TabPagerBackendTest::exposesModelData() {
@@ -273,15 +272,15 @@ void TabPagerBackendTest::tracksCurrentDesktop() {
            QVariant(true));
 }
 
-void TabPagerBackendTest::updatesNavigationWrapping() {
+void TabPagerBackendTest::doesNotExposeNavigationWrapping() {
   BackendFixture fixture({});
-  QSignalSpy wrappingSpy(&fixture.backend,
-                         &TabPagerBackend::navigationWrappingAroundChanged);
 
-  fixture.source->setNavigationWrappingAround(true);
-
-  QCOMPARE(fixture.backend.navigationWrappingAround(), true);
-  QCOMPARE(wrappingSpy.count(), 1);
+  QCOMPARE(
+      fixture.backend.metaObject()->indexOfProperty("navigationWrappingAround"),
+      -1);
+  QCOMPARE(fixture.backend.metaObject()->indexOfSignal(
+               "navigationWrappingAroundChanged()"),
+           -1);
 }
 
 void TabPagerBackendTest::updatesDesktopAndNavigationStateTogether() {
@@ -289,8 +288,6 @@ void TabPagerBackendTest::updatesDesktopAndNavigationStateTogether() {
   QSignalSpy countSpy(&fixture.backend, &TabPagerBackend::countChanged);
   QSignalSpy currentSpy(&fixture.backend,
                         &TabPagerBackend::currentIndexChanged);
-  QSignalSpy wrappingSpy(&fixture.backend,
-                         &TabPagerBackend::navigationWrappingAroundChanged);
 
   fixture.source->setSourceState(
       {
@@ -301,10 +298,8 @@ void TabPagerBackendTest::updatesDesktopAndNavigationStateTogether() {
 
   QCOMPARE(fixture.backend.count(), 2);
   QCOMPARE(fixture.backend.currentIndex(), 1);
-  QCOMPARE(fixture.backend.navigationWrappingAround(), true);
   QCOMPARE(countSpy.count(), 1);
   QCOMPARE(currentSpy.count(), 1);
-  QCOMPARE(wrappingSpy.count(), 1);
 }
 
 void TabPagerBackendTest::activatesDesktopByIndex() {

@@ -36,9 +36,6 @@ TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
           &TabPagerBackend::countChanged);
   connect(&m_model, &TabPagerDesktopModel::currentIndexChanged, this,
           &TabPagerBackend::currentIndexChanged);
-  connect(&m_controller,
-          &TabPagerDesktopController::navigationWrappingAroundChanged, this,
-          &TabPagerBackend::navigationWrappingAroundChanged);
   connect(&m_controller, &TabPagerDesktopController::activationFinished, this,
           &TabPagerBackend::emitActivationFinished);
 }
@@ -53,10 +50,6 @@ int TabPagerBackend::currentIndex() const { return m_model.currentIndex(); }
 
 QFont TabPagerBackend::labelFont() const {
   return QFontDatabase::systemFont(QFontDatabase::FixedFont);
-}
-
-bool TabPagerBackend::navigationWrappingAround() const {
-  return m_controller.navigationWrappingAround();
 }
 
 void TabPagerBackend::activate(int index) { m_controller.activate(index); }

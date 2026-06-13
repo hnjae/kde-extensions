@@ -17,8 +17,6 @@ class TabPagerBackend : public QObject {
   Q_PROPERTY(int count READ count NOTIFY countChanged)
   Q_PROPERTY(int currentIndex READ currentIndex NOTIFY currentIndexChanged)
   Q_PROPERTY(QFont labelFont READ labelFont CONSTANT)
-  Q_PROPERTY(bool navigationWrappingAround READ navigationWrappingAround NOTIFY
-                 navigationWrappingAroundChanged)
 
 public:
   explicit TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
@@ -29,7 +27,6 @@ public:
   [[nodiscard]] int count() const;
   [[nodiscard]] int currentIndex() const;
   [[nodiscard]] QFont labelFont() const;
-  [[nodiscard]] bool navigationWrappingAround() const;
 
   Q_INVOKABLE void activate(int index);
   Q_INVOKABLE void activateNext();
@@ -39,7 +36,6 @@ public:
 Q_SIGNALS:
   void countChanged();
   void currentIndexChanged();
-  void navigationWrappingAroundChanged();
   void activationFinished(const QString &result);
 
 private:

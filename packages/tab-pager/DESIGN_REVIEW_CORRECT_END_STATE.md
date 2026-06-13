@@ -226,17 +226,17 @@ Acceptance criteria: Backend/QML or tests can inspect source health without pars
 
 Priority: P2
 
-Evidence: The spec requires wrapping behavior for scrolling; `navigationWrappingAround` is stored beside desktop snapshot data in `TabPagerDesktopSourceState`; `TaskManagerDesktopSource` maps the TaskManager wrapping signal into generic source state changes; `TabPagerDesktopController` applies wrapping to the navigator; `TabPagerBackend` exposes `navigationWrappingAround` as a QML property; `src/tabpagerplugin.qmltypes` exposes the property; shipped QML only calls `activateByWheelDelta(delta)` and does not read the property.
+Evidence: The spec requires wrapping behavior for scrolling; `navigationWrappingAround` is stored beside desktop snapshot data in `TabPagerDesktopSourceState`; `TaskManagerDesktopSource` maps the TaskManager wrapping signal into generic source state changes; `TabPagerDesktopController` applies wrapping to the navigator; shipped QML only calls `activateByWheelDelta(delta)` and does not read wrapping state. `TabPagerBackend` and `src/tabpagerplugin.qmltypes` no longer expose wrapping publicly.
 
-Current state: A controller-only navigation policy is carried through the desktop data source and public backend API.
+Current state: A controller-only navigation policy is still carried through the desktop data source, but not through the public backend/QML API.
 
-Design concern: This makes wrapping hard to remove or replace cleanly. Any change touches LibTaskManager wrapper, mapper, source state, controller, backend API, qmltypes, and tests.
+Design concern: This makes wrapping hard to remove or replace cleanly. Any change still touches LibTaskManager wrapper, mapper, source state, controller, and tests.
 
 Correct end state: Treat wrapping as navigator/controller policy. Expose it to QML only if QML needs to render or configure it.
 
-Suggested migration: Remove public `navigationWrappingAround` from `TabPagerBackend` and qmltypes if no QML consumer exists. Split source updates into desktop snapshot changes and private navigation-policy changes.
+Suggested migration: Split source updates into desktop snapshot changes and private navigation-policy changes.
 
-Acceptance criteria: Scrolling still follows KDE wrapping behavior. `TabPagerBackend` no longer exposes wrapping unless there is a QML consumer. Desktop model reloads are not required solely to update navigation policy. Tests verify wrapping through activation outcomes.
+Acceptance criteria: Scrolling still follows KDE wrapping behavior. Desktop model reloads are not required solely to update navigation policy. Tests verify wrapping through activation outcomes.
 
 ### Finding: Presentation formatting ownership is ambiguous
 
