@@ -6,6 +6,7 @@ import {
   contextMenuTaskCommand,
 } from "./TaskActionLogic.mjs";
 import * as ActivityScopeLogic from "./ActivityScopeLogic.mjs";
+import * as VirtualDesktopLogic from "./VirtualDesktopLogic.mjs";
 import { taskActivitiesAfterToggle } from "./TaskActivityLogic.mjs";
 import {
   launcherActivitiesAfterAllToggle,
@@ -795,51 +796,16 @@ export function taskActivityActionsSection(sectionState) {
   };
 }
 
-export function virtualDesktopId(desktop) {
-  if (!desktop) {
-    return "";
-  }
-
-  if (typeof desktop === "string") {
-    return desktop;
-  }
-
-  if (desktop.id) {
-    return String(desktop.id);
-  }
-
-  return String(desktop);
-}
-
-export function virtualDesktopListContains(desktops, desktop) {
-  const id = virtualDesktopId(desktop);
-  if (!id) {
-    return false;
-  }
-
-  const desktopList = Array.from(desktops || []);
-  for (let i = 0; i < desktopList.length; ++i) {
-    if (virtualDesktopId(desktopList[i]) === id) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 export function virtualDesktopMenuState(
   virtualDesktops,
   isOnAllDesktops,
   desktop,
 ) {
-  const allDesktopsChecked = Boolean(isOnAllDesktops);
-
-  return {
-    allDesktopsChecked,
-    desktopChecked:
-      allDesktopsChecked ||
-      virtualDesktopListContains(virtualDesktops, desktop),
-  };
+  return VirtualDesktopLogic.virtualDesktopMenuState(
+    virtualDesktops,
+    isOnAllDesktops,
+    desktop,
+  );
 }
 
 export function allVirtualDesktopsCommand() {

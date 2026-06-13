@@ -4,7 +4,7 @@
 import {
   isOnCurrentVirtualDesktop,
   isRemoteVirtualDesktop,
-} from "./TaskEntryLogic.mjs";
+} from "./VirtualDesktopLogic.mjs";
 
 export function normalTaskModelFilterSettings() {
   return {
