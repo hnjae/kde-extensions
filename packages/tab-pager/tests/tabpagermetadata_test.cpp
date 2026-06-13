@@ -76,6 +76,36 @@ void TabPagerMetadataTest::cmakeInstallPathsUseCMakeIdentity() {
   const QString cmake = readSourceFile(QStringLiteral("CMakeLists.txt"));
 
   QVERIFY2(
+      cmake.contains(QStringLiteral(
+          "file(READ \"${CMAKE_CURRENT_SOURCE_DIR}/package/metadata.json\" "
+          "TABPAGER_PACKAGE_METADATA_JSON)")),
+      "CMake package metadata should be read from package/metadata.json");
+  QVERIFY2(cmake.contains(QStringLiteral(
+               "string(JSON PLASMOID_ID GET "
+               "\"${TABPAGER_PACKAGE_METADATA_JSON}\" KPlugin Id)")),
+           "CMake PLASMOID_ID should be derived from package metadata");
+  QVERIFY2(cmake.contains(QStringLiteral(
+               "string(JSON TABPAGER_VERSION GET "
+               "\"${TABPAGER_PACKAGE_METADATA_JSON}\" KPlugin Version)")),
+           "CMake project version should be derived from package metadata");
+  QVERIFY2(
+      cmake.contains(QStringLiteral("set(QML_MODULE_URI \"${PLASMOID_ID}\")")),
+      "CMake QML module URI should be derived from PLASMOID_ID");
+  QVERIFY2(
+      cmake.contains(QStringLiteral("string(REPLACE \".\" \"/\" QML_MODULE_DIR "
+                                    "\"${QML_MODULE_URI}\")")),
+      "CMake QML module dir should be derived from QML_MODULE_URI");
+  QVERIFY2(
+      !cmake.contains(QStringLiteral("VERSION " TABPAGER_VERSION " LANGUAGES")),
+      "CMake project version should not repeat the concrete package "
+      "version");
+  QVERIFY2(!cmake.contains(
+               QStringLiteral("set(QML_MODULE_URI \"" TABPAGER_QML_URI "\")")),
+           "CMake QML module URI should not repeat the concrete package id");
+  QVERIFY2(!cmake.contains(
+               QStringLiteral("set(PLASMOID_ID \"" TABPAGER_PLASMOID_ID "\")")),
+           "CMake plasmoid id should not repeat the concrete package id");
+  QVERIFY2(
       cmake.contains(QStringLiteral("${KDE_INSTALL_QMLDIR}/${QML_MODULE_DIR}")),
       "CMake QML install destination should use QML_MODULE_DIR");
   QVERIFY2(cmake.contains(QStringLiteral(

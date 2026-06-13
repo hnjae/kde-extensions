@@ -36,6 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - Nix package metadata now derives `qmlModuleDir` from `pluginId`, exposes it through package passthru, and uses it for QML install-path checks.
 - Nix package metadata now derives `pluginId` and `version` from `package/metadata.json`.
 - Layout metrics formulas now live in `PagerLayoutMetricsLogic.js`, are directly tested without `QQmlEngine`, and keep a focused QML binding smoke test.
+- CMake package metadata now derives `PLASMOID_ID`, project version, QML module URI, and QML module path from `package/metadata.json`.
 
 ## Remaining
 
@@ -52,16 +53,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: extracted layout metrics formulas into the directly tested `PagerLayoutMetricsLogic.js` helper.
-- Files changed: `docs/architecture/README.md`, `CMakeLists.txt`, `package/contents/ui/PagerLayoutMetrics.qml`, `package/contents/ui/PagerLayoutMetricsLogic.js`, `tests/tabpagerlayoutmetricslogic_test.cpp`, `tests/tabpagerlayoutmetrics_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: `desktopGap` remains `1`; fill/minimum extent remains `1`; unset preferred extent remains `-1`; horizontal panels still fill height and use bounded content width; vertical panels still fill width and use bounded content height; existing QML-facing `PagerLayoutMetrics` properties remain available.
-- Target-doc cleanup: removed the completed P2 layout-metrics QML-integration testability finding and rewrote the Testability Agent appendix note to record direct layout-metrics coverage; kept the separate P3 layout-constants duplication finding open because child defaults and literals still remain.
-- Target-doc edits: no architectural principles were removed; completed tactical wording about introducing a direct layout test seam was removed.
-- Architecture-doc edits: added a `Layout Metrics Boundary` note that pure layout metrics helpers own deterministic sizing constants/formulas while QML owns binding and rendering.
-- Commands passed: `cmake --build build --target tabpagerlayoutmetricslogic_test tabpagerlayoutmetrics_test`; `ctest --test-dir build --output-on-failure -R 'tabpagerlayoutmetrics(logic)?'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/docs/architecture/README.md packages/tab-pager/CMakeLists.txt packages/tab-pager/package/contents/ui/PagerLayoutMetrics.qml packages/tab-pager/package/contents/ui/PagerLayoutMetricsLogic.js packages/tab-pager/tests/tabpagerlayoutmetricslogic_test.cpp packages/tab-pager/tests/tabpagerlayoutmetrics_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
-- Commands failed: `cmake --build build --target tabpagerlayoutmetricslogic_test` failed after adding the characterization test and before implementation because `package/contents/ui/PagerLayoutMetricsLogic.js` did not exist yet; the first pre-commit run failed because `treefmt` reformatted `PagerLayoutMetricsLogic.js` and `tests/tabpagerlayoutmetrics_test.cpp`, then passed after rerunning focused layout tests.
-- Deviations: this checkpoint intentionally did not consolidate `PagerDesktopStrip.desktopGap` or all remaining child minimum extent literals; that remains separate P3 work.
-- Ambiguity: no blocking ambiguity found. The target explicitly asked for a pure layout test seam and a QML smoke test, and this checkpoint provides that shape without changing visual behavior.
+- Checkpoint: derived CMake package identity and QML module metadata from `package/metadata.json`.
+- Files changed: `docs/architecture/README.md`, `CMakeLists.txt`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: package `PLASMOID_ID` remains `io.github.hnjae.tabpager`; project version remains `0.1.0`; `QML_MODULE_URI` remains `io.github.hnjae.tabpager`; `QML_MODULE_DIR` remains `io/github/hnjae/tabpager`; CMake install destinations, plugin registration URI, package metadata, `qmldir`, and qmltypes export remain semantically unchanged.
+- Target-doc cleanup: removed the now-obsolete statement that `CMakeLists.txt` owns repeated concrete project version, package ID, QML module URI, and QML module path literals; recorded the current CMake package-metadata derivation; kept the broader P2 package identity finding open because `qmldir` and qmltypes still repeat QML module metadata.
+- Target-doc edits: no architectural principles were removed; only completed CMake-specific tactical evidence was updated.
+- Architecture-doc edits: extended the `Package Metadata Boundary` note so `package/metadata.json` owns package identity and release version for build metadata as well as Nix packaging.
+- Commands passed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/docs/architecture/README.md packages/tab-pager/CMakeLists.txt packages/tab-pager/tests/tabpagermetadata_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
+- Commands failed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the metadata guard and before implementation because CMake did not yet read `package/metadata.json`; the first pre-commit run failed because `treefmt` reformatted `tests/tabpagermetadata_test.cpp`, then passed after rerunning the focused metadata test.
+- Deviations: this checkpoint intentionally did not generate or configure `src/qmldir` or `src/tabpagerplugin.qmltypes`; that remains unresolved P2 work.
+- Ambiguity: no blocking ambiguity found. The target explicitly called out repeated package identity/module metadata, and this checkpoint removes the CMake-side literals without changing generated values or install behavior.
 
 ## Notes
 

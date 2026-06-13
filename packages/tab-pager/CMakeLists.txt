@@ -3,11 +3,14 @@
 
 cmake_minimum_required(VERSION 3.25)
 
-project(tabpager VERSION 0.1.0 LANGUAGES C CXX)
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/package/metadata.json" TABPAGER_PACKAGE_METADATA_JSON)
+string(JSON PLASMOID_ID GET "${TABPAGER_PACKAGE_METADATA_JSON}" KPlugin Id)
+string(JSON TABPAGER_VERSION GET "${TABPAGER_PACKAGE_METADATA_JSON}" KPlugin Version)
 
-set(QML_MODULE_URI "io.github.hnjae.tabpager")
-set(QML_MODULE_DIR "io/github/hnjae/tabpager")
-set(PLASMOID_ID "io.github.hnjae.tabpager")
+project(tabpager VERSION "${TABPAGER_VERSION}" LANGUAGES C CXX)
+
+set(QML_MODULE_URI "${PLASMOID_ID}")
+string(REPLACE "." "/" QML_MODULE_DIR "${QML_MODULE_URI}")
 
 find_package(ECM 6.0 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
