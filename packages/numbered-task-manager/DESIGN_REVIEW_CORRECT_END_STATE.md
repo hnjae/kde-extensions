@@ -193,15 +193,15 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `TaskContextMenuLogic.mjs` imports focused window-action, virtual-desktop action, pin-action, launcher-activity, task-activity, and route owners; it owns panel placement, platform snapshots, and section aggregation while composing the focused owners; `TaskContextMenuRoleLogic.mjs` now owns live role snapshotting; `TaskContextMenu.qml` consumes one aggregate `contextMenuActionSections(...)`; `tests/taskcontextmenulogic.test.mjs` remains much larger than other logic tests and exercises many unrelated exports.
+**Evidence:** `TaskContextMenuActionSectionsLogic.mjs` composes focused window-action, virtual-desktop action, pin-action, launcher-activity, and task-activity owners into the aggregate `contextMenuActionSections(...)` output; `TaskContextMenuLogic.mjs` owns panel placement, platform snapshots, and compatibility re-exports; `TaskContextMenuRoleLogic.mjs` owns live role snapshotting; `TaskContextMenu.qml` consumes one aggregate `contextMenuActionSections(...)`; `tests/taskcontextmenulogic.test.mjs` remains much larger than other logic tests and exercises many unrelated exports.
 
-**Current state:** Role snapshotting has been extracted into `TaskContextMenuRoleLogic.mjs`, but one module still owns several context-menu feature families and cross-domain concerns.
+**Current state:** Role snapshotting, action-family descriptors, routes, and aggregate action-section composition have focused owners. `TaskContextMenuLogic.mjs` remains a compatibility facade for many unrelated exports and still owns platform snapshot helpers.
 
 **Design concern:** A change to launcher activity behavior, task role snapshotting, menu labels/icons, virtual desktop checked state, or route descriptors lands in the same module. Removing one menu feature requires auditing unrelated policy.
 
-**Correct end state:** Split pure menu policy by ownership. `TaskContextMenuRoleLogic.mjs` should own role reads and snapshots. `TaskContextMenuActionSectionsLogic.mjs` should own labels, icons, visibility, enabled, and checked descriptors. `TaskContextMenuLauncherActivityLogic.mjs` should own launcher activity menu state and update descriptors. Virtual desktop primitives should move to the shared virtual desktop owner. A retained `TaskContextMenuLogic.mjs` should be a thin facade or final composer only.
+**Correct end state:** Split pure menu policy by ownership. `TaskContextMenuRoleLogic.mjs` should own role reads and snapshots. Focused action-family owners should own labels, icons, visibility, enabled, checked state, commands, and updates. `TaskContextMenuActionSectionsLogic.mjs` should own final aggregate section assembly only. `TaskContextMenuLogic.mjs` should remain a thin facade and platform snapshot helper owner only while compatibility re-exports are needed.
 
-**Suggested migration:** Continue extracting one family at a time. Role snapshots, window action helpers, pin action helpers, launcher activity helpers, task activity helpers, and route helpers have focused owners; next candidates include virtual desktop action and final section-composition helpers. Keep compatibility re-exports while migrating tests.
+**Suggested migration:** Continue reducing compatibility re-exports after QML and tests consume focused owners directly. Keep footer actions as a separate descriptor/action-result checkpoint.
 
 **Acceptance criteria:** `TaskContextMenuLogic.mjs` no longer imports launcher list mutation helpers and task activity mutation helpers together. Each menu feature family has focused pure tests. `contextMenuActionSections(...)` is an assembly function, not the owner of per-action policy.
 
@@ -441,15 +441,15 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `TaskContextMenuLogic.mjs` contains section composition while composing focused virtual-desktop action, window-action, pin-action, launcher-activity, task-activity, and route owners; `TaskContextMenuRoleLogic.mjs` now contains role snapshots; `TaskContextMenu.qml` consumes one aggregate `actionSections`; `tests/taskcontextmenulogic.test.mjs` imports many unrelated exports from the same module.
+**Evidence:** `TaskContextMenuActionSectionsLogic.mjs` contains section composition while composing focused virtual-desktop action, window-action, pin-action, launcher-activity, and task-activity owners; `TaskContextMenuRoleLogic.mjs` contains role snapshots; `TaskContextMenu.qml` consumes one aggregate `actionSections`; `TaskContextMenuLogic.mjs` keeps compatibility re-exports for many unrelated context-menu helpers.
 
-**Current state:** Virtual desktop actions, pin actions, route helpers, window actions, launcher activity actions, and task activity actions have focused owners but still flow through the aggregate composer and compatibility re-exports.
+**Current state:** Virtual desktop actions, pin actions, route helpers, window actions, launcher activity actions, task activity actions, and aggregate action-section composition have focused owners but still flow through compatibility re-exports.
 
 **Design concern:** Feature boundaries are unclear, and unrelated menu behavior can regress during deletion or feature changes.
 
 **Correct end state:** Each menu feature family should have a focused pure module and focused tests. A top-level composer may assemble sections, but it should not own per-action policy.
 
-**Suggested migration:** Extract one family at a time with compatibility re-exports. Role snapshots, window action helpers, virtual desktop action helpers, pin action helpers, launcher activity helpers, task activity helpers, route helpers, and virtual desktop primitives now have focused owners. Continue with footer actions and final composition cleanup.
+**Suggested migration:** Continue with footer actions and compatibility re-export cleanup after QML and focused tests consume the extracted owners directly.
 
 **Acceptance criteria:** Removing launcher activity code does not touch window action, virtual desktop, or role snapshot modules. Each extracted feature family has a focused test file.
 
