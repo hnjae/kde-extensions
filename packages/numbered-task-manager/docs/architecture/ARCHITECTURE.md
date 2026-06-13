@@ -169,12 +169,7 @@ in `SPEC.md`.
 - Keep activation request execution outcomes in the same action-result boundary. `TaskActivationAdapter.qml` may dispatch the unavoidable `TasksModel.requestActivate(...)` effects, but missing activation targets and thrown activation requests should become structured diagnostics instead of unhandled adapter failures.
 - Keep launcher mutation execution outcomes in the same action-result boundary. `LauncherCommandAdapter.qml` may dispatch the unavoidable `TasksModel.requestAddLauncher(...)` and `requestRemoveLauncher(...)` effects, but thrown launcher requests should become structured diagnostics instead of unhandled adapter failures.
 - Keep action-result diagnostic filtering and warning formatting in `TaskActionResultLogger.qml`. `main.qml` should wire action-result signals to that logger instead of importing action-result policy or owning diagnostic message formatting.
-- Keep context-menu task request outcomes in the same action-result helper.
-  `TaskContextMenu.qml` may execute `TasksModel.request*` effects directly from
-  typed command descriptors, but missing task models, stale model indexes, and
-  missing request methods should be classified before the Plasma request is
-  attempted. Request execution failures should also be converted to structured
-  diagnostic results.
+- Keep context-menu task request outcomes in the same action-result helper. `TaskContextMenu.qml` may execute `TasksModel.request*` effects directly from typed command descriptors, but only through an explicit supported-method map; unsupported descriptor method names, missing task models, stale model indexes, and missing supported request methods should be classified before the Plasma request is attempted. Request execution failures should also be converted to structured diagnostic results.
 - Keep context-menu launcher effects on typed command descriptors. The menu may
   request pin, unpin, and replacement launcher-list effects, but root QML should
   remain responsible for executing those effects against `TasksModel` and
