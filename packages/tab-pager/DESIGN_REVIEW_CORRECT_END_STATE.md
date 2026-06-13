@@ -188,29 +188,11 @@ Suggested migration: Extend source state with diagnostics/health, or add a diagn
 
 Acceptance criteria: Backend/QML or tests can inspect source health without parsing logs. Tests cover diagnostic appearance, update, and recovery through an explicit diagnostic channel rather than getter-side log capture.
 
-## Deletion, Modularity, and Abstraction Problems
-
-### Finding: Presentation formatting ownership is ambiguous
-
-Priority: P2
-
-Evidence: `TabPagerDesktopRowData` includes presentation-facing `label`, `number`, and `active`; `TabPagerDesktopRows` computes label text through `TabPagerDesktopLogic::labelForDesktop()`; `TabPagerBackend` exposes `QFont labelFont`; `TabPagerBackend::labelFont()` returns `QFontDatabase::systemFont(QFontDatabase::FixedFont)`; QML uses the backend font for metrics and rendering.
-
-Current state: C++ row projection owns label text formatting, C++ backend owns font selection, and QML owns layout and rendering.
-
-Design concern: The model layer is partly semantic state and partly a QML view model. That may be acceptable, but the ownership is not explicit, and it pulls presentation concepts into backend/model APIs.
-
-Correct end state: Choose one boundary. Either define `tabpagermodel`/`TabPagerBackend` as a deliberate QML view-model layer owning presentation decisions, or keep core model data semantic and move label/font presentation into a QML-facing presenter/helper.
-
-Suggested migration: Prefer separating semantic desktop data from QML presentation data if more presentation behavior is expected. If C++ should own presentation, rename/document the module as view-model code and keep all QML-facing presentation decisions there.
-
-Acceptance criteria: The ownership rule for label formatting and font selection is explicit. `labelFont` is not mixed into a command-only backend unless that backend is intentionally a view model. Module dependencies reflect the chosen boundary.
-
 ## Recommended Correct End-State Architecture
 
-Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces desktop state plus explicit diagnostics. A desktop state store owns the current desktop state and transition planning. A Qt model adapts the state store into QML model notifications. Navigation, activation, and wheel-input helpers own pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
+Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces desktop state plus explicit diagnostics. A desktop state store owns the current desktop state and transition planning. A Qt model and backend form an intentional QML view-model boundary that owns row projection, label formatting, QML roles, model notifications, facade properties, and the fixed-width label font. Navigation, activation, and wheel-input helpers own pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
 
-Where domain rules should live: Default-name label behavior should live either in a documented view-model/presentation boundary or in QML presentation helpers, not half in semantic model code and half in backend UI properties. Wrapping behavior should live in navigator/controller policy, not in desktop inventory state.
+Where domain rules should live: Default-name label behavior belongs to the documented QML view-model boundary, not to source-state normalization. Wrapping behavior should live in navigator/controller policy, not in desktop inventory state.
 
 Where state should be defined: `TabPagerDesktopStateStore` should own current desktop state and transition results. Wheel delta pending state should live in a wheel-input adapter with explicit context scoping or be documented as part of navigator state. Source diagnostics should be part of source health state or a dedicated diagnostic stream.
 
@@ -225,7 +207,7 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 ## Suggested Refactoring Sequence
 
 1. Isolate remaining input and activation decisions from external effects by extracting wheel input mapping from QML event handlers and moving any remaining activation decision logic out of `TabPagerDesktopController`.
-2. Clarify the remaining ownership boundaries by deciding whether `TabPagerBackend`/model code is an intentional QML view-model layer and whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
+2. Clarify the remaining ownership boundary for whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
 3. Improve error semantics and observability by making source diagnostics stateful/observable, removing getter-side logging, and clarifying activation request versus confirmation.
 4. Remove or simplify remaining premature abstractions by narrowing public QML roles if they are not part of the chosen view-model boundary.
 
@@ -237,7 +219,7 @@ Do not introduce migrations or backward-compatibility layers for pre-release int
 
 Do not remove `TabPagerVirtualDesktopInfo` until a replacement test strategy preserves TaskManager signal wiring coverage.
 
-Do not move label formatting to QML just because it is presentation-related. First decide whether the C++ model is intentionally a QML view model.
+Do not move label formatting to QML just because it is presentation-related. The current C++ backend/model stack is an intentional QML view-model boundary.
 
 Do not expose more diagnostics to QML than the UI needs. Make diagnostics structured and testable first; only surface user-facing status when there is a display requirement.
 
@@ -249,7 +231,7 @@ Single Source of Truth / Duplication Agent: Reported repeated package identity/m
 
 Invariant / Correctness Agent: Reported uncertain wheel-delta context scoping, kept as P2 uncertain because the spec does not define intended behavior.
 
-Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, and split presentation formatting. Controller ownership remains P2, but the source/navigation policy finding was removed because desktop source state and navigation settings are now separated and tested. Presentation formatting was kept as P2 but framed as a boundary decision rather than a mandatory move to QML.
+Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, and split presentation formatting. Controller ownership remains P2, but the source/navigation policy finding was removed because desktop source state and navigation settings are now separated and tested. Presentation formatting is now documented as part of the intentional QML view-model boundary.
 
 Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging was merged with observability findings and kept as P2. Wheel flow readability was kept as P3 and linked to the stronger P2 wheel context issue.
 
@@ -257,4 +239,4 @@ Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch 
 
 Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics were kept as P2. Activation confirmation was downgraded from P1 to P2 because the immediate issue is naming unless confirmed activation is surfaced.
 
-Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles remain covered by the presentation-boundary finding. Wrapping leakage was removed because wrapping is no longer public backend/QML API and no longer reloads desktop source state. Parallel navigation APIs were removed because optional/test-only wrappers are gone; the remaining silent commands are QML-facing entry points over result-returning internals. Adapter-seam clarity remains P3.
+Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles were narrowed and the remaining row projection is documented as an intentional QML view-model boundary. Wrapping leakage was removed because wrapping is no longer public backend/QML API and no longer reloads desktop source state. Parallel navigation APIs were removed because optional/test-only wrappers are gone; the remaining silent commands are QML-facing entry points over result-returning internals. Adapter-seam clarity remains P3.
