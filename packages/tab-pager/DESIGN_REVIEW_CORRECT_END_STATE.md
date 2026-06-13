@@ -102,22 +102,6 @@ Suggested migration: Split `navigationWrappingAround` out of `TabPagerDesktopSou
 
 Acceptance criteria: `TabPagerDesktopSourceState` contains only desktop snapshot data. Wrapping changes do not require `m_source->sourceState()` reload. Tests distinguish desktop-source updates from navigation-setting updates.
 
-### Finding: QML model roles expose internal fields not used by the widget
-
-Priority: P2
-
-Evidence: `src/tabpagerdesktoprow.h` defines roles/row data for `desktopId`, `name`, `label`, `number`, and `active`; `src/tabpagerdesktoprow.cpp` registers all fields in a generic role table; shipped QML `DesktopButton.qml` requires only `active`, `index`, and `label`; `tests/tabpagerview_test.cpp` proves the view loads with a fake model exposing only `label` and `active`; `tests/tabpagerbackend_test.cpp` locks all five roles as backend contract.
-
-Current state: The public model API exposes domain/internal data that QML does not consume. `desktopId` is needed internally for activation lookup; `name` and `number` are inputs to label generation, but all three are public roles.
-
-Design concern: The model API is broader than the widget contract. Removing or renaming internal fields becomes a public model change even if the UI only needs `label` and `active`.
-
-Correct end state: Separate internal row identity from public row presentation. Keep `desktopId` in internal state for `desktopIdForIndex()`, but expose only roles required by QML and documented behavior unless there is an explicit extension API requirement.
-
-Suggested migration: Narrow `roleNames()` and `tabPagerDesktopRowDataForRole()` to public roles. Keep internal row-state tests for `desktopId`, `name`, and `number` if needed.
-
-Acceptance criteria: QML still renders labels and active state. Activation by index still works through internal `desktopIdForIndex()`. Backend role tests assert only supported public roles. No shipped QML depends on `desktopId`, `name`, or `number`.
-
 ### Finding: Two adapter seams wrap the same LibTaskManager dependency
 
 Priority: P3

@@ -50,14 +50,8 @@ rowRoleDefinition(TabPagerDesktopRowRole role, const char *name) {
 }
 
 constexpr auto rowRoleDefinitions = std::to_array({
-    rowRoleDefinition<&TabPagerDesktopRowData::desktopId>(
-        TabPagerDesktopRowRole::DesktopId, "desktopId"),
-    rowRoleDefinition<&TabPagerDesktopRowData::name>(
-        TabPagerDesktopRowRole::Name, "name"),
     rowRoleDefinition<&TabPagerDesktopRowData::label>(
         TabPagerDesktopRowRole::Label, "label"),
-    rowRoleDefinition<&TabPagerDesktopRowData::number>(
-        TabPagerDesktopRowRole::Number, "number"),
     rowRoleDefinition<&TabPagerDesktopRowData::active>(
         TabPagerDesktopRowRole::Active, "active"),
 });

@@ -22,10 +22,7 @@ private Q_SLOTS:
 
 void TabPagerDesktopRowTest::exposesDesktopRowRoleNames() {
   const QHash<int, QByteArray> expected = {
-      {role(TabPagerDesktopRowRole::DesktopId), "desktopId"},
-      {role(TabPagerDesktopRowRole::Name), "name"},
       {role(TabPagerDesktopRowRole::Label), "label"},
-      {role(TabPagerDesktopRowRole::Number), "number"},
       {role(TabPagerDesktopRowRole::Active), "active"},
   };
 
@@ -41,21 +38,21 @@ void TabPagerDesktopRowTest::readsDesktopRowDataByRole() {
       .active = true,
   };
 
-  QCOMPARE(tabPagerDesktopRowDataForRole(
-               rowData, role(TabPagerDesktopRowRole::DesktopId)),
-           desktopId("a").toVariant());
-  QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
-                                         role(TabPagerDesktopRowRole::Name)),
-           QVariant(QStringLiteral("Desktop 1")));
   QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
                                          role(TabPagerDesktopRowRole::Label)),
            QVariant(QStringLiteral("1")));
   QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
-                                         role(TabPagerDesktopRowRole::Number)),
-           QVariant(1));
-  QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
                                          role(TabPagerDesktopRowRole::Active)),
            QVariant(true));
+  QCOMPARE(tabPagerDesktopRowDataForRole(
+               rowData, role(TabPagerDesktopRowRole::DesktopId)),
+           QVariant());
+  QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
+                                         role(TabPagerDesktopRowRole::Name)),
+           QVariant());
+  QCOMPARE(tabPagerDesktopRowDataForRole(rowData,
+                                         role(TabPagerDesktopRowRole::Number)),
+           QVariant());
   QCOMPARE(tabPagerDesktopRowDataForRole(rowData, Qt::UserRole), QVariant());
 }
 
@@ -77,7 +74,6 @@ void TabPagerDesktopRowTest::detectsDesktopRowChangedRoles() {
 
   QCOMPARE(tabPagerDesktopRowChangedRoles(previousRow, nextRow),
            (QList<int>{
-               role(TabPagerDesktopRowRole::Name),
                role(TabPagerDesktopRowRole::Label),
                role(TabPagerDesktopRowRole::Active),
            }));

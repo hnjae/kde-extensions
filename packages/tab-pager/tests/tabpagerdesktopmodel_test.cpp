@@ -100,7 +100,6 @@ void TabPagerDesktopModelTest::updatesRowsWithoutReset() {
   expectNoStructuralSignals(countSpy, currentSpy, resetSpy);
   expectDataChangedEmission(dataSpy, 1, 1,
                             QList<int>{
-                                role(TabPagerDesktopRowRole::Name),
                                 role(TabPagerDesktopRowRole::Label),
                             });
 }
