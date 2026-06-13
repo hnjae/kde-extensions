@@ -146,6 +146,25 @@ assert.doesNotMatch(
   taskContextMenuLogicSource,
   /function taskActivityToggleCommand\b/,
 );
+assert.match(
+  taskContextMenuLogicSource,
+  /import \* as WindowActionLogic from "\.\/TaskContextMenuWindowActionLogic\.mjs"/,
+);
+for (const functionName of [
+  "newInstanceActionState",
+  "basicActionsSection",
+  "minimizeMaximizeActionsSection",
+  "keepAboveBelowActionsSection",
+  "fullscreenShadeBorderActionsSection",
+  "captureActionsSection",
+  "closeActionsSection",
+  "windowCapabilityActionState",
+]) {
+  assert.doesNotMatch(
+    taskContextMenuLogicSource,
+    new RegExp(`function ${functionName}\\b`),
+  );
+}
 
 assert.equal(
   logic.panelMenuPlacement(
