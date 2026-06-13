@@ -25,6 +25,7 @@ in `SPEC.md`.
   shared by task and launcher code.
 - Keep applet-wide activity/desktop platform state in `TaskPlatformState.qml`. It should own `ActivityInfo`, `VirtualDesktopInfo`, current activity/current desktop exposure, launcher revision changes, current-activity membership checks, and visible launcher position lookups for source components, while `main.qml` keeps `TasksModel` instantiation and launcher-list write effects.
 - Keep task-model scope policy in `TaskScopeLogic.mjs`. Normal and remote attention `TasksModel` filter settings and local qualification helpers should be named together so QML does not carry unexplained raw filter booleans or split scope decisions across unrelated modules.
+- Keep virtual-desktop identity and membership primitives in `VirtualDesktopLogic.mjs`. Desktop ID coercion, desktop-list membership, current-desktop qualification, remote-desktop qualification, and context-menu virtual-desktop checked-state primitives should be shared by task scope and menu policy instead of being reimplemented in task-entry or context-menu modules.
 - Do not re-export scope qualification helpers from task-specific modules once source components consume `TaskScopeLogic.mjs` directly. `TaskModelLogic.mjs` should own normal task entry/composition policy, and `RemoteAttentionLogic.mjs` should own remote-attention entry/state policy.
 - Keep task activity mutation decisions in `TaskActivityLogic.mjs` so task activity toggles are shared by the task model and context menu. Generic current-activity and all-activities primitives should be imported from `ActivityScopeLogic.mjs` directly.
 - Create task context menus per invocation as Plasma-native menus. Do not keep a
@@ -60,11 +61,11 @@ in `SPEC.md`.
   should consume that output directly instead of adding menu-local
   checked-state wrapper functions.
 - Keep context-menu virtual-desktop checked-state policy in
-  `TaskContextMenuLogic.mjs`. The menu may still request `TasksModel`
-  virtual-desktop mutations directly, but all-desktops and per-desktop checked
-  predicates should be derived by a tested helper. QML menu items should
-  consume that helper output directly instead of adding menu-local
-  checked-state wrapper functions.
+  `VirtualDesktopLogic.mjs`. The menu may still request `TasksModel`
+  virtual-desktop mutations directly, while `TaskContextMenuLogic.mjs`
+  composes menu descriptors from shared all-desktops and per-desktop checked
+  predicates. QML menu items should consume that helper output directly
+  instead of adding menu-local checked-state wrapper functions.
 - Keep context-menu basic action availability in `TaskContextMenuLogic.mjs`.
   Simple item visible/enabled predicates such as New Instance, Move, and Resize
   should be derived by tested helpers while QML keeps rendering order and Plasma
@@ -125,9 +126,9 @@ in `SPEC.md`.
   diagnostics for malformed required projection fields, diagnostics for
   malformed base boolean role shapes, diagnostics for malformed normal-task
   launcher boolean role shapes, diagnostics for malformed activity and
-  virtual-desktop list role shapes, and virtual-desktop membership should not
-  be duplicated between normal task composition, remote attention, context menu
-  code, and task-like delegates.
+  virtual-desktop list role shapes should not be duplicated between normal
+  task composition, remote attention, context menu code, and task-like
+  delegates.
 - Keep source-side task-entry diagnostic action-result adaptation in
   `TaskEntryDiagnosticReporter.qml`. Normal and remote-attention source
   delegates should provide source model, source row, publication key, and roles;
