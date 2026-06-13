@@ -26,6 +26,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(tabpagermodel STATIC
+    src/tabpageractivationplanner.cpp
+    src/tabpageractivationplanner.h
     src/tabpagerbackend.cpp
     src/tabpagerbackend.h
     src/tabpagerdesktop.h
@@ -115,6 +117,9 @@ if(BUILD_TESTING)
     endfunction()
 
     add_tabpager_test(tabpagerdesktop tests/tabpagerdesktop_test.cpp)
+    add_tabpager_test(tabpageractivationplanner
+        tests/tabpageractivationplanner_test.cpp
+    )
     add_tabpager_test(tabpagerdesktoplogic tests/tabpagerdesktoplogic_test.cpp)
     add_tabpager_test(tabpagerdesktoprow tests/tabpagerdesktoprow_test.cpp)
     add_tabpager_test(tabpagerdesktoprows tests/tabpagerdesktoprows_test.cpp)

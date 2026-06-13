@@ -17,6 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - P2 structured source diagnostics read seam: added `TaskManagerDesktopSource::sourceDiagnostics()` using the same mapper path as `sourceState()`, with source tests proving malformed current TaskManager data can be inspected as structured diagnostics without parsing logs. Files changed: `src/taskmanagerdesktopsource.h`, `src/taskmanagerdesktopsource.cpp`, `tests/taskmanagerdesktopsource_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
 - P2 QML role exposure characterization: added a view-level test proving shipped QML still loads with a model exposing only `label` and `active`, while existing backend/row tests continue to lock the current broader backend model roles. Files changed: `tests/tabpagerview_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
 - P2 source diagnostic transition logging: cached the last logged `TaskManagerDesktopSource` diagnostic set so unchanged repeated `sourceState()` reads do not duplicate warnings, while diagnostic changes and recovery/reappearance remain observable. Files changed: `src/taskmanagerdesktopsource.h`, `src/taskmanagerdesktopsource.cpp`, `tests/taskmanagerdesktopsource_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
+- P2 direct activation planner seam: added `TabPagerActivationPlanner` for pure direct index activation classification and command creation, then changed `TabPagerDesktopController::activateWithResult()` to execute the planner command instead of owning invalid-index/invalid-ID classification inline. Files changed: `CMakeLists.txt`, `src/tabpageractivationplanner.h`, `src/tabpageractivationplanner.cpp`, `src/tabpagerdesktopcontroller.h`, `src/tabpagerdesktopcontroller.cpp`, `tests/tabpageractivationplanner_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
 
 ## Verification
 
@@ -56,11 +57,17 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - `just format` passed and reformatted one touched file.
 - `cmake --build build --target taskmanagerdesktopsource_test && ctest --test-dir build --output-on-failure -R '^taskmanagerdesktopsource$'` passed after formatting.
 - `ctest --test-dir build --output-on-failure` passed.
+- `cmake --build build --target tabpageractivationplanner_test && ctest --test-dir build --output-on-failure -R '^tabpageractivationplanner$'` passed after adding the pure planner seam, before controller integration; the initial build emitted missing designated-initializer warnings that were fixed before final verification.
+- `cmake --build build --target tabpageractivationplanner_test tabpagerdesktopcontroller_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpageractivationplanner|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after controller integration.
+- `just format` passed and reformatted two touched files.
+- `cmake --build build --target tabpageractivationplanner_test tabpagerdesktopcontroller_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpageractivationplanner|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after formatting.
+- `ctest --test-dir build --output-on-failure` passed.
 
 ## Remaining Follow-Up Work
 
 - P2 controller orchestration, state-store separation, navigation settings separation, source diagnostics observability, activation planning, and wheel context scoping remain open.
 - Source diagnostics are now directly readable from `TaskManagerDesktopSource`, and unchanged repeated diagnostic reads no longer duplicate warnings, but the generic `TabPagerDesktopSource` contract, controller/backend state, explicit diagnostic channel, and getter-side logging cleanup remain open.
+- Direct activation result classification is now pure, but navigation/wheel activation planning, controller dependency on the Qt model, and controller/backend integration-style activation coverage remain open.
 - Wheel context scoping is now characterized but not resolved; a future checkpoint still needs to decide whether preserving pending wheel deltas across navigation context changes is intended or should be replaced with explicit reset/drop behavior.
 - QML role exposure is now characterized but not narrowed; a future checkpoint still needs to decide whether the backend model is an intentional public view model or whether `desktopId`, `name`, and `number` should become internal-only fields.
 - P2/P3 API cleanup items remain open: public model role narrowing, wrapping API leakage, wheel input adapter extraction, parallel navigation API cleanup, layout constant consolidation, package metadata de-duplication, and `TabPagerVirtualDesktopInfo` boundary clarification.
@@ -75,3 +82,4 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - This checkpoint intentionally did not remove diagnostic logging from `sourceState()` or add a generic source diagnostic signal; it only creates a structured read seam that later lifecycle/logging work can use.
 - This checkpoint intentionally did not narrow backend model roles; it only records the current split between the broader backend role contract and the smaller shipped-QML role requirement.
 - This checkpoint intentionally used Qt message-handler capture to prove the existing log behavior because no explicit diagnostic sink or signal exists yet; the target document still keeps the requirement for future diagnostic tests without global Qt message interception.
+- This checkpoint intentionally limited activation planning extraction to direct index activation; navigation and wheel activation still need a later planner pass because changing them together would produce a broader diff with more behavioral surface.

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "tabpageractivationplanner.h"
 #include "tabpagerdesktopmodel.h"
 #include "tabpagerdesktopnavigator.h"
 #include "tabpagerdesktopsource.h"
@@ -10,15 +11,6 @@
 #include <QObject>
 
 #include <memory>
-
-enum class TabPagerActivationResult {
-  ActivationRequested,
-  InvalidIndex,
-  InvalidDesktopId,
-  NoCurrentDesktop,
-  StoppedAtEdge,
-  NoWheelStep,
-};
 
 class TabPagerDesktopController final : public QObject {
   Q_OBJECT

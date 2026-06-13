@@ -190,17 +190,17 @@ Acceptance criteria: No navigation method exists solely as a test convenience wr
 
 Priority: P2
 
-Evidence: `TabPagerDesktopController::activateWithResult()` reads a desktop ID from the model and immediately calls `m_source->activateDesktop()`; wheel activation consumes navigator state and then calls the same activation path; controller and backend tests use fake `QObject` sources, real model state, signal wiring, and side-effect assertions.
+Evidence: `TabPagerDesktopController::activateWithResult()` now delegates direct index classification to `TabPagerActivationPlanner`, then executes any returned desktop activation command through `m_source->activateDesktop()`; wheel activation still consumes navigator state and then calls the same direct activation path; controller and backend tests still use fake `QObject` sources, real model state, signal wiring, and side-effect assertions.
 
-Current state: Navigation target calculation is pure, but activation decision, desktop ID lookup, result classification, wheel consumption, and source effect execution are bound together in the controller.
+Current state: Navigation target calculation and direct activation result classification are pure. Desktop ID lookup, navigation-target translation, wheel consumption, source effect execution, and some activation behavior coverage are still bound together in the controller.
 
-Design concern: Behavior tests for invalid index, invalid ID, no current desktop, edge stops, wrapping, wheel remainder, and valid activation require integration-style fixtures. Backend tests repeat some controller activation scenarios through the facade.
+Design concern: Direct invalid-index, invalid-ID, and valid activation-command planning no longer require integration-style fixtures. Behavior tests for no current desktop, edge stops, wrapping, wheel remainder, source execution, and backend facade reporting still require integration-style fixtures, and backend tests repeat some controller activation scenarios through the facade.
 
 Correct end state: A pure activation planner should return `{result, optional desktopId}` or an activation command from state/navigation input. The controller should synchronize source state, call the planner, log/report no-ops, and execute the returned command.
 
-Suggested migration: Add `TabPagerActivationPlanner` or free functions that accept row IDs/current index/navigation settings and return a command. Move result classification there first, then reduce controller tests to source synchronization and command execution.
+Suggested migration: Extend `TabPagerActivationPlanner` beyond direct index activation so it accepts row IDs/current index/navigation settings and returns a command. Direct result classification has moved there; remaining work is to move navigation/wheel activation planning, then reduce controller tests to source synchronization and command execution.
 
-Acceptance criteria: Activation decision cases are testable without `QObject`, `QSignalSpy`, or fake sources. Controller tests only assert wiring, state synchronization, logging/reporting, and source execution.
+Acceptance criteria: All activation decision cases are testable without `QObject`, `QSignalSpy`, or fake sources. Controller tests only assert wiring, state synchronization, logging/reporting, and source execution.
 
 ### Finding: Layout metrics and wheel input mapping are tested through QML integration
 

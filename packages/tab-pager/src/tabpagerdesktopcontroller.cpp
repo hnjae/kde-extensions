@@ -7,7 +7,6 @@
 
 #include <QtGlobal>
 
-#include <optional>
 #include <utility>
 
 namespace {
@@ -52,18 +51,13 @@ void TabPagerDesktopController::activate(int index) {
 
 TabPagerActivationResult
 TabPagerDesktopController::activateWithResult(int index) {
-  const std::optional<TabPagerDesktopId> desktopId =
-      m_model.desktopIdForIndex(index);
-  if (!desktopId.has_value()) {
-    return TabPagerActivationResult::InvalidIndex;
+  const TabPagerActivationPlan plan =
+      tabPagerActivationPlanForIndex(m_model.desktopIdForIndex(index));
+  if (plan.desktopId.has_value()) {
+    m_source->activateDesktop(*plan.desktopId);
   }
 
-  if (!desktopId->isValid()) {
-    return TabPagerActivationResult::InvalidDesktopId;
-  }
-
-  m_source->activateDesktop(*desktopId);
-  return TabPagerActivationResult::ActivationRequested;
+  return plan.result;
 }
 
 void TabPagerDesktopController::activateNext() {
