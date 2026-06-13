@@ -418,6 +418,84 @@ assert.deepEqual(
     },
   },
 );
+assert.deepEqual(
+  plain(
+    logic.contextMenuActionRoute({
+      command: logic.resizeCommand(),
+      enabled: false,
+      visible: true,
+    }),
+  ),
+  {
+    code: "action-disabled",
+    command: {
+      arguments: [],
+      kind: "task-model-request",
+      requestMethod: "requestResize",
+    },
+    kind: "unavailable",
+    update: null,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.contextMenuActionRoute({
+      enabled: true,
+      update: {
+        changed: true,
+        ok: true,
+      },
+      visible: false,
+    }),
+  ),
+  {
+    code: "action-hidden",
+    command: null,
+    kind: "unavailable",
+    update: {
+      changed: true,
+      ok: true,
+    },
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.contextMenuActionRoute({
+      command: logic.pinLauncherCommand({
+        isPinned: false,
+        launcherUrl: "app.desktop",
+      }),
+      enabled: false,
+    }),
+  ),
+  {
+    code: "action-disabled",
+    command: {
+      action: "pinLauncher",
+      kind: "launcher-command",
+      launcherUrl: "app.desktop",
+      launchers: [],
+    },
+    kind: "unavailable",
+    update: null,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.contextMenuActionRoute({
+      command: logic.taskActivityToggleCommand(["work"], "chat"),
+    }),
+  ),
+  {
+    command: {
+      arguments: [["work", "chat"]],
+      kind: "task-model-request",
+      requestMethod: "requestActivities",
+    },
+    kind: "task-model-request",
+    update: null,
+  },
+);
 assert.deepEqual(plain(logic.contextMenuActionRoute(null)), {
   command: null,
   kind: "none",
@@ -3835,6 +3913,14 @@ assert.equal(
 );
 assert.equal(
   actionDispatcherQml.includes('dispatchFailure(route, "unknown-route")'),
+  true,
+);
+assert.equal(
+  actionDispatcherQml.includes('if (route.kind === "unavailable")'),
+  true,
+);
+assert.equal(
+  actionDispatcherQml.includes("return dispatchFailure(route, route.code)"),
   true,
 );
 assert.equal(
