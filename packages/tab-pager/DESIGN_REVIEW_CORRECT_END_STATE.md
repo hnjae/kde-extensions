@@ -14,7 +14,7 @@ No P0 issue was found. The recommended end state is a precise, boring architectu
 
 1. `TabPagerDesktopController` spans source ownership, source/settings reloads, state-store reads/writes, navigation, wheel consumption, activation-planner delegation, logging, and activation effects.
 2. Package identity, version, QML module URI, and install-path metadata are still repeated across build, package, QML, and Nix metadata.
-3. Wheel input semantics are split between QML event normalization and C++ navigation state.
+3. Wheel input semantics are still split between QML event normalization and C++ semantic wheel navigation.
 
 ## Single Source of Truth Violations
 
@@ -86,21 +86,21 @@ Acceptance criteria: Adding a non-LibTaskManager source requires implementing on
 
 ## Logic Placement and Flow Predictability
 
-### Finding: Wheel navigation policy is split between QML and C++ navigator state
+### Finding: Wheel navigation policy is split between QML and C++ wheel navigation state
 
 Priority: P3
 
-Evidence: `TabPagerView.qml` computes wheel input from `wheel.inverted` and `wheel.angleDelta.y || wheel.angleDelta.x`, then calls `backend.activateByWheelDelta(delta)`; `TabPagerDesktopNavigator::consumeWheelDelta()` accumulates pending wheel delta and converts positive wheel steps into negative desktop offsets; tests verify QML forwarding separately from backend/controller navigation behavior.
+Evidence: `TabPagerView.qml` computes wheel input from `wheel.inverted` and `wheel.angleDelta.y || wheel.angleDelta.x`, then calls `backend.activateByWheelDelta(delta)`; `TabPagerWheelNavigation::consumeDelta()` accumulates pending wheel delta and converts positive wheel steps into negative desktop offsets; tests verify QML forwarding separately from backend/controller navigation behavior.
 
-Current state: The user-visible rule “scroll up moves to previous, scroll down moves to next” is implemented across QML event normalization, backend forwarding, navigator accumulation, and sign inversion.
+Current state: The user-visible rule “scroll up moves to previous, scroll down moves to next” is implemented across QML event normalization, backend forwarding, and `TabPagerWheelNavigation` accumulation/sign conversion.
 
-Design concern: The semantic direction is not visible at the call boundary. QML owns part of device normalization while `TabPagerDesktopNavigator` owns wheel-device accumulation and sign conversion.
+Design concern: The semantic direction is still not visible at the QML/backend call boundary. QML owns part of device normalization while `TabPagerWheelNavigation` owns wheel-device accumulation and sign conversion.
 
 Correct end state: Raw wheel-device handling should be isolated from desktop navigation. The navigator should operate on semantic desktop offsets. A small wheel-input adapter should convert Qt wheel events/deltas into semantic offsets.
 
-Suggested migration: Extract wheel accumulation/sign handling into a `TabPagerWheelNavigation` or `WheelDeltaAccumulator` component that returns semantic offsets. Keep `TabPagerDesktopNavigator::targetForOffset()` as the central desktop navigation rule.
+Suggested migration: Extract QML wheel-event normalization into a pure helper that returns the raw delta consumed by `TabPagerWheelNavigation`. Keep `TabPagerDesktopNavigator::targetForOffset()` as the central desktop navigation rule.
 
-Acceptance criteria: A test verifies full spec mapping for wheel up/down. `TabPagerDesktopNavigator` no longer stores wheel-specific pending state unless it is explicitly the wheel adapter. The sign conversion is named and tested in one place.
+Acceptance criteria: Full QML wheel-event normalization cases can be tested without `QQuickWindow` event dispatch. `TabPagerDesktopNavigator` does not store wheel-specific pending state. Wheel-step sign conversion is named and tested in one place.
 
 ## Testability Problems
 
@@ -108,15 +108,15 @@ Acceptance criteria: A test verifies full spec mapping for wheel up/down. `TabPa
 
 Priority: P2
 
-Evidence: `TabPagerDesktopController::activateWithResult()` delegates direct index classification to `TabPagerActivationPlanner`, then executes any returned desktop activation command through `m_source->activateDesktop()`; navigation result translation and navigation-target desktop command planning also live in `TabPagerActivationPlanner`; wheel activation still consumes navigator state in the controller and passes that navigation result plus a state-store desktop ID lookup into the planner; controller and backend tests still use fake `QObject` sources, signal wiring, and side-effect assertions.
+Evidence: `TabPagerDesktopController::activateWithResult()` delegates direct index classification to `TabPagerActivationPlanner`, then executes any returned desktop activation command through `m_source->activateDesktop()`; navigation result translation and navigation-target desktop command planning also live in `TabPagerActivationPlanner`; wheel activation consumes `TabPagerWheelNavigation` state in the controller, resolves the returned semantic offset through `TabPagerDesktopNavigator`, and passes that navigation result plus a state-store desktop ID lookup into the planner; controller and backend tests still use fake `QObject` sources, signal wiring, and side-effect assertions.
 
-Current state: Navigation target calculation, direct activation result classification, navigation-result translation, and navigation-target desktop command planning are pure. Desktop ID lookup, wheel consumption, source effect execution, and some activation behavior coverage are still bound together in the controller.
+Current state: Navigation target calculation, wheel accumulation/sign conversion, direct activation result classification, navigation-result translation, and navigation-target desktop command planning are pure. Desktop ID lookup, helper composition, source effect execution, and some activation behavior coverage are still bound together in the controller.
 
-Design concern: Direct invalid-index, invalid-ID, valid activation-command planning, navigation no-op result translation, and navigation target desktop-command planning no longer require integration-style fixtures. Behavior tests for wrapping target selection, wheel remainder, source execution, and backend facade reporting still require integration-style fixtures, and backend tests repeat some controller activation scenarios through the facade.
+Design concern: Direct invalid-index, invalid-ID, valid activation-command planning, navigation no-op result translation, navigation target desktop-command planning, wrapping target selection, and wheel remainder handling no longer require integration-style fixtures. Source execution and backend facade reporting still require integration-style fixtures, and backend tests repeat some controller activation scenarios through the facade.
 
 Correct end state: Wheel-device accumulation and semantic navigation target selection should be testable without source effects. The activation planner should continue returning activation commands from resolved state/navigation input, and the controller should synchronize source state, call pure helpers, log/report no-ops, and execute returned commands.
 
-Suggested migration: Extract wheel accumulation/sign handling into a pure helper and route wheel activation through semantic offsets or navigation results that are already independently tested. Keep `TabPagerActivationPlanner` focused on converting resolved IDs/navigation results into activation plans, then reduce controller tests to source synchronization, helper delegation, logging/reporting, and source command execution.
+Suggested migration: Keep wheel activation routed through independently tested semantic offsets and navigation results. Keep `TabPagerActivationPlanner` focused on converting resolved IDs/navigation results into activation plans, then reduce controller tests to source synchronization, helper delegation, logging/reporting, and source command execution.
 
 Acceptance criteria: Wheel accumulation, sign conversion, navigation target selection, and activation planning are testable without `QObject`, `QSignalSpy`, or fake sources. Controller tests only assert wiring, state synchronization, helper delegation, logging/reporting, and source execution.
 
@@ -154,7 +154,7 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 
 ## Suggested Refactoring Sequence
 
-1. Isolate remaining wheel input decisions from external effects by extracting wheel input mapping from QML event handlers and wheel accumulation/sign handling from `TabPagerDesktopNavigator`.
+1. Isolate remaining wheel input decisions from external effects by extracting wheel input mapping from QML event handlers.
 2. Clarify the remaining ownership boundary for whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
 3. Improve error semantics by clarifying activation request versus confirmation.
 4. Remove or simplify remaining premature abstractions by narrowing public QML roles if they are not part of the chosen view-model boundary.
@@ -181,7 +181,7 @@ Invariant / Correctness Agent: Reported uncertain wheel-delta context scoping. T
 
 Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, and split presentation formatting. Controller ownership remains P2, but the source/navigation policy finding was removed because desktop source state and navigation settings are now separated and tested. Presentation formatting is now documented as part of the intentional QML view-model boundary.
 
-Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging has been removed from `sourceState()`, and source/controller diagnostics health is now observable through a generic source boundary. Wheel flow readability remains because QML still normalizes wheel events while `TabPagerDesktopNavigator` still stores wheel-specific pending state and performs sign conversion.
+Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging has been removed from `sourceState()`, and source/controller diagnostics health is now observable through a generic source boundary. Wheel flow readability remains because QML still normalizes wheel events while `TabPagerWheelNavigation` owns pending wheel state and sign conversion.
 
 Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout/input testability and wheel activation testability were kept as P2. Getter-side diagnostics were resolved by the generic source/controller diagnostics channel.
 
