@@ -46,6 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - Backend activation tests now cover facade forwarding and no longer repeat the lower-level controller/navigation/wheel activation matrix.
 - Controller navigation activation uses the activation planner's target-index plan for state-store lookup instead of reading navigation-result sentinel values directly.
 - The LibTaskManager raw-info seam is named `TaskManagerVirtualDesktopInfoPort` and documented as a TaskManager-specific port; domain providers implement `TabPagerDesktopSource` and `TabPagerNavigationSettingsSource` directly.
+- `TabPagerDesktopController::activationFinished` outcome reporting is directly covered at the controller boundary for index activation, relative navigation no-ops, and pending wheel no-step results.
 
 ## Remaining
 
@@ -59,15 +60,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: clarified the LibTaskManager adapter seam as a TaskManager-specific port.
-- Files changed: `docs/architecture/README.md`, `src/taskmanagervirtualdesktopinfoport.h`, `src/taskmanagervirtualdesktopinfoport.cpp`, `src/taskmanagerdesktopsource.h`, `src/taskmanagerdesktopsource.cpp`, `tests/taskmanagerdesktopsource_test.cpp`, `CMakeLists.txt`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: TaskManager raw-state mapping, diagnostic reporting/logging, source-state signal forwarding, navigation-wrapping signal forwarding, and valid-only activation forwarding remain unchanged.
-- Target-doc cleanup: removed only the resolved LibTaskManager adapter-boundary finding and its direct sequence note from `DESIGN_REVIEW_CORRECT_END_STATE.md`; kept the controller orchestration finding.
-- Target-doc edits: no unresolved controller design-review finding was removed.
-- Commands passed: `cmake --build build --target taskmanagerdesktopsource_test tabpagerplugin`; `ctest --test-dir build --output-on-failure -R 'taskmanagerdesktopsource'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; pre-commit hooks run by commit, including `reuse`, `rumdl`, `treefmt`, `typos`, and `cog verify`.
+- Checkpoint: added a controller-boundary outcome-reporting guard for `activationFinished`.
+- Files changed: `tests/tabpagerdesktopcontroller_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: controller activation commands, result-returning activation APIs, backend activation-result forwarding, wheel pending-delta behavior, source synchronization, navigation wrapping, diagnostics forwarding, and model notifications remain unchanged.
+- Target-doc cleanup: none; the remaining controller orchestration finding stays open in `DESIGN_REVIEW_CORRECT_END_STATE.md`.
+- Target-doc edits: none.
+- Commands passed: `cmake --build build --target tabpagerdesktopcontroller_test`; `ctest --test-dir build --output-on-failure -R 'tabpagerdesktopcontroller'`; `ctest --test-dir build --output-on-failure -R 'tabpagerbackend|tabpageractivationplanner'`; `ctest --test-dir build --output-on-failure`; `git diff --check`.
 - Commands failed: none.
-- Deviations: no public backend/model/source/controller API changed; the lower-level TaskManager test seam was kept rather than collapsed.
-- Ambiguity: no blocking ambiguity found after accepting that no P0/P1 findings remain and the next safe checkpoint is P3.
+- Deviations: no public backend/model/source/controller API changed; this checkpoint adds coverage rather than reducing the controller's responsibility set.
+- Ambiguity: no blocking ambiguity found after accepting that no P0/P1 findings remain and this is a P2 guard checkpoint.
 
 ## Notes
 

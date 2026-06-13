@@ -25,6 +25,12 @@ void expectActivationResult(TabPagerActivationResult actual,
   QCOMPARE(static_cast<int>(actual), static_cast<int>(expected));
 }
 
+void expectActivationSignal(const QSignalSpy &spy, int signalIndex,
+                            TabPagerActivationResult expected) {
+  QCOMPARE(spy.at(signalIndex).at(0).value<TabPagerActivationResult>(),
+           expected);
+}
+
 class FakeDesktopStateStore final : public TabPagerDesktopStateStore {
 public:
   [[nodiscard]] int count() const override { return m_desktops.size(); }
@@ -106,6 +112,7 @@ private Q_SLOTS:
   void activatesRelativeNavigationTargets();
   void reportsActivationResults();
   void reportsNavigationNoOpResults();
+  void emitsActivationFinishedResults();
 };
 
 void TabPagerDesktopControllerTest::
@@ -251,6 +258,67 @@ void TabPagerDesktopControllerTest::reportsNavigationNoOpResults() {
 
   QCOMPARE(wheelNavigation.source->activatedDesktops(),
            QList<TabPagerDesktopId>{desktopId("a")});
+}
+
+void TabPagerDesktopControllerTest::emitsActivationFinishedResults() {
+  ControllerFixture indexActivation({
+      defaultDesktop("a", 1),
+      defaultDesktop("b", 2),
+  });
+  QSignalSpy indexSpy(&indexActivation.controller,
+                      &TabPagerDesktopController::activationFinished);
+
+  indexActivation.controller.activate(-1);
+  indexActivation.controller.activate(1);
+
+  QCOMPARE(indexSpy.count(), 2);
+  expectActivationSignal(indexSpy, 0, TabPagerActivationResult::InvalidIndex);
+  expectActivationSignal(indexSpy, 1,
+                         TabPagerActivationResult::ActivationRequested);
+  QCOMPARE(indexActivation.source->activatedDesktops(),
+           QList<TabPagerDesktopId>{desktopId("b")});
+
+  ControllerFixture missingCurrentDesktop({
+      defaultDesktop("a", 1),
+      defaultDesktop("b", 2),
+  });
+  QSignalSpy missingCurrentSpy(&missingCurrentDesktop.controller,
+                               &TabPagerDesktopController::activationFinished);
+
+  missingCurrentDesktop.controller.activateNext();
+
+  QCOMPARE(missingCurrentSpy.count(), 1);
+  expectActivationSignal(missingCurrentSpy, 0,
+                         TabPagerActivationResult::NoCurrentDesktop);
+
+  ControllerFixture stoppedAtEdge(
+      {
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+      },
+      desktopId("a"), false);
+  QSignalSpy stoppedAtEdgeSpy(&stoppedAtEdge.controller,
+                              &TabPagerDesktopController::activationFinished);
+
+  stoppedAtEdge.controller.activatePrevious();
+
+  QCOMPARE(stoppedAtEdgeSpy.count(), 1);
+  expectActivationSignal(stoppedAtEdgeSpy, 0,
+                         TabPagerActivationResult::StoppedAtEdge);
+
+  ControllerFixture wheelNavigation(
+      {
+          defaultDesktop("a", 1),
+          defaultDesktop("b", 2),
+      },
+      desktopId("a"), false);
+  QSignalSpy wheelSpy(&wheelNavigation.controller,
+                      &TabPagerDesktopController::activationFinished);
+
+  wheelNavigation.controller.activateByWheelDelta(halfWheelStepDelta);
+
+  QCOMPARE(wheelSpy.count(), 1);
+  expectActivationSignal(wheelSpy, 0, TabPagerActivationResult::NoWheelStep);
 }
 
 QTEST_MAIN(TabPagerDesktopControllerTest)
