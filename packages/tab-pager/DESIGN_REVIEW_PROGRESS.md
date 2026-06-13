@@ -39,12 +39,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - CMake package metadata now derives `PLASMOID_ID`, project version, QML module URI, and QML module path from `package/metadata.json`.
 - `qmldir` is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
 - `tabpagerplugin.qmltypes` is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
+- The plasmoid `main.qml` import is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
 
 ## Remaining
 
 - Reduce remaining controller orchestration by moving any residual activation/wheel decision logic into pure planners.
 - Consolidate layout constants such as `desktopGap` and minimum extents.
-- Deduplicate package identity, version, QML module URI, and install-path metadata beyond the current drift tests.
 - Clarify whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
 
 ## Verification Baseline
@@ -55,15 +55,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: configured `tabpagerplugin.qmltypes` from CMake's derived QML module URI.
-- Files changed: `docs/architecture/README.md`, `CMakeLists.txt`, `src/tabpagerplugin.qmltypes`, `src/tabpagerplugin.qmltypes.in`, `tests/tabpagermetadata_test.cpp`, `tests/tabpagerqmltypes_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`, repository-root `REUSE.toml`.
-- Behavior preserved: generated qmltypes still exports `io.github.hnjae.tabpager/TabPagerBackend 1.0` and still matches `TabPagerBackend` properties, methods, signals, and `qmlRegisterType()` metadata.
-- Target-doc cleanup: removed the now-obsolete statement that `src/tabpagerplugin.qmltypes` repeats the concrete QML module URI, recorded that qmltypes is configured from CMake's derived module URI, and kept the broader P2 package identity finding open because `package/contents/ui/main.qml` still imports the concrete QML module URI.
-- Target-doc edits: no architectural principles were removed; completed qmltypes-specific tactical evidence was updated and the remaining evidence was narrowed to the source QML import literal.
-- Commands passed: `cmake --build build --target tabpagermetadata_test tabpagerqmltypes_test`; `ctest --test-dir build --output-on-failure -R 'tabpager(qmltypes|metadata)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files REUSE.toml packages/tab-pager/CMakeLists.txt packages/tab-pager/src/tabpagerplugin.qmltypes.in` from the repository root.
-- Commands failed: `ctest --test-dir build --output-on-failure -R 'tabpager(qmltypes|metadata)'` failed after adding the metadata guards and before implementation because the build-tree `src/tabpagerplugin.qmltypes` and source `src/tabpagerplugin.qmltypes.in` did not exist yet; the first test-layer commit attempt failed because `treefmt` reformatted the edited C++ tests, then passed after restaging the formatted files.
-- Deviations: this checkpoint intentionally did not address the remaining concrete QML import in `package/contents/ui/main.qml`.
-- Ambiguity: no blocking ambiguity found. The qmltypes `1.0` type version remains an explicit QML API version in the template, not package release metadata.
+- Checkpoint: configured the plasmoid `main.qml` import from CMake's derived QML module URI.
+- Files changed: `CMakeLists.txt`, `nix/lib/tab-pager-ci.nix`, `package/contents/ui/main.qml`, `package/contents/ui/main.qml.in`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`, repository-root `REUSE.toml`.
+- Behavior preserved: generated and installed `main.qml` still imports `io.github.hnjae.tabpager as TabPager`, still instantiates `TabPager.TabPagerBackend`, and the installed plasmoid package still contains `contents/ui/main.qml`.
+- Target-doc cleanup: removed the now-resolved P2 package identity/module metadata finding and preserved its architectural rule as a package metadata invariant under the recommended architecture.
+- Target-doc edits: removed only tactical resolved evidence and migration text for repeated package/QML module metadata; kept the invariant that package metadata remains authoritative and CI guards drift.
+- Commands passed: `cmake --build build --target tabpagermetadata_test`; `ctest --test-dir build --output-on-failure -R tabpagermetadata`; `cmake --install build`; `ctest --test-dir build --output-on-failure`; `nix develop ".#default" --command tab-pager-lint-qml`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files REUSE.toml packages/tab-pager/CMakeLists.txt packages/tab-pager/nix/lib/tab-pager-ci.nix packages/tab-pager/package/contents/ui/main.qml.in packages/tab-pager/tests/tabpagermetadata_test.cpp` from the repository root.
+- Commands failed: `ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the metadata guard and before implementation because `package/contents/ui/main.qml.in` did not exist yet; the first test-layer commit attempt failed because `treefmt` reformatted `tests/tabpagermetadata_test.cpp`, then passed after restaging; `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the Nix qml-lint guard and before updating `nix/lib/tab-pager-ci.nix`; `nix develop ".#default" --command tab-pager-lint-qml` initially failed because linting the build-tree generated `main.qml` could not resolve sibling local QML types, then passed after the lint source changed to the installed generated `main.qml`.
+- Deviations: none.
+- Ambiguity: no blocking ambiguity found. `src/tabpagerlogging.cpp` still uses `io.github.hnjae.tabpager` as a logging category, but it is not package identity, install-path, or QML module metadata.
 
 ## Notes
 

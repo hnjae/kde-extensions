@@ -13,25 +13,8 @@ No P0 issue was found. The recommended end state is a precise, boring architectu
 ## Top Design Risks
 
 1. `TabPagerDesktopController` spans source ownership, source/settings reloads, state-store reads/writes, navigation, wheel consumption, activation-planner delegation, logging, and activation effects.
-2. Package identity, version, QML module URI, and install-path metadata are still repeated across build, package, QML, and Nix metadata.
 
 ## Single Source of Truth Violations
-
-### Finding: Package identity and module metadata are repeated
-
-Priority: P2
-
-Evidence: `package/metadata.json` defines the package ID and version; `package/contents/ui/main.qml` imports the concrete QML module URI.
-
-Current state: One release/install contract is declared across KPackage metadata, QML imports, CMake, and Nix packaging/check code. CMake and Nix derive package ID, version, and QML module path from `package/metadata.json`; `qmldir` and `src/tabpagerplugin.qmltypes.in` are configured from CMake's derived QML module URI; and metadata drift tests verify the repeated declarations agree.
-
-Design concern: A mismatch can produce a package whose Plasma ID, install destination, QML import URI, qmltypes export, and Nix metadata disagree.
-
-Correct end state: One source should own package identity, version, QML module URI, and module path. Other files should be generated, configured, or checked against it.
-
-Suggested migration: Pick an authority, likely CMake variables or `package/metadata.json`, then generate/configure QML import metadata, package metadata fragments, and Nix check paths from that authority.
-
-Acceptance criteria: Changing package ID or version requires editing one authoritative declaration. CI verifies that `package/metadata.json`, installed plasmoid path, `qmldir`, qmltypes export, and Nix checks agree.
 
 ### Finding: Layout constants have local duplicate defaults
 
@@ -104,6 +87,8 @@ Acceptance criteria: Wheel accumulation, sign conversion, navigation target sele
 ## Recommended Correct End-State Architecture
 
 Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces desktop state plus explicit diagnostics. A desktop state store owns the current desktop state and transition planning. A Qt model and backend form an intentional QML view-model boundary that owns row projection, label formatting, QML roles, model notifications, facade properties, and the fixed-width label font. Navigation, activation, and wheel-input helpers own pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
+
+Package metadata is the authority for package identity and release version. Build, packaging, QML module metadata, and generated QML imports should derive package ID, version, QML module URI, and module path from that authority, with CI guarding drift across installed plasmoid paths, `qmldir`, qmltypes exports, and Nix checks.
 
 Where domain rules should live: Default-name label behavior belongs to the documented QML view-model boundary, not to source-state normalization. Wrapping behavior should live in navigator/controller policy, not in desktop inventory state.
 
