@@ -19,8 +19,14 @@ const sourceQml = readFileSync(sourceUrl, "utf8");
 
 assert.match(mainQml, /\bLauncherCommandAdapter\s*\{/);
 assert.match(mainQml, /id:\s*launcherCommands/);
+assert.match(mainQml, /\bLauncherCommandPort\s*\{/);
+assert.match(mainQml, /id:\s*launcherCommandPort/);
+assert.match(
+  mainQml,
+  /\bLauncherCommandPort\s*\{[\s\S]*?taskModel:\s*tasksModel[\s\S]*?\}/,
+);
+assert.match(mainQml, /launcherPort:\s*launcherCommandPort/);
 assert.match(mainQml, /launcherSync:\s*launcherSync/);
-assert.match(mainQml, /taskModel:\s*tasksModel/);
 assert.match(mainQml, /launcherCommands\.dispatchLauncherCommand\(command\)/);
 assert.match(mainQml, /actionLogger\.logActionResult\(result\)/);
 assert.doesNotMatch(mainQml, /function pinLauncher\(/);
@@ -36,8 +42,9 @@ assert.doesNotMatch(mainQml, /TaskActionLogic\.launcherMutationResult/);
 
 assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
+assert.match(sourceQml, /property var launcherPort/);
 assert.match(sourceQml, /property var launcherSync/);
-assert.match(sourceQml, /property var taskModel/);
+assert.doesNotMatch(sourceQml, /property var taskModel/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /function pinLauncher\(launcherUrl\)/);
 assert.match(sourceQml, /function unpinLauncher\(launcherUrl\)/);
@@ -53,8 +60,8 @@ assert.match(
 assert.match(sourceQml, /TaskActionLogic\.launcherMutationRequest/);
 assert.match(sourceQml, /TaskActionLogic\.launcherMutationResult/);
 assert.match(sourceQml, /TaskActionLogic\.launcherMutationPersistenceResult/);
-assert.match(sourceQml, /taskModel\.requestAddLauncher\(url\)/);
-assert.match(sourceQml, /taskModel\.requestRemoveLauncher\(url\)/);
+assert.match(sourceQml, /launcherPort\.requestAddLauncher\(url\)/);
+assert.match(sourceQml, /launcherPort\.requestRemoveLauncher\(url\)/);
 assert.match(
   sourceQml,
   /try\s*\{[\s\S]*?requestLauncher\(request\.launcherUrl\)[\s\S]*?\}\s*catch\s*\(error\)/,
@@ -65,7 +72,7 @@ assert.match(
 );
 assert.match(
   sourceQml,
-  /const launcherList = taskModel && taskModel\.launcherList \? taskModel\.launcherList : \[\];/,
+  /const launcherList = launcherPort && launcherPort\.launcherList \? launcherPort\.launcherList : \[\];/,
 );
 assert.match(
   sourceQml,

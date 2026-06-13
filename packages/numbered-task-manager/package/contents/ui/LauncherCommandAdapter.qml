@@ -10,16 +10,16 @@ QtQuick.QtObject {
     id: root
 
     property var launcherSync
-    property var taskModel
+    property var launcherPort
 
     signal actionResult(var result)
 
     function pinLauncher(launcherUrl) {
-        return requestLauncherMutation("pinLauncher", launcherUrl, url => taskModel.requestAddLauncher(url));
+        return requestLauncherMutation("pinLauncher", launcherUrl, url => launcherPort.requestAddLauncher(url));
     }
 
     function unpinLauncher(launcherUrl) {
-        return requestLauncherMutation("unpinLauncher", launcherUrl, url => taskModel.requestRemoveLauncher(url));
+        return requestLauncherMutation("unpinLauncher", launcherUrl, url => launcherPort.requestRemoveLauncher(url));
     }
 
     function requestLauncherMutation(action, launcherUrl, requestLauncher) {
@@ -44,7 +44,7 @@ QtQuick.QtObject {
             return false;
         }
 
-        const launcherList = taskModel && taskModel.launcherList ? taskModel.launcherList : [];
+        const launcherList = launcherPort && launcherPort.launcherList ? launcherPort.launcherList : [];
         if (!launcherSync || typeof launcherSync.persistLaunchers !== "function") {
             const missingSyncResult = TaskActionLogic.launcherMutationPersistenceResult(result, {
                 code: "missing-launcher-sync",
