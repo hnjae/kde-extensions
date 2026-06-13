@@ -11,6 +11,7 @@ QtQuick.Item {
 
     property var launcherModel
     property var taskModel
+    property var taskCommandPort
 
     signal actionResult(var result)
     signal launcherCommandRequested(var command)
@@ -38,6 +39,7 @@ QtQuick.Item {
             modelIndex: menuRequest.modelIndex,
             task: menuRequest.task || {},
             taskModel: menuRequest.taskModel,
+            taskCommandPort: root.taskCommandPort,
             visualParent: visualParent,
             visualParentWidth: menuRequest.visualParentWidth
         }) as TaskContextMenu;

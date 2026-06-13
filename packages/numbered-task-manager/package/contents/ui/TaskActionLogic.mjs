@@ -505,6 +505,10 @@ export function hasContextMenuTaskRequestMethod(taskModel, requestMethod) {
     return false;
   }
 
+  if (typeof taskModel.supportsContextMenuTaskRequest === "function") {
+    return taskModel.supportsContextMenuTaskRequest(requestMethod);
+  }
+
   switch (requestMethod) {
     case "requestNewInstance":
       return typeof taskModel.requestNewInstance === "function";

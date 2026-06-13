@@ -11,18 +11,18 @@ QtQuick.QtObject {
 
     property var modelIndex
     property var task: ({})
-    property var taskModel
+    property var taskCommandPort
 
     signal actionResult(var result)
 
     function requestTaskModelCommand(command) {
-        const result = TaskActionLogic.contextMenuTaskRequest(command, taskModel, modelIndex, task);
+        const result = TaskActionLogic.contextMenuTaskRequest(command, taskCommandPort, modelIndex, task);
         if (!result.ok) {
             actionResult(result);
             return result;
         }
 
-        const executionResult = TaskActionLogic.executeContextMenuTaskRequest(result, taskModel);
+        const executionResult = TaskActionLogic.executeContextMenuTaskRequest(result, taskCommandPort);
         if (!executionResult.ok) {
             actionResult(executionResult);
         }

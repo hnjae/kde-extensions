@@ -54,6 +54,12 @@ PlasmoidItem {
         taskModel: tasksModel
     }
 
+    TaskCommandPort {
+        id: taskCommandPort
+
+        taskModel: tasksModel
+    }
+
     TaskActivationAdapter {
         id: taskActivation
 
@@ -82,6 +88,7 @@ PlasmoidItem {
 
         launcherModel: tasksModel
         taskModel: tasksModel
+        taskCommandPort: taskCommandPort
 
         onActionResult: result => {
             actionLogger.logActionResult(result);

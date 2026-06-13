@@ -62,6 +62,7 @@ PlasmaExtras.Menu {
     property var modelIndex
     property var task: ({})
     property var taskModel
+    property var taskCommandPort
     property int visualParentWidth: 0
 
     minimumWidth: visualParentWidth
@@ -123,7 +124,7 @@ PlasmaExtras.Menu {
 
         modelIndex: root.modelIndex
         task: root.task
-        taskModel: root.taskModel
+        taskCommandPort: root.taskCommandPort
 
         onActionResult: result => {
             root.actionResult(result);
