@@ -72,6 +72,12 @@ PlasmoidItem {
         taskModel: tasksModel
     }
 
+    TaskMovePort {
+        id: taskMovePort
+
+        taskModel: tasksModel
+    }
+
     TaskActivationAdapter {
         id: taskActivation
 
@@ -123,7 +129,7 @@ PlasmoidItem {
         launcherSync: launcherSync
         normalEntries: root.normalTaskEntries
         normalTaskStore: normalTaskStore
-        taskModel: tasksModel
+        taskMovePort: taskMovePort
 
         onActionResult: result => {
             actionLogger.logActionResult(result);

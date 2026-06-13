@@ -14,7 +14,7 @@ QtQuick.QtObject {
     property var launcherSync
     property var normalEntries: []
     property var normalTaskStore
-    property var taskModel
+    property var taskMovePort
 
     signal actionResult(var result)
 
@@ -40,7 +40,7 @@ QtQuick.QtObject {
     }
 
     function movePinnedLauncher(sourceEntry, targetEntry) {
-        const result = LauncherListLogic.movePinnedLauncher(taskModel.launcherList, sourceEntry, targetEntry, launcherUrl => taskModel.launcherPosition(launcherUrl));
+        const result = LauncherListLogic.movePinnedLauncher(taskMovePort.launcherList, sourceEntry, targetEntry, launcherUrl => taskMovePort.launcherPosition(launcherUrl));
         if (!result.moved) {
             return false;
         }
@@ -49,7 +49,7 @@ QtQuick.QtObject {
     }
 
     function canMovePinnedLauncher(sourceEntry, targetEntry) {
-        return LauncherListLogic.canMovePinnedLauncher(taskModel.launcherList, sourceEntry, targetEntry, launcherUrl => taskModel.launcherPosition(launcherUrl));
+        return LauncherListLogic.canMovePinnedLauncher(taskMovePort.launcherList, sourceEntry, targetEntry, launcherUrl => taskMovePort.launcherPosition(launcherUrl));
     }
 
     function canMoveTaskResult(sourceIndex, targetIndex) {
