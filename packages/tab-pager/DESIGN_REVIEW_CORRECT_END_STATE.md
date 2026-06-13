@@ -6,14 +6,14 @@ The codebase is small and already has useful seams: TaskManager raw-state mappin
 
 The highest-impact remaining issue is that orchestration, state synchronization, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, subscribes to source/settings changes, writes and reads the state-store port, owns the navigator, consumes wheel deltas, translates navigation results into activation results, logs selected no-ops, and dispatches source activation. That is manageable at the current size, but it is the pressure point where new behavior will become harder to test and reason about.
 
-The second major risk is operational visibility. `TaskManagerDesktopSource::sourceState() const` still performs diagnostic reporting from a getter-shaped API, and the generic source state still does not carry diagnostic health. `TaskManagerDesktopSource` now has a structured diagnostics read seam and suppresses unchanged duplicate warning logs, but backend/controller observability remains incomplete.
+The second major risk is operational visibility. `TaskManagerDesktopSource` has a structured diagnostics read seam and suppresses unchanged duplicate warning logs, but generic source state still does not carry diagnostic health, and backend/controller observability remains incomplete.
 
 No P0 issue was found. The recommended end state is a precise, boring architecture: a small application state store, pure planners for navigation/activation/input mapping, Qt/QML adapters around those seams, and explicit diagnostic/error channels.
 
 ## Top Design Risks
 
 1. `TabPagerDesktopController` spans source ownership, source/settings reloads, state-store reads/writes, navigation, wheel consumption, result translation, logging, and activation effects.
-2. Source diagnostics are still emitted from a const read path, and degraded source state is not part of the application state contract. A source-specific structured read seam exists, and unchanged repeated diagnostics are logged only once per diagnostic state.
+2. Degraded source state is not part of the application state contract. A source-specific structured read seam exists, and TaskManager source diagnostics are logged only on diagnostic transitions.
 3. Wheel input semantics are split between QML event normalization and C++ navigation state.
 
 ## Single Source of Truth Violations
@@ -86,22 +86,6 @@ Acceptance criteria: Adding a non-LibTaskManager source requires implementing on
 
 ## Logic Placement and Flow Predictability
 
-### Finding: `sourceState()` logs during a const read
-
-Priority: P2
-
-Evidence: `src/tabpagerdesktopsource.h` defines `sourceState() const` as the state read API; `TaskManagerDesktopSource::sourceState()` maps raw state, calls `logDiagnosticsIfChanged(result.diagnostics)`, and returns state; `TabPagerDesktopController::reloadSourceState()` calls `m_source->sourceState()`.
-
-Current state: A method shaped as a pure state getter emits warnings when diagnostics change. `TaskManagerDesktopSource::sourceDiagnostics()` exposes the current structured diagnostics through the same mapper path, but it is source-specific and has no generic source/backend observability semantics.
-
-Design concern: This is a hidden side effect in a query path. Callers cannot inspect state through the generic source read without potentially triggering diagnostic logging on diagnostic transitions.
-
-Correct end state: `sourceState()` should be observationally pure. Diagnostic reporting should be explicit and tied to source updates, diagnostic transitions, or an injected diagnostic sink.
-
-Suggested migration: Keep `taskManagerDesktopSourceMappingFromRawState()` as the pure source of state plus diagnostics. Move logging out of `sourceState()` into a diagnostic sink, signal, or cached transition logger.
-
-Acceptance criteria: Diagnostic reporting no longer lives behind a getter-shaped API. Diagnostics are still exposed or emitted when malformed TaskManager state is observed. Tests can assert diagnostic behavior without global Qt message interception.
-
 ### Finding: Wheel navigation policy is split between QML and C++ navigator state
 
 Priority: P3
@@ -158,15 +142,15 @@ Acceptance criteria: Layout and wheel-normalization cases can be tested without 
 
 Priority: P2
 
-Evidence: `TaskManagerDesktopSourceDiagnostic` and `TaskManagerDesktopSourceMappingResult` carry structured diagnostics from the mapper; `TaskManagerDesktopSource::sourceState()` logs diagnostics and returns only `result.state`; `TabPagerDesktopSourceState` contains only the desktop snapshot.
+Evidence: `TaskManagerDesktopSourceDiagnostic` and `TaskManagerDesktopSourceMappingResult` carry structured diagnostics from the mapper; `TaskManagerDesktopSource::sourceState()` returns only `result.state`; `TabPagerDesktopSourceState` contains only the desktop snapshot.
 
-Current state: Malformed TaskManager data is converted into best-effort state. `TaskManagerDesktopSource::sourceDiagnostics()` can inspect the current structured diagnostics directly, but `sourceState()` still emits transition warnings and the diagnostics are not part of generic source/controller/backend state.
+Current state: Malformed TaskManager data is converted into best-effort state. `TaskManagerDesktopSource::sourceDiagnostics()` can inspect the current structured diagnostics directly, and TaskManager source diagnostic transitions are logged outside `sourceState()`, but diagnostics are not part of generic source/controller/backend state.
 
-Design concern: The backend and UI cannot distinguish healthy state from degraded state without parsing logs. Diagnostics have no lifecycle or recovery signal outside source-local warning suppression.
+Design concern: The backend and UI cannot distinguish healthy state from degraded state without parsing logs or downcasting to a TaskManager-specific source. Diagnostics have no generic lifecycle or recovery signal outside source-local warning suppression.
 
 Correct end state: Source state should include health/degraded status or diagnostics, or diagnostics should be emitted through a dedicated observable channel. Logging should occur on diagnostic transitions, not every read.
 
-Suggested migration: Extend source state with diagnostics/health, or add a diagnostic signal/sink. The source-local warning cache now logs only when diagnostics appear, disappear, or materially change; remaining work should move diagnostic reporting out of the getter-shaped `sourceState()` path.
+Suggested migration: Extend source state with diagnostics/health, or add a diagnostic signal/sink. The source-local warning cache logs only when diagnostics appear, disappear, or materially change; remaining work should expose diagnostics through a generic observable contract.
 
 Acceptance criteria: Backend/QML or tests can inspect source health without parsing logs. Tests cover diagnostic appearance, update, and recovery through an explicit diagnostic channel rather than getter-side log capture.
 
@@ -190,7 +174,7 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 
 1. Isolate remaining input and activation decisions from external effects by extracting wheel input mapping from QML event handlers and moving any remaining activation decision logic out of `TabPagerDesktopController`.
 2. Clarify the remaining ownership boundary for whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
-3. Improve error semantics and observability by making source diagnostics stateful/observable, removing getter-side logging, and clarifying activation request versus confirmation.
+3. Improve error semantics and observability by making source diagnostics stateful/observable and clarifying activation request versus confirmation.
 4. Remove or simplify remaining premature abstractions by narrowing public QML roles if they are not part of the chosen view-model boundary.
 
 ## Things Not To Change Yet
@@ -215,7 +199,7 @@ Invariant / Correctness Agent: Reported uncertain wheel-delta context scoping. T
 
 Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, and split presentation formatting. Controller ownership remains P2, but the source/navigation policy finding was removed because desktop source state and navigation settings are now separated and tested. Presentation formatting is now documented as part of the intentional QML view-model boundary.
 
-Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging was merged with observability findings and kept as P2. Wheel flow readability was kept as P3 and linked to the stronger P2 wheel context issue.
+Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging has been removed from `sourceState()`; the remaining observability work is tracked by the source diagnostics finding. Wheel flow readability was kept as P3 and linked to the stronger P2 wheel context issue.
 
 Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout/input testability and activation planning were kept as P2. Getter-side diagnostics were merged into the source diagnostics finding.
 

@@ -89,6 +89,14 @@ public:
     Q_EMIT desktopNamesChanged();
   }
 
+  void setDesktopState(QVariantList desktopIds, QStringList desktopNames,
+                       QVariant currentDesktop = {}) {
+    m_desktopIds = std::move(desktopIds);
+    m_desktopNames = std::move(desktopNames);
+    m_currentDesktop = std::move(currentDesktop);
+    Q_EMIT desktopIdsChanged();
+  }
+
   void emitNumberOfDesktopsChanged() { Q_EMIT numberOfDesktopsChanged(); }
 
   void setCurrentDesktop(QVariant currentDesktop) {
@@ -181,7 +189,7 @@ private Q_SLOTS:
   void reportsNameCountDiagnostics();
   void reportsDesktopIdentityDiagnostics();
   void exposesCurrentSourceDiagnostics();
-  void doesNotRepeatUnchangedSourceDiagnosticsOnRepeatedStateReads();
+  void doesNotLogSourceDiagnosticsOnStateReads();
   void logsSourceDiagnosticsWhenDiagnosticStateChanges();
   void emitsSourceStateChangedWhenVirtualDesktopInfoChanges();
   void exposesNavigationWrappingThroughSettingsSource();
@@ -356,8 +364,7 @@ void TaskManagerDesktopSourceTest::exposesCurrentSourceDiagnostics() {
   QCOMPARE(diagnostics.at(3).desktopId, QVariant{QStringLiteral("missing")});
 }
 
-void TaskManagerDesktopSourceTest::
-    doesNotRepeatUnchangedSourceDiagnosticsOnRepeatedStateReads() {
+void TaskManagerDesktopSourceTest::doesNotLogSourceDiagnosticsOnStateReads() {
   SourceFixture fixture({QVariant{}, QStringLiteral("a")},
                         {QStringLiteral("Broken"), QStringLiteral("Work")},
                         QStringLiteral("a"));
@@ -368,37 +375,30 @@ void TaskManagerDesktopSourceTest::
   [[maybe_unused]] const TabPagerDesktopSourceState secondState =
       fixture.source.sourceState();
 
-  QCOMPARE(warnings.warningCount(), 1);
+  QCOMPARE(warnings.warningCount(), 0);
 }
 
 void TaskManagerDesktopSourceTest::
     logsSourceDiagnosticsWhenDiagnosticStateChanges() {
-  SourceFixture fixture({QVariant{}}, {QStringLiteral("Broken")});
   CapturedTabPagerWarnings warnings;
+  SourceFixture fixture({QVariant{}}, {QStringLiteral("Broken")});
 
-  [[maybe_unused]] const TabPagerDesktopSourceState invalidIdState =
-      fixture.source.sourceState();
   QCOMPARE(warnings.warningCount(), 1);
 
-  fixture.info->setDesktopIds({QStringLiteral("a"), QStringLiteral("a")});
-  fixture.info->setDesktopNames(
-      {QStringLiteral("Work"), QStringLiteral("Duplicate")});
-  fixture.info->setCurrentDesktop(QStringLiteral("a"));
-  [[maybe_unused]] const TabPagerDesktopSourceState duplicateIdState =
-      fixture.source.sourceState();
+  fixture.info->setDesktopState(
+      {QStringLiteral("a"), QStringLiteral("a")},
+      {QStringLiteral("Work"), QStringLiteral("Duplicate")},
+      QStringLiteral("a"));
   QCOMPARE(warnings.warningCount(), 2);
 
-  fixture.info->setDesktopIds({QStringLiteral("a")});
-  fixture.info->setDesktopNames({QStringLiteral("Work")});
-  [[maybe_unused]] const TabPagerDesktopSourceState recoveredState =
-      fixture.source.sourceState();
+  fixture.info->setDesktopState({QStringLiteral("a")}, {QStringLiteral("Work")},
+                                QStringLiteral("a"));
   QCOMPARE(warnings.warningCount(), 2);
 
-  fixture.info->setDesktopIds({QStringLiteral("a"), QStringLiteral("a")});
-  fixture.info->setDesktopNames(
-      {QStringLiteral("Work"), QStringLiteral("Duplicate")});
-  [[maybe_unused]] const TabPagerDesktopSourceState reappearedState =
-      fixture.source.sourceState();
+  fixture.info->setDesktopState(
+      {QStringLiteral("a"), QStringLiteral("a")},
+      {QStringLiteral("Work"), QStringLiteral("Duplicate")},
+      QStringLiteral("a"));
   QCOMPARE(warnings.warningCount(), 3);
 }
 

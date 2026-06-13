@@ -27,6 +27,8 @@ public:
 
 private:
   void connectDesktopInfo();
+  void handleDesktopInfoChanged();
+  void refreshDiagnostics();
   void logDiagnosticsIfChanged(
       const QList<TaskManagerDesktopSourceDiagnostic> &diagnostics) const;
 

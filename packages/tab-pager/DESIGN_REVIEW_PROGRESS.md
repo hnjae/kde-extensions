@@ -21,6 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - The interaction spec defines pending wheel-delta behavior across current-desktop changes, desktop-count changes, wrapping changes, no-current contexts, and non-wrapping edge stops.
 - `TaskManagerDesktopSource::sourceDiagnostics()` exposes structured diagnostics without parsing logs.
 - Repeated unchanged `TaskManagerDesktopSource::sourceState()` diagnostic reads no longer duplicate warning logs.
+- `TaskManagerDesktopSource::sourceState()` is observationally pure; TaskManager diagnostics are logged from explicit source diagnostic transitions instead of getter-shaped reads.
 - `TabPagerActivationPlanner` covers direct index activation, navigation-result translation, and navigation-target command planning.
 - Public desktop model roles are narrowed to `label` and `active`; broader row data remains internal.
 - Navigation wrapping is internal to controller/navigation settings behavior, not public backend/QML API, desktop snapshot state, or desktop source state.
@@ -33,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 ## Remaining
 
 - Extract wheel input mapping/sign handling from QML and navigator state if the dedicated wheel adapter remains the desired end state.
-- Make source diagnostics observable through the generic source/controller/backend contract and remove diagnostic reporting from the getter-shaped `sourceState()` path.
+- Make source diagnostics observable through the generic source/controller/backend contract.
 - Reduce remaining controller orchestration by moving any residual activation/wheel decision logic into pure planners.
 - Consolidate layout constants such as `desktopGap` and minimum extents.
 - Deduplicate package identity, version, QML module URI, and install-path metadata beyond the current drift tests.
@@ -47,14 +48,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: aligned row/model-state tests with the completed public desktop model role narrowing.
-- Files changed: `tests/tabpagerdesktoprows_test.cpp`, `tests/tabpagerdesktopmodelstate_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: no production source, model, QML, activation, label text, label font, layout, or navigation runtime behavior changed; tests now assert the current public role update contract.
-- Target-doc cleanup: none. The target document already records the narrowed public roles as completed context and this checkpoint only repaired stale test expectations.
-- Commands passed: `cmake --build build --target tabpagerdesktoprows_test tabpagerdesktopmodelstate_test`; `ctest --test-dir build --output-on-failure -R 'tabpagerdesktoprows|tabpagerdesktopmodelstate'`; `git diff --check`; `ctest --test-dir build --output-on-failure`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/tests/tabpagerdesktoprows_test.cpp packages/tab-pager/tests/tabpagerdesktopmodelstate_test.cpp` from the repository root.
-- Commands failed: none for this checkpoint.
-- Deviations: no characterization tests were added because this checkpoint updated stale tests to match the already-implemented public role contract and did not edit behavior-sensitive production code.
-- Ambiguity: no design ambiguity found; the existing implementation and `tabpagerdesktoprow_test` agree that only `label` and `active` are public row roles.
+- Checkpoint: moved TaskManager source diagnostic logging out of the getter-shaped `sourceState()` path.
+- Files changed: `src/taskmanagerdesktopsource.h`, `src/taskmanagerdesktopsource.cpp`, `tests/taskmanagerdesktopsource_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: desktop source-state mapping, source-state change signals, activation requests, navigation settings, structured `sourceDiagnostics()`, unchanged diagnostic suppression, and diagnostic recovery logging remain intact. The intentional behavior change is that repeated or first-time `sourceState()` reads no longer emit warnings.
+- Target-doc cleanup: removed the resolved `sourceState()` const-read logging finding, rewrote the top-risk and source-diagnostics sections to keep the remaining generic observability problem, and left unresolved source diagnostics health/observable-channel work open.
+- Commands passed: `cmake --build build --target taskmanagerdesktopsource_test`; `ctest --test-dir build --output-on-failure -R taskmanagerdesktopsource`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/src/taskmanagerdesktopsource.h packages/tab-pager/src/taskmanagerdesktopsource.cpp packages/tab-pager/tests/taskmanagerdesktopsource_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
+- Commands failed: the focused `taskmanagerdesktopsource` test failed after the characterization-test update and before production edits, proving the old getter-side logging behavior was still present; `just lint` failed on existing broad clang-tidy debt outside the changed production path, including enum-size findings, test cognitive-complexity/magic-number/designated-initializer findings, and a pre-existing cognitive-complexity finding in `reportsNameCountDiagnostics()`.
+- Deviations: this checkpoint does not make diagnostics observable through the generic source/controller/backend contract; it only removes getter-side reporting and keeps the remaining observability work open.
+- Ambiguity: no design ambiguity found for this checkpoint; the target document explicitly calls getter-side diagnostic reporting a hidden side effect to remove.
 
 ## Notes
 
