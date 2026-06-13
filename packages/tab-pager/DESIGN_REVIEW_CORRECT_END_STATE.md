@@ -58,13 +58,13 @@ Priority: P2, uncertain
 
 Evidence: `src/tabpagerdesktopnavigator.h` stores `m_pendingWheelDelta`; `src/tabpagerdesktopnavigator.cpp` combines pending and new delta, stores the remainder, then validates navigation context through `targetForOffset()`; `src/tabpagerdesktopcontroller.cpp` updates model and wrapping state without resetting pending wheel delta; navigator tests cover accumulation only in a stable context.
 
-Current state: Partial wheel deltas survive changes to current desktop, desktop count, and wrapping behavior. They can also survive contexts where there is no current desktop.
+Current state: Partial wheel deltas survive changes to current desktop, desktop count, and wrapping behavior. They can also survive contexts where there is no current desktop. Characterization tests now lock this as current behavior rather than intended policy.
 
 Design concern: The spec says scrolling moves one desktop at a time, but it does not define whether sub-step wheel accumulation should survive model/current-desktop changes. If persistence is not intended, stale input from a previous context can trigger activation later under a different context.
 
 Correct end state: Wheel accumulation scope should be explicit. Either document and test that pending deltas intentionally survive context changes, or reset/drop pending deltas when navigation context changes or when no navigation target can be produced.
 
-Suggested migration: Add tests for half-step input before current desktop appears, before desktop count changes, before wrapping changes, and at non-wrapping edges. Then either clear pending delta on context identity change or document preservation as intended behavior.
+Suggested migration: Use the characterization tests for half-step input before current desktop appears, before desktop count changes, before wrapping changes, and at non-wrapping edges to either clear pending delta on context identity change or document preservation as intended behavior.
 
 Acceptance criteria: Tests define pending wheel behavior across current desktop changes, desktop count changes, wrapping changes, no-current states, and stopped-at-edge states. No activation is caused solely by stale partial wheel delta unless explicitly specified.
 

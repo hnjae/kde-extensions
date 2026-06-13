@@ -26,6 +26,8 @@ private Q_SLOTS:
   void resolvesNavigationTarget();
   void accumulatesWheelDelta_data();
   void accumulatesWheelDelta();
+  void keepsPendingWheelDeltaAcrossNavigationContextChanges();
+  void consumesWheelStepAtNonWrappingEdge();
 };
 
 void TabPagerDesktopNavigatorTest::resolvesNavigationTarget_data() {
@@ -132,6 +134,88 @@ void TabPagerDesktopNavigatorTest::accumulatesWheelDelta() {
   expectNavigationTarget(
       navigator.targetIndexForWheelDelta(context, secondDelta),
       expectedSecondTarget);
+}
+
+void TabPagerDesktopNavigatorTest::
+    keepsPendingWheelDeltaAcrossNavigationContextChanges() {
+  constexpr int halfWheelStepDelta = 60;
+
+  TabPagerDesktopNavigator navigator;
+  navigator.setNavigationWrappingAround(false);
+
+  const TabPagerDesktopNavigationContext noCurrentContext{
+      .currentIndex = -1,
+      .desktopCount = 3,
+  };
+  QCOMPARE(
+      navigator.consumeWheelDelta(noCurrentContext, halfWheelStepDelta).type,
+      TabPagerDesktopNavigationResultType::NoWheelStep);
+
+  const TabPagerDesktopNavigationContext changedCurrentContext{
+      .currentIndex = 2,
+      .desktopCount = 3,
+  };
+  const TabPagerDesktopNavigationResult changedCurrentResult =
+      navigator.consumeWheelDelta(changedCurrentContext, halfWheelStepDelta);
+  QCOMPARE(changedCurrentResult.type,
+           TabPagerDesktopNavigationResultType::Target);
+  QCOMPARE(changedCurrentResult.targetIndex, 1);
+
+  QCOMPARE(
+      navigator.consumeWheelDelta(changedCurrentContext, halfWheelStepDelta)
+          .type,
+      TabPagerDesktopNavigationResultType::NoWheelStep);
+
+  const TabPagerDesktopNavigationContext changedCountContext{
+      .currentIndex = 3,
+      .desktopCount = 4,
+  };
+  const TabPagerDesktopNavigationResult changedCountResult =
+      navigator.consumeWheelDelta(changedCountContext, halfWheelStepDelta);
+  QCOMPARE(changedCountResult.type,
+           TabPagerDesktopNavigationResultType::Target);
+  QCOMPARE(changedCountResult.targetIndex, 2);
+
+  QCOMPARE(
+      navigator.consumeWheelDelta(changedCountContext, halfWheelStepDelta).type,
+      TabPagerDesktopNavigationResultType::NoWheelStep);
+
+  navigator.setNavigationWrappingAround(true);
+  const TabPagerDesktopNavigationContext changedWrappingContext{
+      .currentIndex = 0,
+      .desktopCount = 4,
+  };
+  const TabPagerDesktopNavigationResult changedWrappingResult =
+      navigator.consumeWheelDelta(changedWrappingContext, halfWheelStepDelta);
+  QCOMPARE(changedWrappingResult.type,
+           TabPagerDesktopNavigationResultType::Target);
+  QCOMPARE(changedWrappingResult.targetIndex, 3);
+}
+
+void TabPagerDesktopNavigatorTest::consumesWheelStepAtNonWrappingEdge() {
+  constexpr int halfWheelStepDelta = 60;
+
+  TabPagerDesktopNavigator navigator;
+  navigator.setNavigationWrappingAround(false);
+
+  const TabPagerDesktopNavigationContext firstDesktopContext{
+      .currentIndex = 0,
+      .desktopCount = 3,
+  };
+  QCOMPARE(
+      navigator.consumeWheelDelta(firstDesktopContext, halfWheelStepDelta).type,
+      TabPagerDesktopNavigationResultType::NoWheelStep);
+
+  const TabPagerDesktopNavigationResult edgeResult =
+      navigator.consumeWheelDelta(firstDesktopContext, halfWheelStepDelta);
+  QCOMPARE(edgeResult.type, TabPagerDesktopNavigationResultType::StoppedAtEdge);
+
+  const TabPagerDesktopNavigationContext middleDesktopContext{
+      .currentIndex = 1,
+      .desktopCount = 3,
+  };
+  QCOMPARE(navigator.consumeWheelDelta(middleDesktopContext, 0).type,
+           TabPagerDesktopNavigationResultType::NoWheelStep);
 }
 
 QTEST_MAIN(TabPagerDesktopNavigatorTest)
