@@ -22,18 +22,11 @@ QtQuick.QtObject {
             return result;
         }
 
-        try {
-            if (result.requestArguments.length === 0) {
-                taskModel[result.requestMethod](modelIndex);
-            } else {
-                taskModel[result.requestMethod](modelIndex, result.requestArguments[0]);
-            }
-        } catch (error) {
-            const executionResult = TaskActionLogic.contextMenuTaskExecutionResult(result, error);
+        const executionResult = TaskActionLogic.executeContextMenuTaskRequest(result, taskModel);
+        if (!executionResult.ok) {
             actionResult(executionResult);
-            return executionResult;
         }
 
-        return TaskActionLogic.contextMenuTaskExecutionResult(result);
+        return executionResult;
     }
 }

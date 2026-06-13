@@ -241,15 +241,15 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `main.qml` passes the same `tasksModel` as `taskModel` and `launcherModel`; `LauncherCommandAdapter.qml` calls `requestAddLauncher(...)`, `requestRemoveLauncher(...)`, and reads `launcherList`; `LauncherSyncAdapter.qml` reads and writes `taskModel.launcherList`; `TaskMoveAdapter.qml` reads `taskModel.launcherList` and calls `launcherPosition(...)`; `TaskContextMenuLauncherActivityAdapter.qml` calls `launcherModel.launcherActivities(...)`; `TaskContextMenuTaskCommandAdapter.qml` dynamically invokes `taskModel[result.requestMethod](...)`.
+**Evidence:** `main.qml` passes the same `tasksModel` as `taskModel` and `launcherModel`; `LauncherCommandAdapter.qml` calls `requestAddLauncher(...)`, `requestRemoveLauncher(...)`, and reads `launcherList`; `LauncherSyncAdapter.qml` reads and writes `taskModel.launcherList`; `TaskMoveAdapter.qml` reads `taskModel.launcherList` and calls `launcherPosition(...)`; `TaskContextMenuLauncherActivityAdapter.qml` calls `launcherModel.launcherActivities(...)`; `TaskContextMenuTaskCommandAdapter.qml` now uses an explicit supported-method map, but still receives the raw task model for context-menu task requests.
 
 **Current state:** Several adapters receive the full Plasma `TasksModel` and use different slices of its API.
 
-**Design concern:** The boundaries between task effects, launcher effects, launcher persistence, and menu commands are implicit. Tests must mock a large live object shape, and feature deletion requires searching broad model usage. Dynamic method dispatch also hides the supported command set.
+**Design concern:** The boundaries between task effects, launcher effects, launcher persistence, and menu commands are implicit. Tests must mock a large live object shape, and feature deletion requires searching broad model usage.
 
 **Correct end state:** Use narrow ports around the raw Plasma model. A task command executor should expose explicit supported task request methods. A launcher port should expose launcher list, position, activities, add/remove, and list write operations. A sync owner should handle config persistence. The raw `TasksModel` should be contained at root/platform wiring boundaries.
 
-**Suggested migration:** Introduce wrapper ports without changing behavior. Start with context-menu task requests and replace dynamic method lookup with an explicit allowlist. Then wrap launcher model access used by pin/activity/reorder code. Finally update adapters to depend on those wrappers.
+**Suggested migration:** Introduce wrapper ports without changing behavior. Context-menu task requests now have an explicit allowlist; continue by wrapping launcher model access used by pin/activity/reorder code. Finally update adapters to depend on those wrappers.
 
 **Acceptance criteria:** No adapter except the root/platform adapter receives raw `TasksModel` for unrelated purposes. Context-menu task execution has an explicit supported-method map. Unit tests can mock each port with only the methods that feature uses.
 
@@ -303,21 +303,21 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** Footer separator visibility and footer action state are covered by `.mjs` tests. `TaskContextMenu.qml` no longer directly calls `.trigger()`. Missing configure/edit actions produce structured no-op or diagnostic results.
 
-### Finding: Context-menu command execution uses dynamic method dispatch
+### Finding: Context-menu command execution still lacks a narrow port
 
 **Priority:** P2.
 
-**Evidence:** `TaskContextMenuTaskCommandAdapter.qml` executes `taskModel[result.requestMethod](modelIndex)` or `taskModel[result.requestMethod](modelIndex, result.requestArguments[0])`; request methods originate from descriptors created in `TaskContextMenuLogic.mjs` and normalized in `TaskActionLogic.mjs`.
+**Evidence:** `TaskActionLogic.mjs` validates context-menu task request names against an explicit supported-method allowlist, and `TaskContextMenuTaskCommandAdapter.qml` executes supported `TasksModel.request*` calls through explicit branches.
 
-**Current state:** The command path validates that a method exists but does not use an explicit supported command map.
+**Current state:** The command path uses an explicit supported command map while preserving existing descriptor names.
 
-**Design concern:** The supported command set is implicit. A malformed descriptor with an existing method name can cross the boundary if earlier validation accepts it.
+**Design concern:** This specific dynamic-dispatch risk is closed. The broader raw-model-port concern remains because the adapter still receives the raw task model rather than a narrow task-command port.
 
-**Correct end state:** Context-menu task commands should be mapped through an explicit allowlist of supported command descriptors to Plasma methods and argument shapes.
+**Correct end state:** Context-menu task commands should be executed through a narrow task-command port that exposes only the supported Plasma request methods and argument shapes.
 
-**Suggested migration:** Add a command executor helper or port that maps known actions such as `requestMove`, `requestResize`, and `requestToggleMinimized` to explicit invocations. Keep existing descriptor names during migration.
+**Suggested migration:** Keep the explicit command executor helper, then wrap the raw task model behind a task-command port so the adapter no longer receives unrelated `TasksModel` API surface.
 
-**Acceptance criteria:** The task command adapter does not dynamically call arbitrary `taskModel[result.requestMethod]`. Unsupported command names become structured diagnostics before any Plasma method lookup.
+**Acceptance criteria:** The task command adapter depends on a task-command port that can be mocked with only supported request methods. Unsupported command names remain structured diagnostics before any Plasma method lookup.
 
 ## Testability Problems
 

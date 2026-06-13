@@ -16,6 +16,7 @@ const logic = await loadQmlJsModule(
     "contextMenuLauncherActivityResult",
     "contextMenuRequestResult",
     "contextMenuTaskCommand",
+    "executeContextMenuTaskRequest",
     "contextMenuTaskExecutionResult",
     "contextMenuTaskRequest",
     "dragMoveRejectionResult",
@@ -434,9 +435,50 @@ assert.deepEqual(plain(unknownLauncherCommand), {
 assert.equal(logic.shouldLogActionResult(unknownLauncherCommand), true);
 
 const taskRequestModel = {
+  requestActivities() {},
+  requestClose() {},
+  requestNewInstance() {},
+  requestNewVirtualDesktop() {},
   requestMove() {},
+  requestResize() {},
+  requestToggleExcludeFromCapture() {},
+  requestToggleFullScreen() {},
+  requestToggleKeepAbove() {},
+  requestToggleKeepBelow() {},
+  requestToggleMaximized() {},
+  requestToggleMinimized() {},
+  requestToggleNoBorder() {},
+  requestToggleShaded() {},
   requestVirtualDesktops() {},
 };
+for (const requestMethod of [
+  "requestNewInstance",
+  "requestMove",
+  "requestResize",
+  "requestToggleMinimized",
+  "requestToggleMaximized",
+  "requestToggleKeepAbove",
+  "requestToggleKeepBelow",
+  "requestToggleFullScreen",
+  "requestToggleShaded",
+  "requestToggleNoBorder",
+  "requestToggleExcludeFromCapture",
+  "requestClose",
+  "requestActivities",
+  "requestVirtualDesktops",
+  "requestNewVirtualDesktop",
+]) {
+  assert.equal(
+    logic.contextMenuTaskRequest(
+      logic.contextMenuTaskCommand(requestMethod),
+      taskRequestModel,
+      validModelIndex,
+      normalTask,
+    ).ok,
+    true,
+    `${requestMethod} should be supported`,
+  );
+}
 assert.deepEqual(plain(logic.contextMenuTaskCommand("requestMove")), {
   arguments: [],
   kind: "task-model-request",
@@ -561,13 +603,27 @@ assert.equal(logic.shouldLogActionResult(invalidTaskRequest), true);
 
 const missingMethodRequest = logic.contextMenuTaskRequest(
   "requestResize",
-  taskRequestModel,
+  {
+    requestMove() {},
+  },
   validModelIndex,
   normalTask,
 );
 assert.equal(missingMethodRequest.ok, false);
 assert.equal(missingMethodRequest.code, "missing-request-method");
 assert.equal(logic.shouldLogActionResult(missingMethodRequest), true);
+
+const unsupportedTaskRequest = logic.contextMenuTaskRequest(
+  "requestDangerousExistingMethod",
+  {
+    requestDangerousExistingMethod() {},
+  },
+  validModelIndex,
+  normalTask,
+);
+assert.equal(unsupportedTaskRequest.ok, false);
+assert.equal(unsupportedTaskRequest.code, "unsupported-request-method");
+assert.equal(logic.shouldLogActionResult(unsupportedTaskRequest), true);
 
 assert.equal(
   logic.contextMenuTaskRequest(
@@ -578,6 +634,77 @@ assert.equal(
   ).ok,
   true,
 );
+
+const executedTaskRequests = [];
+const executionTaskModel = {
+  requestMove(modelIndex) {
+    executedTaskRequests.push(["requestMove", modelIndex]);
+  },
+  requestVirtualDesktops(modelIndex, desktops) {
+    executedTaskRequests.push(["requestVirtualDesktops", modelIndex, desktops]);
+  },
+};
+assert.deepEqual(
+  plain(
+    logic.executeContextMenuTaskRequest(
+      logic.contextMenuTaskRequest(
+        logic.contextMenuTaskCommand("requestMove"),
+        executionTaskModel,
+        validModelIndex,
+        normalTask,
+      ),
+      executionTaskModel,
+    ),
+  ),
+  {
+    action: "requestMove",
+    code: "executed",
+    context: {
+      entryKey: "normal-task",
+      modelIndexValid: true,
+      title: "Normal Task",
+    },
+    diagnostic: false,
+    ok: true,
+    requestMethod: "requestMove",
+  },
+);
+assert.deepEqual(executedTaskRequests, [["requestMove", validModelIndex]]);
+
+logic.executeContextMenuTaskRequest(
+  logic.contextMenuTaskRequest(
+    logic.contextMenuTaskCommand("requestVirtualDesktops", ["desktop-a"]),
+    executionTaskModel,
+    validModelIndex,
+    normalTask,
+  ),
+  executionTaskModel,
+);
+assert.deepEqual(executedTaskRequests, [
+  ["requestMove", validModelIndex],
+  ["requestVirtualDesktops", validModelIndex, ["desktop-a"]],
+]);
+
+const thrownExecutionRequest = logic.executeContextMenuTaskRequest(
+  logic.contextMenuTaskRequest(
+    logic.contextMenuTaskCommand("requestMove"),
+    {
+      requestMove() {
+        throw new Error("request failed");
+      },
+    },
+    validModelIndex,
+    normalTask,
+  ),
+  {
+    requestMove() {
+      throw new Error("request failed");
+    },
+  },
+);
+assert.equal(thrownExecutionRequest.ok, false);
+assert.equal(thrownExecutionRequest.code, "request-threw");
+assert.equal(logic.shouldLogActionResult(thrownExecutionRequest), true);
 
 assert.deepEqual(
   plain(

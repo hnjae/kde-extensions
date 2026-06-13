@@ -3725,13 +3725,19 @@ assert.equal(
   taskCommandAdapterQml.includes(
     "TaskActionLogic.contextMenuTaskExecutionResult",
   ),
+  false,
+);
+assert.equal(
+  taskCommandAdapterQml.includes(
+    "TaskActionLogic.executeContextMenuTaskRequest",
+  ),
   true,
 );
 assert.equal(
   /try\s*\{[\s\S]*?taskModel\[result\.requestMethod\]/.test(
     taskCommandAdapterQml,
   ),
-  true,
+  false,
 );
 assert.equal(
   taskCommandAdapterQml.includes("signal actionResult(var result)"),
