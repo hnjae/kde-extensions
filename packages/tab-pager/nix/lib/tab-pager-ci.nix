@@ -68,6 +68,7 @@ let
 
   qmlLint = ''
     mapfile -t qml_sources < <(${pkgs.findutils}/bin/find package/contents/ui -name '*.qml' -print | sort)
+    qml_sources+=("$install_prefix/share/plasma/plasmoids/${package.pluginId}/contents/ui/main.qml")
 
     qmllint \
       --ignore-settings \

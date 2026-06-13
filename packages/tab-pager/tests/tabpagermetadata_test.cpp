@@ -204,6 +204,10 @@ void TabPagerMetadataTest::nixMetadataMatchesCMakeIdentity() {
            "Nix kpackage check should use package.pluginId");
   QVERIFY2(ciNix.contains(QStringLiteral("${package.qmlModuleDir}")),
            "Nix qml check should use package.qmlModuleDir");
+  QVERIFY2(ciNix.contains(
+               QStringLiteral("$install_prefix/share/plasma/plasmoids/"
+                              "${package.pluginId}/contents/ui/main.qml")),
+           "Nix qml lint should include the installed generated main.qml");
   QVERIFY2(!ciNix.contains(QStringLiteral("io/github/hnjae/tabpager")),
            "Nix qml check should not repeat the concrete QML module path");
 }

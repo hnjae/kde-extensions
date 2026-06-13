@@ -14,6 +14,7 @@ string(REPLACE "." "/" QML_MODULE_DIR "${QML_MODULE_URI}")
 
 configure_file(src/qmldir.in src/qmldir @ONLY)
 configure_file(src/tabpagerplugin.qmltypes.in src/tabpagerplugin.qmltypes @ONLY)
+configure_file(package/contents/ui/main.qml.in package/contents/ui/main.qml @ONLY)
 
 find_package(ECM 6.0 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
@@ -216,4 +217,8 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/src/qmldir"
 )
 install(DIRECTORY package/
     DESTINATION "${KDE_INSTALL_DATADIR}/plasma/plasmoids/${PLASMOID_ID}"
+    PATTERN "contents/ui/main.qml.in" EXCLUDE
+)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/package/contents/ui/main.qml"
+    DESTINATION "${KDE_INSTALL_DATADIR}/plasma/plasmoids/${PLASMOID_ID}/contents/ui"
 )
