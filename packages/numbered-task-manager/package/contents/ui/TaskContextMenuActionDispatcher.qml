@@ -24,6 +24,10 @@ QtQuick.QtObject {
 
     function triggerAction(actionState) {
         const route = TaskContextMenuLogic.contextMenuActionRoute(actionState);
+        if (route.kind === "unavailable") {
+            return dispatchFailure(route, route.code);
+        }
+
         if (route.kind === "launcher-activity-update") {
             if (!launcherActivityAdapter) {
                 return dispatchFailure(route, "missing-launcher-activity-adapter");

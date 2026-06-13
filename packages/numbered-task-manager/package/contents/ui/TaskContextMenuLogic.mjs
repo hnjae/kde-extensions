@@ -912,8 +912,24 @@ export function virtualDesktopActionsSection(sectionState) {
   };
 }
 
+function unavailableActionRoute(actionState) {
+  const state = actionState || {};
+  const code = state.visible === false ? "action-hidden" : "action-disabled";
+
+  return {
+    code,
+    command: state.command || null,
+    kind: "unavailable",
+    update: state.update || null,
+  };
+}
+
 export function contextMenuActionRoute(actionState) {
   const state = actionState || {};
+  if (state.visible === false || state.enabled === false) {
+    return unavailableActionRoute(state);
+  }
+
   if (state.update) {
     return {
       command: null,
