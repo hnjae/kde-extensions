@@ -77,7 +77,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P2.
 
-**Evidence:** `TaskContextMenuRouteLogic.mjs` declares the context-menu command and route kinds, owns route classification, and exports route-kind predicates. `TaskActionLogic.mjs` consumes the shared command-kind constants, `TaskContextMenuActionDispatcher.qml` consumes the route predicates directly, and `TaskContextMenuLogic.mjs` keeps compatibility re-exports during migration.
+**Evidence:** `TaskContextMenuRouteLogic.mjs` declares the context-menu command and route kinds, owns route classification, and exports route-kind predicates. `TaskActionLogic.mjs` consumes the shared command-kind constants, and `TaskContextMenuActionDispatcher.qml` consumes the route predicates directly.
 
 **Current state:** Route kind strings are centralized. Command descriptor construction still lives in `TaskActionLogic.mjs`.
 
@@ -193,15 +193,15 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `TaskContextMenuActionSectionsLogic.mjs` composes focused window-action, virtual-desktop action, pin-action, launcher-activity, and task-activity owners into the aggregate `contextMenuActionSections(...)` output; `TaskContextMenuLogic.mjs` owns panel placement, platform snapshots, and compatibility re-exports; `TaskContextMenuRoleLogic.mjs` owns live role snapshotting; `TaskContextMenu.qml` consumes one aggregate `contextMenuActionSections(...)`; `tests/taskcontextmenulogic.test.mjs` remains much larger than other logic tests and exercises many unrelated exports.
+**Evidence:** `TaskContextMenuActionSectionsLogic.mjs` composes focused window-action, virtual-desktop action, pin-action, launcher-activity, and task-activity owners into the aggregate `contextMenuActionSections(...)` output; `TaskContextMenuLogic.mjs` owns panel placement, platform snapshots, and the QML-visible action-section facade; `TaskContextMenuRoleLogic.mjs` owns live role snapshotting; `TaskContextMenu.qml` consumes one aggregate `contextMenuActionSections(...)`; `tests/taskcontextmenulogic.test.mjs` remains much larger than other logic tests because it still carries broad context-menu wiring assertions.
 
-**Current state:** Role snapshotting, action-family descriptors, routes, and aggregate action-section composition have focused owners. `TaskContextMenuLogic.mjs` remains a compatibility facade for many unrelated exports and still owns platform snapshot helpers.
+**Current state:** Role snapshotting, action-family descriptors, routes, and aggregate action-section composition have focused owners. `TaskContextMenuLogic.mjs` remains the QML-visible facade for aggregate action sections and still owns platform snapshot helpers.
 
 **Design concern:** A change to launcher activity behavior, task role snapshotting, menu labels/icons, virtual desktop checked state, or route descriptors lands in the same module. Removing one menu feature requires auditing unrelated policy.
 
-**Correct end state:** Split pure menu policy by ownership. `TaskContextMenuRoleLogic.mjs` should own role reads and snapshots. Focused action-family owners should own labels, icons, visibility, enabled, checked state, commands, and updates. `TaskContextMenuActionSectionsLogic.mjs` should own final aggregate section assembly only. `TaskContextMenuLogic.mjs` should remain a thin facade and platform snapshot helper owner only while compatibility re-exports are needed.
+**Correct end state:** Split pure menu policy by ownership. `TaskContextMenuRoleLogic.mjs` should own role reads and snapshots. Focused action-family owners should own labels, icons, visibility, enabled, checked state, commands, and updates. `TaskContextMenuActionSectionsLogic.mjs` should own final aggregate section assembly only. `TaskContextMenuLogic.mjs` should remain a thin QML-visible facade for aggregate section assembly and a platform snapshot helper owner.
 
-**Suggested migration:** Continue reducing compatibility re-exports after QML and tests consume focused owners directly. Keep footer actions as a separate descriptor/action-result checkpoint.
+**Suggested migration:** Keep footer actions as a separate descriptor/action-result checkpoint. Continue reducing broad context-menu wiring assertions only after executable behavior tests exist for the same contracts.
 
 **Acceptance criteria:** `TaskContextMenuLogic.mjs` no longer imports launcher list mutation helpers and task activity mutation helpers together. Each menu feature family has focused pure tests. `contextMenuActionSections(...)` is an assembly function, not the owner of per-action policy.
 
@@ -441,15 +441,15 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `TaskContextMenuActionSectionsLogic.mjs` contains section composition while composing focused virtual-desktop action, window-action, pin-action, launcher-activity, and task-activity owners; `TaskContextMenuRoleLogic.mjs` contains role snapshots; `TaskContextMenu.qml` consumes one aggregate `actionSections`; `TaskContextMenuLogic.mjs` keeps compatibility re-exports for many unrelated context-menu helpers.
+**Evidence:** `TaskContextMenuActionSectionsLogic.mjs` contains section composition while composing focused virtual-desktop action, window-action, pin-action, launcher-activity, and task-activity owners; `TaskContextMenuRoleLogic.mjs` contains role snapshots; `TaskContextMenu.qml` consumes one aggregate `actionSections`; `TaskContextMenuLogic.mjs` keeps only the QML-visible action-section facade, panel placement, and platform entry snapshots.
 
-**Current state:** Virtual desktop actions, pin actions, route helpers, window actions, launcher activity actions, task activity actions, and aggregate action-section composition have focused owners but still flow through compatibility re-exports.
+**Current state:** Virtual desktop actions, pin actions, route helpers, window actions, launcher activity actions, task activity actions, and aggregate action-section composition have focused owners. Runtime QML still consumes one aggregate menu section facade, and footer actions remain inline.
 
 **Design concern:** Feature boundaries are unclear, and unrelated menu behavior can regress during deletion or feature changes.
 
 **Correct end state:** Each menu feature family should have a focused pure module and focused tests. A top-level composer may assemble sections, but it should not own per-action policy.
 
-**Suggested migration:** Continue with footer actions and compatibility re-export cleanup after QML and focused tests consume the extracted owners directly.
+**Suggested migration:** Continue with footer action descriptor/action-result ownership after QML and focused tests consume the extracted owners directly.
 
 **Acceptance criteria:** Removing launcher activity code does not touch window action, virtual desktop, or role snapshot modules. Each extracted feature family has a focused test file.
 
