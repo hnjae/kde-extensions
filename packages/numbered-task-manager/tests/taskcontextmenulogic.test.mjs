@@ -135,6 +135,34 @@ assert.match(
 );
 assert.doesNotMatch(
   taskContextMenuLogicSource,
+  /export \{[\s\S]*\} from "\.\/TaskContextMenuRouteLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /export \{[\s\S]*\} from "\.\/TaskContextMenuRoleLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /export \{[\s\S]*\} from "\.\/TaskContextMenuLauncherActivityLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /export \{[\s\S]*\} from "\.\/TaskContextMenuPinLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /export \{[\s\S]*\} from "\.\/TaskContextMenuTaskActivityLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /export \{[\s\S]*\} from "\.\/TaskContextMenuVirtualDesktopLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /export \{[\s\S]*\} from "\.\/TaskContextMenuWindowActionLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
   /import \* as VirtualDesktopActionLogic from "\.\/TaskContextMenuVirtualDesktopLogic\.mjs"/,
 );
 assert.doesNotMatch(taskContextMenuLogicSource, /function virtualDesktopId\b/);
@@ -150,10 +178,7 @@ assert.doesNotMatch(
   taskContextMenuLogicSource,
   /import \* as PinLogic from "\.\/TaskContextMenuPinLogic\.mjs"/,
 );
-assert.match(
-  taskContextMenuLogicSource,
-  /from "\.\/TaskContextMenuPinLogic\.mjs"/,
-);
+assert.doesNotMatch(taskContextMenuLogicSource, /TaskContextMenuPinLogic\.mjs/);
 assert.doesNotMatch(
   taskContextMenuLogicSource,
   /import \{ contextMenuLauncherCommand \} from "\.\/TaskActionLogic\.mjs"/,
