@@ -97,10 +97,16 @@ void TabPagerMetadataTest::nixMetadataMatchesCMakeIdentity() {
                               QStringLiteral("version\\s*=\\s*\"([^\"]+)\""),
                               QStringLiteral("Nix version")),
            QStringLiteral(TABPAGER_VERSION));
+  QVERIFY2(packageNix.contains(QStringLiteral(
+               "qmlModuleDir = lib.replaceStrings [ \".\" ] [ \"/\" ] "
+               "pluginId;")),
+           "Nix qmlModuleDir should be derived from pluginId");
   QVERIFY2(ciNix.contains(QStringLiteral("${package.pluginId}")),
            "Nix kpackage check should use package.pluginId");
-  QVERIFY2(ciNix.contains(QStringLiteral(TABPAGER_QML_MODULE_DIR)),
-           "Nix qml check should use the configured QML module path");
+  QVERIFY2(ciNix.contains(QStringLiteral("${package.qmlModuleDir}")),
+           "Nix qml check should use package.qmlModuleDir");
+  QVERIFY2(!ciNix.contains(QStringLiteral("io/github/hnjae/tabpager")),
+           "Nix qml check should not repeat the concrete QML module path");
 }
 
 QTEST_MAIN(TabPagerMetadataTest)

@@ -33,6 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - Row/model-state tests now expect only public `label` and `active` role updates after the desktop model role narrowing.
 - Wheel accumulation and sign conversion now live in `TabPagerWheelNavigation`; `TabPagerDesktopNavigator` owns only semantic offset target selection and wrapping policy.
 - QML wheel-event normalization now lives in `TabPagerWheelInput.js` and is directly tested without Quick-window event dispatch.
+- Nix package metadata now derives `qmlModuleDir` from `pluginId`, exposes it through package passthru, and uses it for QML install-path checks.
 
 ## Remaining
 
@@ -49,15 +50,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: extracted QML wheel-event normalization into the directly tested `TabPagerWheelInput.js` helper.
-- Files changed: `CMakeLists.txt`, `package/contents/ui/TabPagerView.qml`, `package/contents/ui/TabPagerWheelInput.js`, `tests/tabpagerwheelinput_test.cpp`, `docs/architecture/README.md`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: `TabPagerView.qml` still forwards raw wheel deltas to `backend.activateByWheelDelta`; vertical angle delta remains preferred when non-zero; horizontal angle delta remains the fallback when vertical delta is zero; inverted wheel input still flips the forwarded delta; the existing QML view smoke test still covers click and wheel event wiring.
-- Target-doc cleanup: removed the completed wheel-normalization finding and refactoring-sequence item, narrowed the layout testability finding back to unresolved layout concerns, and kept broader controller orchestration and wheel activation planning concerns open.
-- Target-doc edits: no architectural principles were removed; completed tactical wording about extracting QML wheel-event normalization was removed or rewritten as current-state evidence.
-- Commands passed: `cmake --build build --target tabpagerwheelinput_test tabpagerview_test`; `ctest --test-dir build --output-on-failure -R 'tabpager(wheelinput|view)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/CMakeLists.txt packages/tab-pager/package/contents/ui/TabPagerView.qml packages/tab-pager/package/contents/ui/TabPagerWheelInput.js packages/tab-pager/tests/tabpagerwheelinput_test.cpp packages/tab-pager/docs/architecture/README.md packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
-- Commands failed: `cmake --build build --target tabpagerwheelinput_test` failed after adding the characterization test and before implementation because `package/contents/ui/TabPagerWheelInput.js` did not exist yet; the first pre-commit run failed because `treefmt` reformatted the new JS/C++ files, then passed after rerunning build/tests.
-- Deviations: no user-visible behavior change was made; this checkpoint intentionally did not move wheel accumulation/sign conversion or activation planning out of the existing C++ helpers.
-- Ambiguity: no blocking ambiguity found. The target already described a helper returning the raw delta consumed by `TabPagerWheelNavigation`; this checkpoint follows that migration while preserving the architecture doc's explicit split between raw-delta normalization, wheel-step accumulation/sign conversion, and semantic target selection.
+- Checkpoint: derived the Nix QML module path from `pluginId` and reused it in package install-path checks.
+- Files changed: `nix/module/package.nix`, `nix/lib/tab-pager-ci.nix`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: package `pluginId` remains `io.github.hnjae.tabpager`; the derived QML module path remains `io/github/hnjae/tabpager`; package version, CMake identity, KPackage metadata, `qmldir`, qmltypes export, and installed QML file checks remain semantically unchanged.
+- Target-doc cleanup: removed the now-obsolete statement that `nix/lib/tab-pager-ci.nix` repeats the concrete QML module path, recorded the current Nix-derived module path, and kept the broader P2 package identity finding open because CMake, KPackage metadata, QML metadata, and Nix still do not share one authoritative declaration.
+- Target-doc edits: no architectural principles were removed; only completed Nix-specific tactical evidence was updated.
+- Commands passed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata`; `nix eval .#packages.x86_64-linux.tab-pager.qmlModuleDir` from the repository root; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/nix/module/package.nix packages/tab-pager/nix/lib/tab-pager-ci.nix packages/tab-pager/tests/tabpagermetadata_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
+- Commands failed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the metadata guard and before implementation because Nix did not yet derive or expose `qmlModuleDir`.
+- Deviations: this checkpoint intentionally did not choose a single repository-wide authority for package ID/version or generate CMake/QML/package metadata; that remains unresolved P2 work.
+- Ambiguity: no blocking ambiguity found. The target explicitly called out repeated install-path metadata, and this checkpoint removes the Nix CI hard-coded QML module path without changing installed paths.
 
 ## Notes
 

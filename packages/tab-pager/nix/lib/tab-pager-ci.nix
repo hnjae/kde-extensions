@@ -115,8 +115,8 @@ let
 
     test -f "$TMPDIR/plasmoids/${package.pluginId}/metadata.json"
     test -f "$TMPDIR/plasmoids/${package.pluginId}/contents/ui/main.qml"
-    test -f "$install_prefix/lib/qt-6/qml/io/github/hnjae/tabpager/qmldir"
-    test -f "$install_prefix/lib/qt-6/qml/io/github/hnjae/tabpager/libtabpagerplugin.so"
+    test -f "$install_prefix/lib/qt-6/qml/${package.qmlModuleDir}/qmldir"
+    test -f "$install_prefix/lib/qt-6/qml/${package.qmlModuleDir}/libtabpagerplugin.so"
     kpackagetool6 --hash "$TMPDIR/plasmoids/${package.pluginId}"
   '';
 

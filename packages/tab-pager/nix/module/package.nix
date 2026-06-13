@@ -8,6 +8,7 @@
         let
           clangToolchain = pkgs.llvmPackages.clang;
           pluginId = "io.github.hnjae.tabpager";
+          qmlModuleDir = lib.replaceStrings [ "." ] [ "/" ] pluginId;
           version = "0.1.0";
 
           sourceRoot = ../../.;
@@ -51,6 +52,7 @@
           passthru = {
             inherit
               pluginId
+              qmlModuleDir
               version
               source
               ;
