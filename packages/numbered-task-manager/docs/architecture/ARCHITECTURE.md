@@ -60,12 +60,13 @@ in `SPEC.md`.
   the focused helper output into the full menu sections. QML menu items should
   consume that output directly instead of adding menu-local checked-state
   wrapper functions.
-- Keep context-menu virtual-desktop checked-state policy in
-  `VirtualDesktopLogic.mjs`. The menu may still request `TasksModel`
-  virtual-desktop mutations directly, while `TaskContextMenuLogic.mjs`
-  composes menu descriptors from shared all-desktops and per-desktop checked
-  predicates. QML menu items should consume that helper output directly
-  instead of adding menu-local checked-state wrapper functions.
+- Keep context-menu virtual-desktop action descriptors in
+  `TaskContextMenuVirtualDesktopLogic.mjs`. Labels, icon names,
+  visibility/enabled state, checked state, command descriptors, and submenu
+  section composition for virtual-desktop actions should live in that focused
+  owner. `VirtualDesktopLogic.mjs` keeps shared desktop identity, membership,
+  and checked-state primitives, while `TaskContextMenuLogic.mjs` remains the
+  compatibility facade and final menu-section composer.
 - Keep context-menu basic action availability in `TaskContextMenuLogic.mjs`.
   Simple item visible/enabled predicates such as New Instance, Move, and Resize
   should be derived by tested helpers while QML keeps rendering order and Plasma
