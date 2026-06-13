@@ -4,7 +4,7 @@
 
 The codebase is small and already has useful seams: TaskManager raw-state mapping is mostly pure, navigation target calculation is separated from QML rendering, and the model-state transition code has targeted tests. The main architectural risk is not lack of layering; it is that several important contracts are still implied by convention instead of being owned by a focused boundary.
 
-The highest-impact remaining issue is that orchestration, state projection, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, mutates the Qt model, reads the Qt model for activation, owns the navigator, consumes wheel deltas, translates navigation results into activation results, and dispatches source activation. That is manageable at the current size, but it is the pressure point where new behavior will become harder to test and reason about.
+The highest-impact remaining issue is that orchestration, state synchronization, navigation, and effects converge in `TabPagerDesktopController`. The controller owns the source, subscribes to source/settings changes, writes and reads the state-store port, owns the navigator, consumes wheel deltas, translates navigation results into activation results, logs selected no-ops, and dispatches source activation. That is manageable at the current size, but it is the pressure point where new behavior will become harder to test and reason about.
 
 The second major risk is operational visibility. `TaskManagerDesktopSource::sourceState() const` still performs diagnostic reporting from a getter-shaped API, and the generic source state still does not carry diagnostic health. `TaskManagerDesktopSource` now has a structured diagnostics read seam and suppresses unchanged duplicate warning logs, but backend/controller observability remains incomplete.
 
@@ -12,7 +12,7 @@ No P0 issue was found. The recommended end state is a precise, boring architectu
 
 ## Top Design Risks
 
-1. `TabPagerDesktopController` spans source ownership, source reloads, Qt model mutation, model reads, navigation, wheel consumption, result translation, logging, and activation effects.
+1. `TabPagerDesktopController` spans source ownership, source/settings reloads, state-store reads/writes, navigation, wheel consumption, result translation, logging, and activation effects.
 2. Source diagnostics are still emitted from a const read path, and degraded source state is not part of the application state contract. A source-specific structured read seam exists, and unchanged repeated diagnostics are logged only once per diagnostic state.
 3. Wheel input semantics are split between QML event normalization and C++ navigation state, with unclear scoping for accumulated partial wheel deltas across desktop/context changes.
 
@@ -56,7 +56,7 @@ Acceptance criteria: `desktopGap` has one production definition. Minimum extent 
 
 Priority: P2, uncertain
 
-Evidence: `src/tabpagerdesktopnavigator.h` stores `m_pendingWheelDelta`; `src/tabpagerdesktopnavigator.cpp` combines pending and new delta, stores the remainder, then validates navigation context through `targetForOffset()`; `src/tabpagerdesktopcontroller.cpp` updates model and wrapping state without resetting pending wheel delta; navigator tests cover accumulation only in a stable context.
+Evidence: `src/tabpagerdesktopnavigator.h` stores `m_pendingWheelDelta`; `src/tabpagerdesktopnavigator.cpp` combines pending and new delta, stores the remainder, then validates navigation context through `targetForOffset()`; `src/tabpagerdesktopcontroller.cpp` updates state-store data and wrapping state without resetting pending wheel delta; navigator characterization tests now cover current-desktop changes, desktop-count changes, wrapping changes, no-current states, and stopped-at-edge states.
 
 Current state: Partial wheel deltas survive changes to current desktop, desktop count, and wrapping behavior. They can also survive contexts where there is no current desktop. Characterization tests now lock this as current behavior rather than intended policy.
 
@@ -64,9 +64,9 @@ Design concern: The spec says scrolling moves one desktop at a time, but it does
 
 Correct end state: Wheel accumulation scope should be explicit. Either document and test that pending deltas intentionally survive context changes, or reset/drop pending deltas when navigation context changes or when no navigation target can be produced.
 
-Suggested migration: Use the characterization tests for half-step input before current desktop appears, before desktop count changes, before wrapping changes, and at non-wrapping edges to either clear pending delta on context identity change or document preservation as intended behavior.
+Suggested migration: Use the characterization tests for half-step input before current desktop appears, before desktop count changes, before wrapping changes, and at non-wrapping edges to decide whether this persistence is intended. If it is intended, document it in the user-facing interaction spec; if not, change the navigator to clear pending delta on context identity changes.
 
-Acceptance criteria: Tests define pending wheel behavior across current desktop changes, desktop count changes, wrapping changes, no-current states, and stopped-at-edge states. No activation is caused solely by stale partial wheel delta unless explicitly specified.
+Acceptance criteria: The spec defines pending wheel behavior across current desktop changes, desktop count changes, wrapping changes, no-current states, and stopped-at-edge states. No activation is caused solely by stale partial wheel delta unless explicitly specified.
 
 ## Cohesion, Coupling, and Ownership Problems
 
@@ -76,31 +76,15 @@ Priority: P2
 
 Evidence: `src/tabpagerdesktopcontroller.h` depends on `TabPagerDesktopStateStore` rather than `TabPagerDesktopModel`, accepts `std::unique_ptr<TabPagerDesktopSource>`, `std::unique_ptr<TabPagerNavigationSettingsSource>`, and a non-owning state-store reference; `src/tabpagerdesktopcontroller.cpp` connects source/settings changes, reloads source state, mutates the state store with `setDesktopSnapshot()`, reads desktop IDs/current index/count through the state store, owns the navigator, translates navigation results, logs no-ops, and calls source activation.
 
-Current state: The controller is source owner, source subscriber, source reloader, state-store writer/reader, navigation coordinator, wheel consumer, activation planner, result translator, logger, and effect dispatcher.
+Current state: The controller is source owner, source subscriber, source/settings reloader, state-store writer/reader, navigation coordinator, wheel consumer, activation planner caller, result translator, logger, and effect dispatcher. It no longer depends directly on `TabPagerDesktopModel`; Qt model notification semantics are isolated behind the state-store implementation.
 
 Design concern: The controller no longer couples directly to the Qt list model, but it still combines source ownership, source synchronization, navigation coordination, wheel consumption, result translation, logging, and effect dispatch.
 
-Correct end state: The controller should depend on a small desktop state/navigation port, not directly on a `QAbstractListModel`-backed model. The Qt model should adapt state transitions into `beginResetModel()`, `endResetModel()`, and `dataChanged()` notifications.
+Correct end state: The controller should remain isolated from the `QAbstractListModel` implementation and should become mostly orchestration: synchronize source/settings state, call pure planners, report outcomes, and execute returned source commands. The Qt model should continue adapting state transitions into `beginResetModel()`, `endResetModel()`, and `dataChanged()` notifications.
 
 Suggested migration: Continue moving decision logic toward pure planners and keep Qt model notification semantics isolated in `TabPagerDesktopModel`. Evaluate whether the state-store transition ownership should move out of the Qt model if more non-QML state consumers appear.
 
-Acceptance criteria: `tabpagerdesktopcontroller.h` no longer includes `tabpagerdesktopmodel.h`. Controller tests can instantiate the controller without constructing `TabPagerDesktopModel`. Qt model notification semantics stay inside `TabPagerDesktopModel`.
-
-### Finding: Desktop source also owns navigation policy state
-
-Priority: P2
-
-Evidence: `src/tabpagerdesktopsource.h` defines `TabPagerDesktopSourceState` for desktop snapshot data; `src/tabpagernavigationsettingssource.h` defines the navigation wrapping read/signal; TaskManager desktop state and navigation settings are exposed through separate adapters; `TabPagerDesktopController` composes source state and navigation settings through separate constructor inputs.
-
-Current state: Desktop data and navigation wrapping are separate source contracts.
-
-Design concern: Desktop topology/current-desktop state and navigation policy have different ownership. The contracts are now separated, but both production adapters still read through the same lower-level LibTaskManager virtual desktop info seam.
-
-Correct end state: Desktop state and navigation settings should be separate inputs. The controller/backend can compose them, but the desktop source abstraction should not own interaction behavior policy.
-
-Suggested migration: Keep desktop and settings updates as separate contracts. Decide separately whether the lower-level LibTaskManager port should remain shared by both TaskManager adapters or be collapsed into mapper tests.
-
-Acceptance criteria: `TabPagerDesktopSourceState` contains only desktop snapshot data. Wrapping changes do not require `m_source->sourceState()` reload. Tests distinguish desktop-source updates from navigation-setting updates. A future non-TaskManager desktop source does not need to own navigation policy unless it explicitly also implements the settings provider.
+Acceptance criteria: Controller tests focus on state/settings synchronization, planner delegation, outcome reporting, logging, and source command execution. Qt model notification semantics stay inside `TabPagerDesktopModel`.
 
 ### Finding: Two adapter seams wrap the same LibTaskManager dependency
 
@@ -124,7 +108,7 @@ Acceptance criteria: Adding a non-LibTaskManager source requires implementing on
 
 Priority: P2
 
-Evidence: `src/tabpagerdesktopsource.h` defines `sourceState() const` as the state read API; `TaskManagerDesktopSource::sourceState()` maps raw state, calls `logDesktopSourceDiagnostics(result.diagnostics)`, and returns state; `TabPagerDesktopController::reloadSourceState()` calls `m_source->sourceState()`.
+Evidence: `src/tabpagerdesktopsource.h` defines `sourceState() const` as the state read API; `TaskManagerDesktopSource::sourceState()` maps raw state, calls `logDiagnosticsIfChanged(result.diagnostics)`, and returns state; `TabPagerDesktopController::reloadSourceState()` calls `m_source->sourceState()`.
 
 Current state: A method shaped as a pure state getter emits warnings when diagnostics change. `TaskManagerDesktopSource::sourceDiagnostics()` exposes the current structured diagnostics through the same mapper path, but it is source-specific and has no generic source/backend observability semantics.
 
@@ -151,22 +135,6 @@ Correct end state: Raw wheel-device handling should be isolated from desktop nav
 Suggested migration: Extract wheel accumulation/sign handling into a `TabPagerWheelNavigation` or `WheelDeltaAccumulator` component that returns semantic offsets. Keep `TabPagerDesktopNavigator::targetForOffset()` as the central desktop navigation rule.
 
 Acceptance criteria: A test verifies full spec mapping for wheel up/down. `TabPagerDesktopNavigator` no longer stores wheel-specific pending state unless it is explicitly the wheel adapter. The sign conversion is named and tested in one place.
-
-### Finding: Parallel navigation APIs obscure the primary abstraction
-
-Priority: P3
-
-Evidence: `TabPagerDesktopNavigator` exposes optional-return wrappers and typed-result methods; the optional methods are thin adapters over result methods; `TabPagerDesktopController` exposes silent methods and `WithResult` variants; silent methods discard result values; private `activateOffset()` is declared and defined but unused except as a wrapper.
-
-Current state: Navigation operations use typed result lookup internally. The optional navigator wrappers and unused private controller wrapper have been removed. Public controller methods still keep silent QML-facing commands and result-returning variants.
-
-Design concern: Future navigation changes must preserve several equivalent APIs, and tests can exercise convenience wrappers that production does not use.
-
-Correct end state: Choose one internal result shape for navigation and activation. Production callers can discard results explicitly where appropriate, but tests should assert the same result API production uses.
-
-Suggested migration: Keep `TabPagerDesktopNavigationResult`/`TabPagerActivationResult` as canonical internal APIs. Public QML-facing commands may discard results, but production internals and tests should use the same result-returning paths.
-
-Acceptance criteria: No navigation method exists solely as a test convenience wrapper. Controller and navigator each expose one clear internal result API per operation. Existing next/previous/wheel behavior remains covered.
 
 ## Testability Problems
 
@@ -222,22 +190,6 @@ Acceptance criteria: Backend/QML or tests can inspect source health without pars
 
 ## Deletion, Modularity, and Abstraction Problems
 
-### Finding: Navigation wrapping leaks through data, controller, backend API, and QML metadata
-
-Priority: P2
-
-Evidence: The spec requires wrapping behavior for scrolling; `TabPagerNavigationSettingsSource` exposes navigation wrapping through a dedicated read/signal; `TaskManagerNavigationSettingsSource` maps the TaskManager wrapping signal into that navigation signal; `TabPagerDesktopController` applies wrapping to the navigator; shipped QML only calls `activateByWheelDelta(delta)` and does not read wrapping state. `TabPagerBackend` and `src/tabpagerplugin.qmltypes` no longer expose wrapping publicly.
-
-Current state: A controller-only navigation policy is carried through a dedicated settings source, not through desktop snapshot state or the public backend/QML API.
-
-Design concern: This makes wrapping hard to remove or replace cleanly. Any change still touches LibTaskManager wrapper, mapper, source state, controller, and tests.
-
-Correct end state: Treat wrapping as navigator/controller policy. Expose it to QML only if QML needs to render or configure it.
-
-Suggested migration: Keep the private navigation-policy read/signal behind the dedicated settings provider and avoid exposing it to QML unless a display or configuration requirement appears.
-
-Acceptance criteria: Scrolling still follows KDE wrapping behavior. Desktop model reloads are not required solely to update navigation policy. Tests verify wrapping through activation outcomes.
-
 ### Finding: Presentation formatting ownership is ambiguous
 
 Priority: P2
@@ -256,11 +208,11 @@ Acceptance criteria: The ownership rule for label formatting and font selection 
 
 ## Recommended Correct End-State Architecture
 
-Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces desktop state plus explicit diagnostics. A desktop state store owns the current desktop state and transition planning. A Qt model adapts the state store into QML model notifications. A navigation/activation planner owns pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
+Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces desktop state plus explicit diagnostics. A desktop state store owns the current desktop state and transition planning. A Qt model adapts the state store into QML model notifications. Navigation, activation, and wheel-input helpers own pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
 
 Where domain rules should live: Default-name label behavior should live either in a documented view-model/presentation boundary or in QML presentation helpers, not half in semantic model code and half in backend UI properties. Wrapping behavior should live in navigator/controller policy, not in desktop inventory state.
 
-Where state should be defined: `TabPagerDesktopStateStore` should own current state and transition results. Wheel delta pending state should live in a wheel-input adapter with explicit context scoping. Source diagnostics should be part of source health state or a dedicated diagnostic stream.
+Where state should be defined: `TabPagerDesktopStateStore` should own current desktop state and transition results. Wheel delta pending state should live in a wheel-input adapter with explicit context scoping or be documented as part of navigator state. Source diagnostics should be part of source health state or a dedicated diagnostic stream.
 
 Where validation should happen: Public APIs that accept untrusted indexes or IDs should still validate those inputs.
 
@@ -272,10 +224,10 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 
 ## Suggested Refactoring Sequence
 
-1. Isolate core domain logic from external effects by extracting activation planning and wheel input mapping from `TabPagerDesktopController`/QML event handlers.
-2. Clarify ownership boundaries by separating desktop source state from navigation settings and by inserting a small state store between controller logic and the Qt list model.
+1. Isolate remaining input and activation decisions from external effects by extracting wheel input mapping from QML event handlers and moving any remaining activation decision logic out of `TabPagerDesktopController`.
+2. Clarify the remaining ownership boundaries by deciding whether `TabPagerBackend`/model code is an intentional QML view-model layer and whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
 3. Improve error semantics and observability by making source diagnostics stateful/observable, removing getter-side logging, and clarifying activation request versus confirmation.
-4. Remove or simplify premature abstractions by narrowing public QML roles, removing unused/convenience navigation wrappers, and deciding whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a test seam.
+4. Remove or simplify remaining premature abstractions by narrowing public QML roles if they are not part of the chosen view-model boundary.
 
 ## Things Not To Change Yet
 
@@ -293,11 +245,11 @@ Do not optimize QML layout implementation before centralizing the contract and t
 
 ## Appendix: Subagent Reports
 
-Single Source of Truth / Duplication Agent: Reported repeated package identity/module metadata, duplicated navigation no-op result states, and repeated QML layout constants. Package metadata was kept as P2. Navigation no-op enum duplication and layout constants were kept as P3. No findings were rejected.
+Single Source of Truth / Duplication Agent: Reported repeated package identity/module metadata, duplicated navigation no-op result states, and repeated QML layout constants. Package metadata was kept as P2. Layout constants were kept as P3. Navigation no-op enum duplication was dropped because the typed navigation and activation result APIs are now the canonical internal shapes.
 
 Invariant / Correctness Agent: Reported uncertain wheel-delta context scoping, kept as P2 uncertain because the spec does not define intended behavior.
 
-Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, and split presentation formatting. Controller ownership and navigation policy were kept as P2. Presentation formatting was kept as P2 but framed as a boundary decision rather than a mandatory move to QML.
+Cohesion / Coupling / Ownership Agent: Reported broad controller ownership, source ownership of navigation policy, and split presentation formatting. Controller ownership remains P2, but the source/navigation policy finding was removed because desktop source state and navigation settings are now separated and tested. Presentation formatting was kept as P2 but framed as a boundary decision rather than a mandatory move to QML.
 
 Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` and split wheel navigation policy. Getter-side logging was merged with observability findings and kept as P2. Wheel flow readability was kept as P3 and linked to the stronger P2 wheel context issue.
 
@@ -305,4 +257,4 @@ Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch 
 
 Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics were kept as P2. Activation confirmation was downgraded from P1 to P2 because the immediate issue is naming unless confirmed activation is surfaced.
 
-Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles and wrapping leakage were kept as P2. Parallel navigation APIs and adapter-seam clarity were kept as P3. No broad rewrite recommendation was accepted.
+Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles remain covered by the presentation-boundary finding. Wrapping leakage was removed because wrapping is no longer public backend/QML API and no longer reloads desktop source state. Parallel navigation APIs were removed because optional/test-only wrappers are gone; the remaining silent commands are QML-facing entry points over result-returning internals. Adapter-seam clarity remains P3.

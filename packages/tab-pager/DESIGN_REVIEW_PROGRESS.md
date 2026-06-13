@@ -5,146 +5,49 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Design Review Progress
 
-## Completed Checkpoints
+## Current State
 
-- P1 normalized desktop snapshot boundary: added `TabPagerDesktopSnapshot` construction through normalization, added normalization issues for invalid IDs, duplicate IDs, and unmatched current desktops, translated those issues in the TaskManager adapter, and changed row/model projection to consume normalized snapshots instead of silently filtering invalid IDs.
-- P1 QML type metadata drift check: added a CTest coverage seam that compares the registered `TabPagerBackend` export and QML-visible properties, invokables, and signals against `src/tabpagerplugin.qmltypes`.
-- P2 row diff identity precondition: changed row diff planning to return an explicit incompatible-identity result, made row identity comparison private to the row collection, and kept model-state transitions responsible for converting incompatible identity into reset transitions.
-- P2 public activation result observability: added backend-facing activation result reporting for direct, relative, and wheel activation requests while preserving the existing void QML invokables and activation side effects; public result names distinguish activation request dispatch from invalid input, degraded current-desktop state, edge stops, and partial wheel input.
-- P2 activation request naming: renamed the internal successful activation result from `Activated` to `ActivationRequested`, preserving activation side effects and the existing backend-facing `"ActivationRequested"` signal payload. Files changed: `src/tabpagerdesktopcontroller.h`, `src/tabpagerdesktopcontroller.cpp`, `src/tabpagerbackend.cpp`, `tests/tabpagerdesktopcontroller_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 deterministic fatal invariant handling: replaced assertion-only guards for null `TaskManagerDesktopSource` info, null `TabPagerDesktopController` source, and mismatched `TabPagerPlugin` QML URI with runtime `qFatal` diagnostics while preserving valid-path behavior. Files changed: `src/taskmanagerdesktopsource.cpp`, `src/tabpagerdesktopcontroller.cpp`, `src/tabpagerplugin.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 wheel pending-delta characterization: added navigator tests that prove the current pending wheel delta is preserved across no-current context, current-desktop changes, desktop-count changes, wrapping changes, and that a completed wheel step stopped at a non-wrapping edge is consumed. Files changed: `tests/tabpagerdesktopnavigator_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 structured source diagnostics read seam: added `TaskManagerDesktopSource::sourceDiagnostics()` using the same mapper path as `sourceState()`, with source tests proving malformed current TaskManager data can be inspected as structured diagnostics without parsing logs. Files changed: `src/taskmanagerdesktopsource.h`, `src/taskmanagerdesktopsource.cpp`, `tests/taskmanagerdesktopsource_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 QML role exposure characterization: added a view-level test proving shipped QML still loads with a model exposing only `label` and `active`, while existing backend/row tests continue to lock the current broader backend model roles. Files changed: `tests/tabpagerview_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 source diagnostic transition logging: cached the last logged `TaskManagerDesktopSource` diagnostic set so unchanged repeated `sourceState()` reads do not duplicate warnings, while diagnostic changes and recovery/reappearance remain observable. Files changed: `src/taskmanagerdesktopsource.h`, `src/taskmanagerdesktopsource.cpp`, `tests/taskmanagerdesktopsource_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 direct activation planner seam: added `TabPagerActivationPlanner` for pure direct index activation classification and command creation, then changed `TabPagerDesktopController::activateWithResult()` to execute the planner command instead of owning invalid-index/invalid-ID classification inline. Files changed: `CMakeLists.txt`, `src/tabpageractivationplanner.h`, `src/tabpageractivationplanner.cpp`, `src/tabpagerdesktopcontroller.h`, `src/tabpagerdesktopcontroller.cpp`, `tests/tabpageractivationplanner_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 navigation activation planner seam: extended `TabPagerActivationPlanner` to translate `TabPagerDesktopNavigationResult` into activation plans, then changed `TabPagerDesktopController::activateNavigationTarget()` to delegate no-op result translation while still executing target indexes through the existing direct activation path. Files changed: `src/tabpageractivationplanner.h`, `src/tabpageractivationplanner.cpp`, `src/tabpagerdesktopcontroller.cpp`, `tests/tabpageractivationplanner_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 public model role narrowing: narrowed `TabPagerDesktopModel`'s public role table to `label` and `active`, while keeping `desktopId`, `name`, and `number` in internal row state for activation lookup, label generation, and row-state tests. Files changed: `src/tabpagerdesktoprow.cpp`, `tests/tabpagerdesktoprow_test.cpp`, `tests/tabpagerdesktopmodel_test.cpp`, `tests/tabpagerbackend_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 public wrapping API removal: removed `navigationWrappingAround` from `TabPagerBackend` and `src/tabpagerplugin.qmltypes`, keeping wrapping behavior internal to the controller/source path and verified through activation outcomes. Files changed: `src/tabpagerbackend.h`, `src/tabpagerbackend.cpp`, `src/tabpagerplugin.qmltypes`, `tests/tabpagerbackend_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 package metadata drift check: added `tabpagermetadata` CTest coverage verifying CMake identity values agree with `package/metadata.json`, `src/qmldir`, `src/tabpagerplugin.qmltypes`, Nix package metadata, Nix check paths, and CMake install destinations. Files changed: `CMakeLists.txt`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P3 navigation API cleanup: removed optional-return `TabPagerDesktopNavigator` convenience wrappers and the unused private `TabPagerDesktopController::activateOffset()` wrapper, keeping typed navigation/activation results as the canonical internal APIs and updating navigator tests to exercise those result APIs directly. Files changed: `src/tabpagerdesktopnavigator.h`, `src/tabpagerdesktopnavigator.cpp`, `src/tabpagerdesktopcontroller.h`, `src/tabpagerdesktopcontroller.cpp`, `tests/tabpagerdesktopnavigator_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 navigation settings source-state split: removed navigation wrapping from `TabPagerDesktopSourceState`, added a separate source-level wrapping read/signal, wired `TaskManagerDesktopSource` wrapping changes through that separate signal, and updated the controller to apply wrapping without reloading the desktop model. Files changed: `src/tabpagerdesktopsource.h`, `src/taskmanagerdesktopsource.h`, `src/taskmanagerdesktopsource.cpp`, `src/taskmanagerdesktopmapper.h`, `src/taskmanagerdesktopmapper.cpp`, `src/tabpagerdesktopcontroller.cpp`, `tests/tabpagerbackendtesthelpers.h`, `tests/tabpagerdesktopcontroller_test.cpp`, `tests/taskmanagerdesktopsource_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 dedicated navigation settings provider: added `TabPagerNavigationSettingsSource`, moved wrapping reads/signals out of `TabPagerDesktopSource`, added `TaskManagerNavigationSettingsSource`, and changed the backend/controller/test fixtures to compose desktop state and navigation settings as separate sources. Files changed: `CMakeLists.txt`, `src/tabpagernavigationsettingssource.h`, `src/tabpagernavigationsettingssource.cpp`, `src/tabpagerdesktopsource.h`, `src/tabpagerdesktopcontroller.h`, `src/tabpagerdesktopcontroller.cpp`, `src/tabpagerbackend.h`, `src/tabpagerbackend.cpp`, `src/tabpagerqmlbackend.cpp`, `src/taskmanagerdesktopsource.h`, `src/taskmanagerdesktopsource.cpp`, `tests/tabpagerbackendtesthelpers.h`, `tests/tabpagerdesktopcontroller_test.cpp`, `tests/tabpagerbackend_test.cpp`, `tests/taskmanagerdesktopsource_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 desktop state-store port: added `TabPagerDesktopStateStore`, made `TabPagerDesktopModel` implement it, changed `TabPagerDesktopController` to depend on the state-store port instead of the concrete Qt model, and changed controller tests to use a fake state store without constructing `TabPagerDesktopModel`. Files changed: `CMakeLists.txt`, `src/tabpagerdesktopstatestore.h`, `src/tabpagerdesktopmodel.h`, `src/tabpagerdesktopcontroller.h`, `src/tabpagerdesktopcontroller.cpp`, `src/tabpagerbackend.h`, `tests/tabpagerdesktopcontroller_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
-- P2 navigation target activation planning: extended `TabPagerActivationPlanner` to turn a navigation target plus target desktop ID lookup into the final activation command/result, then changed `TabPagerDesktopController::activateNavigationTarget()` to execute that command directly instead of recursing through direct index activation. Files changed: `src/tabpageractivationplanner.h`, `src/tabpageractivationplanner.cpp`, `src/tabpagerdesktopcontroller.cpp`, `tests/tabpageractivationplanner_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
+- `DESIGN_REVIEW_CORRECT_END_STATE.md` is the authoritative document for remaining design risks.
+- No P0/P1 design-review findings remain.
+- This file is a handoff status summary, not a command log. Use git history for exact checkpoint diffs, file lists, and historical test output.
 
-## Verification
+## Completed
 
-- `nix develop path:../..#default -c ctest --test-dir build --output-on-failure -R '^(tabpagerdesktop|tabpagerdesktoprows|tabpagerdesktopmodelstate|taskmanagerdesktopsource|tabpagerbackend)$'`
-- `nix develop path:../..#default -c ctest --test-dir build --output-on-failure -R '^(tabpagerqmltypes|tabpagerbackend)$'`
-- `nix develop path:../..#default -c tab-pager-lint-qml`
-- `nix develop path:../..#default -c cmake --build build`
-- `nix develop path:../..#default -c ctest --test-dir build --output-on-failure -R '^(tabpagerdesktoprows|tabpagerdesktopmodelstate|tabpagerdesktopmodel|tabpagerdesktopcontroller|tabpagerbackend)$'`
-- `nix develop path:../..#default -c cmake --build build --target tabpagerbackend_test tabpagerqmltypes_test` passed.
-- `nix develop path:../..#default -c ctest --test-dir build --output-on-failure -R '^(tabpagerbackend|tabpagerqmltypes)$'` failed before running tests because Nix evaluation could not find `lib/deprecated/misc.nix` in a pinned `DeterminateSystems/nixpkgs-weekly` source path.
-- `ctest --test-dir build --output-on-failure -R '^(tabpagerbackend|tabpagerqmltypes)$'` passed.
-- `ctest --test-dir build --output-on-failure -R '^(tabpagerdesktopcontroller|tabpagerbackend|tabpagerqmltypes)$'` passed.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpagerbackend_test tabpagerqmltypes_test && ctest --test-dir build --output-on-failure` passed after `treefmt` reformatted touched C++ files during the first commit attempt.
-- `cmake --build build --target tabpagerdesktopcontroller_test tabpagerbackend_test` passed.
-- `ctest --test-dir build --output-on-failure -R '^(tabpagerdesktopcontroller|tabpagerbackend)$'` passed.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target taskmanagerdesktopsource_test tabpagerdesktopcontroller_test tabpagerqmltypes_test tabpagerbackend_test` passed.
-- `ctest --test-dir build --output-on-failure -R '^(taskmanagerdesktopsource|tabpagerdesktopcontroller|tabpagerqmltypes|tabpagerbackend)$'` passed.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpagerdesktopnavigator_test` passed.
-- `ctest --test-dir build --output-on-failure -R '^tabpagerdesktopnavigator$'` passed.
-- `just format` passed and reformatted `tests/tabpagerdesktopnavigator_test.cpp`.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target taskmanagerdesktopsource_test` failed as expected before implementation because `TaskManagerDesktopSource` had no `sourceDiagnostics()` member.
-- `cmake --build build --target taskmanagerdesktopsource_test && ctest --test-dir build --output-on-failure -R '^taskmanagerdesktopsource$'` passed.
-- `ctest --test-dir build --output-on-failure` passed.
-- `just format` passed and reformatted touched C++ files.
-- `cmake --build build --target taskmanagerdesktopsource_test && ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpagerview_test` passed.
-- `ctest --test-dir build --output-on-failure -R '^(tabpagerview|tabpagerbackend|tabpagerdesktoprow)$'` passed.
-- `just format` passed and reported one formatted file with no content changes.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target taskmanagerdesktopsource_test && ctest --test-dir build --output-on-failure -R '^taskmanagerdesktopsource$'` failed as expected before implementation: `doesNotRepeatUnchangedSourceDiagnosticsOnRepeatedStateReads()` observed 2 warnings instead of 1.
-- `cmake --build build --target taskmanagerdesktopsource_test && ctest --test-dir build --output-on-failure -R '^taskmanagerdesktopsource$'` passed after implementation.
-- `cmake --build build --target taskmanagerdesktopsource_test && ctest --test-dir build --output-on-failure -R '^taskmanagerdesktopsource$'` passed after adding diagnostic change/recovery coverage.
-- `just format` passed and reformatted one touched file.
-- `cmake --build build --target taskmanagerdesktopsource_test && ctest --test-dir build --output-on-failure -R '^taskmanagerdesktopsource$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpageractivationplanner_test && ctest --test-dir build --output-on-failure -R '^tabpageractivationplanner$'` passed after adding the pure planner seam, before controller integration; the initial build emitted missing designated-initializer warnings that were fixed before final verification.
-- `cmake --build build --target tabpageractivationplanner_test tabpagerdesktopcontroller_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpageractivationplanner|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after controller integration.
-- `just format` passed and reformatted two touched files.
-- `cmake --build build --target tabpageractivationplanner_test tabpagerdesktopcontroller_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpageractivationplanner|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^tabpagerbackend$'` failed as expected before implementation because `navigationWrappingAround` was still exposed as a backend property.
-- `cmake --build build --target tabpagerbackend_test tabpagerqmltypes_test tabpagerdesktopcontroller_test tabpagerview_test && ctest --test-dir build --output-on-failure -R '^(tabpagerbackend|tabpagerqmltypes|tabpagerdesktopcontroller|tabpagerview)$'` failed once after implementation because one backend test still called the removed getter in a general state assertion.
-- `cmake --build build --target tabpagerbackend_test tabpagerqmltypes_test tabpagerdesktopcontroller_test tabpagerview_test && ctest --test-dir build --output-on-failure -R '^(tabpagerbackend|tabpagerqmltypes|tabpagerdesktopcontroller|tabpagerview)$'` passed after removing that stale test assertion.
-- `just format` passed and reformatted one touched file.
-- `cmake --build build --target tabpagerbackend_test tabpagerqmltypes_test tabpagerdesktopcontroller_test tabpagerview_test && ctest --test-dir build --output-on-failure -R '^(tabpagerbackend|tabpagerqmltypes|tabpagerdesktopcontroller|tabpagerview)$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R '^tabpagermetadata$'` passed after adding the metadata agreement check.
-- `cmake --build build --target tabpagermetadata_test tabpagerqmltypes_test && ctest --test-dir build --output-on-failure -R '^(tabpagermetadata|tabpagerqmltypes)$'` passed.
-- `just format` passed and reformatted `tests/tabpagermetadata_test.cpp`.
-- `cmake --build build --target tabpagermetadata_test tabpagerqmltypes_test && ctest --test-dir build --output-on-failure -R '^(tabpagermetadata|tabpagerqmltypes)$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R '^tabpagermetadata$'` passed after adding install-path assertions.
-- `just format` passed and reformatted `tests/tabpagermetadata_test.cpp`.
-- `cmake --build build --target tabpagermetadata_test tabpagerqmltypes_test && ctest --test-dir build --output-on-failure -R '^(tabpagermetadata|tabpagerqmltypes)$'` passed after final formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpagerdesktopnavigator_test tabpagerdesktopcontroller_test tabpagerbackend_test` passed after removing navigation convenience wrappers.
-- `ctest --test-dir build --output-on-failure -R '^(tabpagerdesktopnavigator|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after removing navigation convenience wrappers.
-- `just format` passed and reformatted `tests/tabpagerdesktopnavigator_test.cpp`.
-- `cmake --build build --target tabpagerdesktopnavigator_test tabpagerdesktopcontroller_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpagerdesktopnavigator|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target taskmanagerdesktopsource_test tabpagerdesktopcontroller_test` failed as expected before implementation because `TabPagerDesktopSource` had no `navigationWrappingAround()` read or `navigationWrappingAroundChanged()` signal.
-- `cmake --build build --target taskmanagerdesktopsource_test tabpagerdesktopcontroller_test tabpagerbackend_test` passed after splitting navigation wrapping from desktop source state.
-- `ctest --test-dir build --output-on-failure -R '^(taskmanagerdesktopsource|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after splitting navigation wrapping from desktop source state.
-- `just format` passed and reformatted `src/tabpagerdesktopcontroller.cpp` and `tests/taskmanagerdesktopsource_test.cpp`.
-- `cmake --build build --target taskmanagerdesktopsource_test tabpagerdesktopcontroller_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(taskmanagerdesktopsource|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpagerdesktopcontroller_test tabpagerbackend_test` failed as expected before implementation because `tabpagernavigationsettingssource.h` did not exist.
-- `cmake --build build --target tabpagerdesktopcontroller_test tabpagerbackend_test taskmanagerdesktopsource_test` passed after adding the dedicated navigation settings provider and updating stale backend helper usage.
-- `ctest --test-dir build --output-on-failure -R '^(tabpagerdesktopcontroller|tabpagerbackend|taskmanagerdesktopsource)$'` passed after adding the dedicated navigation settings provider.
-- `just format` passed and reformatted six touched files.
-- `cmake --build build --target tabpagerdesktopcontroller_test tabpagerbackend_test taskmanagerdesktopsource_test && ctest --test-dir build --output-on-failure -R '^(tabpagerdesktopcontroller|tabpagerbackend|taskmanagerdesktopsource)$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpagerdesktopcontroller_test` failed as expected before implementation because `tabpagerdesktopstatestore.h` did not exist.
-- `cmake --build build --target tabpagerdesktopcontroller_test tabpagerdesktopmodel_test tabpagerbackend_test` passed after adding the state-store port and fixing the backend's explicit model include.
-- `ctest --test-dir build --output-on-failure -R '^(tabpagerdesktopcontroller|tabpagerdesktopmodel|tabpagerbackend)$'` passed after adding the state-store port.
-- `just format` passed and reformatted `tests/tabpagerdesktopcontroller_test.cpp`.
-- `cmake --build build --target tabpagerdesktopcontroller_test tabpagerdesktopmodel_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpagerdesktopcontroller|tabpagerdesktopmodel|tabpagerbackend)$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpageractivationplanner_test` failed as expected before implementation because `tabPagerActivationPlanForNavigationTarget()` did not exist.
-- `cmake --build build --target tabpageractivationplanner_test tabpagerdesktopcontroller_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpageractivationplanner|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after adding navigation target activation planning.
-- `just format` passed and reformatted `src/tabpagerdesktopcontroller.cpp`.
-- `cmake --build build --target tabpageractivationplanner_test tabpagerdesktopcontroller_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpageractivationplanner|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpagerdesktoprow_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpagerdesktoprow|tabpagerbackend)$'` failed as expected before implementation because `desktopId`, `name`, and `number` were still exposed through `roleNames()`, `data()`, and `dataChanged()` role lists.
-- `cmake --build build --target tabpagerdesktoprow_test tabpagerdesktopmodel_test tabpagerdesktopcontroller_test tabpagerbackend_test tabpagerview_test && ctest --test-dir build --output-on-failure -R '^(tabpagerdesktoprow|tabpagerdesktopmodel|tabpagerdesktopcontroller|tabpagerbackend|tabpagerview)$'` failed once after implementation because `tabpagerdesktopmodel_test` still expected the old public `name` role in an update emission.
-- `cmake --build build --target tabpagerdesktoprow_test tabpagerdesktopmodel_test tabpagerdesktopcontroller_test tabpagerbackend_test tabpagerview_test && ctest --test-dir build --output-on-failure -R '^(tabpagerdesktoprow|tabpagerdesktopmodel|tabpagerdesktopcontroller|tabpagerbackend|tabpagerview)$'` passed after updating the model expectation.
-- `just format` passed with no file changes.
-- `cmake --build build --target tabpagerdesktoprow_test tabpagerdesktopmodel_test tabpagerdesktopcontroller_test tabpagerbackend_test tabpagerview_test && ctest --test-dir build --output-on-failure -R '^(tabpagerdesktoprow|tabpagerdesktopmodel|tabpagerdesktopcontroller|tabpagerbackend|tabpagerview)$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
-- `cmake --build build --target tabpageractivationplanner_test` failed as expected before implementation because `TabPagerActivationPlan` had no `targetIndex`, `TabPagerDesktopNavigationResult` was not visible to the planner, and `tabPagerActivationPlanForNavigationResult()` did not exist.
-- `cmake --build build --target tabpageractivationplanner_test && ctest --test-dir build --output-on-failure -R '^tabpageractivationplanner$'` passed after adding pure navigation-result translation.
-- `cmake --build build --target tabpageractivationplanner_test tabpagerdesktopcontroller_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpageractivationplanner|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after controller integration.
-- `just format` passed and reformatted one touched file.
-- `cmake --build build --target tabpageractivationplanner_test tabpagerdesktopcontroller_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpageractivationplanner|tabpagerdesktopcontroller|tabpagerbackend)$'` passed after formatting.
-- `ctest --test-dir build --output-on-failure` passed.
+- Normalized desktop snapshots are the boundary for row/model projection, including invalid-ID, duplicate-ID, and unmatched-current-desktop handling.
+- QML type metadata drift and package metadata drift are covered by CTest checks.
+- Backend activation result reporting is public, uses `ActivationRequested` for dispatched requests, and distinguishes invalid input, missing current desktop, edge stops, and partial wheel input.
+- Fatal constructor/plugin invariants use runtime `qFatal` diagnostics rather than assertion-only guards.
+- Wheel pending-delta behavior is characterized across current-desktop changes, desktop-count changes, wrapping changes, no-current contexts, and non-wrapping edge stops.
+- `TaskManagerDesktopSource::sourceDiagnostics()` exposes structured diagnostics without parsing logs.
+- Repeated unchanged `TaskManagerDesktopSource::sourceState()` diagnostic reads no longer duplicate warning logs.
+- `TabPagerActivationPlanner` covers direct index activation, navigation-result translation, and navigation-target command planning.
+- Public desktop model roles are narrowed to `label` and `active`; broader row data remains internal.
+- Navigation wrapping is internal to controller/navigation settings behavior, not public backend/QML API, desktop snapshot state, or desktop source state.
+- `TabPagerNavigationSettingsSource` separates navigation policy from desktop inventory state.
+- `TabPagerDesktopController` depends on `TabPagerDesktopStateStore`, not `TabPagerDesktopModel`; controller tests can use a fake state store.
+- Optional/test-only navigation convenience wrappers were removed; typed navigation/activation results are the canonical internal APIs.
 
-## Remaining Follow-Up Work
+## Remaining
 
-- P2 controller orchestration, source diagnostics observability, activation planning, and wheel context scoping remain open.
-- Source diagnostics are now directly readable from `TaskManagerDesktopSource`, and unchanged repeated diagnostic reads no longer duplicate warnings, but the generic `TabPagerDesktopSource` contract, controller/backend state, explicit diagnostic channel, and getter-side logging cleanup remain open.
-- Direct activation result classification, navigation-result translation, and navigation-target desktop command planning are now pure, and controller tests no longer require the Qt model, but wheel/context activation planning and controller/backend integration-style activation coverage remain open.
-- Wheel context scoping is now characterized but not resolved; a future checkpoint still needs to decide whether preserving pending wheel deltas across navigation context changes is intended or should be replaced with explicit reset/drop behavior.
-- Wrapping no longer leaks through the public backend/QML API, desktop snapshot state, or desktop source abstraction.
-- Package identity metadata is now checked for drift, but changing package identity or version still requires editing repeated declarations instead of one authoritative source.
-- P2/P3 API cleanup items remain open: wheel input adapter extraction, layout constant consolidation, package metadata de-duplication, and `TabPagerVirtualDesktopInfo` boundary clarification.
+- Decide and document whether pending wheel deltas should persist across navigation context changes, or change the navigator to reset/drop stale partial deltas.
+- Extract wheel input mapping/sign handling from QML and navigator state if the dedicated wheel adapter remains the desired end state.
+- Make source diagnostics observable through the generic source/controller/backend contract and remove diagnostic reporting from the getter-shaped `sourceState()` path.
+- Reduce remaining controller orchestration by moving any residual activation/wheel decision logic into pure planners.
+- Consolidate layout constants such as `desktopGap` and minimum extents.
+- Deduplicate package identity, version, QML module URI, and install-path metadata beyond the current drift tests.
+- Clarify whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
+- Decide and document whether `TabPagerBackend`/model code is an intentional QML view-model boundary, especially for label formatting and `labelFont`.
 
-## Deviations
+## Verification Baseline
 
-- This checkpoint did not broaden into controller/state-store refactoring; the design review explicitly calls for incremental seams, and the normalized snapshot boundary was the highest-priority safe P1 change.
-- The Nix CTest wrapper failed during Nix evaluation after the focused targets had built successfully; direct CTest runs against the same build tree were used as verification for this checkpoint.
-- The current target document has no remaining P0/P1 findings, so this checkpoint addressed the smallest remaining P2 item with direct proof instead of inventing a higher-priority task.
-- This checkpoint did not add subprocess death tests for fatal paths because the current Qt test harness has no existing crash-test seam; valid-path regression coverage was run, and the fatal branches are direct runtime guards before dereference or QML registration.
-- This checkpoint intentionally did not change wheel behavior because the design review marks context scoping as uncertain; it records the current behavior so a later behavior change can be deliberate and reviewable.
-- This checkpoint intentionally did not remove diagnostic logging from `sourceState()` or add a generic source diagnostic signal; it only creates a structured read seam that later lifecycle/logging work can use.
-- This checkpoint intentionally used Qt message-handler capture to prove the existing log behavior because no explicit diagnostic sink or signal exists yet; the target document still keeps the requirement for future diagnostic tests without global Qt message interception.
-- The direct activation planner checkpoint intentionally limited extraction to direct index activation; navigation-result translation was handled by a later checkpoint, while wheel/context activation planning remains open.
-- This checkpoint intentionally moved only navigation-result translation, not wheel accumulation or navigation target calculation; those remain separate pending seams because the design review treats wheel context scoping as uncertain.
+- Recent full `ctest --test-dir build --output-on-failure` passed during the design-review refactor sequence.
+- The latest design-review document update passed pre-commit hooks, including `reuse`, `rumdl`, `treefmt`, `typos`, and `cog verify`.
+- Historical expected failures and focused target runs are intentionally omitted here; use the relevant commits for exact verification history.
+
+## Notes
+
+- Keep design-review work incremental; do not rewrite the widget architecture in one pass.
+- Do not preserve pre-release compatibility unless explicitly requested.
+- Do not remove `TabPagerVirtualDesktopInfo` until replacement coverage preserves TaskManager signal wiring behavior.
+- Do not move label formatting to QML just because it is presentation-related; first decide whether the C++ model/backend is intentionally a view-model layer.
+- Do not expose diagnostics to QML before there is a concrete display or configuration requirement.
