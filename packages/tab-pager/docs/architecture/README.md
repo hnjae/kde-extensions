@@ -29,6 +29,12 @@ TaskManager diagnostics are transition-based: unchanged malformed source data sh
 
 Do not expose source diagnostics through the QML-facing backend until there is a concrete display or configuration requirement.
 
+## Package Metadata Boundary
+
+`package/metadata.json` owns the package identity and release version used by Nix packaging.
+
+Nix packaging should derive `pluginId`, `version`, and dependent install-path metadata from package metadata rather than repeating the same literals.
+
 ## Wheel Navigation Boundary
 
 Wheel input handling is split by responsibility: a QML-side wheel input helper normalizes Qt wheel events into raw deltas for the backend, `TabPagerWheelNavigation` owns pending-delta accumulation and conversion from complete wheel steps to semantic desktop offsets, and `TabPagerDesktopNavigator` owns target selection for semantic offsets under the current wrapping policy.
