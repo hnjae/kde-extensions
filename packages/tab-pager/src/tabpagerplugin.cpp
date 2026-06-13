@@ -9,7 +9,12 @@
 #include <QtGlobal>
 
 void TabPagerPlugin::registerTypes(const char *uri) {
-  Q_ASSERT(uri == QByteArrayView(TABPAGER_QML_URI));
+  const QByteArrayView actualUri(uri != nullptr ? uri : "");
+  if (actualUri != QByteArrayView(TABPAGER_QML_URI)) {
+    qFatal("TabPagerPlugin registered with unexpected QML URI: expected '%s', "
+           "actual '%s'",
+           TABPAGER_QML_URI, uri != nullptr ? uri : "<null>");
+  }
 
   qmlRegisterType<TabPagerQmlBackend>(uri, 1, 0, "TabPagerBackend");
 }

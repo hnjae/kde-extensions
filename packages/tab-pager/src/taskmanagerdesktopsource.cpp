@@ -7,8 +7,8 @@
 #include "taskmanagerdesktopmapper.h"
 
 #include <QDebug>
+#include <QtGlobal>
 
-#include <cassert>
 #include <utility>
 
 namespace {
@@ -65,7 +65,11 @@ TaskManagerDesktopSource::TaskManagerDesktopSource(QObject *parent)
 TaskManagerDesktopSource::TaskManagerDesktopSource(
     std::unique_ptr<TabPagerVirtualDesktopInfo> info, QObject *parent)
     : TabPagerDesktopSource(parent), m_info(std::move(info)) {
-  assert(m_info != nullptr);
+  if (m_info == nullptr) {
+    qFatal("TaskManagerDesktopSource requires a non-null "
+           "TabPagerVirtualDesktopInfo");
+  }
+
   connectDesktopInfo();
 }
 

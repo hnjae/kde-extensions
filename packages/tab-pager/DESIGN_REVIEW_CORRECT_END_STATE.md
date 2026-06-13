@@ -68,22 +68,6 @@ Suggested migration: Add tests for half-step input before current desktop appear
 
 Acceptance criteria: Tests define pending wheel behavior across current desktop changes, desktop count changes, wrapping changes, no-current states, and stopped-at-edge states. No activation is caused solely by stale partial wheel delta unless explicitly specified.
 
-### Finding: Fatal internal invariants rely on assertions only
-
-Priority: P2
-
-Evidence: `TaskManagerDesktopSource` checks `m_info != nullptr` with `assert` before dereferencing it; `TabPagerDesktopController` checks `m_source != nullptr` with `assert` before connecting and reading source state; `src/tabpagerplugin.cpp` validates the QML URI with `Q_ASSERT`.
-
-Current state: Programmer-error invariants are checked for debug builds, but production behavior is not explicit if the invariant is violated.
-
-Design concern: In non-debug builds, null dependencies can degrade into crashes without a clear categorized diagnostic, and URI mismatch can proceed without logging the expected and actual values.
-
-Correct end state: Fatal internal invariants should fail explicitly with categorized critical logs or deterministic fatal behavior. Assertions can remain as developer aids, but not as the only production behavior.
-
-Suggested migration: Replace assertion-only checks with runtime guards plus `qCCritical`/`qFatal`, or with an explicit unavailable backend state if recovery is possible.
-
-Acceptance criteria: Null source/info construction fails deterministically with a clear diagnostic or explicit unavailable state. URI mismatch logs expected and actual URI before failing. Constructor guard behavior is covered where practical.
-
 ## Cohesion, Coupling, and Ownership Problems
 
 ### Finding: `TabPagerDesktopController` owns too many responsibilities
@@ -307,7 +291,7 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 1. Add characterization tests around current behavior for wheel pending deltas across context changes, source diagnostics, and QML role exposure.
 2. Isolate core domain logic from external effects by extracting activation planning and wheel input mapping from `TabPagerDesktopController`/QML event handlers.
 3. Clarify ownership boundaries by separating desktop source state from navigation settings and by inserting a small state store between controller logic and the Qt list model.
-4. Improve error semantics and observability by making source diagnostics stateful/observable, removing getter-side logging, clarifying activation request versus confirmation, and replacing assertion-only fatal invariants with deterministic diagnostics.
+4. Improve error semantics and observability by making source diagnostics stateful/observable, removing getter-side logging, and clarifying activation request versus confirmation.
 5. Remove or simplify premature abstractions by narrowing public QML roles, removing unused/convenience navigation wrappers, and deciding whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a test seam.
 
 ## Things Not To Change Yet
@@ -336,6 +320,6 @@ Logic Placement / Flow Readability Agent: Reported logging from `sourceState()` 
 
 Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch tests, effectful activation-controller tests, and getter-side diagnostic logging. Layout/input testability and activation planning were kept as P2. Getter-side diagnostics were merged into the source diagnostics finding.
 
-Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics and fatal assertions were kept as P2. Activation confirmation was downgraded from P1 to P2 because the immediate issue is naming unless confirmed activation is surfaced.
+Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics were kept as P2. Activation confirmation was downgraded from P1 to P2 because the immediate issue is naming unless confirmed activation is surfaced.
 
 Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles and wrapping leakage were kept as P2. Parallel navigation APIs and adapter-seam clarity were kept as P3. No broad rewrite recommendation was accepted.

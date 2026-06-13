@@ -5,7 +5,8 @@
 
 #include "tabpagerlogging.h"
 
-#include <cassert>
+#include <QtGlobal>
+
 #include <optional>
 #include <utility>
 
@@ -93,7 +94,11 @@ TabPagerDesktopController::activateByWheelDeltaWithResult(int delta) {
 }
 
 void TabPagerDesktopController::initializeSource() {
-  assert(m_source != nullptr);
+  if (m_source == nullptr) {
+    qFatal("TabPagerDesktopController requires a non-null "
+           "TabPagerDesktopSource");
+  }
+
   connectSource();
   reloadSourceState();
 }
