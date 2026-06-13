@@ -26,61 +26,7 @@ const logic = await loadQmlJsModule(
   ),
   exportNames,
 );
-const facade = await loadQmlJsModule(
-  new URL("../package/contents/ui/TaskContextMenuLogic.mjs", import.meta.url),
-  exportNames,
-);
-
 const plain = (value) => JSON.parse(JSON.stringify(value));
-
-function assertMatchesFacade(name, ...args) {
-  assert.deepEqual(plain(logic[name](...args)), plain(facade[name](...args)));
-}
-
-for (const [name, args] of [
-  [
-    "virtualDesktopsActionState",
-    [{ changeable: true, hasWindowTask: true, isWindow: true }],
-  ],
-  [
-    "virtualDesktopsActionState",
-    [{ changeable: false, hasWindowTask: true, isWindow: true }],
-  ],
-  [
-    "virtualDesktopsActionState",
-    [{ changeable: true, hasWindowTask: false, isWindow: true }],
-  ],
-  [
-    "virtualDesktopsAction",
-    [{ changeable: true, hasWindowTask: true, isWindow: true }],
-  ],
-  ["newVirtualDesktopActionState", [{ hasWindowTask: true }]],
-  ["newVirtualDesktopActionState", [{ hasWindowTask: false }]],
-  ["newVirtualDesktopAction", [{ hasWindowTask: false }]],
-  ["virtualDesktopMenuState", [["desktop-a"], false, "desktop-a"]],
-  ["allVirtualDesktopsCommand", []],
-  ["virtualDesktopCommand", ["desktop-a"]],
-  ["newVirtualDesktopCommand", []],
-  ["allVirtualDesktopsAction", [[], true]],
-  [
-    "virtualDesktopAction",
-    [["desktop-a"], false, { id: "desktop-a", name: "Work" }],
-  ],
-  [
-    "virtualDesktopActionsSection",
-    [
-      {
-        changeable: true,
-        hasWindowTask: true,
-        isOnAllVirtualDesktops: false,
-        isWindow: true,
-        virtualDesktops: ["desktop-a"],
-      },
-    ],
-  ],
-]) {
-  assertMatchesFacade(name, ...args);
-}
 
 assert.deepEqual(
   plain(

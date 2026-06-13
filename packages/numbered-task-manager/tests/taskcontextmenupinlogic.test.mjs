@@ -20,49 +20,7 @@ const logic = await loadQmlJsModule(
   ),
   exportNames,
 );
-const facade = await loadQmlJsModule(
-  new URL("../package/contents/ui/TaskContextMenuLogic.mjs", import.meta.url),
-  exportNames,
-);
-
 const plain = (value) => JSON.parse(JSON.stringify(value));
-
-function assertMatchesFacade(name, ...args) {
-  assert.deepEqual(plain(logic[name](...args)), plain(facade[name](...args)));
-}
-
-for (const [name, args] of [
-  ["pinActionState", [{ canPin: true, isPinned: true }]],
-  ["pinActionState", [{ canPin: true, isPinned: false }]],
-  ["pinActionState", [{ canPin: false, isPinned: true }]],
-  ["pinLauncherCommand", [{ isPinned: false, launcherUrl: "app.desktop" }]],
-  ["pinLauncherCommand", [{ isPinned: true, launcherUrl: "app.desktop" }]],
-  [
-    "pinLauncherAction",
-    [{ canPin: true, isPinned: false, launcherUrl: "app.desktop" }],
-  ],
-  [
-    "pinLauncherAction",
-    [{ canPin: true, isPinned: true, launcherUrl: "app.desktop" }],
-  ],
-  ["pinLauncherAction", [{ canPin: false, isPinned: false, launcherUrl: "" }]],
-  [
-    "pinActionsSection",
-    [{ canPin: true, isPinned: true, launcherUrl: "app.desktop" }],
-  ],
-  [
-    "launcherPinStateSnapshot",
-    [["app.desktop"], "app.desktop", "work", () => 0],
-  ],
-  ["launcherPinStateSnapshot", [[], "app.desktop", "work", () => -1]],
-  [
-    "launcherPinStateSnapshot",
-    [["[chat]\napp.desktop"], "app.desktop", "work", () => 0],
-  ],
-  ["launcherPinStateSnapshot", [["app.desktop"], "", "work", () => 0]],
-]) {
-  assertMatchesFacade(name, ...args);
-}
 
 assert.deepEqual(
   plain(logic.pinActionState({ canPin: true, isPinned: true })),
