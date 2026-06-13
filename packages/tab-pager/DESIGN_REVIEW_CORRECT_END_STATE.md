@@ -32,22 +32,6 @@ Suggested migration: Continue moving decision logic toward pure planners and kee
 
 Acceptance criteria: Controller tests focus on state/settings synchronization, planner delegation, outcome reporting, logging, and source command execution. Qt model notification semantics stay inside `TabPagerDesktopModel`.
 
-### Finding: Two adapter seams wrap the same LibTaskManager dependency
-
-Priority: P3
-
-Evidence: `TabPagerVirtualDesktopInfo` abstracts LibTaskManager-style getters and signals; its only production implementation forwards one-to-one to `TaskManager::VirtualDesktopInfo`; `TaskManagerDesktopSource` is a second adapter that owns `std::unique_ptr<TabPagerVirtualDesktopInfo>`; the only non-production `TabPagerVirtualDesktopInfo` implementation is the source test fake.
-
-Current state: There is a domain source abstraction (`TabPagerDesktopSource`) and a lower-level virtual desktop info abstraction (`TabPagerVirtualDesktopInfo`). The lower-level abstraction mainly supports source tests.
-
-Design concern: The provider boundary is unclear. A future source provider must choose whether to implement `TabPagerDesktopSource`, `TabPagerVirtualDesktopInfo`, or both.
-
-Correct end state: Have one explicit provider boundary. Either collapse `TabPagerVirtualDesktopInfo` into `TaskManagerDesktopSource` and test raw mapping through pure functions, or rename/document it as a narrow LibTaskManager port with no domain responsibility.
-
-Suggested migration: If no second raw provider is planned, remove `TabPagerVirtualDesktopInfo` and rely on mapper tests plus fake `TabPagerDesktopSource` at controller/backend level. If keeping it, rename it to a LibTaskManager-specific port and document that only `TaskManagerDesktopSource` should depend on it.
-
-Acceptance criteria: Adding a non-LibTaskManager source requires implementing one documented interface. Tests still cover raw mapping and signal wiring without duplicating provider concepts.
-
 ## Recommended Correct End-State Architecture
 
 Ownership boundaries: A source adapter boundary ingests external TaskManager/Plasma state and produces desktop state plus explicit diagnostics. A desktop state store owns the current desktop state and transition planning. A Qt model and backend form an intentional QML view-model boundary that owns row projection, label formatting, QML roles, model notifications, facade properties, and the fixed-width label font. Navigation, activation, and wheel-input helpers own pure decisions. A controller composes state, navigation settings, and source commands. QML owns rendering and event delivery.
@@ -68,9 +52,8 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 
 ## Suggested Refactoring Sequence
 
-1. Clarify the remaining ownership boundary for whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
-2. Improve error semantics by clarifying activation request versus confirmation.
-3. Keep reducing `TabPagerDesktopController` only when new behavior would otherwise add decision logic there.
+1. Improve error semantics by clarifying activation request versus confirmation.
+2. Keep reducing `TabPagerDesktopController` only when new behavior would otherwise add decision logic there.
 
 ## Things Not To Change Yet
 
@@ -78,7 +61,7 @@ Do not rewrite the entire widget into a new architecture. The current code is sm
 
 Do not introduce migrations or backward-compatibility layers for pre-release internal formats unless specifically requested.
 
-Do not remove `TabPagerVirtualDesktopInfo` until a replacement test strategy preserves TaskManager signal wiring coverage.
+Do not remove `TaskManagerVirtualDesktopInfoPort` until a replacement test strategy preserves TaskManager signal wiring coverage.
 
 Do not move label formatting to QML just because it is presentation-related. The current C++ backend/model stack is an intentional QML view-model boundary.
 
@@ -98,4 +81,4 @@ Testability Agent: Reported QML-heavy layout tests, Quick-window input dispatch 
 
 Error Handling / Observability Agent: Reported activation success before confirmation, source diagnostics as log-only, and assertion-only fatal invariants. Source diagnostics now have generic source/controller health observability while provider-specific details remain provider-local. Activation result reporting now uses request-oriented naming; confirmation/timeout semantics remain optional future work unless confirmed activation is surfaced.
 
-Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles were narrowed and the remaining row projection is documented as an intentional QML view-model boundary. Wrapping leakage was removed because wrapping is no longer public backend/QML API and no longer reloads desktop source state. Parallel navigation APIs were removed because optional/test-only wrappers are gone; the remaining silent commands are QML-facing entry points over result-returning internals. Adapter-seam clarity remains P3.
+Deletion / Modularity / Abstraction Agent: Reported public row roles exposing internal fields, wrapping leaking through public API, parallel navigation APIs, and two LibTaskManager adapter seams. Public row roles were narrowed and the remaining row projection is documented as an intentional QML view-model boundary. Wrapping leakage was removed because wrapping is no longer public backend/QML API and no longer reloads desktop source state. Parallel navigation APIs were removed because optional/test-only wrappers are gone; the remaining silent commands are QML-facing entry points over result-returning internals. The LibTaskManager seam is now named and documented as a TaskManager-specific port with no domain-provider responsibility.

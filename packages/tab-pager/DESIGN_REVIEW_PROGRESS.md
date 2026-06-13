@@ -45,10 +45,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - Activation result-name mapping now lives in a pure helper and is directly covered without backend/source fixtures.
 - Backend activation tests now cover facade forwarding and no longer repeat the lower-level controller/navigation/wheel activation matrix.
 - Controller navigation activation uses the activation planner's target-index plan for state-store lookup instead of reading navigation-result sentinel values directly.
+- The LibTaskManager raw-info seam is named `TaskManagerVirtualDesktopInfoPort` and documented as a TaskManager-specific port; domain providers implement `TabPagerDesktopSource` and `TabPagerNavigationSettingsSource` directly.
 
 ## Remaining
 
-- Clarify whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a source-test seam.
 - Keep controller orchestration from growing when new source synchronization, navigation, or activation behavior is added.
 
 ## Verification Baseline
@@ -59,19 +59,19 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: consolidated QML layout constants under the layout-metrics owner.
-- Files changed: `package/contents/ui/PagerLayoutMetricsLogic.js`, `package/contents/ui/PagerLayoutMetrics.qml`, `package/contents/ui/PagerDesktopStrip.qml`, `package/contents/ui/TabPagerView.qml`, `tests/tabpagerlayoutmetricslogic_test.cpp`, `tests/tabpagerlayoutmetrics_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: desktop gap remains `1`; fill minimum extent remains `1`; unset preferred extent remains `-1`; horizontal/vertical layout sizing, click dispatch, and wheel dispatch remain unchanged.
-- Target-doc cleanup: removed only the resolved layout-constants finding and its direct sequence note from `DESIGN_REVIEW_CORRECT_END_STATE.md`; kept remaining controller orchestration and LibTaskManager adapter-boundary findings.
-- Target-doc edits: no unresolved controller or adapter-boundary design-review finding was removed.
-- Commands passed: `ctest --test-dir build --output-on-failure -R 'tabpagerlayoutmetricslogic|tabpagerlayoutmetrics|tabpagerview'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" -c prek run --hook-stage pre-commit --files packages/tab-pager/package/contents/ui/PagerLayoutMetricsLogic.js packages/tab-pager/package/contents/ui/PagerLayoutMetrics.qml packages/tab-pager/package/contents/ui/PagerDesktopStrip.qml packages/tab-pager/package/contents/ui/TabPagerView.qml packages/tab-pager/tests/tabpagerlayoutmetricslogic_test.cpp packages/tab-pager/tests/tabpagerlayoutmetrics_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
+- Checkpoint: clarified the LibTaskManager adapter seam as a TaskManager-specific port.
+- Files changed: `docs/architecture/README.md`, `src/taskmanagervirtualdesktopinfoport.h`, `src/taskmanagervirtualdesktopinfoport.cpp`, `src/taskmanagerdesktopsource.h`, `src/taskmanagerdesktopsource.cpp`, `tests/taskmanagerdesktopsource_test.cpp`, `CMakeLists.txt`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: TaskManager raw-state mapping, diagnostic reporting/logging, source-state signal forwarding, navigation-wrapping signal forwarding, and valid-only activation forwarding remain unchanged.
+- Target-doc cleanup: removed only the resolved LibTaskManager adapter-boundary finding and its direct sequence note from `DESIGN_REVIEW_CORRECT_END_STATE.md`; kept the controller orchestration finding.
+- Target-doc edits: no unresolved controller design-review finding was removed.
+- Commands passed: `cmake --build build --target taskmanagerdesktopsource_test tabpagerplugin`; `ctest --test-dir build --output-on-failure -R 'taskmanagerdesktopsource'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; pre-commit hooks run by commit, including `reuse`, `rumdl`, `treefmt`, `typos`, and `cog verify`.
 - Commands failed: none.
-- Deviations: no public backend/model/source/controller API changed.
-- Ambiguity: no blocking ambiguity found.
+- Deviations: no public backend/model/source/controller API changed; the lower-level TaskManager test seam was kept rather than collapsed.
+- Ambiguity: no blocking ambiguity found after accepting that no P0/P1 findings remain and the next safe checkpoint is P3.
 
 ## Notes
 
 - Keep design-review work incremental; do not rewrite the widget architecture in one pass.
 - Do not preserve pre-release compatibility unless explicitly requested.
-- Do not remove `TabPagerVirtualDesktopInfo` until replacement coverage preserves TaskManager signal wiring behavior.
+- Do not remove `TaskManagerVirtualDesktopInfoPort` until replacement coverage preserves TaskManager signal wiring behavior.
 - Do not expose diagnostics to QML before there is a concrete display or configuration requirement.
