@@ -153,6 +153,14 @@ if(BUILD_TESTING)
         TABPAGER_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         TABPAGER_QML_URI="${QML_MODULE_URI}"
     )
+    add_tabpager_test(tabpagermetadata tests/tabpagermetadata_test.cpp)
+    target_compile_definitions(tabpagermetadata_test PRIVATE
+        TABPAGER_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+        TABPAGER_PLASMOID_ID="${PLASMOID_ID}"
+        TABPAGER_VERSION="${PROJECT_VERSION}"
+        TABPAGER_QML_URI="${QML_MODULE_URI}"
+        TABPAGER_QML_MODULE_DIR="${QML_MODULE_DIR}"
+    )
     add_tabpager_test(tabpagerbackend tests/tabpagerbackend_test.cpp
         tests/tabpagerbackendtesthelpers.h
     )

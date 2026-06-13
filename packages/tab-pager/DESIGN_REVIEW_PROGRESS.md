@@ -21,6 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - P2 navigation activation planner seam: extended `TabPagerActivationPlanner` to translate `TabPagerDesktopNavigationResult` into activation plans, then changed `TabPagerDesktopController::activateNavigationTarget()` to delegate no-op result translation while still executing target indexes through the existing direct activation path. Files changed: `src/tabpageractivationplanner.h`, `src/tabpageractivationplanner.cpp`, `src/tabpagerdesktopcontroller.cpp`, `tests/tabpageractivationplanner_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
 - P2 public model role narrowing: narrowed `TabPagerDesktopModel`'s public role table to `label` and `active`, while keeping `desktopId`, `name`, and `number` in internal row state for activation lookup, label generation, and row-state tests. Files changed: `src/tabpagerdesktoprow.cpp`, `tests/tabpagerdesktoprow_test.cpp`, `tests/tabpagerdesktopmodel_test.cpp`, `tests/tabpagerbackend_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
 - P2 public wrapping API removal: removed `navigationWrappingAround` from `TabPagerBackend` and `src/tabpagerplugin.qmltypes`, keeping wrapping behavior internal to the controller/source path and verified through activation outcomes. Files changed: `src/tabpagerbackend.h`, `src/tabpagerbackend.cpp`, `src/tabpagerplugin.qmltypes`, `tests/tabpagerbackend_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
+- P2 package metadata drift check: added `tabpagermetadata` CTest coverage verifying CMake identity values agree with `package/metadata.json`, `src/qmldir`, `src/tabpagerplugin.qmltypes`, Nix package metadata, Nix check paths, and CMake install destinations. Files changed: `CMakeLists.txt`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`, and `DESIGN_REVIEW_CORRECT_END_STATE.md`.
 
 ## Verification
 
@@ -71,6 +72,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - `just format` passed and reformatted one touched file.
 - `cmake --build build --target tabpagerbackend_test tabpagerqmltypes_test tabpagerdesktopcontroller_test tabpagerview_test && ctest --test-dir build --output-on-failure -R '^(tabpagerbackend|tabpagerqmltypes|tabpagerdesktopcontroller|tabpagerview)$'` passed after formatting.
 - `ctest --test-dir build --output-on-failure` passed.
+- `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R '^tabpagermetadata$'` passed after adding the metadata agreement check.
+- `cmake --build build --target tabpagermetadata_test tabpagerqmltypes_test && ctest --test-dir build --output-on-failure -R '^(tabpagermetadata|tabpagerqmltypes)$'` passed.
+- `just format` passed and reformatted `tests/tabpagermetadata_test.cpp`.
+- `cmake --build build --target tabpagermetadata_test tabpagerqmltypes_test && ctest --test-dir build --output-on-failure -R '^(tabpagermetadata|tabpagerqmltypes)$'` passed after formatting.
+- `ctest --test-dir build --output-on-failure` passed.
+- `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R '^tabpagermetadata$'` passed after adding install-path assertions.
+- `just format` passed and reformatted `tests/tabpagermetadata_test.cpp`.
+- `cmake --build build --target tabpagermetadata_test tabpagerqmltypes_test && ctest --test-dir build --output-on-failure -R '^(tabpagermetadata|tabpagerqmltypes)$'` passed after final formatting.
+- `ctest --test-dir build --output-on-failure` passed.
 - `cmake --build build --target tabpagerdesktoprow_test tabpagerbackend_test && ctest --test-dir build --output-on-failure -R '^(tabpagerdesktoprow|tabpagerbackend)$'` failed as expected before implementation because `desktopId`, `name`, and `number` were still exposed through `roleNames()`, `data()`, and `dataChanged()` role lists.
 - `cmake --build build --target tabpagerdesktoprow_test tabpagerdesktopmodel_test tabpagerdesktopcontroller_test tabpagerbackend_test tabpagerview_test && ctest --test-dir build --output-on-failure -R '^(tabpagerdesktoprow|tabpagerdesktopmodel|tabpagerdesktopcontroller|tabpagerbackend|tabpagerview)$'` failed once after implementation because `tabpagerdesktopmodel_test` still expected the old public `name` role in an update emission.
 - `cmake --build build --target tabpagerdesktoprow_test tabpagerdesktopmodel_test tabpagerdesktopcontroller_test tabpagerbackend_test tabpagerview_test && ctest --test-dir build --output-on-failure -R '^(tabpagerdesktoprow|tabpagerdesktopmodel|tabpagerdesktopcontroller|tabpagerbackend|tabpagerview)$'` passed after updating the model expectation.
@@ -91,6 +101,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - Direct activation result classification and navigation-result translation are now pure, but wheel/context activation planning, controller dependency on the Qt model, and controller/backend integration-style activation coverage remain open.
 - Wheel context scoping is now characterized but not resolved; a future checkpoint still needs to decide whether preserving pending wheel deltas across navigation context changes is intended or should be replaced with explicit reset/drop behavior.
 - Wrapping no longer leaks through the public backend/QML API, but source-state/navigation-setting separation remains open.
+- Package identity metadata is now checked for drift, but changing package identity or version still requires editing repeated declarations instead of one authoritative source.
 - P2/P3 API cleanup items remain open: wheel input adapter extraction, parallel navigation API cleanup, layout constant consolidation, package metadata de-duplication, and `TabPagerVirtualDesktopInfo` boundary clarification.
 
 ## Deviations

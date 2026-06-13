@@ -24,13 +24,13 @@ Priority: P2
 
 Evidence: `CMakeLists.txt` defines project version, `QML_MODULE_URI`, and `PLASMOID_ID`; `package/metadata.json` repeats the ID and version; `src/qmldir` repeats the QML module URI; `src/tabpagerplugin.qmltypes` repeats the module URI and type version; `nix/module/package.nix` repeats `pluginId` and `version`; `nix/lib/tab-pager-ci.nix` hard-codes the installed QML module path.
 
-Current state: One release/install contract is declared across CMake, KPackage metadata, QML metadata, and Nix packaging/check code.
+Current state: One release/install contract is declared across CMake, KPackage metadata, QML metadata, and Nix packaging/check code. A metadata drift test now verifies the repeated declarations agree.
 
 Design concern: A mismatch can produce a package whose Plasma ID, install destination, QML import URI, qmltypes export, and Nix metadata disagree.
 
 Correct end state: One source should own package identity, version, QML module URI, and module path. Other files should be generated, configured, or checked against it.
 
-Suggested migration: Pick an authority, likely CMake variables or `package/metadata.json`, then generate/configure `qmldir`, qmltypes export metadata, package metadata fragments, and Nix check paths from that authority or verify agreement in CI.
+Suggested migration: Pick an authority, likely CMake variables or `package/metadata.json`, then generate/configure `qmldir`, qmltypes export metadata, package metadata fragments, and Nix check paths from that authority.
 
 Acceptance criteria: Changing package ID or version requires editing one authoritative declaration. CI verifies that `package/metadata.json`, installed plasmoid path, `qmldir`, qmltypes export, and Nix checks agree.
 
