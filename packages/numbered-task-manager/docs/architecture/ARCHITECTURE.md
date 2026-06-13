@@ -55,11 +55,11 @@ in `SPEC.md`.
   ordering, and fallback labels should be tested helper output rather than
   inline menu loops.
 - Keep context-menu task-activity checked-state policy in
-  `TaskContextMenuLogic.mjs`. Task activity mutation decisions remain in
-  `TaskActivityLogic.mjs`, but menu-facing all-activities and per-activity
-  checked predicates should come from tested helper output. QML menu items
-  should consume that output directly instead of adding menu-local
-  checked-state wrapper functions.
+  `TaskContextMenuTaskActivityLogic.mjs`. Task activity mutation decisions
+  remain in `TaskActivityLogic.mjs`, while `TaskContextMenuLogic.mjs` composes
+  the focused helper output into the full menu sections. QML menu items should
+  consume that output directly instead of adding menu-local checked-state
+  wrapper functions.
 - Keep context-menu virtual-desktop checked-state policy in
   `VirtualDesktopLogic.mjs`. The menu may still request `TasksModel`
   virtual-desktop mutations directly, while `TaskContextMenuLogic.mjs`
