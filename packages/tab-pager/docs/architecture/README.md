@@ -31,9 +31,9 @@ Do not expose source diagnostics through the QML-facing backend until there is a
 
 ## Package Metadata Boundary
 
-`package/metadata.json` owns the package identity and release version used by Nix packaging.
+`package/metadata.json` owns the package identity and release version used by build and packaging metadata.
 
-Nix packaging should derive `pluginId`, `version`, and dependent install-path metadata from package metadata rather than repeating the same literals.
+CMake and Nix packaging should derive package ID, version, QML module URI/path, and dependent install-path metadata from package metadata rather than repeating the same literals.
 
 ## Layout Metrics Boundary
 
