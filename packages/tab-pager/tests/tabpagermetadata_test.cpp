@@ -89,14 +89,22 @@ void TabPagerMetadataTest::nixMetadataMatchesCMakeIdentity() {
   const QString ciNix =
       readSourceFile(QStringLiteral("nix/lib/tab-pager-ci.nix"));
 
-  QCOMPARE(firstCapturedValue(packageNix,
-                              QStringLiteral("pluginId\\s*=\\s*\"([^\"]+)\""),
-                              QStringLiteral("Nix pluginId")),
-           QStringLiteral(TABPAGER_PLASMOID_ID));
-  QCOMPARE(firstCapturedValue(packageNix,
-                              QStringLiteral("version\\s*=\\s*\"([^\"]+)\""),
-                              QStringLiteral("Nix version")),
-           QStringLiteral(TABPAGER_VERSION));
+  QVERIFY2(packageNix.contains(QStringLiteral(
+               "packageMetadata = builtins.fromJSON "
+               "(builtins.readFile ../../package/metadata.json);")),
+           "Nix package metadata should be read from package/metadata.json");
+  QVERIFY2(packageNix.contains(
+               QStringLiteral("pluginId = packageMetadata.KPlugin.Id;")),
+           "Nix pluginId should be derived from package metadata");
+  QVERIFY2(packageNix.contains(
+               QStringLiteral("version = packageMetadata.KPlugin.Version;")),
+           "Nix version should be derived from package metadata");
+  QVERIFY2(!packageNix.contains(
+               QStringLiteral("pluginId = \"" TABPAGER_PLASMOID_ID "\";")),
+           "Nix pluginId should not repeat the concrete package id");
+  QVERIFY2(!packageNix.contains(
+               QStringLiteral("version = \"" TABPAGER_VERSION "\";")),
+           "Nix version should not repeat the concrete package version");
   QVERIFY2(packageNix.contains(QStringLiteral(
                "qmlModuleDir = lib.replaceStrings [ \".\" ] [ \"/\" ] "
                "pluginId;")),

@@ -34,6 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - Wheel accumulation and sign conversion now live in `TabPagerWheelNavigation`; `TabPagerDesktopNavigator` owns only semantic offset target selection and wrapping policy.
 - QML wheel-event normalization now lives in `TabPagerWheelInput.js` and is directly tested without Quick-window event dispatch.
 - Nix package metadata now derives `qmlModuleDir` from `pluginId`, exposes it through package passthru, and uses it for QML install-path checks.
+- Nix package metadata now derives `pluginId` and `version` from `package/metadata.json`.
 
 ## Remaining
 
@@ -50,15 +51,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: derived the Nix QML module path from `pluginId` and reused it in package install-path checks.
-- Files changed: `nix/module/package.nix`, `nix/lib/tab-pager-ci.nix`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: package `pluginId` remains `io.github.hnjae.tabpager`; the derived QML module path remains `io/github/hnjae/tabpager`; package version, CMake identity, KPackage metadata, `qmldir`, qmltypes export, and installed QML file checks remain semantically unchanged.
-- Target-doc cleanup: removed the now-obsolete statement that `nix/lib/tab-pager-ci.nix` repeats the concrete QML module path, recorded the current Nix-derived module path, and kept the broader P2 package identity finding open because CMake, KPackage metadata, QML metadata, and Nix still do not share one authoritative declaration.
+- Checkpoint: derived Nix `pluginId` and `version` from `package/metadata.json`.
+- Files changed: `docs/architecture/README.md`, `nix/module/package.nix`, `tests/tabpagermetadata_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: package `pluginId` remains `io.github.hnjae.tabpager`; package version remains `0.1.0`; the derived QML module path remains `io/github/hnjae/tabpager`; CMake identity, KPackage metadata, `qmldir`, qmltypes export, and installed QML file checks remain semantically unchanged.
+- Target-doc cleanup: removed the now-obsolete statement that `nix/module/package.nix` repeats concrete `pluginId` and `version` literals, recorded the current Nix package-metadata derivation, and kept the broader P2 package identity finding open because CMake, KPackage metadata, `qmldir`, and qmltypes still do not share one authoritative declaration.
 - Target-doc edits: no architectural principles were removed; only completed Nix-specific tactical evidence was updated.
-- Commands passed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata`; `nix eval .#packages.x86_64-linux.tab-pager.qmlModuleDir` from the repository root; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/nix/module/package.nix packages/tab-pager/nix/lib/tab-pager-ci.nix packages/tab-pager/tests/tabpagermetadata_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
-- Commands failed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the metadata guard and before implementation because Nix did not yet derive or expose `qmlModuleDir`.
-- Deviations: this checkpoint intentionally did not choose a single repository-wide authority for package ID/version or generate CMake/QML/package metadata; that remains unresolved P2 work.
-- Ambiguity: no blocking ambiguity found. The target explicitly called out repeated install-path metadata, and this checkpoint removes the Nix CI hard-coded QML module path without changing installed paths.
+- Architecture-doc edits: added a `Package Metadata Boundary` note that `package/metadata.json` owns package identity and release version for Nix packaging.
+- Commands passed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata`; `nix eval .#packages.x86_64-linux.tab-pager.pluginId && nix eval .#packages.x86_64-linux.tab-pager.version && nix eval .#packages.x86_64-linux.tab-pager.qmlModuleDir` from the repository root; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/docs/architecture/README.md packages/tab-pager/nix/module/package.nix packages/tab-pager/tests/tabpagermetadata_test.cpp packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
+- Commands failed: `cmake --build build --target tabpagermetadata_test && ctest --test-dir build --output-on-failure -R tabpagermetadata` failed after adding the metadata guard and before implementation because Nix did not yet read `package/metadata.json`; the first pre-commit run failed because `treefmt` reformatted `tests/tabpagermetadata_test.cpp`, then passed after rerunning the focused metadata test.
+- Deviations: this checkpoint intentionally did not choose a single repository-wide authority for CMake, KPackage metadata, QML metadata, and qmltypes generation; that remains unresolved P2 work.
+- Ambiguity: no blocking ambiguity found. The target explicitly called out repeated package identity/version metadata, and this checkpoint removes the Nix-side duplication without changing package identity or version.
 
 ## Notes
 

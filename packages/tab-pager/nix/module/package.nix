@@ -7,9 +7,10 @@
       packages.tab-pager =
         let
           clangToolchain = pkgs.llvmPackages.clang;
-          pluginId = "io.github.hnjae.tabpager";
+          packageMetadata = builtins.fromJSON (builtins.readFile ../../package/metadata.json);
+          pluginId = packageMetadata.KPlugin.Id;
           qmlModuleDir = lib.replaceStrings [ "." ] [ "/" ] pluginId;
-          version = "0.1.0";
+          version = packageMetadata.KPlugin.Version;
 
           sourceRoot = ../../.;
           source = lib.fileset.toSource {
