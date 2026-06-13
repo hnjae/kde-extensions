@@ -1,15 +1,12 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {
-  contextMenuLauncherCommand,
-  contextMenuTaskCommand,
-} from "./TaskActionLogic.mjs";
+import { contextMenuTaskCommand } from "./TaskActionLogic.mjs";
 import * as LauncherActivityLogic from "./TaskContextMenuLauncherActivityLogic.mjs";
+import * as PinLogic from "./TaskContextMenuPinLogic.mjs";
 import * as TaskActivityLogic from "./TaskContextMenuTaskActivityLogic.mjs";
 import * as VirtualDesktopLogic from "./VirtualDesktopLogic.mjs";
 import * as WindowActionLogic from "./TaskContextMenuWindowActionLogic.mjs";
-import { launcherPinState } from "./LauncherListLogic.mjs";
 export {
   basicActionRoleSnapshot,
   boolRoleData,
@@ -36,6 +33,13 @@ export {
   launcherAllActivitiesUpdateCommand,
   replaceLauncherListCommand,
 } from "./TaskContextMenuLauncherActivityLogic.mjs";
+export {
+  launcherPinStateSnapshot,
+  pinActionState,
+  pinActionsSection,
+  pinLauncherAction,
+  pinLauncherCommand,
+} from "./TaskContextMenuPinLogic.mjs";
 export {
   allTaskActivitiesAction,
   allTaskActivitiesCommand,
@@ -149,58 +153,6 @@ export function activityEntriesSnapshot(
     });
   }
   return entries;
-}
-
-export function pinActionState(pinState) {
-  const state = pinState || {};
-  const isPinned = Boolean(state.isPinned);
-
-  return {
-    action: isPinned ? "unpin" : "pin",
-    enabled: Boolean(state.canPin),
-    text: isPinned ? "Unpin from Task Manager" : "Pin to Task Manager",
-  };
-}
-
-export function pinLauncherCommand(pinState) {
-  const state = pinState || {};
-  const action = pinActionState(state);
-  return contextMenuLauncherCommand(
-    action.action === "unpin" ? "unpinLauncher" : "pinLauncher",
-    state.launcherUrl,
-  );
-}
-
-export function pinLauncherAction(pinState) {
-  const state = pinState || {};
-  const action = pinActionState(state);
-
-  return actionWithIcon(
-    Object.assign({}, action, {
-      command: pinLauncherCommand(state),
-    }),
-    action.action === "unpin" ? "window-unpin" : "window-pin",
-  );
-}
-
-export function pinActionsSection(sectionState) {
-  return {
-    pinLauncher: pinLauncherAction(sectionState),
-  };
-}
-
-export function launcherPinStateSnapshot(
-  launcherList,
-  launcherUrl,
-  currentActivity,
-  launcherPosition,
-) {
-  return launcherPinState(
-    launcherList,
-    launcherUrl,
-    currentActivity,
-    launcherPosition,
-  );
 }
 
 export function virtualDesktopsActionState(taskState) {
@@ -446,7 +398,7 @@ export function contextMenuActionSections(menuState) {
     keepAboveBelowActions,
     launcherActivityActions,
     minimizeMaximizeActions,
-    pinActions: pinActionsSection(state.pinState),
+    pinActions: PinLogic.pinActionsSection(state.pinState),
     taskActivityActions: TaskActivityLogic.taskActivityActionsSection({
       activities: taskRoles.activities,
       activityEntryCount: state.activityEntryCount,

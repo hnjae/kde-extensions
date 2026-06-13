@@ -134,6 +134,37 @@ assert.match(
   taskContextMenuLogicSource,
   /import \* as TaskActivityLogic from "\.\/TaskContextMenuTaskActivityLogic\.mjs"/,
 );
+assert.match(
+  taskContextMenuLogicSource,
+  /import \* as PinLogic from "\.\/TaskContextMenuPinLogic\.mjs"/,
+);
+assert.match(
+  taskContextMenuLogicSource,
+  /from "\.\/TaskContextMenuPinLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /import \{ contextMenuLauncherCommand \} from "\.\/TaskActionLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /import \{ launcherPinState \} from "\.\/LauncherListLogic\.mjs"/,
+);
+assert.doesNotMatch(taskContextMenuLogicSource, /function pinActionState\b/);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /function pinLauncherCommand\b/,
+);
+assert.doesNotMatch(taskContextMenuLogicSource, /function pinLauncherAction\b/);
+assert.doesNotMatch(taskContextMenuLogicSource, /function pinActionsSection\b/);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /function launcherPinStateSnapshot\b/,
+);
+assert.match(
+  taskContextMenuLogicSource,
+  /PinLogic\.pinActionsSection\(state\.pinState\)/,
+);
 assert.doesNotMatch(
   taskContextMenuLogicSource,
   /import .*"\.\/TaskActivityLogic\.mjs"/,
@@ -3903,6 +3934,16 @@ const launcherStateQml = readFileSync(
 );
 assert.equal(
   launcherStateQml.includes("TaskContextMenuLogic.launcherPinStateSnapshot"),
+  false,
+);
+assert.equal(
+  launcherStateQml.includes(
+    'import "TaskContextMenuPinLogic.mjs" as TaskContextMenuPinLogic',
+  ),
+  true,
+);
+assert.equal(
+  launcherStateQml.includes("TaskContextMenuPinLogic.launcherPinStateSnapshot"),
   true,
 );
 assert.equal(

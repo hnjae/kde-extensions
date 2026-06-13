@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
+import "TaskContextMenuPinLogic.mjs" as TaskContextMenuPinLogic
 
 QtQuick.QtObject {
     id: root
@@ -15,7 +15,7 @@ QtQuick.QtObject {
 
     readonly property var launcherList: launcherModel ? launcherModel.launcherList : []
     readonly property int launcherPosition: launcherPositionForUrl()
-    readonly property var pinState: TaskContextMenuLogic.launcherPinStateSnapshot(launcherList, launcherUrl, currentActivity, launcherPositionForPinnedUrl)
+    readonly property var pinState: TaskContextMenuPinLogic.launcherPinStateSnapshot(launcherList, launcherUrl, currentActivity, launcherPositionForPinnedUrl)
 
     function launcherPositionForPinnedUrl(pinnedUrl) {
         if (!launcherModel) {
