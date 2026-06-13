@@ -3963,7 +3963,7 @@ assert.equal(
 );
 assert.equal(
   launcherActivityAdapterQml.includes(
-    "launcherModel.launcherActivities(launcherUrl)",
+    "launcherReadPort.launcherActivities(launcherUrl)",
   ),
   true,
 );
@@ -4032,8 +4032,12 @@ assert.equal(
   true,
 );
 assert.equal(
-  launcherActivityAdapterQml.includes("property var launcherModel"),
+  launcherActivityAdapterQml.includes("property var launcherReadPort"),
   true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes("property var launcherModel"),
+  false,
 );
 assert.equal(
   launcherActivityAdapterQml.includes('property string launcherUrl: ""'),
@@ -4079,14 +4083,15 @@ assert.equal(
   true,
 );
 assert.equal(
-  launcherStateQml.includes("launcherModel.launcherPosition(launcherUrl)"),
+  launcherStateQml.includes("launcherReadPort.launcherPosition(launcherUrl)"),
   true,
 );
 assert.equal(
-  launcherStateQml.includes("launcherModel.launcherPosition(pinnedUrl)"),
+  launcherStateQml.includes("launcherReadPort.launcherPosition(pinnedUrl)"),
   true,
 );
-assert.equal(launcherStateQml.includes("property var launcherModel"), true);
+assert.equal(launcherStateQml.includes("property var launcherReadPort"), true);
+assert.equal(launcherStateQml.includes("property var launcherModel"), false);
 assert.equal(
   launcherStateQml.includes('property string launcherUrl: ""'),
   true,

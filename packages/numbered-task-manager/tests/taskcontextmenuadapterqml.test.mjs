@@ -27,7 +27,12 @@ const sourceQml = readFileSync(sourceUrl, "utf8");
 
 assert.match(mainQml, /\bTaskContextMenuAdapter\s*\{/);
 assert.match(mainQml, /id:\s*contextMenuAdapter/);
-assert.match(mainQml, /launcherModel:\s*tasksModel/);
+assert.match(
+  mainQml,
+  /\bLauncherReadPort\s*\{[\s\S]*?id:\s*launcherReadPort[\s\S]*?taskModel:\s*tasksModel[\s\S]*?\}/,
+);
+assert.match(mainQml, /launcherReadPort:\s*launcherReadPort/);
+assert.doesNotMatch(mainQml, /launcherModel:\s*tasksModel/);
 assert.match(
   mainQml,
   /\bTaskCommandPort\s*\{[\s\S]*?id:\s*taskCommandPort[\s\S]*?taskModel:\s*tasksModel[\s\S]*?\}/,
@@ -52,7 +57,8 @@ assert.doesNotMatch(mainQml, /TaskActionLogic\.contextMenuCreationResult/);
 
 assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
 assert.match(sourceQml, /QtQuick\.Item\s*\{/);
-assert.match(sourceQml, /property var launcherModel/);
+assert.match(sourceQml, /property var launcherReadPort/);
+assert.doesNotMatch(sourceQml, /property var launcherModel/);
 assert.match(sourceQml, /property var taskModel/);
 assert.match(sourceQml, /property var taskCommandPort/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
@@ -68,6 +74,8 @@ assert.match(
   /TaskActionLogic\.contextMenuRequestResult\(contextMenuRequest\(request\)\)/,
 );
 assert.match(sourceQml, /contextMenuComponent\.createObject\(visualParent/);
+assert.match(sourceQml, /launcherReadPort:\s*root\.launcherReadPort/);
+assert.doesNotMatch(sourceQml, /launcherModel:\s*root\.launcherModel/);
 assert.match(sourceQml, /taskCommandPort:\s*root\.taskCommandPort/);
 assert.match(
   sourceQml,
@@ -88,7 +96,10 @@ assert.match(sourceQml, /\bTaskContextMenu\s*\{/);
 
 assert.match(menuQml, /signal actionResult\(var result\)/);
 assert.match(menuQml, /root\.actionResult\(result\)/);
+assert.match(menuQml, /property var launcherReadPort/);
+assert.doesNotMatch(menuQml, /property var launcherModel/);
 assert.match(menuQml, /property var taskCommandPort/);
+assert.match(menuQml, /launcherReadPort:\s*root\.launcherReadPort/);
 assert.match(menuQml, /taskCommandPort:\s*root\.taskCommandPort/);
 assert.doesNotMatch(menuQml, /console\.warn\("Numbered Task Manager action "/);
 assert.match(
