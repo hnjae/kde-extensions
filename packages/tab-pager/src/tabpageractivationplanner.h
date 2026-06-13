@@ -5,7 +5,6 @@
 
 #include "tabpagerdesktopid.h"
 #include "tabpagerdesktopnavigator.h"
-#include "tabpagerwheelnavigation.h"
 
 #include <optional>
 
@@ -24,11 +23,6 @@ struct TabPagerActivationPlan {
   std::optional<int> targetIndex;
 };
 
-struct TabPagerWheelActivationPlan {
-  TabPagerActivationResult result = TabPagerActivationResult::NoWheelStep;
-  std::optional<int> offset;
-};
-
 [[nodiscard]] TabPagerActivationPlan tabPagerActivationPlanForIndex(
     const std::optional<TabPagerDesktopId> &desktopId);
 [[nodiscard]] TabPagerActivationPlan tabPagerActivationPlanForNavigationResult(
@@ -36,6 +30,3 @@ struct TabPagerWheelActivationPlan {
 [[nodiscard]] TabPagerActivationPlan tabPagerActivationPlanForNavigationTarget(
     const TabPagerDesktopNavigationResult &navigationResult,
     const std::optional<TabPagerDesktopId> &desktopId);
-[[nodiscard]] TabPagerWheelActivationPlan
-tabPagerActivationPlanForWheelNavigationResult(
-    const TabPagerWheelNavigationResult &wheelNavigationResult);

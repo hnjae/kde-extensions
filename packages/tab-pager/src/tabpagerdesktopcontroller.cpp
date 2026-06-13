@@ -89,15 +89,8 @@ void TabPagerDesktopController::activateByWheelDelta(int delta) {
 
 TabPagerActivationResult
 TabPagerDesktopController::activateByWheelDeltaWithResult(int delta) {
-  const TabPagerWheelNavigationResult wheelResult =
-      m_wheelNavigation.consumeDelta(delta);
-  const TabPagerWheelActivationPlan wheelPlan =
-      tabPagerActivationPlanForWheelNavigationResult(wheelResult);
-  if (!wheelPlan.offset.has_value()) {
-    return wheelPlan.result;
-  }
-
-  return activateOffsetWithResult(*wheelPlan.offset);
+  return activateNavigationTarget(m_navigator.targetForWheelNavigationResult(
+      navigationContext(), m_wheelNavigation.consumeDelta(delta)));
 }
 
 void TabPagerDesktopController::initializeSource() {

@@ -15,7 +15,6 @@ private Q_SLOTS:
   void mapsNavigationTargetToIndexActivationRequest();
   void mapsNavigationTargetToDesktopActivationCommand();
   void mapsNavigationNoOpResults();
-  void mapsWheelNavigationResults();
 };
 
 void TabPagerActivationPlannerTest::rejectsMissingDesktopId() {
@@ -102,26 +101,6 @@ void TabPagerActivationPlannerTest::mapsNavigationNoOpResults() {
   QCOMPARE(stoppedAtEdge.targetIndex.has_value(), false);
   QCOMPARE(noWheelStep.result, TabPagerActivationResult::NoWheelStep);
   QCOMPARE(noWheelStep.targetIndex.has_value(), false);
-}
-
-void TabPagerActivationPlannerTest::mapsWheelNavigationResults() {
-  const TabPagerWheelActivationPlan noWheelStep =
-      tabPagerActivationPlanForWheelNavigationResult(
-          TabPagerWheelNavigationResult{
-              .type = TabPagerWheelNavigationResultType::NoWheelStep,
-              .offset = 0,
-          });
-  const TabPagerWheelActivationPlan offset =
-      tabPagerActivationPlanForWheelNavigationResult(
-          TabPagerWheelNavigationResult{
-              .type = TabPagerWheelNavigationResultType::Offset,
-              .offset = -1,
-          });
-
-  QCOMPARE(noWheelStep.result, TabPagerActivationResult::NoWheelStep);
-  QCOMPARE(noWheelStep.offset.has_value(), false);
-  QCOMPARE(offset.result, TabPagerActivationResult::ActivationRequested);
-  QCOMPARE(offset.offset, -1);
 }
 
 QTEST_MAIN(TabPagerActivationPlannerTest)

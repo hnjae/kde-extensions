@@ -56,3 +56,21 @@ TabPagerDesktopNavigationResult TabPagerDesktopNavigator::targetForOffset(
                                            context.desktopCount, offset),
   };
 }
+
+TabPagerDesktopNavigationResult
+TabPagerDesktopNavigator::targetForWheelNavigationResult(
+    const TabPagerDesktopNavigationContext &context,
+    const TabPagerWheelNavigationResult &wheelNavigationResult) const {
+  switch (wheelNavigationResult.type) {
+  case TabPagerWheelNavigationResultType::Offset:
+    return targetForOffset(context, wheelNavigationResult.offset);
+  case TabPagerWheelNavigationResultType::NoWheelStep:
+    return TabPagerDesktopNavigationResult{
+        .type = TabPagerDesktopNavigationResultType::NoWheelStep,
+    };
+  }
+
+  return TabPagerDesktopNavigationResult{
+      .type = TabPagerDesktopNavigationResultType::NoWheelStep,
+  };
+}

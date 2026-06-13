@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "tabpagerwheelnavigation.h"
+
 struct TabPagerDesktopNavigationContext {
   int currentIndex = -1;
   int desktopCount = 0;
@@ -29,6 +31,9 @@ public:
   [[nodiscard]] TabPagerDesktopNavigationResult
   targetForOffset(const TabPagerDesktopNavigationContext &context,
                   int offset) const;
+  [[nodiscard]] TabPagerDesktopNavigationResult targetForWheelNavigationResult(
+      const TabPagerDesktopNavigationContext &context,
+      const TabPagerWheelNavigationResult &wheelNavigationResult) const;
 
 private:
   bool m_navigationWrappingAround = false;
