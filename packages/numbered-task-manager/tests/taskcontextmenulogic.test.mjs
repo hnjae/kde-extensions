@@ -116,6 +116,20 @@ const plasmaMenu = {
 };
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const nullActivityId = "00000000-0000-0000-0000-000000000000";
+const taskContextMenuLogicSource = readFileSync(
+  new URL("../package/contents/ui/TaskContextMenuLogic.mjs", import.meta.url),
+  "utf8",
+);
+
+assert.match(
+  taskContextMenuLogicSource,
+  /import \* as VirtualDesktopLogic from "\.\/VirtualDesktopLogic\.mjs"/,
+);
+assert.doesNotMatch(taskContextMenuLogicSource, /function virtualDesktopId\b/);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /function virtualDesktopListContains\b/,
+);
 
 assert.equal(
   logic.panelMenuPlacement(

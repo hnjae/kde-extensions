@@ -10,13 +10,9 @@ const logic = await loadQmlJsModule(
   [
     "boolValue",
     "createBaseTaskEntry",
-    "desktopId",
-    "desktopListContains",
     "hasValidModelIndex",
     "isActionableModelIndex",
     "isActionableModelIndexState",
-    "isOnCurrentVirtualDesktop",
-    "isRemoteVirtualDesktop",
     "launcherUrlFromRoles",
     "modelIndexState",
     "normalTaskIconFallback",
@@ -29,37 +25,6 @@ const logic = await loadQmlJsModule(
   ],
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
-
-assert.equal(logic.desktopId(null), "");
-assert.equal(logic.desktopId("desktop-a"), "desktop-a");
-assert.equal(logic.desktopId({ id: "desktop-b" }), "desktop-b");
-assert.equal(
-  logic.desktopListContains(["desktop-a"], { id: "desktop-a" }),
-  true,
-);
-assert.equal(logic.desktopListContains(["desktop-a"], "desktop-b"), false);
-
-assert.equal(logic.isOnCurrentVirtualDesktop([], true, "desktop-a"), true);
-assert.equal(
-  logic.isOnCurrentVirtualDesktop(["desktop-a"], false, "desktop-a"),
-  true,
-);
-assert.equal(
-  logic.isOnCurrentVirtualDesktop(["desktop-b"], false, "desktop-a"),
-  false,
-);
-assert.equal(
-  logic.isRemoteVirtualDesktop(["desktop-b"], false, "desktop-a"),
-  true,
-);
-assert.equal(
-  logic.isRemoteVirtualDesktop(["desktop-a"], false, "desktop-a"),
-  false,
-);
-assert.equal(
-  logic.isRemoteVirtualDesktop(["desktop-b"], true, "desktop-a"),
-  false,
-);
 
 assert.equal(logic.hasValidModelIndex(null), false);
 assert.equal(logic.hasValidModelIndex({ valid: false }), false);

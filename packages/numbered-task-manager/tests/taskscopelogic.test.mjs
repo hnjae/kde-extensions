@@ -132,7 +132,13 @@ const remoteAttentionLogic = readFileSync(
   new URL("../package/contents/ui/RemoteAttentionLogic.mjs", import.meta.url),
   "utf8",
 );
+const taskScopeLogic = readFileSync(
+  new URL("../package/contents/ui/TaskScopeLogic.mjs", import.meta.url),
+  "utf8",
+);
 
+assert.match(taskScopeLogic, /from "\.\/VirtualDesktopLogic\.mjs"/);
+assert.doesNotMatch(taskScopeLogic, /from "\.\/TaskEntryLogic\.mjs"/);
 assert.match(mainQml, /import "TaskScopeLogic\.mjs" as TaskScopeLogic/);
 assert.match(
   mainQml,
