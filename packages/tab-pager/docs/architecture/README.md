@@ -31,6 +31,6 @@ Do not expose source diagnostics through the QML-facing backend until there is a
 
 ## Wheel Navigation Boundary
 
-Wheel input handling is split by responsibility: UI adapters normalize Qt wheel events into raw deltas, `TabPagerWheelNavigation` owns pending-delta accumulation and conversion from complete wheel steps to semantic desktop offsets, and `TabPagerDesktopNavigator` owns target selection for semantic offsets under the current wrapping policy.
+Wheel input handling is split by responsibility: a QML-side wheel input helper normalizes Qt wheel events into raw deltas for the backend, `TabPagerWheelNavigation` owns pending-delta accumulation and conversion from complete wheel steps to semantic desktop offsets, and `TabPagerDesktopNavigator` owns target selection for semantic offsets under the current wrapping policy.
 
 Pending wheel-delta accumulation is user-visible behavior. It must remain independent of the current desktop, desktop count, and wrapping setting until a complete step is consumed against the then-current navigation context.
