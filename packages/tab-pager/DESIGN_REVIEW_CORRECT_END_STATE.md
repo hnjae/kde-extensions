@@ -21,15 +21,15 @@ No P0 issue was found. The recommended end state is a precise, boring architectu
 
 Priority: P2
 
-Evidence: `package/metadata.json` defines the package ID and version; `src/tabpagerplugin.qmltypes` repeats the QML module URI and type version.
+Evidence: `package/metadata.json` defines the package ID and version; `package/contents/ui/main.qml` imports the concrete QML module URI.
 
-Current state: One release/install contract is declared across KPackage metadata, QML metadata, CMake, and Nix packaging/check code. CMake and Nix derive package ID, version, and QML module path from `package/metadata.json`; `qmldir` is configured from CMake's derived QML module URI; and a metadata drift test verifies the repeated declarations agree.
+Current state: One release/install contract is declared across KPackage metadata, QML imports, CMake, and Nix packaging/check code. CMake and Nix derive package ID, version, and QML module path from `package/metadata.json`; `qmldir` and `src/tabpagerplugin.qmltypes.in` are configured from CMake's derived QML module URI; and metadata drift tests verify the repeated declarations agree.
 
 Design concern: A mismatch can produce a package whose Plasma ID, install destination, QML import URI, qmltypes export, and Nix metadata disagree.
 
 Correct end state: One source should own package identity, version, QML module URI, and module path. Other files should be generated, configured, or checked against it.
 
-Suggested migration: Pick an authority, likely CMake variables or `package/metadata.json`, then generate/configure `qmldir`, qmltypes export metadata, package metadata fragments, and Nix check paths from that authority.
+Suggested migration: Pick an authority, likely CMake variables or `package/metadata.json`, then generate/configure QML import metadata, package metadata fragments, and Nix check paths from that authority.
 
 Acceptance criteria: Changing package ID or version requires editing one authoritative declaration. CI verifies that `package/metadata.json`, installed plasmoid path, `qmldir`, qmltypes export, and Nix checks agree.
 
