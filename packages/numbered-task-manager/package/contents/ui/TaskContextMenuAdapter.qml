@@ -9,7 +9,7 @@ import "TaskActionLogic.mjs" as TaskActionLogic
 QtQuick.Item {
     id: root
 
-    property var launcherModel
+    property var launcherReadPort
     property var taskModel
     property var taskCommandPort
 
@@ -35,7 +35,7 @@ QtQuick.Item {
 
         const visualParent = menuRequest.visualParent;
         const menu = contextMenuComponent.createObject(visualParent, {
-            launcherModel: root.launcherModel,
+            launcherReadPort: root.launcherReadPort,
             modelIndex: menuRequest.modelIndex,
             task: menuRequest.task || {},
             taskModel: menuRequest.taskModel,

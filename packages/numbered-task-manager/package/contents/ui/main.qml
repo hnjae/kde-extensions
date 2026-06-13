@@ -54,6 +54,12 @@ PlasmoidItem {
         taskModel: tasksModel
     }
 
+    LauncherReadPort {
+        id: launcherReadPort
+
+        taskModel: tasksModel
+    }
+
     TaskCommandPort {
         id: taskCommandPort
 
@@ -86,7 +92,7 @@ PlasmoidItem {
     TaskContextMenuAdapter {
         id: contextMenuAdapter
 
-        launcherModel: tasksModel
+        launcherReadPort: launcherReadPort
         taskModel: tasksModel
         taskCommandPort: taskCommandPort
 

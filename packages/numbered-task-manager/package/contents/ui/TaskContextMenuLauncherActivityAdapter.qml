@@ -11,7 +11,7 @@ QtQuick.QtObject {
     id: root
 
     property var launcherActivityList: []
-    property var launcherModel
+    property var launcherReadPort
     property string launcherUrl: ""
 
     signal actionResult(var result)
@@ -24,12 +24,12 @@ QtQuick.QtObject {
     }
 
     function refreshLauncherActivities() {
-        if (!launcherModel || !launcherUrl) {
+        if (!launcherReadPort || !launcherUrl) {
             launcherActivityList = [];
             return;
         }
 
-        launcherActivityList = LauncherActivityLogic.launcherActivityListSnapshot(launcherModel.launcherActivities(launcherUrl));
+        launcherActivityList = LauncherActivityLogic.launcherActivityListSnapshot(launcherReadPort.launcherActivities(launcherUrl));
     }
 
     function applyLauncherActivityUpdate(update) {
@@ -47,7 +47,7 @@ QtQuick.QtObject {
     }
 
     function applyLauncherActivityAction(update) {
-        if (!launcherModel) {
+        if (!launcherReadPort) {
             return launcherActivityFailure(update, "missing-launcher-model");
         }
         if (!launcherUrl) {

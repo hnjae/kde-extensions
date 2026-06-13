@@ -58,7 +58,7 @@ PlasmaExtras.Menu {
     readonly property var taskActivityActionsSection: actionSections.taskActivityActions
     readonly property var virtualDesktopActionsSection: actionSections.virtualDesktopActions
     readonly property var desktopActions: contextMenuBackend.desktopActions(root.taskRoles.launcherUrl || "", root)
-    property var launcherModel: taskModel
+    property var launcherReadPort
     property var modelIndex
     property var task: ({})
     property var taskModel
@@ -101,14 +101,14 @@ PlasmaExtras.Menu {
         id: launcherState
 
         currentActivity: platformState.currentActivity
-        launcherModel: root.launcherModel
+        launcherReadPort: root.launcherReadPort
         launcherUrl: root.taskRoles.launcherUrl
     }
 
     readonly property TaskContextMenuLauncherActivityAdapter _launcherActivityAdapter: TaskContextMenuLauncherActivityAdapter {
         id: launcherActivityAdapter
 
-        launcherModel: root.launcherModel
+        launcherReadPort: root.launcherReadPort
         launcherUrl: root.taskRoles.launcherUrl
 
         onLauncherCommandRequested: command => {

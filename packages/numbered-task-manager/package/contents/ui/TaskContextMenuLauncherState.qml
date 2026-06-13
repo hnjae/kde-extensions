@@ -10,26 +10,26 @@ QtQuick.QtObject {
     id: root
 
     property string currentActivity: ""
-    property var launcherModel
+    property var launcherReadPort
     property string launcherUrl: ""
 
-    readonly property var launcherList: launcherModel ? launcherModel.launcherList : []
+    readonly property var launcherList: launcherReadPort ? launcherReadPort.launcherList : []
     readonly property int launcherPosition: launcherPositionForUrl()
     readonly property var pinState: TaskContextMenuPinLogic.launcherPinStateSnapshot(launcherList, launcherUrl, currentActivity, launcherPositionForPinnedUrl)
 
     function launcherPositionForPinnedUrl(pinnedUrl) {
-        if (!launcherModel) {
+        if (!launcherReadPort) {
             return -1;
         }
 
-        return launcherModel.launcherPosition(pinnedUrl);
+        return launcherReadPort.launcherPosition(pinnedUrl);
     }
 
     function launcherPositionForUrl() {
-        if (!launcherModel || !launcherUrl) {
+        if (!launcherReadPort || !launcherUrl) {
             return -1;
         }
 
-        return launcherModel.launcherPosition(launcherUrl);
+        return launcherReadPort.launcherPosition(launcherUrl);
     }
 }
