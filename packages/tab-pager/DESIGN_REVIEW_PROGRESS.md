@@ -40,7 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - `qmldir` is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
 - `tabpagerplugin.qmltypes` is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
 - The plasmoid `main.qml` import is configured from CMake's derived `QML_MODULE_URI` and no longer repeats the concrete module URI in source.
-- Wheel activation no-step/offset classification now lives in `TabPagerActivationPlanner` and is directly covered by pure planner tests.
+- Wheel navigation no-step/offset target translation now lives in `TabPagerDesktopNavigator` and is directly covered by pure navigator tests.
 
 ## Remaining
 
@@ -56,14 +56,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: moved wheel activation no-step/offset classification into the pure activation planner.
-- Files changed: `src/tabpageractivationplanner.h`, `src/tabpageractivationplanner.cpp`, `src/tabpagerdesktopcontroller.cpp`, `tests/tabpageractivationplanner_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: half-wheel deltas still report `NoWheelStep`; completed wheel steps still activate the same resolved desktop through the source; source activation still occurs only after a valid desktop ID is resolved.
-- Target-doc cleanup: kept the controller/wheel activation P2 open and updated its evidence/current-state text to include the new pure wheel-result activation classification boundary.
+- Checkpoint: routed wheel navigation results through the pure desktop navigator.
+- Files changed: `docs/architecture/README.md`, `src/tabpagerdesktopnavigator.h`, `src/tabpagerdesktopnavigator.cpp`, `src/tabpagerdesktopcontroller.cpp`, `src/tabpageractivationplanner.h`, `src/tabpageractivationplanner.cpp`, `tests/tabpagerdesktopnavigator_test.cpp`, `tests/tabpageractivationplanner_test.cpp`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: partial wheel deltas still produce `NoWheelStep`; completed wheel steps still use the same wrapping/current-desktop navigation rules and activate the same resolved desktop through the source.
+- Target-doc cleanup: kept the controller/wheel activation P2 open and updated its evidence/current-state text to say wheel result target translation lives in `TabPagerDesktopNavigator`.
 - Target-doc edits: no architectural principles or unresolved P2 content were removed.
-- Commands passed: `cmake --build build --target tabpageractivationplanner_test tabpagerdesktopcontroller_test`; `ctest --test-dir build --output-on-failure -R 'tabpager(activationplanner|desktopcontroller)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/src/tabpageractivationplanner.h packages/tab-pager/src/tabpageractivationplanner.cpp packages/tab-pager/src/tabpagerdesktopcontroller.cpp packages/tab-pager/tests/tabpageractivationplanner_test.cpp` from the repository root.
-- Commands failed: `cmake --build build --target tabpageractivationplanner_test` failed after adding the planner characterization and before implementation because `TabPagerWheelNavigationResult` and `tabPagerActivationPlanForWheelNavigationResult()` were not yet part of the activation planner boundary.
-- Deviations: the implementation uses a wheel-specific `TabPagerWheelActivationPlan` instead of overloading `TabPagerActivationPlan::targetIndex` with a semantic offset, so the planner API preserves type meaning.
+- Commands passed: `cmake --build build --target tabpagerdesktopnavigator_test tabpageractivationplanner_test tabpagerdesktopcontroller_test`; `ctest --test-dir build --output-on-failure -R 'tabpager(desktopnavigator|activationplanner|desktopcontroller)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/src/tabpagerdesktopnavigator.h packages/tab-pager/src/tabpagerdesktopnavigator.cpp packages/tab-pager/src/tabpagerdesktopcontroller.cpp packages/tab-pager/src/tabpageractivationplanner.h packages/tab-pager/src/tabpageractivationplanner.cpp packages/tab-pager/tests/tabpageractivationplanner_test.cpp packages/tab-pager/tests/tabpagerdesktopnavigator_test.cpp` from the repository root.
+- Commands failed: `cmake --build build --target tabpagerdesktopnavigator_test` failed after adding the navigator characterization and before implementation because `TabPagerDesktopNavigator::targetForWheelNavigationResult()` did not exist yet; the first test-layer commit attempt failed because `treefmt` reformatted `tests/tabpagerdesktopnavigator_test.cpp`, then passed after restaging.
+- Deviations: this checkpoint removes the wheel-specific activation planner API added in the prior checkpoint because the navigator boundary better matches the documented wheel navigation ownership.
 - Ambiguity: no blocking ambiguity found. The remaining P2 is still open because the controller still composes wheel navigation state, semantic navigation, state-store desktop ID lookup, result reporting, and source effect execution.
 
 ## Notes
