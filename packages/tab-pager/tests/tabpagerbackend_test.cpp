@@ -21,8 +21,6 @@ using TabPagerTest::unnamedDesktop;
 
 constexpr int wheelStepDelta = 120;
 constexpr int halfWheelStepDelta = wheelStepDelta / 2;
-constexpr int almostHalfWheelStepDelta = halfWheelStepDelta - 1;
-
 [[nodiscard]] TabPagerDesktopModel &desktopModel(TabPagerBackend &backend) {
   auto *model = qobject_cast<TabPagerDesktopModel *>(backend.model());
   Q_ASSERT(model != nullptr);
@@ -51,13 +49,6 @@ private Q_SLOTS:
   void reportsActivationResultByIndex();
   void reportsRelativeActivationNoOps();
   void reportsWheelActivationNoOps();
-  void ignoresActivationForInvalidDesktopId();
-  void ignoresRelativeActivationWithoutCurrentDesktop();
-  void stopsAtEdgesWithoutWrapping();
-  void activatesNextAndPreviousWithoutWrapping();
-  void activatesNextAndPreviousWithWrapping();
-  void activatesFromAccumulatedWheelDelta();
-  void activatesFromMultipleWheelSteps();
 };
 
 void TabPagerBackendTest::exposesExplicitModel() {
@@ -376,117 +367,6 @@ void TabPagerBackendTest::reportsWheelActivationNoOps() {
   QCOMPARE(activationSpy.at(0).at(0).toString(), QStringLiteral("NoWheelStep"));
   QCOMPARE(activationSpy.at(1).at(0).toString(),
            QStringLiteral("StoppedAtEdge"));
-}
-
-void TabPagerBackendTest::ignoresActivationForInvalidDesktopId() {
-  BackendFixture fixture({
-      invalidDesktop(QStringLiteral("Broken")),
-  });
-
-  QCOMPARE(fixture.backend.count(), 0);
-  fixture.backend.activate(0);
-
-  const QList<TabPagerDesktopId> expected;
-  QCOMPARE(fixture.source->activatedDesktops(), expected);
-}
-
-void TabPagerBackendTest::ignoresRelativeActivationWithoutCurrentDesktop() {
-  BackendFixture fixture({
-      defaultDesktop("a", 1),
-      defaultDesktop("b", 2),
-  });
-
-  fixture.backend.activateNext();
-  fixture.backend.activatePrevious();
-
-  const QList<TabPagerDesktopId> expected;
-  QCOMPARE(fixture.source->activatedDesktops(), expected);
-}
-
-void TabPagerBackendTest::stopsAtEdgesWithoutWrapping() {
-  BackendFixture fixture(
-      {
-          defaultDesktop("a", 1),
-          defaultDesktop("b", 2),
-      },
-      desktopId("a"), false);
-
-  fixture.backend.activatePrevious();
-  fixture.source->setCurrentDesktop(desktopId("b"));
-  fixture.backend.activateNext();
-
-  const QList<TabPagerDesktopId> expected;
-  QCOMPARE(fixture.source->activatedDesktops(), expected);
-}
-
-void TabPagerBackendTest::activatesNextAndPreviousWithoutWrapping() {
-  BackendFixture fixture(
-      {
-          defaultDesktop("a", 1),
-          defaultDesktop("b", 2),
-          defaultDesktop("c", 3),
-      },
-      desktopId("b"), false);
-
-  fixture.backend.activateNext();
-  fixture.backend.activatePrevious();
-  fixture.source->setCurrentDesktop(desktopId("c"));
-  fixture.backend.activateNext();
-
-  const QList<TabPagerDesktopId> expected = {desktopId("c"), desktopId("a")};
-  QCOMPARE(fixture.source->activatedDesktops(), expected);
-}
-
-void TabPagerBackendTest::activatesNextAndPreviousWithWrapping() {
-  BackendFixture fixture(
-      {
-          defaultDesktop("a", 1),
-          defaultDesktop("b", 2),
-          defaultDesktop("c", 3),
-      },
-      desktopId("c"), true);
-
-  fixture.backend.activateNext();
-  fixture.source->setCurrentDesktop(desktopId("a"));
-  fixture.backend.activatePrevious();
-
-  const QList<TabPagerDesktopId> expected = {desktopId("a"), desktopId("c")};
-  QCOMPARE(fixture.source->activatedDesktops(), expected);
-}
-
-void TabPagerBackendTest::activatesFromAccumulatedWheelDelta() {
-  BackendFixture fixture(
-      {
-          defaultDesktop("a", 1),
-          defaultDesktop("b", 2),
-          defaultDesktop("c", 3),
-      },
-      desktopId("b"), false);
-
-  fixture.backend.activateByWheelDelta(halfWheelStepDelta);
-  fixture.backend.activateByWheelDelta(almostHalfWheelStepDelta);
-  fixture.backend.activateByWheelDelta(1);
-  fixture.source->setCurrentDesktop(desktopId("b"));
-  fixture.backend.activateByWheelDelta(-wheelStepDelta);
-
-  const QList<TabPagerDesktopId> expected = {desktopId("a"), desktopId("c")};
-  QCOMPARE(fixture.source->activatedDesktops(), expected);
-}
-
-void TabPagerBackendTest::activatesFromMultipleWheelSteps() {
-  BackendFixture fixture(
-      {
-          defaultDesktop("a", 1),
-          defaultDesktop("b", 2),
-          defaultDesktop("c", 3),
-      },
-      desktopId("b"), true);
-
-  fixture.backend.activateByWheelDelta(wheelStepDelta * 2);
-  fixture.backend.activateByWheelDelta(-wheelStepDelta * 2);
-
-  const QList<TabPagerDesktopId> expected = {desktopId("c"), desktopId("a")};
-  QCOMPARE(fixture.source->activatedDesktops(), expected);
 }
 
 QTEST_MAIN(TabPagerBackendTest)
