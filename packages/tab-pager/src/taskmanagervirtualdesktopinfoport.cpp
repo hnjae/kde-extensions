@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-#include "tabpagervirtualdesktopinfo.h"
+#include "taskmanagervirtualdesktopinfoport.h"
 
 #include <virtualdesktopinfo.h>
 
 namespace {
-class TaskManagerVirtualDesktopInfo final : public TabPagerVirtualDesktopInfo {
+class TaskManagerVirtualDesktopInfo final
+    : public TaskManagerVirtualDesktopInfoPort {
   Q_OBJECT
 
 public:
@@ -24,24 +25,27 @@ private:
 };
 } // namespace
 
-TabPagerVirtualDesktopInfo::TabPagerVirtualDesktopInfo(QObject *parent)
+TaskManagerVirtualDesktopInfoPort::TaskManagerVirtualDesktopInfoPort(
+    QObject *parent)
     : QObject(parent) {}
 
-TabPagerVirtualDesktopInfo::~TabPagerVirtualDesktopInfo() = default;
+TaskManagerVirtualDesktopInfoPort::~TaskManagerVirtualDesktopInfoPort() =
+    default;
 
 TaskManagerVirtualDesktopInfo::TaskManagerVirtualDesktopInfo(QObject *parent)
-    : TabPagerVirtualDesktopInfo(parent) {
+    : TaskManagerVirtualDesktopInfoPort(parent) {
   connect(&m_info, &TaskManager::VirtualDesktopInfo::desktopIdsChanged, this,
-          &TabPagerVirtualDesktopInfo::desktopIdsChanged);
+          &TaskManagerVirtualDesktopInfoPort::desktopIdsChanged);
   connect(&m_info, &TaskManager::VirtualDesktopInfo::desktopNamesChanged, this,
-          &TabPagerVirtualDesktopInfo::desktopNamesChanged);
+          &TaskManagerVirtualDesktopInfoPort::desktopNamesChanged);
   connect(&m_info, &TaskManager::VirtualDesktopInfo::numberOfDesktopsChanged,
-          this, &TabPagerVirtualDesktopInfo::numberOfDesktopsChanged);
+          this, &TaskManagerVirtualDesktopInfoPort::numberOfDesktopsChanged);
   connect(&m_info, &TaskManager::VirtualDesktopInfo::currentDesktopChanged,
-          this, &TabPagerVirtualDesktopInfo::currentDesktopChanged);
+          this, &TaskManagerVirtualDesktopInfoPort::currentDesktopChanged);
   connect(&m_info,
           &TaskManager::VirtualDesktopInfo::navigationWrappingAroundChanged,
-          this, &TabPagerVirtualDesktopInfo::navigationWrappingAroundChanged);
+          this,
+          &TaskManagerVirtualDesktopInfoPort::navigationWrappingAroundChanged);
 }
 
 TaskManagerVirtualDesktopInfo::~TaskManagerVirtualDesktopInfo() = default;
@@ -66,9 +70,9 @@ void TaskManagerVirtualDesktopInfo::requestActivate(const QVariant &desktopId) {
   m_info.requestActivate(desktopId);
 }
 
-std::unique_ptr<TabPagerVirtualDesktopInfo>
-createTaskManagerVirtualDesktopInfo() {
+std::unique_ptr<TaskManagerVirtualDesktopInfoPort>
+createTaskManagerVirtualDesktopInfoPort() {
   return std::make_unique<TaskManagerVirtualDesktopInfo>();
 }
 
-#include "tabpagervirtualdesktopinfo.moc"
+#include "taskmanagervirtualdesktopinfoport.moc"

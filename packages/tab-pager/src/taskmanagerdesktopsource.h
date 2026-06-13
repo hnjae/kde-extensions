@@ -5,8 +5,8 @@
 
 #include "tabpagerdesktopsource.h"
 #include "tabpagernavigationsettingssource.h"
-#include "tabpagervirtualdesktopinfo.h"
 #include "taskmanagerdesktopmapper.h"
+#include "taskmanagervirtualdesktopinfoport.h"
 
 #include <memory>
 
@@ -16,7 +16,7 @@ class TaskManagerDesktopSource final : public TabPagerDesktopSource {
 public:
   explicit TaskManagerDesktopSource(QObject *parent = nullptr);
   explicit TaskManagerDesktopSource(
-      std::unique_ptr<TabPagerVirtualDesktopInfo> info,
+      std::unique_ptr<TaskManagerVirtualDesktopInfoPort> info,
       QObject *parent = nullptr);
   ~TaskManagerDesktopSource() override;
 
@@ -33,7 +33,7 @@ private:
   [[nodiscard]] bool logDiagnosticsIfChanged(
       const QList<TaskManagerDesktopSourceDiagnostic> &diagnostics) const;
 
-  std::unique_ptr<TabPagerVirtualDesktopInfo> m_info;
+  std::unique_ptr<TaskManagerVirtualDesktopInfoPort> m_info;
   mutable QList<TaskManagerDesktopSourceDiagnostic> m_loggedDiagnostics;
   mutable bool m_hasLoggedDiagnostics = false;
 };
@@ -45,7 +45,7 @@ class TaskManagerNavigationSettingsSource final
 public:
   explicit TaskManagerNavigationSettingsSource(QObject *parent = nullptr);
   explicit TaskManagerNavigationSettingsSource(
-      std::unique_ptr<TabPagerVirtualDesktopInfo> info,
+      std::unique_ptr<TaskManagerVirtualDesktopInfoPort> info,
       QObject *parent = nullptr);
   ~TaskManagerNavigationSettingsSource() override;
 
@@ -54,5 +54,5 @@ public:
 private:
   void connectDesktopInfo();
 
-  std::unique_ptr<TabPagerVirtualDesktopInfo> m_info;
+  std::unique_ptr<TaskManagerVirtualDesktopInfoPort> m_info;
 };

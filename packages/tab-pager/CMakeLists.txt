@@ -83,8 +83,8 @@ add_library(tabpagerplasma STATIC
     src/taskmanagerdesktopmapper.h
     src/tabpagerqmlbackend.cpp
     src/tabpagerqmlbackend.h
-    src/tabpagervirtualdesktopinfo.cpp
-    src/tabpagervirtualdesktopinfo.h
+    src/taskmanagervirtualdesktopinfoport.cpp
+    src/taskmanagervirtualdesktopinfoport.h
     src/taskmanagerdesktopsource.cpp
     src/taskmanagerdesktopsource.h
 )

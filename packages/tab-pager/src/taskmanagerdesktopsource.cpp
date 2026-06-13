@@ -83,7 +83,7 @@ bool diagnosticsEqual(const QList<TaskManagerDesktopSourceDiagnostic> &left,
 }
 
 TaskManagerDesktopSourceMappingResult
-mapDesktopSourceState(const TabPagerVirtualDesktopInfo &info) {
+mapDesktopSourceState(const TaskManagerVirtualDesktopInfoPort &info) {
   return taskManagerDesktopSourceMappingFromRawState(TaskManagerDesktopRawState{
       .desktopIds = info.desktopIds(),
       .desktopNames = info.desktopNames(),
@@ -93,28 +93,31 @@ mapDesktopSourceState(const TabPagerVirtualDesktopInfo &info) {
 } // namespace
 
 TaskManagerDesktopSource::TaskManagerDesktopSource(QObject *parent)
-    : TaskManagerDesktopSource(createTaskManagerVirtualDesktopInfo(), parent) {}
+    : TaskManagerDesktopSource(createTaskManagerVirtualDesktopInfoPort(),
+                               parent) {}
 
 TaskManagerDesktopSource::TaskManagerDesktopSource(
-    std::unique_ptr<TabPagerVirtualDesktopInfo> info, QObject *parent)
+    std::unique_ptr<TaskManagerVirtualDesktopInfoPort> info, QObject *parent)
     : TabPagerDesktopSource(parent), m_info(std::move(info)) {
   if (m_info == nullptr) {
     qFatal("TaskManagerDesktopSource requires a non-null "
-           "TabPagerVirtualDesktopInfo");
+           "TaskManagerVirtualDesktopInfoPort");
   }
 
   connectDesktopInfo();
 }
 
 void TaskManagerDesktopSource::connectDesktopInfo() {
-  connect(m_info.get(), &TabPagerVirtualDesktopInfo::desktopIdsChanged, this,
-          &TaskManagerDesktopSource::handleDesktopInfoChanged);
-  connect(m_info.get(), &TabPagerVirtualDesktopInfo::desktopNamesChanged, this,
-          &TaskManagerDesktopSource::handleDesktopInfoChanged);
-  connect(m_info.get(), &TabPagerVirtualDesktopInfo::numberOfDesktopsChanged,
+  connect(m_info.get(), &TaskManagerVirtualDesktopInfoPort::desktopIdsChanged,
           this, &TaskManagerDesktopSource::handleDesktopInfoChanged);
-  connect(m_info.get(), &TabPagerVirtualDesktopInfo::currentDesktopChanged,
+  connect(m_info.get(), &TaskManagerVirtualDesktopInfoPort::desktopNamesChanged,
           this, &TaskManagerDesktopSource::handleDesktopInfoChanged);
+  connect(m_info.get(),
+          &TaskManagerVirtualDesktopInfoPort::numberOfDesktopsChanged, this,
+          &TaskManagerDesktopSource::handleDesktopInfoChanged);
+  connect(m_info.get(),
+          &TaskManagerVirtualDesktopInfoPort::currentDesktopChanged, this,
+          &TaskManagerDesktopSource::handleDesktopInfoChanged);
   static_cast<void>(refreshDiagnostics());
 }
 
@@ -166,15 +169,15 @@ void TaskManagerDesktopSource::activateDesktop(
 
 TaskManagerNavigationSettingsSource::TaskManagerNavigationSettingsSource(
     QObject *parent)
-    : TaskManagerNavigationSettingsSource(createTaskManagerVirtualDesktopInfo(),
-                                          parent) {}
+    : TaskManagerNavigationSettingsSource(
+          createTaskManagerVirtualDesktopInfoPort(), parent) {}
 
 TaskManagerNavigationSettingsSource::TaskManagerNavigationSettingsSource(
-    std::unique_ptr<TabPagerVirtualDesktopInfo> info, QObject *parent)
+    std::unique_ptr<TaskManagerVirtualDesktopInfoPort> info, QObject *parent)
     : TabPagerNavigationSettingsSource(parent), m_info(std::move(info)) {
   if (m_info == nullptr) {
     qFatal("TaskManagerNavigationSettingsSource requires a non-null "
-           "TabPagerVirtualDesktopInfo");
+           "TaskManagerVirtualDesktopInfoPort");
   }
 
   connectDesktopInfo();
@@ -185,7 +188,8 @@ TaskManagerNavigationSettingsSource::~TaskManagerNavigationSettingsSource() =
 
 void TaskManagerNavigationSettingsSource::connectDesktopInfo() {
   connect(m_info.get(),
-          &TabPagerVirtualDesktopInfo::navigationWrappingAroundChanged, this,
+          &TaskManagerVirtualDesktopInfoPort::navigationWrappingAroundChanged,
+          this,
           &TabPagerNavigationSettingsSource::navigationWrappingAroundChanged);
 }
 

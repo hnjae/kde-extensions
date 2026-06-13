@@ -10,12 +10,12 @@
 
 #include <memory>
 
-class TabPagerVirtualDesktopInfo : public QObject {
+class TaskManagerVirtualDesktopInfoPort : public QObject {
   Q_OBJECT
 
 public:
-  explicit TabPagerVirtualDesktopInfo(QObject *parent = nullptr);
-  ~TabPagerVirtualDesktopInfo() override;
+  explicit TaskManagerVirtualDesktopInfoPort(QObject *parent = nullptr);
+  ~TaskManagerVirtualDesktopInfoPort() override;
 
   [[nodiscard]] virtual QVariantList desktopIds() const = 0;
   [[nodiscard]] virtual QStringList desktopNames() const = 0;
@@ -31,5 +31,5 @@ Q_SIGNALS:
   void navigationWrappingAroundChanged();
 };
 
-[[nodiscard]] std::unique_ptr<TabPagerVirtualDesktopInfo>
-createTaskManagerVirtualDesktopInfo();
+[[nodiscard]] std::unique_ptr<TaskManagerVirtualDesktopInfoPort>
+createTaskManagerVirtualDesktopInfoPort();

@@ -48,7 +48,7 @@ private:
   inline static int s_warningCount = 0;
 };
 
-class FakeVirtualDesktopInfo final : public TabPagerVirtualDesktopInfo {
+class FakeVirtualDesktopInfo final : public TaskManagerVirtualDesktopInfoPort {
 public:
   explicit FakeVirtualDesktopInfo(QVariantList desktopIds = {},
                                   QStringList desktopNames = {},
