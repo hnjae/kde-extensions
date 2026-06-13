@@ -56,10 +56,8 @@ void TabPagerDesktopRowsTest::detectsChangedRowRanges() {
   QCOMPARE(rowChanges->size(), 2);
   QCOMPARE(rowChanges->at(0).firstRow, 0);
   QCOMPARE(rowChanges->at(0).lastRow, 1);
-  QCOMPARE(rowChanges->at(0).roles, (QList<int>{
-                                        role(TabPagerDesktopRowRole::Name),
-                                        role(TabPagerDesktopRowRole::Label),
-                                    }));
+  QCOMPARE(rowChanges->at(0).roles,
+           QList<int>{role(TabPagerDesktopRowRole::Label)});
   QCOMPARE(rowChanges->at(1).firstRow, 2);
   QCOMPARE(rowChanges->at(1).lastRow, 2);
   QCOMPARE(rowChanges->at(1).roles,

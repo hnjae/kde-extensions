@@ -88,7 +88,6 @@ void TabPagerDesktopModelStateTest::plansChangedDesktopRowRoles() {
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 0);
   QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
-                                       role(TabPagerDesktopRowRole::Name),
                                        role(TabPagerDesktopRowRole::Label),
                                        role(TabPagerDesktopRowRole::Active),
                                    }));
@@ -199,10 +198,8 @@ void TabPagerDesktopModelStateTest::plansDesktopDataRowUpdates() {
   const QList<TabPagerDesktopRowsChange> &rowUpdates = transition.rowChanges;
   QCOMPARE(rowUpdates.at(0).firstRow, 1);
   QCOMPARE(rowUpdates.at(0).lastRow, 1);
-  QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
-                                       role(TabPagerDesktopRowRole::Name),
-                                       role(TabPagerDesktopRowRole::Label),
-                                   }));
+  QCOMPARE(rowUpdates.at(0).roles,
+           QList<int>{role(TabPagerDesktopRowRole::Label)});
 }
 
 void TabPagerDesktopModelStateTest::groupsAdjacentDesktopDataRowUpdates() {
@@ -218,10 +215,8 @@ void TabPagerDesktopModelStateTest::groupsAdjacentDesktopDataRowUpdates() {
   const QList<TabPagerDesktopRowsChange> &rowUpdates = transition.rowChanges;
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 1);
-  QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
-                                       role(TabPagerDesktopRowRole::Name),
-                                       role(TabPagerDesktopRowRole::Label),
-                                   }));
+  QCOMPARE(rowUpdates.at(0).roles,
+           QList<int>{role(TabPagerDesktopRowRole::Label)});
 }
 
 void TabPagerDesktopModelStateTest::
@@ -238,10 +233,8 @@ void TabPagerDesktopModelStateTest::
   const QList<TabPagerDesktopRowsChange> &rowUpdates = transition.rowChanges;
   QCOMPARE(rowUpdates.at(0).firstRow, 0);
   QCOMPARE(rowUpdates.at(0).lastRow, 0);
-  QCOMPARE(rowUpdates.at(0).roles, (QList<int>{
-                                       role(TabPagerDesktopRowRole::Name),
-                                       role(TabPagerDesktopRowRole::Label),
-                                   }));
+  QCOMPARE(rowUpdates.at(0).roles,
+           QList<int>{role(TabPagerDesktopRowRole::Label)});
   QCOMPARE(rowUpdates.at(1).firstRow, 1);
   QCOMPARE(rowUpdates.at(1).lastRow, 1);
   QCOMPARE(rowUpdates.at(1).roles,

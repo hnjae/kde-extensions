@@ -28,6 +28,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - `TabPagerDesktopController` depends on `TabPagerDesktopStateStore`, not `TabPagerDesktopModel`; controller tests can use a fake state store.
 - Optional/test-only navigation convenience wrappers were removed; typed navigation/activation results are the canonical internal APIs.
 - `TabPagerBackend`, `TabPagerDesktopModel`, and row projection are documented as an intentional QML view-model boundary owning label formatting and `labelFont`.
+- Row/model-state tests now expect only public `label` and `active` role updates after the desktop model role narrowing.
 
 ## Remaining
 
@@ -46,14 +47,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: documented the already-characterized pending wheel-delta behavior in the user-facing interaction spec.
-- Files changed: `docs/spec/SPEC.md`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: no source, model, QML, activation, label text, label font, layout, or navigation runtime behavior changed; wheel accumulation continues to persist across navigation context changes and completed stopped-at-edge wheel steps remain consumed.
-- Target-doc cleanup: removed the resolved P2 uncertain wheel-delta context-scoping finding, kept the user-visible accumulation contract as an invariant for any future wheel-input extraction, and left the separate wheel input mapping/sign-handling refactor open.
-- Commands passed: `ctest --test-dir build --output-on-failure -R tabpagerdesktopnavigator`; `git diff --check`; `nix develop "path:../..#default" -c rumdl check DESIGN_REVIEW_CORRECT_END_STATE.md DESIGN_REVIEW_PROGRESS.md docs/spec/SPEC.md`; `nix develop "path:../..#default" -c typos DESIGN_REVIEW_CORRECT_END_STATE.md DESIGN_REVIEW_PROGRESS.md docs/spec/SPEC.md`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md packages/tab-pager/docs/spec/SPEC.md` from the repository root; `nix develop ".#default" -c reuse lint` from the repository root.
-- Commands failed: `ctest --test-dir build --output-on-failure` failed in existing non-wheel tests unrelated to this docs-only checkpoint. `tabpagerdesktoprows` and `tabpagerdesktopmodelstate` still expect `Name` role updates, while the current model behavior exposes narrowed public roles.
-- Deviations: no new characterization tests were added because existing navigator tests already cover current-desktop changes, desktop-count changes, wrapping changes, no-current contexts, and non-wrapping edge stops.
-- Ambiguity: no remaining ambiguity for this checkpoint; the spec now chooses the existing characterized behavior rather than changing runtime behavior.
+- Checkpoint: aligned row/model-state tests with the completed public desktop model role narrowing.
+- Files changed: `tests/tabpagerdesktoprows_test.cpp`, `tests/tabpagerdesktopmodelstate_test.cpp`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: no production source, model, QML, activation, label text, label font, layout, or navigation runtime behavior changed; tests now assert the current public role update contract.
+- Target-doc cleanup: none. The target document already records the narrowed public roles as completed context and this checkpoint only repaired stale test expectations.
+- Commands passed: `cmake --build build --target tabpagerdesktoprows_test tabpagerdesktopmodelstate_test`; `ctest --test-dir build --output-on-failure -R 'tabpagerdesktoprows|tabpagerdesktopmodelstate'`; `git diff --check`; `ctest --test-dir build --output-on-failure`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/tests/tabpagerdesktoprows_test.cpp packages/tab-pager/tests/tabpagerdesktopmodelstate_test.cpp` from the repository root.
+- Commands failed: none for this checkpoint.
+- Deviations: no characterization tests were added because this checkpoint updated stale tests to match the already-implemented public role contract and did not edit behavior-sensitive production code.
+- Ambiguity: no design ambiguity found; the existing implementation and `tabpagerdesktoprow_test` agree that only `label` and `active` are public row roles.
 
 ## Notes
 
