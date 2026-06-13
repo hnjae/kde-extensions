@@ -20,6 +20,7 @@ class TabPagerDesktopNavigatorTest : public QObject {
 private Q_SLOTS:
   void resolvesNavigationTarget_data();
   void resolvesNavigationTarget();
+  void resolvesWheelNavigationTarget();
 };
 
 void TabPagerDesktopNavigatorTest::resolvesNavigationTarget_data() {
@@ -88,6 +89,31 @@ void TabPagerDesktopNavigatorTest::resolvesNavigationTarget() {
 
   expectNavigationResult(navigator.targetForOffset(context, offset),
                          expectedType, expectedTargetIndex);
+}
+
+void TabPagerDesktopNavigatorTest::resolvesWheelNavigationTarget() {
+  TabPagerDesktopNavigator navigator;
+  const TabPagerDesktopNavigationContext context{
+      .currentIndex = 1,
+      .desktopCount = 3,
+  };
+
+  expectNavigationResult(
+      navigator.targetForWheelNavigationResult(
+          context,
+          TabPagerWheelNavigationResult{
+              .type = TabPagerWheelNavigationResultType::NoWheelStep,
+              .offset = 0,
+          }),
+      TabPagerDesktopNavigationResultType::NoWheelStep);
+  expectNavigationResult(
+      navigator.targetForWheelNavigationResult(
+          context,
+          TabPagerWheelNavigationResult{
+              .type = TabPagerWheelNavigationResultType::Offset,
+              .offset = -1,
+          }),
+      TabPagerDesktopNavigationResultType::Target, 0);
 }
 
 QTEST_MAIN(TabPagerDesktopNavigatorTest)
