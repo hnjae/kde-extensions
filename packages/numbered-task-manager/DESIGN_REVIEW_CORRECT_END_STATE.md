@@ -21,7 +21,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 2. **Core descriptor invariants are implicit.** `TaskEntryLogic.hasValidModelIndex({})` returns true while diagnostics report `unknown-model-index-shape`, and activation routing trusts `sourceModel` even when it could disagree with visible-item `kind`.
 3. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
 4. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, launcher sync orchestration is mostly QML imperative code, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
-5. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into activation, context menu, launcher sync, task movement, launcher activity, and task command adapters, while launcher pin/unpin commands now use a narrow add/remove/list port.
+5. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into activation, context menu role/opening paths, launcher sync, task movement, and launcher activity adapters, while launcher pin/unpin commands and context-menu task commands now use narrow ports.
 
 ## Single Source of Truth Violations
 
@@ -241,7 +241,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `main.qml` still passes the same `tasksModel` as `taskModel` and `launcherModel` to several adapters; `LauncherCommandAdapter.qml` now uses `LauncherCommandPort.qml` for add/remove/list access; `LauncherSyncAdapter.qml` reads and writes `taskModel.launcherList`; `TaskMoveAdapter.qml` reads `taskModel.launcherList` and calls `launcherPosition(...)`; `TaskContextMenuLauncherActivityAdapter.qml` calls `launcherModel.launcherActivities(...)`; `TaskContextMenuTaskCommandAdapter.qml` now uses an explicit supported-method map, but still receives the raw task model for context-menu task requests.
+**Evidence:** `main.qml` still passes the same `tasksModel` as `taskModel` and `launcherModel` to several adapters; `LauncherCommandAdapter.qml` now uses `LauncherCommandPort.qml` for add/remove/list access; `TaskContextMenuTaskCommandAdapter.qml` now uses `TaskCommandPort.qml` for supported context-menu task request execution; `LauncherSyncAdapter.qml` reads and writes `taskModel.launcherList`; `TaskMoveAdapter.qml` reads `taskModel.launcherList` and calls `launcherPosition(...)`; `TaskContextMenuLauncherActivityAdapter.qml` calls `launcherModel.launcherActivities(...)`.
 
 **Current state:** Several adapters receive the full Plasma `TasksModel` and use different slices of its API.
 
@@ -249,7 +249,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Correct end state:** Use narrow ports around the raw Plasma model. A task command executor should expose explicit supported task request methods. A launcher port should expose launcher list, position, activities, add/remove, and list write operations. A sync owner should handle config persistence. The raw `TasksModel` should be contained at root/platform wiring boundaries.
 
-**Suggested migration:** Introduce wrapper ports without changing behavior. Context-menu task requests now have an explicit allowlist, and launcher pin/unpin commands now use a narrow add/remove/list port; continue by wrapping launcher model access used by activity and reorder code. Finally update adapters to depend on those wrappers.
+**Suggested migration:** Introduce wrapper ports without changing behavior. Context-menu task requests now have an explicit allowlist and a narrow task-command port, and launcher pin/unpin commands now use a narrow add/remove/list port; continue by wrapping launcher model access used by activity and reorder code. Finally update adapters to depend on those wrappers.
 
 **Acceptance criteria:** No adapter except the root/platform adapter receives raw `TasksModel` for unrelated purposes. Context-menu task execution has an explicit supported-method map. Unit tests can mock each port with only the methods that feature uses.
 
@@ -303,19 +303,19 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** Footer separator visibility and footer action state are covered by `.mjs` tests. `TaskContextMenu.qml` no longer directly calls `.trigger()`. Missing configure/edit actions produce structured no-op or diagnostic results.
 
-### Finding: Context-menu command execution still lacks a narrow port
+### Finding: Context-menu command execution has a narrow port
 
 **Priority:** P2.
 
-**Evidence:** `TaskActionLogic.mjs` validates context-menu task request names against an explicit supported-method allowlist, and `TaskContextMenuTaskCommandAdapter.qml` executes supported `TasksModel.request*` calls through explicit branches.
+**Evidence:** `TaskActionLogic.mjs` validates context-menu task request names against an explicit supported-method allowlist, and `TaskContextMenuTaskCommandAdapter.qml` executes supported context-menu task request methods through `TaskCommandPort.qml`.
 
-**Current state:** The command path uses an explicit supported command map while preserving existing descriptor names.
+**Current state:** The command path uses an explicit supported command map and a narrow task-command port while preserving existing descriptor names.
 
-**Design concern:** This specific dynamic-dispatch risk is closed. The broader raw-model-port concern remains because the adapter still receives the raw task model rather than a narrow task-command port.
+**Design concern:** This specific dynamic-dispatch and raw task-command adapter risk is closed. The broader raw-model-port concern remains for other adapters and context-menu role/opening paths.
 
-**Correct end state:** Context-menu task commands should be executed through a narrow task-command port that exposes only the supported Plasma request methods and argument shapes.
+**Correct end state:** Context-menu task commands should continue to execute through a narrow task-command port that exposes only the supported Plasma request methods and argument shapes.
 
-**Suggested migration:** Keep the explicit command executor helper, then wrap the raw task model behind a task-command port so the adapter no longer receives unrelated `TasksModel` API surface.
+**Suggested migration:** Keep future context-menu task command changes on the task-command port boundary so the adapter does not regain unrelated `TasksModel` API surface.
 
 **Acceptance criteria:** The task command adapter depends on a task-command port that can be mocked with only supported request methods. Unsupported command names remain structured diagnostics before any Plasma method lookup.
 
@@ -473,7 +473,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** The same `TasksModel` instance still flows into activation, context menu, launcher sync, task movement, launcher activity, and task command adapters. Launcher pin/unpin commands now use a narrow add/remove/list port.
+**Evidence:** The same `TasksModel` instance still flows into activation, context menu role/opening paths, launcher sync, task movement, and launcher activity adapters. Launcher pin/unpin commands and context-menu task commands now use narrow ports.
 
 **Current state:** Feature ownership is inferred from which object methods an adapter happens to call.
 
