@@ -294,7 +294,8 @@ void TabPagerBackendTest::updatesDesktopAndNavigationStateTogether() {
           defaultDesktop("a", 1),
           defaultDesktop("b", 2),
       },
-      desktopId("b"), true);
+      desktopId("b"));
+  fixture.settings->setNavigationWrappingAround(true);
 
   QCOMPARE(fixture.backend.count(), 2);
   QCOMPARE(fixture.backend.currentIndex(), 1);

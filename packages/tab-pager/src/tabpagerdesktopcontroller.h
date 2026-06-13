@@ -7,6 +7,7 @@
 #include "tabpagerdesktopmodel.h"
 #include "tabpagerdesktopnavigator.h"
 #include "tabpagerdesktopsource.h"
+#include "tabpagernavigationsettingssource.h"
 
 #include <QObject>
 
@@ -18,6 +19,7 @@ class TabPagerDesktopController final : public QObject {
 public:
   explicit TabPagerDesktopController(
       std::unique_ptr<TabPagerDesktopSource> source,
+      std::unique_ptr<TabPagerNavigationSettingsSource> navigationSettings,
       TabPagerDesktopModel &model, QObject *parent = nullptr);
   ~TabPagerDesktopController() override;
 
@@ -51,5 +53,6 @@ private:
 
   TabPagerDesktopModel &m_model;
   std::unique_ptr<TabPagerDesktopSource> m_source;
+  std::unique_ptr<TabPagerNavigationSettingsSource> m_navigationSettings;
   TabPagerDesktopNavigator m_navigator;
 };

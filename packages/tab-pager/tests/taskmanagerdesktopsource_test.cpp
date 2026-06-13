@@ -137,6 +137,26 @@ private:
       : info(fakeInfo.get()), source(std::move(fakeInfo)) {}
 };
 
+struct SettingsFixture {
+private:
+  struct AdoptInfo {};
+
+public:
+  explicit SettingsFixture(bool navigationWrappingAround = false)
+      : SettingsFixture(AdoptInfo{},
+                        std::make_unique<FakeVirtualDesktopInfo>(
+                            QVariantList{}, QStringList{}, QVariant{},
+                            navigationWrappingAround)) {}
+
+  FakeVirtualDesktopInfo *info = nullptr;
+  TaskManagerNavigationSettingsSource source;
+
+private:
+  explicit SettingsFixture([[maybe_unused]] AdoptInfo adoptInfo,
+                           std::unique_ptr<FakeVirtualDesktopInfo> fakeInfo)
+      : info(fakeInfo.get()), source(std::move(fakeInfo)) {}
+};
+
 [[nodiscard]] TabPagerDesktopSourceState
 sourceStateFromRawState(QVariantList desktopIds, QStringList desktopNames = {},
                         QVariant currentDesktop = {}) {
@@ -164,7 +184,7 @@ private Q_SLOTS:
   void doesNotRepeatUnchangedSourceDiagnosticsOnRepeatedStateReads();
   void logsSourceDiagnosticsWhenDiagnosticStateChanges();
   void emitsSourceStateChangedWhenVirtualDesktopInfoChanges();
-  void emitsNavigationWrappingChangedSeparatelyFromSourceState();
+  void exposesNavigationWrappingThroughSettingsSource();
   void requestsActivationForValidDesktopIdsOnly();
 };
 
@@ -185,7 +205,6 @@ void TaskManagerDesktopSourceTest::projectsVirtualDesktopInfoToSourceState() {
   QCOMPARE(state.desktopSnapshot.desktops().at(1).name, QStringLiteral("Work"));
   QCOMPARE(state.desktopSnapshot.currentDesktop(),
            TabPagerDesktopId::fromVariant(QStringLiteral("b")));
-  QCOMPARE(fixture.source.navigationWrappingAround(), true);
 }
 
 void TaskManagerDesktopSourceTest::projectsMissingDesktopNamesAsEmptyNames() {
@@ -398,18 +417,21 @@ void TaskManagerDesktopSourceTest::
 }
 
 void TaskManagerDesktopSourceTest::
-    emitsNavigationWrappingChangedSeparatelyFromSourceState() {
-  SourceFixture fixture;
-  QSignalSpy sourceStateSpy(&fixture.source,
+    exposesNavigationWrappingThroughSettingsSource() {
+  SourceFixture desktopFixture;
+  SettingsFixture settingsFixture;
+  QSignalSpy sourceStateSpy(&desktopFixture.source,
                             &TabPagerDesktopSource::sourceStateChanged);
   QSignalSpy wrappingSpy(
-      &fixture.source, &TabPagerDesktopSource::navigationWrappingAroundChanged);
+      &settingsFixture.source,
+      &TabPagerNavigationSettingsSource::navigationWrappingAroundChanged);
 
-  fixture.info->setNavigationWrappingAround(true);
+  desktopFixture.info->setNavigationWrappingAround(true);
+  settingsFixture.info->setNavigationWrappingAround(true);
 
   QCOMPARE(sourceStateSpy.count(), 0);
   QCOMPARE(wrappingSpy.count(), 1);
-  QCOMPARE(fixture.source.navigationWrappingAround(), true);
+  QCOMPARE(settingsFixture.source.navigationWrappingAround(), true);
 }
 
 void TaskManagerDesktopSourceTest::requestsActivationForValidDesktopIdsOnly() {

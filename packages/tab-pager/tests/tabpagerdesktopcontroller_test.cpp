@@ -14,6 +14,7 @@ namespace {
 using TabPagerTest::defaultDesktop;
 using TabPagerTest::desktopId;
 using TabPagerTest::FakeDesktopSource;
+using TabPagerTest::FakeNavigationSettingsSource;
 
 constexpr int wheelStepDelta = 120;
 constexpr int halfWheelStepDelta = wheelStepDelta / 2;
@@ -25,24 +26,30 @@ void expectActivationResult(TabPagerActivationResult actual,
 
 struct ControllerFixture {
 private:
-  struct AdoptSource {};
+  struct AdoptSources {};
 
 public:
   explicit ControllerFixture(const QList<TabPagerDesktop> &desktops,
                              const TabPagerDesktopId &currentDesktop = {},
                              bool navigationWrappingAround = false)
-      : ControllerFixture(AdoptSource{}, std::make_unique<FakeDesktopSource>(
-                                             desktops, currentDesktop,
-                                             navigationWrappingAround)) {}
+      : ControllerFixture(
+            AdoptSources{},
+            std::make_unique<FakeDesktopSource>(desktops, currentDesktop),
+            std::make_unique<FakeNavigationSettingsSource>(
+                navigationWrappingAround)) {}
 
   FakeDesktopSource *source = nullptr;
+  FakeNavigationSettingsSource *settings = nullptr;
   TabPagerDesktopModel model;
   TabPagerDesktopController controller;
 
 private:
-  explicit ControllerFixture([[maybe_unused]] AdoptSource adoptSource,
-                             std::unique_ptr<FakeDesktopSource> fakeSource)
-      : source(fakeSource.get()), controller(std::move(fakeSource), model) {}
+  explicit ControllerFixture(
+      [[maybe_unused]] AdoptSources adoptSources,
+      std::unique_ptr<FakeDesktopSource> fakeSource,
+      std::unique_ptr<FakeNavigationSettingsSource> fakeSettings)
+      : source(fakeSource.get()), settings(fakeSettings.get()),
+        controller(std::move(fakeSource), std::move(fakeSettings), model) {}
 };
 } // namespace
 
@@ -75,7 +82,8 @@ void TabPagerDesktopControllerTest::
           defaultDesktop("a", 1),
           defaultDesktop("b", 2),
       },
-      desktopId("b"), true);
+      desktopId("b"));
+  fixture.settings->setNavigationWrappingAround(true);
 
   QCOMPARE(fixture.model.count(), 2);
   QCOMPARE(fixture.model.currentIndex(), 1);
@@ -97,7 +105,7 @@ void TabPagerDesktopControllerTest::
       &fixture.controller,
       &TabPagerDesktopController::navigationWrappingAroundChanged);
 
-  fixture.source->setNavigationWrappingAround(true);
+  fixture.settings->setNavigationWrappingAround(true);
 
   QCOMPARE(fixture.model.count(), 1);
   QCOMPARE(fixture.model.currentIndex(), -1);

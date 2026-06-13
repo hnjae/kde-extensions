@@ -29,9 +29,12 @@ namespace {
 }
 } // namespace
 
-TabPagerBackend::TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
-                                 QObject *parent)
-    : QObject(parent), m_controller(std::move(source), m_model) {
+TabPagerBackend::TabPagerBackend(
+    std::unique_ptr<TabPagerDesktopSource> source,
+    std::unique_ptr<TabPagerNavigationSettingsSource> navigationSettings,
+    QObject *parent)
+    : QObject(parent),
+      m_controller(std::move(source), std::move(navigationSettings), m_model) {
   connect(&m_model, &TabPagerDesktopModel::countChanged, this,
           &TabPagerBackend::countChanged);
   connect(&m_model, &TabPagerDesktopModel::currentIndexChanged, this,

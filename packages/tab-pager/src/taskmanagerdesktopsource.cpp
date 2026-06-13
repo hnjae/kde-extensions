@@ -115,9 +115,6 @@ void TaskManagerDesktopSource::connectDesktopInfo() {
           this, &TabPagerDesktopSource::sourceStateChanged);
   connect(m_info.get(), &TabPagerVirtualDesktopInfo::currentDesktopChanged,
           this, &TabPagerDesktopSource::sourceStateChanged);
-  connect(m_info.get(),
-          &TabPagerVirtualDesktopInfo::navigationWrappingAroundChanged, this,
-          &TabPagerDesktopSource::navigationWrappingAroundChanged);
 }
 
 TaskManagerDesktopSource::~TaskManagerDesktopSource() = default;
@@ -127,10 +124,6 @@ TabPagerDesktopSourceState TaskManagerDesktopSource::sourceState() const {
       mapDesktopSourceState(*m_info);
   logDiagnosticsIfChanged(result.diagnostics);
   return result.state;
-}
-
-bool TaskManagerDesktopSource::navigationWrappingAround() const {
-  return m_info->navigationWrappingAround();
 }
 
 QList<TaskManagerDesktopSourceDiagnostic>
@@ -155,4 +148,33 @@ void TaskManagerDesktopSource::activateDesktop(
   if (desktopId.isValid()) {
     m_info->requestActivate(desktopId.toVariant());
   }
+}
+
+TaskManagerNavigationSettingsSource::TaskManagerNavigationSettingsSource(
+    QObject *parent)
+    : TaskManagerNavigationSettingsSource(createTaskManagerVirtualDesktopInfo(),
+                                          parent) {}
+
+TaskManagerNavigationSettingsSource::TaskManagerNavigationSettingsSource(
+    std::unique_ptr<TabPagerVirtualDesktopInfo> info, QObject *parent)
+    : TabPagerNavigationSettingsSource(parent), m_info(std::move(info)) {
+  if (m_info == nullptr) {
+    qFatal("TaskManagerNavigationSettingsSource requires a non-null "
+           "TabPagerVirtualDesktopInfo");
+  }
+
+  connectDesktopInfo();
+}
+
+TaskManagerNavigationSettingsSource::~TaskManagerNavigationSettingsSource() =
+    default;
+
+void TaskManagerNavigationSettingsSource::connectDesktopInfo() {
+  connect(m_info.get(),
+          &TabPagerVirtualDesktopInfo::navigationWrappingAroundChanged, this,
+          &TabPagerNavigationSettingsSource::navigationWrappingAroundChanged);
+}
+
+bool TaskManagerNavigationSettingsSource::navigationWrappingAround() const {
+  return m_info->navigationWrappingAround();
 }

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tabpagerdesktopsource.h"
+#include "tabpagernavigationsettingssource.h"
 #include "tabpagervirtualdesktopinfo.h"
 #include "taskmanagerdesktopmapper.h"
 
@@ -20,7 +21,6 @@ public:
   ~TaskManagerDesktopSource() override;
 
   [[nodiscard]] TabPagerDesktopSourceState sourceState() const override;
-  [[nodiscard]] bool navigationWrappingAround() const override;
   [[nodiscard]] QList<TaskManagerDesktopSourceDiagnostic>
   sourceDiagnostics() const;
   void activateDesktop(const TabPagerDesktopId &desktopId) override;
@@ -33,4 +33,23 @@ private:
   std::unique_ptr<TabPagerVirtualDesktopInfo> m_info;
   mutable QList<TaskManagerDesktopSourceDiagnostic> m_loggedDiagnostics;
   mutable bool m_hasLoggedDiagnostics = false;
+};
+
+class TaskManagerNavigationSettingsSource final
+    : public TabPagerNavigationSettingsSource {
+  Q_OBJECT
+
+public:
+  explicit TaskManagerNavigationSettingsSource(QObject *parent = nullptr);
+  explicit TaskManagerNavigationSettingsSource(
+      std::unique_ptr<TabPagerVirtualDesktopInfo> info,
+      QObject *parent = nullptr);
+  ~TaskManagerNavigationSettingsSource() override;
+
+  [[nodiscard]] bool navigationWrappingAround() const override;
+
+private:
+  void connectDesktopInfo();
+
+  std::unique_ptr<TabPagerVirtualDesktopInfo> m_info;
 };

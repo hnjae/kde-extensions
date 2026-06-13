@@ -8,6 +8,8 @@
 #include <memory>
 
 TabPagerQmlBackend::TabPagerQmlBackend(QObject *parent)
-    : TabPagerBackend(std::make_unique<TaskManagerDesktopSource>(), parent) {}
+    : TabPagerBackend(std::make_unique<TaskManagerDesktopSource>(),
+                      std::make_unique<TaskManagerNavigationSettingsSource>(),
+                      parent) {}
 
 TabPagerQmlBackend::~TabPagerQmlBackend() = default;

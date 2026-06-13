@@ -4,6 +4,7 @@
 #pragma once
 
 #include "tabpagerbackend.h"
+#include "tabpagernavigationsettingssource.h"
 #include "tabpagertesthelpers.h"
 
 #include <memory>
@@ -13,20 +14,14 @@ namespace TabPagerTest {
 class FakeDesktopSource final : public TabPagerDesktopSource {
 public:
   explicit FakeDesktopSource(const QList<TabPagerDesktop> &desktops = {},
-                             TabPagerDesktopId currentDesktop = {},
-                             bool navigationWrappingAround = false)
-      : m_desktops(desktops), m_currentDesktop(std::move(currentDesktop)),
-        m_navigationWrappingAround(navigationWrappingAround) {}
+                             TabPagerDesktopId currentDesktop = {})
+      : m_desktops(desktops), m_currentDesktop(std::move(currentDesktop)) {}
 
   [[nodiscard]] TabPagerDesktopSourceState sourceState() const override {
     return TabPagerDesktopSourceState{
         .desktopSnapshot =
             TabPagerTest::desktopSnapshot(m_desktops, m_currentDesktop),
     };
-  }
-
-  [[nodiscard]] bool navigationWrappingAround() const override {
-    return m_navigationWrappingAround;
   }
 
   void activateDesktop(const TabPagerDesktopId &desktopId) override {
@@ -50,19 +45,11 @@ public:
     Q_EMIT sourceStateChanged();
   }
 
-  void setNavigationWrappingAround(bool navigationWrappingAround) {
-    m_navigationWrappingAround = navigationWrappingAround;
-    Q_EMIT navigationWrappingAroundChanged();
-  }
-
   void setSourceState(const QList<TabPagerDesktop> &desktops,
-                      const TabPagerDesktopId &currentDesktop,
-                      bool navigationWrappingAround) {
+                      const TabPagerDesktopId &currentDesktop) {
     m_desktops = desktops;
     m_currentDesktop = currentDesktop;
-    m_navigationWrappingAround = navigationWrappingAround;
     Q_EMIT sourceStateChanged();
-    Q_EMIT navigationWrappingAroundChanged();
   }
 
   [[nodiscard]] QList<TabPagerDesktopId> activatedDesktops() const {
@@ -73,28 +60,52 @@ private:
   QList<TabPagerDesktop> m_desktops;
   QList<TabPagerDesktopId> m_activatedDesktops;
   TabPagerDesktopId m_currentDesktop;
+};
+
+class FakeNavigationSettingsSource final
+    : public TabPagerNavigationSettingsSource {
+public:
+  explicit FakeNavigationSettingsSource(bool navigationWrappingAround = false)
+      : m_navigationWrappingAround(navigationWrappingAround) {}
+
+  [[nodiscard]] bool navigationWrappingAround() const override {
+    return m_navigationWrappingAround;
+  }
+
+  void setNavigationWrappingAround(bool navigationWrappingAround) {
+    m_navigationWrappingAround = navigationWrappingAround;
+    Q_EMIT navigationWrappingAroundChanged();
+  }
+
+private:
   bool m_navigationWrappingAround = false;
 };
 
 struct BackendFixture {
 private:
-  struct AdoptSource {};
+  struct AdoptSources {};
 
 public:
   explicit BackendFixture(const QList<TabPagerDesktop> &desktops,
                           const TabPagerDesktopId &currentDesktop = {},
                           bool navigationWrappingAround = false)
-      : BackendFixture(AdoptSource{}, std::make_unique<FakeDesktopSource>(
-                                          desktops, currentDesktop,
-                                          navigationWrappingAround)) {}
+      : BackendFixture(
+            AdoptSources{},
+            std::make_unique<FakeDesktopSource>(desktops, currentDesktop),
+            std::make_unique<FakeNavigationSettingsSource>(
+                navigationWrappingAround)) {}
 
   FakeDesktopSource *source = nullptr;
+  FakeNavigationSettingsSource *settings = nullptr;
   TabPagerBackend backend;
 
 private:
-  explicit BackendFixture([[maybe_unused]] AdoptSource adoptSource,
-                          std::unique_ptr<FakeDesktopSource> fakeSource)
-      : source(fakeSource.get()), backend(std::move(fakeSource)) {}
+  explicit BackendFixture(
+      [[maybe_unused]] AdoptSources adoptSources,
+      std::unique_ptr<FakeDesktopSource> fakeSource,
+      std::unique_ptr<FakeNavigationSettingsSource> fakeSettings)
+      : source(fakeSource.get()), settings(fakeSettings.get()),
+        backend(std::move(fakeSource), std::move(fakeSettings)) {}
 };
 
 } // namespace TabPagerTest

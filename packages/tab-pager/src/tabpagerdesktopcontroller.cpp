@@ -31,9 +31,11 @@ void logUnexpectedActivationNoOp(TabPagerActivationResult result, int index) {
 } // namespace
 
 TabPagerDesktopController::TabPagerDesktopController(
-    std::unique_ptr<TabPagerDesktopSource> source, TabPagerDesktopModel &model,
-    QObject *parent)
-    : QObject(parent), m_model(model), m_source(std::move(source)) {
+    std::unique_ptr<TabPagerDesktopSource> source,
+    std::unique_ptr<TabPagerNavigationSettingsSource> navigationSettings,
+    TabPagerDesktopModel &model, QObject *parent)
+    : QObject(parent), m_model(model), m_source(std::move(source)),
+      m_navigationSettings(std::move(navigationSettings)) {
   initializeSource();
 }
 
@@ -92,6 +94,10 @@ void TabPagerDesktopController::initializeSource() {
     qFatal("TabPagerDesktopController requires a non-null "
            "TabPagerDesktopSource");
   }
+  if (m_navigationSettings == nullptr) {
+    qFatal("TabPagerDesktopController requires a non-null "
+           "TabPagerNavigationSettingsSource");
+  }
 
   connectSource();
   reloadSourceState();
@@ -100,10 +106,11 @@ void TabPagerDesktopController::initializeSource() {
 void TabPagerDesktopController::connectSource() {
   connect(m_source.get(), &TabPagerDesktopSource::sourceStateChanged, this,
           &TabPagerDesktopController::reloadSourceState);
-  connect(m_source.get(),
-          &TabPagerDesktopSource::navigationWrappingAroundChanged, this,
-          [this]() {
-            applyNavigationWrappingAround(m_source->navigationWrappingAround());
+  connect(m_navigationSettings.get(),
+          &TabPagerNavigationSettingsSource::navigationWrappingAroundChanged,
+          this, [this]() {
+            applyNavigationWrappingAround(
+                m_navigationSettings->navigationWrappingAround());
           });
 }
 
@@ -114,7 +121,8 @@ void TabPagerDesktopController::reloadSourceState() {
 void TabPagerDesktopController::applySourceState(
     const TabPagerDesktopSourceState &state) {
   m_model.setDesktopSnapshot(state.desktopSnapshot);
-  applyNavigationWrappingAround(m_source->navigationWrappingAround());
+  applyNavigationWrappingAround(
+      m_navigationSettings->navigationWrappingAround());
 }
 
 void TabPagerDesktopController::applyNavigationWrappingAround(

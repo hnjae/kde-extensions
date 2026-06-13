@@ -52,6 +52,8 @@ add_library(tabpagermodel STATIC
     src/tabpagerdesktopsource.h
     src/tabpagerlogging.cpp
     src/tabpagerlogging.h
+    src/tabpagernavigationsettingssource.cpp
+    src/tabpagernavigationsettingssource.h
 )
 set_target_properties(tabpagermodel PROPERTIES
     POSITION_INDEPENDENT_CODE ON

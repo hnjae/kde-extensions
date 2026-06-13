@@ -19,8 +19,10 @@ class TabPagerBackend : public QObject {
   Q_PROPERTY(QFont labelFont READ labelFont CONSTANT)
 
 public:
-  explicit TabPagerBackend(std::unique_ptr<TabPagerDesktopSource> source,
-                           QObject *parent = nullptr);
+  explicit TabPagerBackend(
+      std::unique_ptr<TabPagerDesktopSource> source,
+      std::unique_ptr<TabPagerNavigationSettingsSource> navigationSettings,
+      QObject *parent = nullptr);
   ~TabPagerBackend() override;
 
   [[nodiscard]] QAbstractItemModel *model();
