@@ -3766,9 +3766,19 @@ assert.equal(
 );
 assert.equal(
   launcherActivityAdapterQml.includes(
-    "TaskContextMenuLogic.launcherActivityListSnapshot",
+    'import "TaskContextMenuLauncherActivityLogic.mjs" as LauncherActivityLogic',
   ),
   true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    "LauncherActivityLogic.launcherActivityListSnapshot",
+  ),
+  true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes("TaskContextMenuLogic"),
+  false,
 );
 assert.equal(
   launcherActivityAdapterQml.includes(

@@ -6,15 +6,10 @@ import {
   contextMenuTaskCommand,
 } from "./TaskActionLogic.mjs";
 import * as ActivityScopeLogic from "./ActivityScopeLogic.mjs";
+import * as LauncherActivityLogic from "./TaskContextMenuLauncherActivityLogic.mjs";
 import * as VirtualDesktopLogic from "./VirtualDesktopLogic.mjs";
 import { taskActivitiesAfterToggle } from "./TaskActivityLogic.mjs";
-import {
-  launcherActivitiesAfterAllToggle,
-  launcherActivitiesAfterToggle,
-  launcherActivityUpdate,
-  launcherPinState,
-  normalizedLauncherList,
-} from "./LauncherListLogic.mjs";
+import { launcherPinState } from "./LauncherListLogic.mjs";
 export {
   basicActionRoleSnapshot,
   boolRoleData,
@@ -27,6 +22,20 @@ export {
   taskRoleSnapshot,
   virtualDesktopRoleSnapshot,
 } from "./TaskContextMenuRoleLogic.mjs";
+export {
+  launcherActivitiesAction,
+  launcherActivitiesActionState,
+  launcherActivitiesVisible,
+  launcherActivityAction,
+  launcherActivityActionsSection,
+  launcherActivityListSnapshot,
+  launcherActivityMenuState,
+  launcherActivityToggleUpdateCommand,
+  launcherActivityUpdateCommand,
+  launcherAllActivitiesAction,
+  launcherAllActivitiesUpdateCommand,
+  replaceLauncherListCommand,
+} from "./TaskContextMenuLauncherActivityLogic.mjs";
 
 export function panelMenuPlacement(location, plasmaCoreTypes, plasmaMenu) {
   if (location === plasmaCoreTypes.LeftEdge) {
@@ -141,10 +150,6 @@ export function launcherPinStateSnapshot(
     currentActivity,
     launcherPosition,
   );
-}
-
-export function replaceLauncherListCommand(launchers) {
-  return contextMenuLauncherCommand("replaceLauncherList", launchers);
 }
 
 export function newInstanceActionState(taskState) {
@@ -555,44 +560,6 @@ export function closeActionState(taskState) {
   };
 }
 
-export function launcherActivitiesVisible(pinState, activityEntryCount) {
-  const state = pinState || {};
-  const count = Number(activityEntryCount || 0);
-  return Boolean(
-    state.canPin && state.isPinned && state.launcherUrl && count > 1,
-  );
-}
-
-export function launcherActivitiesActionState(
-  pinState,
-  activityEntryCount,
-  hasTaskModel,
-) {
-  const state = pinState || {};
-
-  return {
-    enabled: Boolean(hasTaskModel) && Boolean(state.canPin),
-    visible: launcherActivitiesVisible(state, activityEntryCount),
-  };
-}
-
-export function launcherActivitiesAction(
-  pinState,
-  activityEntryCount,
-  hasTaskModel,
-) {
-  return actionWithIcon(
-    Object.assign(
-      {},
-      launcherActivitiesActionState(pinState, activityEntryCount, hasTaskModel),
-      {
-        text: "Launcher Activities",
-      },
-    ),
-    "window-pin",
-  );
-}
-
 export function moreActionsSection(sectionState) {
   const state = sectionState || {};
   const actions = Array.from(state.actions || []);
@@ -606,148 +573,6 @@ export function moreActionsSection(sectionState) {
         visible,
       },
       "view-more-symbolic",
-    ),
-  };
-}
-
-export function launcherActivityListSnapshot(launcherActivities) {
-  return ActivityScopeLogic.normalizedActivityList(launcherActivities);
-}
-
-export function launcherActivityMenuState(launcherActivities, activityId) {
-  const activities = launcherActivityListSnapshot(launcherActivities);
-  const allActivitiesChecked = ActivityScopeLogic.activitiesAreAll(activities);
-
-  return {
-    activities,
-    activityChecked:
-      allActivitiesChecked ||
-      ActivityScopeLogic.stringListContains(activities, activityId),
-    allActivitiesChecked,
-  };
-}
-
-export function launcherActivityUpdateCommand(
-  launcherList,
-  position,
-  activities,
-) {
-  const update = launcherActivityUpdate(launcherList, position, activities);
-  return Object.assign({}, update, {
-    command:
-      update.ok && update.changed
-        ? replaceLauncherListCommand(update.launchers)
-        : null,
-  });
-}
-
-export function launcherAllActivitiesUpdateCommand(
-  launcherList,
-  position,
-  launcherActivities,
-  currentActivity,
-) {
-  const nextActivities = launcherActivitiesAfterAllToggle(
-    launcherActivities,
-    currentActivity,
-  );
-  if (!nextActivities) {
-    return {
-      activities: launcherActivityListSnapshot(launcherActivities),
-      changed: false,
-      command: null,
-      launchers: normalizedLauncherList(launcherList),
-      ok: false,
-      reason: "missing-current-activity",
-    };
-  }
-
-  return launcherActivityUpdateCommand(launcherList, position, nextActivities);
-}
-
-export function launcherActivityToggleUpdateCommand(
-  launcherList,
-  position,
-  launcherActivities,
-  activityId,
-  currentActivity,
-) {
-  return launcherActivityUpdateCommand(
-    launcherList,
-    position,
-    launcherActivitiesAfterToggle(
-      launcherActivities,
-      activityId,
-      currentActivity,
-    ),
-  );
-}
-
-export function launcherAllActivitiesAction(
-  launcherList,
-  position,
-  launcherActivities,
-  currentActivity,
-) {
-  const activityState = launcherActivityMenuState(launcherActivities, "");
-
-  return {
-    checked: activityState.allActivitiesChecked,
-    text: "All Activities",
-    update: launcherAllActivitiesUpdateCommand(
-      launcherList,
-      position,
-      launcherActivities,
-      currentActivity,
-    ),
-  };
-}
-
-export function launcherActivityAction(
-  launcherList,
-  position,
-  launcherActivities,
-  activity,
-  currentActivity,
-) {
-  const entry = activity || {};
-  const activityState = launcherActivityMenuState(launcherActivities, entry.id);
-
-  return {
-    checked: activityState.activityChecked,
-    text: entry.name,
-    update: launcherActivityToggleUpdateCommand(
-      launcherList,
-      position,
-      launcherActivities,
-      entry.id,
-      currentActivity,
-    ),
-  };
-}
-
-export function launcherActivityActionsSection(sectionState) {
-  const state = sectionState || {};
-
-  return {
-    activityAction: (activity) =>
-      launcherActivityAction(
-        state.launcherList,
-        state.launcherPosition,
-        state.launcherActivities,
-        activity,
-        state.currentActivity,
-      ),
-    allLauncherActivities: launcherAllActivitiesAction(
-      state.launcherList,
-      state.launcherPosition,
-      state.launcherActivities,
-      state.currentActivity,
-    ),
-    launcherActivities: launcherActivitiesAction(
-      state.pinState,
-      state.activityEntryCount,
-      state.hasTaskModel,
     ),
   };
 }
@@ -949,15 +774,16 @@ export function contextMenuActionSections(menuState) {
   const taskRoles = state.taskRoles || {};
   const virtualDesktopRoles = state.virtualDesktopRoles || {};
 
-  const launcherActivityActions = launcherActivityActionsSection({
-    activityEntryCount: state.activityEntryCount,
-    currentActivity: state.currentActivity,
-    hasTaskModel: state.hasTaskModel,
-    launcherActivities: state.launcherActivities,
-    launcherList: state.launcherList,
-    launcherPosition: state.launcherPosition,
-    pinState: state.pinState,
-  });
+  const launcherActivityActions =
+    LauncherActivityLogic.launcherActivityActionsSection({
+      activityEntryCount: state.activityEntryCount,
+      currentActivity: state.currentActivity,
+      hasTaskModel: state.hasTaskModel,
+      launcherActivities: state.launcherActivities,
+      launcherList: state.launcherList,
+      launcherPosition: state.launcherPosition,
+      pinState: state.pinState,
+    });
 
   const basicActions = basicActionsSection({
     canLaunchNewInstance: basicRoles.canLaunchNewInstance,

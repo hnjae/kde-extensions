@@ -5,7 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import "TaskActionLogic.mjs" as TaskActionLogic
-import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
+import "TaskContextMenuLauncherActivityLogic.mjs" as LauncherActivityLogic
 
 QtQuick.QtObject {
     id: root
@@ -29,7 +29,7 @@ QtQuick.QtObject {
             return;
         }
 
-        launcherActivityList = TaskContextMenuLogic.launcherActivityListSnapshot(launcherModel.launcherActivities(launcherUrl));
+        launcherActivityList = LauncherActivityLogic.launcherActivityListSnapshot(launcherModel.launcherActivities(launcherUrl));
     }
 
     function applyLauncherActivityUpdate(update) {
