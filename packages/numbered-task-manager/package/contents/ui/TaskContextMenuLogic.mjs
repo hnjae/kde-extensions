@@ -8,6 +8,21 @@ import * as TaskActivityLogic from "./TaskContextMenuTaskActivityLogic.mjs";
 import * as VirtualDesktopLogic from "./VirtualDesktopLogic.mjs";
 import * as WindowActionLogic from "./TaskContextMenuWindowActionLogic.mjs";
 export {
+  CONTEXT_MENU_LAUNCHER_COMMAND_KIND,
+  CONTEXT_MENU_ROUTE_LAUNCHER_ACTIVITY_UPDATE,
+  CONTEXT_MENU_ROUTE_LAUNCHER_COMMAND,
+  CONTEXT_MENU_ROUTE_NONE,
+  CONTEXT_MENU_ROUTE_TASK_MODEL_REQUEST,
+  CONTEXT_MENU_ROUTE_UNAVAILABLE,
+  CONTEXT_MENU_TASK_MODEL_REQUEST_KIND,
+  contextMenuActionRoute,
+  isLauncherActivityUpdateRoute,
+  isLauncherCommandRoute,
+  isNoneRoute,
+  isTaskModelRequestRoute,
+  isUnavailableRoute,
+} from "./TaskContextMenuRouteLogic.mjs";
+export {
   basicActionRoleSnapshot,
   boolRoleData,
   captureCloseRoleSnapshot,
@@ -270,56 +285,6 @@ export function virtualDesktopActionsSection(sectionState) {
       hasWindowTask: state.hasWindowTask,
       isWindow: state.isWindow,
     }),
-  };
-}
-
-function unavailableActionRoute(actionState) {
-  const state = actionState || {};
-  const code = state.visible === false ? "action-hidden" : "action-disabled";
-
-  return {
-    code,
-    command: state.command || null,
-    kind: "unavailable",
-    update: state.update || null,
-  };
-}
-
-export function contextMenuActionRoute(actionState) {
-  const state = actionState || {};
-  if (state.visible === false || state.enabled === false) {
-    return unavailableActionRoute(state);
-  }
-
-  if (state.update) {
-    return {
-      command: null,
-      kind: "launcher-activity-update",
-      update: state.update,
-    };
-  }
-
-  const command = state.command || null;
-  if (!command) {
-    return {
-      command: null,
-      kind: "none",
-      update: null,
-    };
-  }
-
-  if (command.kind === "launcher-command") {
-    return {
-      command,
-      kind: "launcher-command",
-      update: null,
-    };
-  }
-
-  return {
-    command,
-    kind: "task-model-request",
-    update: null,
   };
 }
 

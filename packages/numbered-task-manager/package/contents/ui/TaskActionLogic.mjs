@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { isActionableModelIndex } from "./TaskEntryLogic.mjs";
+import {
+  CONTEXT_MENU_LAUNCHER_COMMAND_KIND,
+  CONTEXT_MENU_TASK_MODEL_REQUEST_KIND,
+} from "./TaskContextMenuRouteLogic.mjs";
 import { activationTargetForShortcutIndex } from "./VisibleTaskItemsLogic.mjs";
 
 export function normalizedStringList(value) {
@@ -352,7 +356,7 @@ export function contextMenuLauncherCommand(action, value) {
   const commandAction = String(action || "");
   const command = {
     action: commandAction,
-    kind: "launcher-command",
+    kind: CONTEXT_MENU_LAUNCHER_COMMAND_KIND,
     launcherUrl: "",
     launchers: [],
   };
@@ -462,7 +466,7 @@ export function contextMenuTaskRequestContext(modelIndex, task) {
 export function contextMenuTaskCommand(requestMethod, argument) {
   const command = {
     arguments: [],
-    kind: "task-model-request",
+    kind: CONTEXT_MENU_TASK_MODEL_REQUEST_KIND,
     requestMethod: String(requestMethod || ""),
   };
 
@@ -545,7 +549,7 @@ export function normalizedContextMenuTaskCommand(command) {
   const taskCommand = command || {};
   return {
     arguments: Array.from(taskCommand.arguments || []),
-    kind: taskCommand.kind || "task-model-request",
+    kind: taskCommand.kind || CONTEXT_MENU_TASK_MODEL_REQUEST_KIND,
     requestMethod: String(taskCommand.requestMethod || ""),
   };
 }

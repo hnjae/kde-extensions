@@ -5,6 +5,7 @@ import QtQml
 import "../package/contents/ui/ActivityScopeLogic.mjs" as ActivityScopeLogic
 import "../package/contents/ui/TaskActionLogic.mjs" as TaskActionLogic
 import "../package/contents/ui/TaskContextMenuLogic.mjs" as TaskContextMenuLogic
+import "../package/contents/ui/TaskContextMenuRouteLogic.mjs" as TaskContextMenuRouteLogic
 import "../package/contents/ui/TaskItemPresentationLogic.mjs" as TaskItemPresentationLogic
 import "../package/contents/ui/TaskMetricsLogic.mjs" as TaskMetricsLogic
 import "../package/contents/ui/TaskModelLogic.mjs" as TaskModelLogic
@@ -36,6 +37,9 @@ QtObject {
             TopPosedLeftAlignedPopup: 1
         }) !== 1) {
             throw new Error("TaskContextMenuLogic.mjs did not load");
+        }
+        if (!TaskContextMenuRouteLogic.isNoneRoute(TaskContextMenuRouteLogic.contextMenuActionRoute(null))) {
+            throw new Error("TaskContextMenuRouteLogic.mjs did not load");
         }
 
         Qt.quit();

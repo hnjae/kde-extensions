@@ -3989,7 +3989,15 @@ const actionDispatcherQml = readFileSync(
   "utf8",
 );
 assert.equal(
-  actionDispatcherQml.includes("TaskContextMenuLogic.contextMenuActionRoute"),
+  actionDispatcherQml.includes(
+    "TaskContextMenuRouteLogic.contextMenuActionRoute",
+  ),
+  true,
+);
+assert.equal(
+  actionDispatcherQml.includes(
+    'import "TaskContextMenuRouteLogic.mjs" as TaskContextMenuRouteLogic',
+  ),
   true,
 );
 assert.equal(
@@ -4026,7 +4034,9 @@ assert.equal(
   true,
 );
 assert.equal(
-  actionDispatcherQml.includes('if (route.kind === "unavailable")'),
+  actionDispatcherQml.includes(
+    "if (TaskContextMenuRouteLogic.isUnavailableRoute(route))",
+  ),
   true,
 );
 assert.equal(
@@ -4049,6 +4059,7 @@ assert.equal(
   actionDispatcherQml.includes("launcherCommandRequested(route.command)"),
   true,
 );
+assert.equal(actionDispatcherQml.includes("route.kind ==="), false);
 const menuDispatchesActionResults =
   menuQml.includes("TaskContextMenuActionDispatcher") &&
   /TaskContextMenuActionDispatcher\s*\{[\s\S]*?onActionResult:\s*result\s*=>\s*\{[\s\S]*?root\.actionResult\(result\);[\s\S]*?\}/.test(

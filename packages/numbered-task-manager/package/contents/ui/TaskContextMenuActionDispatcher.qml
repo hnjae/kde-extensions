@@ -5,7 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import "TaskActionLogic.mjs" as TaskActionLogic
-import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
+import "TaskContextMenuRouteLogic.mjs" as TaskContextMenuRouteLogic
 
 QtQuick.QtObject {
     id: root
@@ -23,12 +23,12 @@ QtQuick.QtObject {
     }
 
     function triggerAction(actionState) {
-        const route = TaskContextMenuLogic.contextMenuActionRoute(actionState);
-        if (route.kind === "unavailable") {
+        const route = TaskContextMenuRouteLogic.contextMenuActionRoute(actionState);
+        if (TaskContextMenuRouteLogic.isUnavailableRoute(route)) {
             return dispatchFailure(route, route.code);
         }
 
-        if (route.kind === "launcher-activity-update") {
+        if (TaskContextMenuRouteLogic.isLauncherActivityUpdateRoute(route)) {
             if (!launcherActivityAdapter) {
                 return dispatchFailure(route, "missing-launcher-activity-adapter");
             }
@@ -36,12 +36,12 @@ QtQuick.QtObject {
             return launcherActivityAdapter.applyLauncherActivityAction(route.update);
         }
 
-        if (route.kind === "launcher-command") {
+        if (TaskContextMenuRouteLogic.isLauncherCommandRoute(route)) {
             launcherCommandRequested(route.command);
             return true;
         }
 
-        if (route.kind === "task-model-request") {
+        if (TaskContextMenuRouteLogic.isTaskModelRequestRoute(route)) {
             if (!taskCommandAdapter) {
                 return dispatchFailure(route, "missing-task-command-adapter");
             }
