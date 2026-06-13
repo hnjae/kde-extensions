@@ -106,7 +106,7 @@ Acceptance criteria: `TabPagerDesktopSourceState` contains only desktop snapshot
 
 Priority: P2
 
-Evidence: `src/tabpagerdesktoprow.h` defines roles/row data for `desktopId`, `name`, `label`, `number`, and `active`; `src/tabpagerdesktoprow.cpp` registers all fields in a generic role table; shipped QML `DesktopButton.qml` requires only `active`, `index`, and `label`; `tests/tabpagerview_test.cpp` loads the view with a fake model exposing only `label` and `active`; `tests/tabpagerbackend_test.cpp` locks all five roles as backend contract.
+Evidence: `src/tabpagerdesktoprow.h` defines roles/row data for `desktopId`, `name`, `label`, `number`, and `active`; `src/tabpagerdesktoprow.cpp` registers all fields in a generic role table; shipped QML `DesktopButton.qml` requires only `active`, `index`, and `label`; `tests/tabpagerview_test.cpp` proves the view loads with a fake model exposing only `label` and `active`; `tests/tabpagerbackend_test.cpp` locks all five roles as backend contract.
 
 Current state: The public model API exposes domain/internal data that QML does not consume. `desktopId` is needed internally for activation lookup; `name` and `number` are inputs to label generation, but all three are public roles.
 
@@ -288,11 +288,10 @@ How tests should be structured: Keep pure tests for navigation target calculatio
 
 ## Suggested Refactoring Sequence
 
-1. Add characterization tests around current behavior for QML role exposure.
-2. Isolate core domain logic from external effects by extracting activation planning and wheel input mapping from `TabPagerDesktopController`/QML event handlers.
-3. Clarify ownership boundaries by separating desktop source state from navigation settings and by inserting a small state store between controller logic and the Qt list model.
-4. Improve error semantics and observability by making source diagnostics stateful/observable, removing getter-side logging, and clarifying activation request versus confirmation.
-5. Remove or simplify premature abstractions by narrowing public QML roles, removing unused/convenience navigation wrappers, and deciding whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a test seam.
+1. Isolate core domain logic from external effects by extracting activation planning and wheel input mapping from `TabPagerDesktopController`/QML event handlers.
+2. Clarify ownership boundaries by separating desktop source state from navigation settings and by inserting a small state store between controller logic and the Qt list model.
+3. Improve error semantics and observability by making source diagnostics stateful/observable, removing getter-side logging, and clarifying activation request versus confirmation.
+4. Remove or simplify premature abstractions by narrowing public QML roles, removing unused/convenience navigation wrappers, and deciding whether `TabPagerVirtualDesktopInfo` is a real LibTaskManager port or only a test seam.
 
 ## Things Not To Change Yet
 

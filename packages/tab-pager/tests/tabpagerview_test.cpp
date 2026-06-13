@@ -118,6 +118,7 @@ class TabPagerViewTest : public QObject {
 
 private Q_SLOTS:
   void loadsWithoutPlasmaShellImports();
+  void rendersWithOnlyViewRoles();
   void dispatchesClickAndWheelToBackend();
 };
 
@@ -126,6 +127,25 @@ void TabPagerViewTest::loadsWithoutPlasmaShellImports() {
   FakeBackend backend;
   FakeDesktopModel model;
   QString errorString;
+
+  const std::unique_ptr<QObject> view =
+      createTabPagerView(engine, backend, model, &errorString);
+
+  QVERIFY2(view != nullptr, qPrintable(errorString));
+  QVERIFY(qobject_cast<QQuickItem *>(view.get()) != nullptr);
+}
+
+void TabPagerViewTest::rendersWithOnlyViewRoles() {
+  QQmlEngine engine;
+  FakeBackend backend;
+  FakeDesktopModel model;
+  QString errorString;
+
+  const QHash<int, QByteArray> expectedRoles = {
+      {FakeDesktopModel::LabelRole, "label"},
+      {FakeDesktopModel::ActiveRole, "active"},
+  };
+  QCOMPARE(model.roleNames(), expectedRoles);
 
   const std::unique_ptr<QObject> view =
       createTabPagerView(engine, backend, model, &errorString);
