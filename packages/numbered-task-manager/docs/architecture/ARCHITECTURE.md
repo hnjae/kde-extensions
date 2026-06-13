@@ -66,7 +66,7 @@ in `SPEC.md`.
   section composition for virtual-desktop actions should live in that focused
   owner. `VirtualDesktopLogic.mjs` keeps shared desktop identity, membership,
   and checked-state primitives, while `TaskContextMenuLogic.mjs` remains the
-  compatibility facade and final menu-section composer.
+  compatibility facade.
 - Keep context-menu basic action availability in `TaskContextMenuLogic.mjs`.
   Simple item visible/enabled predicates such as New Instance, Move, and Resize
   should be derived by tested helpers while QML keeps rendering order and Plasma
@@ -82,7 +82,8 @@ in `SPEC.md`.
   tested snapshot objects instead of as item-local `boolRole(...)` calls. QML
   menu items should consume the helper output directly instead of adding
   menu-local action-state wrapper functions.
-- Keep context-menu section and terminal action availability in tested context-menu logic helpers. `TaskContextMenuLogic.mjs` may compose focused action-family owners, but Pin/Unpin, window actions, launcher activity actions, task activity actions, and other extracted families should keep their descriptor labels, visibility, enabled predicates, checked state, command descriptors, and icon names in the focused owner for that family. `TaskContextMenuRouteLogic.mjs` owns context-menu route kinds, route classification, and route predicates. QML keeps submenu composition and effect dispatch, and menu items should consume helper output directly instead of adding menu-local action-state wrapper functions.
+- Keep context-menu final action-section assembly in `TaskContextMenuActionSectionsLogic.mjs`. The action-section owner composes focused action-family owners into the aggregate section object consumed by `TaskContextMenu.qml`, including cross-section dependencies such as launcher-activity visibility feeding basic action section visibility, while `TaskContextMenuLogic.mjs` remains the compatibility facade and platform snapshot helper owner.
+- Keep context-menu section and terminal action availability in tested context-menu logic helpers. Pin/Unpin, window actions, launcher activity actions, task activity actions, virtual-desktop actions, and other extracted families should keep their descriptor labels, visibility, enabled predicates, checked state, command descriptors, and icon names in the focused owner for that family. `TaskContextMenuRouteLogic.mjs` owns context-menu route kinds, route classification, and route predicates. QML keeps submenu composition and effect dispatch, and menu items should consume helper output directly instead of adding menu-local action-state wrapper functions.
 - Keep dynamic `.desktop` action insertion in `TaskContextMenu.qml`, backed by the owned context-menu backend's `QAction` list. Those actions may use `PlasmaExtras.MenuItem.action`, while widget-owned task actions should continue to flow through typed descriptors and the menu-local dispatcher.
 - Keep context-menu action dispatch failure classification in the action-result
   layer. The dispatcher may route helper-owned actions to task-model adapters,
