@@ -44,17 +44,6 @@ void TabPagerDesktopNavigator::setNavigationWrappingAround(
   m_navigationWrappingAround = navigationWrappingAround;
 }
 
-std::optional<int> TabPagerDesktopNavigator::targetIndexForOffset(
-    const TabPagerDesktopNavigationContext &context, int offset) const {
-  const TabPagerDesktopNavigationResult result =
-      targetForOffset(context, offset);
-  if (result.type != TabPagerDesktopNavigationResultType::Target) {
-    return std::nullopt;
-  }
-
-  return result.targetIndex;
-}
-
 TabPagerDesktopNavigationResult TabPagerDesktopNavigator::targetForOffset(
     const TabPagerDesktopNavigationContext &context, int offset) const {
   if (context.desktopCount <= 0 || context.currentIndex < 0 ||
@@ -84,17 +73,6 @@ TabPagerDesktopNavigationResult TabPagerDesktopNavigator::targetForOffset(
       .targetIndex = wrappedIndexForOffset(context.currentIndex,
                                            context.desktopCount, offset),
   };
-}
-
-std::optional<int> TabPagerDesktopNavigator::targetIndexForWheelDelta(
-    const TabPagerDesktopNavigationContext &context, int delta) {
-  const TabPagerDesktopNavigationResult result =
-      consumeWheelDelta(context, delta);
-  if (result.type != TabPagerDesktopNavigationResultType::Target) {
-    return std::nullopt;
-  }
-
-  return result.targetIndex;
 }
 
 TabPagerDesktopNavigationResult TabPagerDesktopNavigator::consumeWheelDelta(

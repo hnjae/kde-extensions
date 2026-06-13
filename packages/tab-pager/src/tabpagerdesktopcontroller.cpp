@@ -146,7 +146,3 @@ TabPagerDesktopController::activateOffsetWithResult(int offset) {
   return activateNavigationTarget(
       m_navigator.targetForOffset(navigationContext(), offset));
 }
-
-void TabPagerDesktopController::activateOffset(int offset) {
-  (void)activateOffsetWithResult(offset);
-}

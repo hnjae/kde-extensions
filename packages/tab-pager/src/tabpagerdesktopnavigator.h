@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <optional>
-
 struct TabPagerDesktopNavigationContext {
   int currentIndex = -1;
   int desktopCount = 0;
@@ -28,15 +26,9 @@ public:
   [[nodiscard]] bool navigationWrappingAround() const;
   void setNavigationWrappingAround(bool navigationWrappingAround);
 
-  [[nodiscard]] std::optional<int>
-  targetIndexForOffset(const TabPagerDesktopNavigationContext &context,
-                       int offset) const;
   [[nodiscard]] TabPagerDesktopNavigationResult
   targetForOffset(const TabPagerDesktopNavigationContext &context,
                   int offset) const;
-  [[nodiscard]] std::optional<int>
-  targetIndexForWheelDelta(const TabPagerDesktopNavigationContext &context,
-                           int delta);
   [[nodiscard]] TabPagerDesktopNavigationResult
   consumeWheelDelta(const TabPagerDesktopNavigationContext &context, int delta);
 

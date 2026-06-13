@@ -5,16 +5,12 @@
 
 #include <QTest>
 
-#include <optional>
-
 namespace {
-constexpr int missingNavigationTarget = -1;
-
-void expectNavigationTarget(const std::optional<int> &actual,
-                            const std::optional<int> &expected) {
-  QCOMPARE(actual.has_value(), expected.has_value());
-  QCOMPARE(actual.value_or(missingNavigationTarget),
-           expected.value_or(missingNavigationTarget));
+void expectNavigationResult(const TabPagerDesktopNavigationResult &actual,
+                            TabPagerDesktopNavigationResultType expectedType,
+                            int expectedTargetIndex = -1) {
+  QCOMPARE(actual.type, expectedType);
+  QCOMPARE(actual.targetIndex, expectedTargetIndex);
 }
 } // namespace
 
@@ -37,30 +33,46 @@ void TabPagerDesktopNavigatorTest::resolvesNavigationTarget_data() {
   QTest::addColumn<int>("desktopCount");
   QTest::addColumn<int>("offset");
   QTest::addColumn<bool>("wrappingAround");
-  QTest::addColumn<std::optional<int>>("expected");
+  QTest::addColumn<TabPagerDesktopNavigationResultType>("expectedType");
+  QTest::addColumn<int>("expectedTargetIndex");
 
-  QTest::newRow("empty") << 0 << 0 << 1 << false << std::optional<int>{};
+  QTest::newRow("empty")
+      << 0 << 0 << 1 << false
+      << TabPagerDesktopNavigationResultType::NoCurrentDesktop << -1;
   QTest::newRow("invalid count")
-      << 0 << -1 << 1 << true << std::optional<int>{};
+      << 0 << -1 << 1 << true
+      << TabPagerDesktopNavigationResultType::NoCurrentDesktop << -1;
   QTest::newRow("missing current")
-      << -1 << 3 << 1 << true << std::optional<int>{};
-  QTest::newRow("past current") << 3 << 3 << -1 << true << std::optional<int>{};
-  QTest::newRow("next") << 1 << 3 << 1 << false << std::optional<int>{2};
-  QTest::newRow("previous") << 1 << 3 << -1 << false << std::optional<int>{0};
+      << -1 << 3 << 1 << true
+      << TabPagerDesktopNavigationResultType::NoCurrentDesktop << -1;
+  QTest::newRow("past current")
+      << 3 << 3 << -1 << true
+      << TabPagerDesktopNavigationResultType::NoCurrentDesktop << -1;
+  QTest::newRow("next") << 1 << 3 << 1 << false
+                        << TabPagerDesktopNavigationResultType::Target << 2;
+  QTest::newRow("previous") << 1 << 3 << -1 << false
+                            << TabPagerDesktopNavigationResultType::Target << 0;
   QTest::newRow("stop before first")
-      << 0 << 3 << -1 << false << std::optional<int>{};
+      << 0 << 3 << -1 << false
+      << TabPagerDesktopNavigationResultType::StoppedAtEdge << -1;
   QTest::newRow("stop after last")
-      << 2 << 3 << 1 << false << std::optional<int>{};
+      << 2 << 3 << 1 << false
+      << TabPagerDesktopNavigationResultType::StoppedAtEdge << -1;
   QTest::newRow("wrap before first")
-      << 0 << 3 << -1 << true << std::optional<int>{2};
+      << 0 << 3 << -1 << true << TabPagerDesktopNavigationResultType::Target
+      << 2;
   QTest::newRow("wrap after last")
-      << 2 << 3 << 1 << true << std::optional<int>{0};
+      << 2 << 3 << 1 << true << TabPagerDesktopNavigationResultType::Target
+      << 0;
   QTest::newRow("wrap forward multiple")
-      << 1 << 3 << multiDesktopOffset << true << std::optional<int>{0};
+      << 1 << 3 << multiDesktopOffset << true
+      << TabPagerDesktopNavigationResultType::Target << 0;
   QTest::newRow("wrap backward multiple")
-      << 1 << 3 << -multiDesktopOffset << true << std::optional<int>{2};
+      << 1 << 3 << -multiDesktopOffset << true
+      << TabPagerDesktopNavigationResultType::Target << 2;
   QTest::newRow("wrap exact cycle")
-      << 1 << 3 << 3 << true << std::optional<int>{1};
+      << 1 << 3 << 3 << true << TabPagerDesktopNavigationResultType::Target
+      << 1;
 }
 
 void TabPagerDesktopNavigatorTest::resolvesNavigationTarget() {
@@ -68,7 +80,8 @@ void TabPagerDesktopNavigatorTest::resolvesNavigationTarget() {
   QFETCH(int, desktopCount);
   QFETCH(int, offset);
   QFETCH(bool, wrappingAround);
-  QFETCH(std::optional<int>, expected);
+  QFETCH(TabPagerDesktopNavigationResultType, expectedType);
+  QFETCH(int, expectedTargetIndex);
 
   TabPagerDesktopNavigator navigator;
   navigator.setNavigationWrappingAround(wrappingAround);
@@ -77,8 +90,8 @@ void TabPagerDesktopNavigatorTest::resolvesNavigationTarget() {
       .desktopCount = desktopCount,
   };
 
-  expectNavigationTarget(navigator.targetIndexForOffset(context, offset),
-                         expected);
+  expectNavigationResult(navigator.targetForOffset(context, offset),
+                         expectedType, expectedTargetIndex);
 }
 
 void TabPagerDesktopNavigatorTest::accumulatesWheelDelta_data() {
@@ -91,34 +104,44 @@ void TabPagerDesktopNavigatorTest::accumulatesWheelDelta_data() {
 
   QTest::addColumn<int>("firstDelta");
   QTest::addColumn<int>("secondDelta");
-  QTest::addColumn<std::optional<int>>("expectedFirstTarget");
-  QTest::addColumn<std::optional<int>>("expectedSecondTarget");
+  QTest::addColumn<TabPagerDesktopNavigationResultType>("expectedFirstType");
+  QTest::addColumn<int>("expectedFirstTargetIndex");
+  QTest::addColumn<TabPagerDesktopNavigationResultType>("expectedSecondType");
+  QTest::addColumn<int>("expectedSecondTargetIndex");
 
   QTest::newRow("keeps positive remainder")
-      << nearlyOneWheelStepDelta << 0 << std::optional<int>{}
-      << std::optional<int>{};
+      << nearlyOneWheelStepDelta << 0
+      << TabPagerDesktopNavigationResultType::NoWheelStep << -1
+      << TabPagerDesktopNavigationResultType::NoWheelStep << -1;
   QTest::newRow("completes positive step")
-      << nearlyOneWheelStepDelta << 1 << std::optional<int>{}
-      << std::optional<int>{0};
+      << nearlyOneWheelStepDelta << 1
+      << TabPagerDesktopNavigationResultType::NoWheelStep << -1
+      << TabPagerDesktopNavigationResultType::Target << 0;
   QTest::newRow("completes negative step")
-      << -nearlyOneWheelStepDelta << -1 << std::optional<int>{}
-      << std::optional<int>{2};
+      << -nearlyOneWheelStepDelta << -1
+      << TabPagerDesktopNavigationResultType::NoWheelStep << -1
+      << TabPagerDesktopNavigationResultType::Target << 2;
   QTest::newRow("consumes multiple positive steps")
-      << multipleWheelStepDelta << 0 << std::optional<int>{2}
-      << std::optional<int>{};
+      << multipleWheelStepDelta << 0
+      << TabPagerDesktopNavigationResultType::Target << 2
+      << TabPagerDesktopNavigationResultType::NoWheelStep << -1;
   QTest::newRow("consumes multiple negative steps")
-      << -multipleWheelStepDelta << 0 << std::optional<int>{0}
-      << std::optional<int>{};
+      << -multipleWheelStepDelta << 0
+      << TabPagerDesktopNavigationResultType::Target << 0
+      << TabPagerDesktopNavigationResultType::NoWheelStep << -1;
   QTest::newRow("combines opposite directions")
-      << halfWheelStepDelta << -quarterWheelStepDelta << std::optional<int>{}
-      << std::optional<int>{};
+      << halfWheelStepDelta << -quarterWheelStepDelta
+      << TabPagerDesktopNavigationResultType::NoWheelStep << -1
+      << TabPagerDesktopNavigationResultType::NoWheelStep << -1;
 }
 
 void TabPagerDesktopNavigatorTest::accumulatesWheelDelta() {
   QFETCH(int, firstDelta);
   QFETCH(int, secondDelta);
-  QFETCH(std::optional<int>, expectedFirstTarget);
-  QFETCH(std::optional<int>, expectedSecondTarget);
+  QFETCH(TabPagerDesktopNavigationResultType, expectedFirstType);
+  QFETCH(int, expectedFirstTargetIndex);
+  QFETCH(TabPagerDesktopNavigationResultType, expectedSecondType);
+  QFETCH(int, expectedSecondTargetIndex);
 
   TabPagerDesktopNavigator navigator;
   navigator.setNavigationWrappingAround(true);
@@ -127,13 +150,11 @@ void TabPagerDesktopNavigatorTest::accumulatesWheelDelta() {
       .desktopCount = 3,
   };
 
-  expectNavigationTarget(
-      navigator.targetIndexForWheelDelta(context, firstDelta),
-      expectedFirstTarget);
+  expectNavigationResult(navigator.consumeWheelDelta(context, firstDelta),
+                         expectedFirstType, expectedFirstTargetIndex);
 
-  expectNavigationTarget(
-      navigator.targetIndexForWheelDelta(context, secondDelta),
-      expectedSecondTarget);
+  expectNavigationResult(navigator.consumeWheelDelta(context, secondDelta),
+                         expectedSecondType, expectedSecondTargetIndex);
 }
 
 void TabPagerDesktopNavigatorTest::

@@ -48,7 +48,6 @@ private:
   [[nodiscard]] TabPagerActivationResult
   activateNavigationTarget(const TabPagerDesktopNavigationResult &target);
   [[nodiscard]] TabPagerActivationResult activateOffsetWithResult(int offset);
-  void activateOffset(int offset);
 
   TabPagerDesktopModel &m_model;
   std::unique_ptr<TabPagerDesktopSource> m_source;

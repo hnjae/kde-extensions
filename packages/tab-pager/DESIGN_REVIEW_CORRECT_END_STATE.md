@@ -158,15 +158,15 @@ Priority: P3
 
 Evidence: `TabPagerDesktopNavigator` exposes optional-return wrappers and typed-result methods; the optional methods are thin adapters over result methods; `TabPagerDesktopController` exposes silent methods and `WithResult` variants; silent methods discard result values; private `activateOffset()` is declared and defined but unused except as a wrapper.
 
-Current state: Navigation operations have multiple surfaces: optional target lookup, typed result lookup, silent activation, result activation, and an unused private wrapper.
+Current state: Navigation operations use typed result lookup internally. The optional navigator wrappers and unused private controller wrapper have been removed. Public controller methods still keep silent QML-facing commands and result-returning variants.
 
 Design concern: Future navigation changes must preserve several equivalent APIs, and tests can exercise convenience wrappers that production does not use.
 
 Correct end state: Choose one internal result shape for navigation and activation. Production callers can discard results explicitly where appropriate, but tests should assert the same result API production uses.
 
-Suggested migration: Keep `TabPagerDesktopNavigationResult`/`TabPagerActivationResult` as canonical internal APIs. Remove optional navigator wrappers and unused private wrappers.
+Suggested migration: Keep `TabPagerDesktopNavigationResult`/`TabPagerActivationResult` as canonical internal APIs. Public QML-facing commands may discard results, but production internals and tests should use the same result-returning paths.
 
-Acceptance criteria: No navigation method exists solely as a test convenience wrapper. Controller and navigator each expose one clear API per operation. Existing next/previous/wheel behavior remains covered.
+Acceptance criteria: No navigation method exists solely as a test convenience wrapper. Controller and navigator each expose one clear internal result API per operation. Existing next/previous/wheel behavior remains covered.
 
 ## Testability Problems
 
