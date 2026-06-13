@@ -3907,13 +3907,30 @@ assert.equal(
   ),
   false,
 );
+assert.equal(taskCommandAdapterQml.includes("taskModel["), false);
 assert.equal(
   taskCommandAdapterQml.includes("signal actionResult(var result)"),
   true,
 );
 assert.equal(taskCommandAdapterQml.includes("property var modelIndex"), true);
 assert.equal(taskCommandAdapterQml.includes("property var task: ({})"), true);
-assert.equal(taskCommandAdapterQml.includes("property var taskModel"), true);
+assert.equal(
+  taskCommandAdapterQml.includes("property var taskCommandPort"),
+  true,
+);
+assert.equal(taskCommandAdapterQml.includes("property var taskModel"), false);
+assert.equal(
+  taskCommandAdapterQml.includes(
+    "TaskActionLogic.contextMenuTaskRequest(command, taskCommandPort, modelIndex, task)",
+  ),
+  true,
+);
+assert.equal(
+  taskCommandAdapterQml.includes(
+    "TaskActionLogic.executeContextMenuTaskRequest(result, taskCommandPort)",
+  ),
+  true,
+);
 
 const launcherActivityAdapterQml = readFileSync(
   new URL(

@@ -28,7 +28,12 @@ const sourceQml = readFileSync(sourceUrl, "utf8");
 assert.match(mainQml, /\bTaskContextMenuAdapter\s*\{/);
 assert.match(mainQml, /id:\s*contextMenuAdapter/);
 assert.match(mainQml, /launcherModel:\s*tasksModel/);
+assert.match(
+  mainQml,
+  /\bTaskCommandPort\s*\{[\s\S]*?id:\s*taskCommandPort[\s\S]*?taskModel:\s*tasksModel[\s\S]*?\}/,
+);
 assert.match(mainQml, /taskModel:\s*tasksModel/);
+assert.match(mainQml, /taskCommandPort:\s*taskCommandPort/);
 assert.match(
   mainQml,
   /onContextMenuRequested:\s*request\s*=>\s*\{[\s\S]*?contextMenuAdapter\.openTaskContextMenu\(request\);[\s\S]*?\}/,
@@ -49,6 +54,7 @@ assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
 assert.match(sourceQml, /QtQuick\.Item\s*\{/);
 assert.match(sourceQml, /property var launcherModel/);
 assert.match(sourceQml, /property var taskModel/);
+assert.match(sourceQml, /property var taskCommandPort/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /signal launcherCommandRequested\(var command\)/);
 assert.match(sourceQml, /function contextMenuRequest\(request\)/);
@@ -62,6 +68,7 @@ assert.match(
   /TaskActionLogic\.contextMenuRequestResult\(contextMenuRequest\(request\)\)/,
 );
 assert.match(sourceQml, /contextMenuComponent\.createObject\(visualParent/);
+assert.match(sourceQml, /taskCommandPort:\s*root\.taskCommandPort/);
 assert.match(
   sourceQml,
   /TaskActionLogic\.contextMenuCreationResult\(menu, menuRequest\)/,
@@ -81,6 +88,8 @@ assert.match(sourceQml, /\bTaskContextMenu\s*\{/);
 
 assert.match(menuQml, /signal actionResult\(var result\)/);
 assert.match(menuQml, /root\.actionResult\(result\)/);
+assert.match(menuQml, /property var taskCommandPort/);
+assert.match(menuQml, /taskCommandPort:\s*root\.taskCommandPort/);
 assert.doesNotMatch(menuQml, /console\.warn\("Numbered Task Manager action "/);
 assert.match(
   menuQml,

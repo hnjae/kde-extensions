@@ -613,6 +613,21 @@ assert.equal(missingMethodRequest.ok, false);
 assert.equal(missingMethodRequest.code, "missing-request-method");
 assert.equal(logic.shouldLogActionResult(missingMethodRequest), true);
 
+const unsupportedPortMethodRequest = logic.contextMenuTaskRequest(
+  "requestResize",
+  {
+    requestResize() {},
+    supportsContextMenuTaskRequest() {
+      return false;
+    },
+  },
+  validModelIndex,
+  normalTask,
+);
+assert.equal(unsupportedPortMethodRequest.ok, false);
+assert.equal(unsupportedPortMethodRequest.code, "missing-request-method");
+assert.equal(logic.shouldLogActionResult(unsupportedPortMethodRequest), true);
+
 const unsupportedTaskRequest = logic.contextMenuTaskRequest(
   "requestDangerousExistingMethod",
   {
