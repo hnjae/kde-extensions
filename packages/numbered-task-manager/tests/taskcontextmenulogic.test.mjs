@@ -127,6 +127,14 @@ assert.doesNotMatch(
 );
 assert.match(
   taskContextMenuLogicSource,
+  /export \{ contextMenuActionSections \} from "\.\/TaskContextMenuActionSectionsLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
+  /function contextMenuActionSections\b/,
+);
+assert.doesNotMatch(
+  taskContextMenuLogicSource,
   /import \* as VirtualDesktopActionLogic from "\.\/TaskContextMenuVirtualDesktopLogic\.mjs"/,
 );
 assert.doesNotMatch(taskContextMenuLogicSource, /function virtualDesktopId\b/);
@@ -134,11 +142,11 @@ assert.doesNotMatch(
   taskContextMenuLogicSource,
   /function virtualDesktopListContains\b/,
 );
-assert.match(
+assert.doesNotMatch(
   taskContextMenuLogicSource,
   /import \* as TaskActivityLogic from "\.\/TaskContextMenuTaskActivityLogic\.mjs"/,
 );
-assert.match(
+assert.doesNotMatch(
   taskContextMenuLogicSource,
   /import \* as PinLogic from "\.\/TaskContextMenuPinLogic\.mjs"/,
 );
@@ -165,10 +173,6 @@ assert.doesNotMatch(
   taskContextMenuLogicSource,
   /function launcherPinStateSnapshot\b/,
 );
-assert.match(
-  taskContextMenuLogicSource,
-  /PinLogic\.pinActionsSection\(state\.pinState\)/,
-);
 assert.doesNotMatch(
   taskContextMenuLogicSource,
   /import .*"\.\/TaskActivityLogic\.mjs"/,
@@ -181,7 +185,7 @@ assert.doesNotMatch(
   taskContextMenuLogicSource,
   /function taskActivityToggleCommand\b/,
 );
-assert.match(
+assert.doesNotMatch(
   taskContextMenuLogicSource,
   /import \* as WindowActionLogic from "\.\/TaskContextMenuWindowActionLogic\.mjs"/,
 );

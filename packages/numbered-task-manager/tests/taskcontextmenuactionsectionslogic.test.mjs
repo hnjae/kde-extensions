@@ -313,6 +313,7 @@ assert.deepEqual(sectionSnapshot(menuSections), {
   },
   moreActions: {
     moreActions: {
+      enabled: true,
       text: "More",
       visible: true,
     },
