@@ -27,3 +27,6 @@ struct TabPagerActivationPlan {
     const std::optional<TabPagerDesktopId> &desktopId);
 [[nodiscard]] TabPagerActivationPlan tabPagerActivationPlanForNavigationResult(
     const TabPagerDesktopNavigationResult &navigationResult);
+[[nodiscard]] TabPagerActivationPlan tabPagerActivationPlanForNavigationTarget(
+    const TabPagerDesktopNavigationResult &navigationResult,
+    const std::optional<TabPagerDesktopId> &desktopId);

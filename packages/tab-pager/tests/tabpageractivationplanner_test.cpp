@@ -13,6 +13,7 @@ private Q_SLOTS:
   void rejectsInvalidDesktopId();
   void returnsActivationCommandForValidDesktopId();
   void mapsNavigationTargetToIndexActivationRequest();
+  void mapsNavigationTargetToDesktopActivationCommand();
   void mapsNavigationNoOpResults();
 };
 
@@ -53,6 +54,31 @@ void TabPagerActivationPlannerTest::
   QCOMPARE(plan.result, TabPagerActivationResult::ActivationRequested);
   QCOMPARE(plan.targetIndex, 2);
   QCOMPARE(plan.desktopId.has_value(), false);
+}
+
+void TabPagerActivationPlannerTest::
+    mapsNavigationTargetToDesktopActivationCommand() {
+  const TabPagerDesktopNavigationResult target{
+      .type = TabPagerDesktopNavigationResultType::Target,
+      .targetIndex = 2,
+  };
+  const TabPagerDesktopId desktopId =
+      TabPagerDesktopId::fromVariant(QStringLiteral("work"));
+
+  const TabPagerActivationPlan validPlan =
+      tabPagerActivationPlanForNavigationTarget(target, desktopId);
+  const TabPagerActivationPlan missingPlan =
+      tabPagerActivationPlanForNavigationTarget(target, std::nullopt);
+  const TabPagerActivationPlan invalidPlan =
+      tabPagerActivationPlanForNavigationTarget(target, TabPagerDesktopId{});
+
+  QCOMPARE(validPlan.result, TabPagerActivationResult::ActivationRequested);
+  QCOMPARE(validPlan.desktopId, desktopId);
+  QCOMPARE(validPlan.targetIndex.has_value(), false);
+  QCOMPARE(missingPlan.result, TabPagerActivationResult::InvalidIndex);
+  QCOMPARE(missingPlan.desktopId.has_value(), false);
+  QCOMPARE(invalidPlan.result, TabPagerActivationResult::InvalidDesktopId);
+  QCOMPARE(invalidPlan.desktopId.has_value(), false);
 }
 
 void TabPagerActivationPlannerTest::mapsNavigationNoOpResults() {

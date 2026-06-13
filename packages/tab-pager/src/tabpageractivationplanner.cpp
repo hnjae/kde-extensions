@@ -63,3 +63,15 @@ TabPagerActivationPlan tabPagerActivationPlanForNavigationResult(
       .targetIndex = std::nullopt,
   };
 }
+
+TabPagerActivationPlan tabPagerActivationPlanForNavigationTarget(
+    const TabPagerDesktopNavigationResult &navigationResult,
+    const std::optional<TabPagerDesktopId> &desktopId) {
+  const TabPagerActivationPlan navigationPlan =
+      tabPagerActivationPlanForNavigationResult(navigationResult);
+  if (!navigationPlan.targetIndex.has_value()) {
+    return navigationPlan;
+  }
+
+  return tabPagerActivationPlanForIndex(desktopId);
+}
