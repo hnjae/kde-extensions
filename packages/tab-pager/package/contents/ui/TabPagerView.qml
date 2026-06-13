@@ -5,6 +5,8 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 
+import "TabPagerWheelInput.js" as TabPagerWheelInput
+
 QtQuick.Item {
     id: root
 
@@ -48,7 +50,7 @@ QtQuick.Item {
         acceptedButtons: QtQuick.Qt.NoButton
 
         onWheel: wheel => {
-            const delta = (wheel.inverted ? -1 : 1) * (wheel.angleDelta.y || wheel.angleDelta.x);
+            const delta = TabPagerWheelInput.normalizeWheelDelta(wheel.angleDelta.x, wheel.angleDelta.y, wheel.inverted);
             root.backend.activateByWheelDelta(delta);
         }
     }

@@ -132,6 +132,15 @@ if(BUILD_TESTING)
     add_tabpager_test(tabpagerdesktopmodelstate tests/tabpagerdesktopmodelstate_test.cpp)
     add_tabpager_test(tabpagerdesktopnavigator tests/tabpagerdesktopnavigator_test.cpp)
     add_tabpager_test(tabpagerwheelnavigation tests/tabpagerwheelnavigation_test.cpp)
+    add_tabpager_test(tabpagerwheelinput tests/tabpagerwheelinput_test.cpp)
+    qt_add_resources(tabpagerwheelinput_test tabpagerwheelinput_test_resources
+        PREFIX "/"
+        FILES
+            package/contents/ui/TabPagerWheelInput.js
+    )
+    target_link_libraries(tabpagerwheelinput_test PRIVATE
+        Qt6::Qml
+    )
     add_tabpager_test(tabpagerdesktopcontroller
         tests/tabpagerdesktopcontroller_test.cpp
         tests/tabpagerbackendtesthelpers.h

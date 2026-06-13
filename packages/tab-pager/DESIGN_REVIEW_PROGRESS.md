@@ -32,10 +32,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - `TabPagerBackend`, `TabPagerDesktopModel`, and row projection are documented as an intentional QML view-model boundary owning label formatting and `labelFont`.
 - Row/model-state tests now expect only public `label` and `active` role updates after the desktop model role narrowing.
 - Wheel accumulation and sign conversion now live in `TabPagerWheelNavigation`; `TabPagerDesktopNavigator` owns only semantic offset target selection and wrapping policy.
+- QML wheel-event normalization now lives in `TabPagerWheelInput.js` and is directly tested without Quick-window event dispatch.
 
 ## Remaining
 
-- Extract QML wheel-event normalization into a direct test seam if the dedicated wheel adapter remains the desired end state.
 - Reduce remaining controller orchestration by moving any residual activation/wheel decision logic into pure planners.
 - Consolidate layout constants such as `desktopGap` and minimum extents.
 - Deduplicate package identity, version, QML module URI, and install-path metadata beyond the current drift tests.
@@ -49,14 +49,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 ## Latest Checkpoint
 
-- Checkpoint: isolated wheel accumulation and sign conversion from `TabPagerDesktopNavigator` into `TabPagerWheelNavigation`.
-- Files changed: `CMakeLists.txt`, `src/tabpagerwheelnavigation.h`, `src/tabpagerwheelnavigation.cpp`, `src/tabpagerdesktopnavigator.h`, `src/tabpagerdesktopnavigator.cpp`, `src/tabpagerdesktopcontroller.h`, `src/tabpagerdesktopcontroller.cpp`, `tests/tabpagerwheelnavigation_test.cpp`, `tests/tabpagerdesktopnavigator_test.cpp`, `docs/architecture/README.md`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
-- Behavior preserved: scroll-up maps to previous desktop, scroll-down maps to next desktop, sub-step wheel input remains pending across navigation context changes, completed non-wrapping edge steps are consumed, backend activation result strings remain unchanged, QML still forwards raw wheel deltas to the backend, and all existing pager-visible behavior remains intact.
-- Target-doc cleanup: replaced stale statements that `TabPagerDesktopNavigator` owns wheel pending state/sign conversion with the current `TabPagerWheelNavigation` boundary, removed only the completed navigator-extraction tactic from the suggested refactoring sequence, and kept the remaining QML wheel-event normalization concern open.
-- Commands passed: `cmake --build build --target tabpagerwheelnavigation_test tabpagerdesktopnavigator_test tabpagerdesktopcontroller_test tabpagerbackend_test tabpagerview_test`; `ctest --test-dir build --output-on-failure -R 'tabpager(wheel|desktopnavigator|desktopcontroller|backend|view)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/CMakeLists.txt packages/tab-pager/src/tabpagerdesktopcontroller.cpp packages/tab-pager/src/tabpagerdesktopcontroller.h packages/tab-pager/src/tabpagerdesktopnavigator.cpp packages/tab-pager/src/tabpagerdesktopnavigator.h packages/tab-pager/src/tabpagerwheelnavigation.cpp packages/tab-pager/src/tabpagerwheelnavigation.h packages/tab-pager/tests/tabpagerdesktopnavigator_test.cpp packages/tab-pager/tests/tabpagerwheelnavigation_test.cpp` from the repository root.
-- Commands failed: `cmake --build build --target tabpagerwheelnavigation_test` failed after adding the characterization test and before implementation because `tabpagerwheelnavigation.h` did not exist yet.
-- Deviations: this checkpoint intentionally did not extract QML wheel-event normalization; that remains separate because the current safe checkpoint focused on removing wheel state/sign conversion from the navigator.
-- Ambiguity: no design ambiguity found for this checkpoint. The target asked for a dedicated wheel adapter and preservation of the pending-delta contract; both were addressed for C++ wheel-step handling while leaving unresolved QML normalization explicitly tracked.
+- Checkpoint: extracted QML wheel-event normalization into the directly tested `TabPagerWheelInput.js` helper.
+- Files changed: `CMakeLists.txt`, `package/contents/ui/TabPagerView.qml`, `package/contents/ui/TabPagerWheelInput.js`, `tests/tabpagerwheelinput_test.cpp`, `docs/architecture/README.md`, `DESIGN_REVIEW_CORRECT_END_STATE.md`, `DESIGN_REVIEW_PROGRESS.md`.
+- Behavior preserved: `TabPagerView.qml` still forwards raw wheel deltas to `backend.activateByWheelDelta`; vertical angle delta remains preferred when non-zero; horizontal angle delta remains the fallback when vertical delta is zero; inverted wheel input still flips the forwarded delta; the existing QML view smoke test still covers click and wheel event wiring.
+- Target-doc cleanup: removed the completed wheel-normalization finding and refactoring-sequence item, narrowed the layout testability finding back to unresolved layout concerns, and kept broader controller orchestration and wheel activation planning concerns open.
+- Target-doc edits: no architectural principles were removed; completed tactical wording about extracting QML wheel-event normalization was removed or rewritten as current-state evidence.
+- Commands passed: `cmake --build build --target tabpagerwheelinput_test tabpagerview_test`; `ctest --test-dir build --output-on-failure -R 'tabpager(wheelinput|view)'`; `ctest --test-dir build --output-on-failure`; `git diff --check`; `nix develop ".#default" --command prek run --hook-stage pre-commit --files packages/tab-pager/CMakeLists.txt packages/tab-pager/package/contents/ui/TabPagerView.qml packages/tab-pager/package/contents/ui/TabPagerWheelInput.js packages/tab-pager/tests/tabpagerwheelinput_test.cpp packages/tab-pager/docs/architecture/README.md packages/tab-pager/DESIGN_REVIEW_CORRECT_END_STATE.md packages/tab-pager/DESIGN_REVIEW_PROGRESS.md` from the repository root.
+- Commands failed: `cmake --build build --target tabpagerwheelinput_test` failed after adding the characterization test and before implementation because `package/contents/ui/TabPagerWheelInput.js` did not exist yet; the first pre-commit run failed because `treefmt` reformatted the new JS/C++ files, then passed after rerunning build/tests.
+- Deviations: no user-visible behavior change was made; this checkpoint intentionally did not move wheel accumulation/sign conversion or activation planning out of the existing C++ helpers.
+- Ambiguity: no blocking ambiguity found. The target already described a helper returning the raw delta consumed by `TabPagerWheelNavigation`; this checkpoint follows that migration while preserving the architecture doc's explicit split between raw-delta normalization, wheel-step accumulation/sign conversion, and semantic target selection.
 
 ## Notes
 
