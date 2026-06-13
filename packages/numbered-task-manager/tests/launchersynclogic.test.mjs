@@ -220,7 +220,7 @@ assert.deepEqual(plain(logic.createLauncherSyncState()), {
   assert.equal(output.action, "retry");
   assert.equal(output.result.ok, true);
   assert.deepEqual(output.state.reconciliation, {
-    attempts: 0,
+    attempts: 1,
     launchers: [],
     maxAttempts: 1,
     pending: false,
@@ -252,8 +252,8 @@ assert.deepEqual(plain(logic.createLauncherSyncState()), {
     pending,
   );
 
-  assert.equal(output.handled, false);
-  assert.equal(output.action, "none");
+  assert.equal(output.handled, true);
+  assert.equal(output.action, "clear");
   assert.deepEqual(output.state.reconciliation, {
     attempts: 0,
     launchers: [],

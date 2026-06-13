@@ -341,15 +341,15 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P1.
 
-**Evidence:** `LauncherSyncAdapter.qml` computes updates, writes `configuration.launchers`, writes `taskModel.launcherList`, checks convergence, mutates reconciliation state, retries, and logs warnings; `LauncherListLogic.mjs` owns lower-level update and reconciliation helpers; `tests/launchersyncadapterqml.test.mjs` asserts QML source patterns rather than executing write/retry/failure behavior.
+**Evidence:** `LauncherSyncLogic.mjs` now computes updates, drives fakeable model/config write ports, checks convergence, updates reconciliation state, and handles retry/expiry sequencing; `LauncherSyncAdapter.qml` provides real QML ports and warning formatting. `LauncherListLogic.mjs` still owns lower-level update and reconciliation primitives during migration.
 
-**Current state:** Pure update/reconciliation pieces exist, but the sequencing of reads, writes, guard state, convergence checks, retry expiry, and logging is implemented in QML.
+**Current state:** The read/write sequencing, guard-state transitions, convergence checks, retry, clear, and expiry paths are executable-tested without Plasma/QML. QML still owns real model/configuration effects and warning formatting.
 
-**Design concern:** Launcher persistence is operationally important and failure-prone, but current tests cannot execute the full orchestration without Plasma/QML.
+**Design concern:** The original executable-testability gap for launcher sync orchestration is closed. Remaining launcher sync concerns are narrower: retry classification is still implicit, formatting remains separate from action-result logging, and lower-level sync primitives still live in the broad launcher module.
 
 **Correct end state:** A sync orchestration helper should accept explicit effect ports: read model launchers, write model launchers, read config launchers, write config launchers, update guard, and emit diagnostics. QML should provide real ports only.
 
-**Suggested migration:** Extract `persistLaunchers`, `applyLauncherList`, and `reconcileLauncherListChange` sequencing into `LauncherSyncLogic.mjs` functions that accept fakeable callbacks or a port object. Keep `LauncherSyncAdapter.qml` as a wrapper. Replace regex-only tests with executable tests for successful writes, config-only writes, model-only writes, thrown setters, non-converged writes, retry once, and retry expiry.
+**Suggested migration:** Keep future changes on the `LauncherSyncLogic.mjs` port boundary. Address retry classification and shared diagnostic formatting as separate observability checkpoints, and leave broader launcher-list domain/sync separation to the modularity finding.
 
 **Acceptance criteria:** Launcher sync retry and convergence behavior is covered by unit tests without QML or Plasma. QML no longer owns model/config write branching. Failures produce structured results before formatting.
 

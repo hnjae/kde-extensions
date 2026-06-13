@@ -4,13 +4,14 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "LauncherListLogic.mjs" as LauncherListLogic
+import "LauncherSyncLogic.mjs" as LauncherSyncLogic
 
 QtQuick.QtObject {
     id: root
 
     property var configuration
-    property var launcherReconciliationState: LauncherListLogic.createLauncherReconciliationState()
+    property var launcherSyncState: LauncherSyncLogic.createLauncherSyncState()
+    property var launcherReconciliationState: launcherSyncState.reconciliation
     property var taskModel
     property bool updatingLauncherConfig: false
 
@@ -22,68 +23,46 @@ QtQuick.QtObject {
         return taskModel ? taskModel.launcherList : [];
     }
 
-    function persistLaunchers(launchers) {
-        const update = LauncherListLogic.launcherConfigUpdate(configurationLaunchers(), launchers);
-        if (!update.changed) {
-            return LauncherListLogic.launcherConfigConvergence(update, configurationLaunchers());
-        }
+    function syncPorts() {
+        return {
+            readConfigLaunchers: () => configurationLaunchers(),
+            readModelLaunchers: () => modelLaunchers(),
+            setUpdatingLauncherConfig: updating => {
+                updatingLauncherConfig = updating;
+            },
+            writeConfigLaunchers: launchers => {
+                configuration.launchers = launchers;
+            },
+            writeModelLaunchers: launchers => {
+                taskModel.launcherList = launchers;
+            }
+        };
+    }
 
-        const result = LauncherListLogic.runLauncherListUpdateTransaction(root, () => {
-            configuration.launchers = update.launchers;
-            return LauncherListLogic.launcherConfigConvergence(update, configurationLaunchers());
-        });
-        recordLauncherSyncResult("persistLaunchers", result);
-        return result;
+    function persistLaunchers(launchers) {
+        const output = LauncherSyncLogic.persistLaunchers(launchers, syncPorts(), launcherSyncState);
+        launcherSyncState = output.state;
+        logLauncherSyncResult("persistLaunchers", output.result);
+        return output.result;
     }
 
     function applyLauncherList(launchers) {
-        const update = LauncherListLogic.launcherModelUpdate(modelLaunchers(), configurationLaunchers(), launchers);
-        if (!update.changed) {
-            return false;
-        }
-
-        const result = LauncherListLogic.runLauncherListUpdateTransaction(root, () => {
-            if (update.modelChanged) {
-                taskModel.launcherList = update.launchers;
-            }
-            if (update.configChanged) {
-                configuration.launchers = update.launchers;
-            }
-            return LauncherListLogic.launcherModelConvergence(update, modelLaunchers(), configurationLaunchers());
-        });
-        recordLauncherSyncResult("applyLauncherList", result);
-        return Boolean(result && result.changed);
+        const output = LauncherSyncLogic.applyLauncherList(launchers, syncPorts(), launcherSyncState);
+        launcherSyncState = output.state;
+        logLauncherSyncResult("applyLauncherList", output.result);
+        return Boolean(output.changed);
     }
 
     function recordLauncherSyncResult(action, result) {
-        launcherReconciliationState = LauncherListLogic.launcherReconciliationAfterResult(launcherReconciliationState, result);
+        launcherSyncState = LauncherSyncLogic.launcherSyncStateAfterResult(launcherSyncState, result);
         logLauncherSyncResult(action, result);
     }
 
     function reconcileLauncherListChange(modelLaunchers) {
-        const decision = LauncherListLogic.launcherReconciliationDecision(launcherReconciliationState, modelLaunchers, configurationLaunchers());
-        launcherReconciliationState = decision.state;
-        if (decision.action === "none") {
-            return false;
-        }
-
-        if (decision.action === "retry") {
-            applyLauncherList(decision.launchers);
-            return true;
-        }
-
-        if (decision.action === "expired") {
-            const expiredResult = LauncherListLogic.launcherModelConvergence({
-                changed: true,
-                launchers: decision.launchers || []
-            }, modelLaunchers, configurationLaunchers());
-            logLauncherSyncResult("reconcileLauncherList", Object.assign({}, expiredResult, {
-                code: "reconciliation-expired",
-                ok: false
-            }));
-        }
-
-        return true;
+        const output = LauncherSyncLogic.reconcileLauncherListChange(modelLaunchers, syncPorts(), launcherSyncState);
+        launcherSyncState = output.state;
+        logLauncherSyncResult("reconcileLauncherList", output.result);
+        return Boolean(output.handled);
     }
 
     function logLauncherSyncResult(action, result) {

@@ -54,8 +54,18 @@ assert.doesNotMatch(
 
 assert.match(sourceQml, /property var configuration/);
 assert.match(sourceQml, /property var taskModel/);
-assert.match(sourceQml, /property var launcherReconciliationState/);
+assert.match(sourceQml, /import "LauncherSyncLogic\.mjs" as LauncherSyncLogic/);
+assert.doesNotMatch(
+  sourceQml,
+  /import "LauncherListLogic\.mjs" as LauncherListLogic/,
+);
+assert.match(sourceQml, /property var launcherSyncState/);
+assert.match(
+  sourceQml,
+  /property var launcherReconciliationState:\s*launcherSyncState\.reconciliation/,
+);
 assert.match(sourceQml, /property bool updatingLauncherConfig:\s*false/);
+assert.match(sourceQml, /function syncPorts\(\)/);
 assert.match(sourceQml, /function persistLaunchers\(launchers\)/);
 assert.match(sourceQml, /function applyLauncherList\(launchers\)/);
 assert.match(sourceQml, /function recordLauncherSyncResult\(action, result\)/);
@@ -64,13 +74,30 @@ assert.match(
   /function reconcileLauncherListChange\(modelLaunchers\)/,
 );
 assert.match(sourceQml, /function logLauncherSyncResult\(action, result\)/);
-assert.match(sourceQml, /applyLauncherList\(decision\.launchers\)/);
 assert.match(
   sourceQml,
-  /LauncherListLogic\.runLauncherListUpdateTransaction\(root/,
+  /LauncherSyncLogic\.persistLaunchers\(launchers, syncPorts\(\), launcherSyncState\)/,
 );
-assert.match(sourceQml, /LauncherListLogic\.launcherReconciliationDecision/);
-assert.match(sourceQml, /LauncherListLogic\.launcherReconciliationAfterResult/);
+assert.match(
+  sourceQml,
+  /LauncherSyncLogic\.applyLauncherList\(launchers, syncPorts\(\), launcherSyncState\)/,
+);
+assert.match(
+  sourceQml,
+  /LauncherSyncLogic\.reconcileLauncherListChange\(modelLaunchers, syncPorts\(\), launcherSyncState\)/,
+);
+assert.doesNotMatch(
+  sourceQml,
+  /LauncherListLogic\.runLauncherListUpdateTransaction/,
+);
+assert.doesNotMatch(
+  sourceQml,
+  /LauncherListLogic\.launcherReconciliationDecision/,
+);
+assert.doesNotMatch(
+  sourceQml,
+  /LauncherListLogic\.launcherReconciliationAfterResult/,
+);
 assert.match(
   sourceQml,
   /console\.warn\("Numbered Task Manager launcher sync "/,
