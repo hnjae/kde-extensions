@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import "LauncherListLogic.mjs" as LauncherListLogic
+import "NormalTaskSourceLifecycleLogic.mjs" as NormalTaskSourceLifecycleLogic
 import "TaskEntryLogic.mjs" as TaskEntryLogic
 import "TaskModelLogic.mjs" as TaskModelLogic
 import "TaskScopeLogic.mjs" as TaskScopeLogic
@@ -66,7 +67,8 @@ QtQuick.Item {
             property int launcherPosition: launcherPinState.pinnedLauncherPosition
             property bool launcherPinned: launcherPinState.isPinned
             property var persistentModelIndex: root.taskModel.makePersistentModelIndex(index)
-            property string publishedKey: ""
+            property var lifecycleState: NormalTaskSourceLifecycleLogic.createNormalTaskSourceRowState()
+            property string publishedKey: lifecycleState.publishedKey || ""
             property var taskInfo: TaskModelLogic.createNormalTaskEntry({
                 activities: model.Activities,
                 active: model.IsActive,
@@ -132,23 +134,37 @@ QtQuick.Item {
                 }
             }
 
-            function syncTask() {
-                if (!publishedKey) {
-                    return;
-                }
+            function lifecycleSnapshot() {
+                return {
+                    qualifies,
+                    task: taskInfo
+                };
+            }
 
-                taskEntryDiagnostics.emitDiagnostics();
-                const task = Object.assign({}, taskInfo);
-                task.entryKey = publishedKey;
-                root.taskPublished(publishedKey, qualifies, task);
+            function executeLifecycleCommands(output) {
+                lifecycleState = output.state;
+                const commands = Array.from(output.commands || []);
+                for (let i = 0; i < commands.length; ++i) {
+                    const command = commands[i];
+                    if (command.type === "emitDiagnostics") {
+                        taskEntryDiagnostics.emitDiagnostics();
+                    } else if (command.type === "publishTask") {
+                        root.taskPublished(command.key, command.qualifies, command.task);
+                    } else if (command.type === "removeTask") {
+                        root.taskRemoved(command.key);
+                    }
+                }
+            }
+
+            function syncTask() {
+                executeLifecycleCommands(NormalTaskSourceLifecycleLogic.normalTaskSourceRowChanged(lifecycleState, lifecycleSnapshot()));
             }
 
             QtQuick.Component.onCompleted: {
-                publishedKey = root.allocatePublicationKey();
-                syncTask();
+                executeLifecycleCommands(NormalTaskSourceLifecycleLogic.normalTaskSourceRowAppeared(lifecycleState, root.allocatePublicationKey(), lifecycleSnapshot()));
             }
             QtQuick.Component.onDestruction: {
-                root.taskRemoved(publishedKey);
+                executeLifecycleCommands(NormalTaskSourceLifecycleLogic.normalTaskSourceRowRemoved(lifecycleState));
             }
             onIndexChanged: syncTask()
             onLauncherPinnedChanged: syncTask()
