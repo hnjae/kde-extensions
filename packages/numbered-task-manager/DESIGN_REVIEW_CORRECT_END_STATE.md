@@ -9,14 +9,14 @@ The codebase has a strong existing direction: external behavior is specified in 
 
 The highest-impact risks are around action/effect boundaries. Desktop action backend testing still depends on source-shape checks for behavior that should be executable-tested.
 
-The second major risk is module breadth. `TaskContextMenuLogic.mjs` and `LauncherListLogic.mjs` still contain multiple feature families. That makes local changes harder to reason about and can push tests toward very large suites or regex assertions against QML instead of executable behavior tests.
+The second major risk is module breadth. `TaskContextMenuLogic.mjs` still fronts multiple context-menu feature families. That makes local changes harder to reason about and can push tests toward very large suites or regex assertions against QML instead of executable behavior tests.
 
 The correct end state should keep the current behavioral design, KDE Plasma API usage, native menu approach, and pure-helper strategy. The target is narrower ownership: domain rules live in one pure owner, QML components wire platform effects through explicit ports, and every user action that crosses into Plasma or KIO has a structured result path.
 
 ## Top Design Risks
 
-1. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs` and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
-2. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, standalone launcher sync diagnostics still use a separate warning formatter, and C++ desktop actions still require live `QAction`/KIO objects for executable verification despite having descriptors and launch-failure diagnostics.
+1. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs` still fronts aggregate context-menu policy, which increases blast radius and makes deletion or isolated testing harder.
+2. **Some effect boundaries are hard to test with executable fakes.** C++ desktop actions still require live `QAction`/KIO objects for executable verification despite having descriptors and launch-failure diagnostics.
 
 ## Invariant and Correctness Risks
 
@@ -90,27 +90,11 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** Removing launcher activity code does not touch window action, virtual desktop, or role snapshot modules. Each extracted feature family has a focused test file.
 
-### Finding: Launcher features are interwoven through a broad launcher module
-
-**Priority:** P2.
-
-**Evidence:** `LauncherActivityLogic.mjs` owns activity serialization and activity update policy, and sync/reconciliation policy lives in `LauncherSyncLogic.mjs`. `LauncherListLogic.mjs` still combines pin visibility, visible position, and pinned reordering; call sites include platform state, context-menu pin state, and task movement.
-
-**Current state:** Launcher activity and sync feature families have focused owners. Remaining launcher list policy is still grouped by noun rather than ownership.
-
-**Design concern:** Removing or changing pin visibility still requires auditing code used by unrelated drag/reorder paths.
-
-**Correct end state:** Keep the launcher domain boundary, but split responsibility modules for serialization/activity scope, pin visibility, and pinned reordering if the domain module remains too broad.
-
-**Suggested migration:** Extract pin visibility helpers next if they remain coupled to pinned reordering. Leave re-exports temporarily only where needed to reduce churn.
-
-**Acceptance criteria:** Runtime adapters import only the launcher responsibility they execute. Tests can fail independently for serialized activity updates, pin state, and pinned reordering.
-
 ## Recommended Correct End-State Architecture
 
 The root `main.qml` should remain the composition root. It should instantiate Plasma `TasksModel`, platform state, adapters, sources, and the rendered `TaskListRepresentation.qml`, but it should not own domain policy beyond unavoidable wiring.
 
-Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Launcher sync policy lives in `LauncherSyncLogic.mjs`; remaining launcher domain rules should split further only where ownership remains broad. Context-menu feature families should have focused pure modules.
+Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Launcher sync policy lives in `LauncherSyncLogic.mjs`; launcher activity scoping, pin visibility, and structural pinned reordering have focused owners. Context-menu feature families should have focused pure modules.
 
 State definitions should be explicit descriptors rather than multi-field conventions. Context-menu routes and command kinds should be centralized constants or typed helpers.
 
@@ -127,7 +111,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 1. Add characterization tests around current behavior.
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Add a desktop action descriptor seam in the C++ backend.
-4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, keep action-result classifiers in focused workflow owners, and split remaining broad launcher-domain responsibilities if they keep coupling unrelated features.
+4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family and keep action-result classifiers in focused workflow owners.
 5. Improve error semantics and observability. Keep backend effect failures visible through structured results.
 6. Remove or simplify premature abstractions. After the behavior boundaries are stable, consider extracting `TaskLikeItemShell.qml` if the duplicated visual shell still creates real maintenance pressure. Keep compatibility re-exports only temporarily and remove them once QML and tests consume focused modules directly.
 
@@ -154,14 +138,14 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Single Source of Truth / Duplication Agent:** Reported repeated context-menu route-kind strings and duplicated error serialization. Error serialization is complete; route-kind cleanup remains folded into the broader action/result and context-menu ownership work.
 
-**Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. The broad action service and sync/domain split are complete; the broad context-menu module remains P1, and remaining launcher-domain splits are P2.
+**Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. The broad action service and launcher sync/activity/pin ownership splits are complete; the broad context-menu module remains P1.
 
 **Logic Placement / Flow Readability Agent:** Reported implicit `visualParent.contextMenuOpen` mutation. This is complete; menu-open state now flows through explicit lifecycle callbacks owned by delegates.
 
-**Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. Launcher sync orchestration is now covered through `LauncherSyncLogic.mjs`; desktop action descriptors exist but still lack executable fake-input tests, and footer actions remain P2.
+**Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. Launcher sync orchestration is now covered through `LauncherSyncLogic.mjs`; footer actions route through descriptors/action results; desktop action descriptors exist but still lack executable fake-input tests.
 
-**Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Exception serialization and desktop action launch diagnostics are complete; standalone launcher sync diagnostic formatting remains split from the generic action-result logger.
+**Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Exception serialization, desktop action launch diagnostics, and launcher sync action-result diagnostics are complete; residual backend work is executable fake-input coverage.
 
-**Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. The raw model adapter concern is complete; remaining active items are kept in cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
+**Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. The raw model adapter and broad launcher list concerns are complete; remaining active items are kept in cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
 **Rejected or deferred findings:** No subagent finding was rejected for lack of code evidence. Visual shell extraction was deferred because the current duplication is smaller and less risky than action/effect boundary issues. A big rewrite of context menu QML, raw model plumbing, or source delegates is explicitly not recommended; the migration should proceed through characterization tests and narrow extracted owners.
