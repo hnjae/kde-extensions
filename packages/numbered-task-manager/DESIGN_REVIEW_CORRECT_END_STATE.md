@@ -41,22 +41,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** Only one production implementation converts virtual desktop objects or strings to IDs. Task scope tests and context-menu checked-state tests both use the shared helper. A desktop identity behavior change requires one code edit.
 
-### Finding: Task source and visible-item kind strings are repeated
-
-**Priority:** P2.
-
-**Evidence:** `VisibleTaskItemsLogic.mjs` emits `kind: "normal"`, `sourceModel: "normal"`, `kind: "remoteAttention"`, and `sourceModel: "remoteAttention"`; `TaskActionLogic.mjs` hard-codes those names in shortcut activation validation; `TaskActivationAdapter.qml` routes on `"remoteAttention"`; `NormalTaskSource.qml` and `RemoteAttentionSource.qml` repeat `"normal"` and `"remoteAttention"` for diagnostics.
-
-**Current state:** Source identities are an implicit string protocol shared across visible-item composition, activation validation, activation target routing, and diagnostic source reporting.
-
-**Design concern:** Adding a new task-like source or renaming an existing one requires coordinated edits across several files. A typo can route activation or diagnostics incorrectly.
-
-**Correct end state:** One schema module should own task-like source identities and visible-item kinds. `VisibleTaskItemsLogic.mjs` is a reasonable owner if it remains the descriptor composer; otherwise create a small descriptor schema module.
-
-**Suggested migration:** Export constants and helper predicates such as `normalItemKind`, `remoteAttentionItemKind`, `isNormalVisibleItem(...)`, and `isRemoteAttentionVisibleItem(...)`. Replace production string comparisons where QML import mechanics allow it. For QML call sites that cannot easily import constants, centralize validation in pure helpers before effects execute.
-
-**Acceptance criteria:** Routing and descriptor validation do not independently spell `"normal"` or `"remoteAttention"` outside the shared owner. Activation tests cover routing through the shared helper or constants.
-
 ### Finding: Context-menu command descriptors lack a focused owner
 
 **Priority:** P2.
@@ -504,7 +488,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 ## Suggested Refactoring Sequence
 
 1. Add characterization tests around current behavior. Prioritize launcher pin/unpin persistence outcomes, disabled context-menu dispatch, model-index unknown-shape policy, visible-item `kind/sourceModel` mismatch, launcher sync retry classification, and source lifecycle transitions.
-2. Centralize duplicated rules/state. Move virtual desktop identity into one owner, centralize visible-item/source identity constants, and centralize context-menu route kinds.
+2. Centralize duplicated rules/state. Move virtual desktop identity into one owner and centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Extract launcher sync orchestration into fakeable pure functions or port-based helpers. Extract source lifecycle state machines from hidden QML delegate event ordering. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, split launcher sync from launcher list domain rules, and introduce narrow ports around raw `TasksModel`.
 5. Improve error semantics and observability. Add structured error context, connect desktop action launch failures to diagnostics, and carry retry classification in launcher sync results.
@@ -523,7 +507,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 ## Appendix: Subagent Reports
 
-**Single Source of Truth / Duplication Agent:** Reported duplicated virtual desktop identity, repeated task source/kind strings, and repeated context-menu route-kind strings. These were merged into “Single Source of Truth Violations.” Virtual desktop duplication was merged with similar cohesion/deletion findings and prioritized as P2 by the main review because it is a drift risk rather than a known current behavior bug.
+**Single Source of Truth / Duplication Agent:** Reported duplicated virtual desktop identity and repeated context-menu route-kind strings. These were merged into “Single Source of Truth Violations.” Virtual desktop duplication was merged with similar cohesion/deletion findings and prioritized as P2 by the main review because it is a drift risk rather than a known current behavior bug.
 
 **Invariant / Correctness Agent:** Reported model-index unknown shape being both diagnostic and actionable, disabled/invisible context-menu actions carrying executable commands, and visible-item descriptor mismatch risk. All three were kept. The first two are P1 because they affect effect-boundary correctness; the descriptor mismatch is P2 because the current composer produces valid descriptors but the boundary is not protected.
 
