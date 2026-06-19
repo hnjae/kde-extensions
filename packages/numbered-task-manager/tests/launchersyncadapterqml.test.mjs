@@ -12,20 +12,33 @@ const moveAdapterQml = readFileSync(
   new URL("../package/contents/ui/TaskMoveAdapter.qml", import.meta.url),
   "utf8",
 );
+const portUrl = new URL(
+  "../package/contents/ui/LauncherSyncPort.qml",
+  import.meta.url,
+);
 const sourceUrl = new URL(
   "../package/contents/ui/LauncherSyncAdapter.qml",
   import.meta.url,
 );
 
+assert.equal(existsSync(portUrl), true);
 assert.equal(existsSync(sourceUrl), true);
 
+const portQml = readFileSync(portUrl, "utf8");
 const sourceQml = readFileSync(sourceUrl, "utf8");
 
-assert.match(mainQml, /\bLauncherSyncAdapter\s*\{/);
-assert.match(mainQml, /id:\s*launcherSync/);
+assert.match(mainQml, /\bLauncherSyncPort\s*\{/);
+assert.match(mainQml, /id:\s*launcherSyncPort/);
 assert.match(
   mainQml,
-  /launcherSync\.persistLaunchers\(tasksModel\.launcherList\)/,
+  /\bLauncherSyncPort\s*\{[\s\S]*?configuration:\s*Plasmoid\.configuration[\s\S]*?taskModel:\s*tasksModel[\s\S]*?\}/,
+);
+assert.match(mainQml, /\bLauncherSyncAdapter\s*\{/);
+assert.match(mainQml, /id:\s*launcherSync/);
+assert.match(mainQml, /launcherSyncPort:\s*launcherSyncPort/);
+assert.match(
+  mainQml,
+  /launcherSync\.persistLaunchers\(launcherSyncPort\.modelLaunchers\)/,
 );
 assert.match(
   moveAdapterQml,
@@ -52,8 +65,26 @@ assert.doesNotMatch(
   /LauncherListLogic\.launcherReconciliationDecision/,
 );
 
-assert.match(sourceQml, /property var configuration/);
-assert.match(sourceQml, /property var taskModel/);
+assert.match(portQml, /property var configuration/);
+assert.match(portQml, /property var taskModel/);
+assert.match(
+  portQml,
+  /readonly property var configLaunchers:\s*configuration && configuration\.launchers \? configuration\.launchers : \[\]/,
+);
+assert.match(
+  portQml,
+  /readonly property var modelLaunchers:\s*taskModel && taskModel\.launcherList \? taskModel\.launcherList : \[\]/,
+);
+assert.match(portQml, /function writeConfigLaunchers\(launchers\)/);
+assert.match(portQml, /configuration\.launchers = launchers/);
+assert.match(portQml, /function writeModelLaunchers\(launchers\)/);
+assert.match(portQml, /taskModel\.launcherList = launchers/);
+
+assert.match(sourceQml, /property var launcherSyncPort/);
+assert.doesNotMatch(sourceQml, /property var taskModel/);
+assert.doesNotMatch(sourceQml, /property var configuration/);
+assert.doesNotMatch(sourceQml, /taskModel\.launcherList/);
+assert.doesNotMatch(sourceQml, /configuration\.launchers/);
 assert.match(sourceQml, /import "LauncherSyncLogic\.mjs" as LauncherSyncLogic/);
 assert.doesNotMatch(
   sourceQml,
@@ -66,6 +97,22 @@ assert.match(
 );
 assert.match(sourceQml, /property bool updatingLauncherConfig:\s*false/);
 assert.match(sourceQml, /function syncPorts\(\)/);
+assert.match(
+  sourceQml,
+  /readConfigLaunchers:\s*\(\) => root\.launcherSyncPort\.configLaunchers/,
+);
+assert.match(
+  sourceQml,
+  /readModelLaunchers:\s*\(\) => root\.launcherSyncPort\.modelLaunchers/,
+);
+assert.match(
+  sourceQml,
+  /root\.launcherSyncPort\.writeConfigLaunchers\(launchers\)/,
+);
+assert.match(
+  sourceQml,
+  /root\.launcherSyncPort\.writeModelLaunchers\(launchers\)/,
+);
 assert.match(sourceQml, /function persistLaunchers\(launchers\)/);
 assert.match(sourceQml, /function applyLauncherList\(launchers\)/);
 assert.match(sourceQml, /function recordLauncherSyncResult\(action, result\)/);
