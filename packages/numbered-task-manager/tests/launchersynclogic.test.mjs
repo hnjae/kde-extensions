@@ -46,7 +46,9 @@ function createPorts(values = {}) {
       writeConfigLaunchers: (launchers) => {
         calls.push(["writeConfigLaunchers", Array.from(launchers || [])]);
         if (values.throwConfigWrite) {
-          throw new Error("config denied");
+          throw Object.assign(new Error("config denied"), {
+            code: "E_CONFIG_DENIED",
+          });
         }
         if (!values.ignoreConfigWrite) {
           state.configLaunchers = Array.from(launchers || []);
@@ -220,6 +222,9 @@ assert.equal(launcherUpdateState.updatingLauncherConfig, false);
     changed: false,
     code: "write-failed",
     error: "config denied",
+    errorCode: "E_CONFIG_DENIED",
+    errorMessage: "config denied",
+    errorName: "Error",
     ok: false,
     retryClassification: "fatal",
   });

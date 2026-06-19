@@ -193,6 +193,8 @@ const thrownActivation = logic.activationExecutionResult(
 assert.equal(thrownActivation.ok, false);
 assert.equal(thrownActivation.code, "request-threw");
 assert.equal(thrownActivation.context.error, "activation failed");
+assert.equal(thrownActivation.context.errorMessage, "activation failed");
+assert.equal(thrownActivation.context.errorName, "Error");
 assert.equal(logic.shouldLogActionResult(thrownActivation), true);
 
 const projectionDiagnostic = logic.taskEntryDiagnosticResult({
@@ -609,6 +611,8 @@ assert.deepEqual(plain(thrownMoveRequest), {
   context: {
     entryKey: "normal-task",
     error: "request failed",
+    errorMessage: "request failed",
+    errorName: "Error",
     modelIndexValid: true,
     requestMethod: "requestMove",
     title: "Normal Task",
@@ -878,7 +882,9 @@ const thrownLauncherPersistence = logic.launcherMutationPersistenceResult(
   launcherPersistenceRequest,
   {
     code: "launcher-persistence-threw",
-    error: new Error("persist failed"),
+    error: Object.assign(new Error("persist failed"), {
+      code: "E_PERSIST_FAILED",
+    }),
     failedTargets: ["sync"],
     launchers: ["app.desktop"],
     ok: false,
@@ -887,6 +893,9 @@ const thrownLauncherPersistence = logic.launcherMutationPersistenceResult(
 assert.equal(thrownLauncherPersistence.ok, false);
 assert.equal(thrownLauncherPersistence.code, "launcher-persistence-threw");
 assert.equal(thrownLauncherPersistence.context.error, "persist failed");
+assert.equal(thrownLauncherPersistence.context.errorCode, "E_PERSIST_FAILED");
+assert.equal(thrownLauncherPersistence.context.errorMessage, "persist failed");
+assert.equal(thrownLauncherPersistence.context.errorName, "Error");
 assert.equal(logic.shouldLogActionResult(thrownLauncherPersistence), true);
 
 assert.deepEqual(
@@ -926,12 +935,17 @@ assert.equal(logic.shouldLogActionResult(rejectedLauncherMutation), true);
 const thrownLauncherMutation = logic.launcherMutationResult(
   logic.launcherMutationRequest("pinLauncher", "app.desktop"),
   undefined,
-  new Error("pin failed"),
+  Object.assign(new Error("pin failed"), {
+    code: "E_PIN_FAILED",
+  }),
 );
 assert.equal(thrownLauncherMutation.ok, false);
 assert.equal(thrownLauncherMutation.code, "request-threw");
 assert.equal(thrownLauncherMutation.context.launcherUrl, "app.desktop");
 assert.equal(thrownLauncherMutation.context.error, "pin failed");
+assert.equal(thrownLauncherMutation.context.errorCode, "E_PIN_FAILED");
+assert.equal(thrownLauncherMutation.context.errorMessage, "pin failed");
+assert.equal(thrownLauncherMutation.context.errorName, "Error");
 assert.equal(logic.shouldLogActionResult(thrownLauncherMutation), true);
 
 assert.deepEqual(
