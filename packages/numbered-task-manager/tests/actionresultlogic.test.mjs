@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -10,9 +10,9 @@ const logic = await loadQmlJsModule(
   new URL("../package/contents/ui/ActionResultLogic.mjs", import.meta.url),
   ["actionResult", "shouldLogActionResult"],
 );
-const taskActionSource = readFileSync(
-  new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
-  "utf8",
+const taskActionUrl = new URL(
+  "../package/contents/ui/TaskActionLogic.mjs",
+  import.meta.url,
 );
 
 assert.deepEqual(
@@ -44,12 +44,4 @@ assert.equal(
 );
 assert.equal(logic.shouldLogActionResult(null), false);
 
-assert.match(
-  taskActionSource,
-  /import \{ actionResult \} from "\.\/ActionResultLogic\.mjs"/,
-);
-assert.doesNotMatch(
-  taskActionSource,
-  /export function actionResult\(action, code, ok, diagnostic, context\)/,
-);
-assert.doesNotMatch(taskActionSource, /export function shouldLogActionResult/);
+assert.equal(existsSync(taskActionUrl), false);

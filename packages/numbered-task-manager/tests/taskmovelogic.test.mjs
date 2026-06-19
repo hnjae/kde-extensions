@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -10,9 +10,9 @@ const logic = await loadQmlJsModule(
   new URL("../package/contents/ui/TaskMoveLogic.mjs", import.meta.url),
   ["dragMoveRejectionDiagnostic", "dragMoveRejectionResult"],
 );
-const actionLogicSource = readFileSync(
-  new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
-  "utf8",
+const taskActionUrl = new URL(
+  "../package/contents/ui/TaskActionLogic.mjs",
+  import.meta.url,
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
@@ -67,5 +67,4 @@ assert.equal(
 );
 assert.equal(logic.dragMoveRejectionDiagnostic("missing-source"), true);
 
-assert.doesNotMatch(actionLogicSource, /function dragMoveRejectionDiagnostic/);
-assert.doesNotMatch(actionLogicSource, /function dragMoveRejectionResult/);
+assert.equal(existsSync(taskActionUrl), false);

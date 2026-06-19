@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "TaskActionLogic.mjs" as TaskActionLogic
+import "TaskEntryDiagnosticLogic.mjs" as TaskEntryDiagnosticLogic
 import "TaskEntryLogic.mjs" as TaskEntryLogic
 
 QtQuick.QtObject {
@@ -38,7 +38,7 @@ QtQuick.QtObject {
 
         root.lastDiagnosticSignature = signature;
         for (let i = 0; i < diagnostics.length; ++i) {
-            root.actionResult(TaskActionLogic.taskEntryDiagnosticResult(diagnostics[i]));
+            root.actionResult(TaskEntryDiagnosticLogic.taskEntryDiagnosticResult(diagnostics[i]));
         }
     }
 }

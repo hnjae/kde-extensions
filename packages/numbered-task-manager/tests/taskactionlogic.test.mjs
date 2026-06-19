@@ -5,8 +5,11 @@ import assert from "node:assert/strict";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const actionLogic = await loadQmlJsModule(
-  new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
+const taskEntryDiagnosticLogic = await loadQmlJsModule(
+  new URL(
+    "../package/contents/ui/TaskEntryDiagnosticLogic.mjs",
+    import.meta.url,
+  ),
   ["taskEntryDiagnosticResult"],
 );
 const activationLogic = await loadQmlJsModule(
@@ -68,7 +71,6 @@ const taskMoveLogic = await loadQmlJsModule(
 );
 const logic = Object.assign(
   {},
-  actionLogic,
   actionResultLogic,
   activationLogic,
   commandLogic,
@@ -76,6 +78,7 @@ const logic = Object.assign(
   contextMenuRequestLogic,
   contextMenuTaskCommandLogic,
   launcherCommandLogic,
+  taskEntryDiagnosticLogic,
   taskMoveLogic,
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));

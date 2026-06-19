@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -14,9 +14,9 @@ const logic = await loadQmlJsModule(
     "taskActivationRequest",
   ],
 );
-const actionLogicSource = readFileSync(
-  new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
-  "utf8",
+const taskActionUrl = new URL(
+  "../package/contents/ui/TaskActionLogic.mjs",
+  import.meta.url,
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const validModelIndex = { valid: true, row: 4 };
@@ -81,6 +81,4 @@ assert.equal(
 
 assert.equal(logic.shortcutActivationRequest([], 0).code, "no-target");
 
-assert.doesNotMatch(actionLogicSource, /function taskActivationRequest/);
-assert.doesNotMatch(actionLogicSource, /function activationExecutionResult/);
-assert.doesNotMatch(actionLogicSource, /function shortcutActivationRequest/);
+assert.equal(existsSync(taskActionUrl), false);

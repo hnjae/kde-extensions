@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -73,9 +73,9 @@ assert.deepEqual(plain(logic.normalizedContextMenuTaskCommand("requestMove")), {
   requestMethod: "requestMove",
 });
 
-const taskActionLogicSource = readFileSync(
-  new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
-  "utf8",
+const taskActionUrl = new URL(
+  "../package/contents/ui/TaskActionLogic.mjs",
+  import.meta.url,
 );
 const launcherCommandLogicSource = readFileSync(
   new URL("../package/contents/ui/LauncherCommandLogic.mjs", import.meta.url),
@@ -96,14 +96,7 @@ assert.match(
   taskCommandLogicSource,
   /import \{ normalizedContextMenuTaskCommand \} from "\.\/TaskContextMenuCommandLogic\.mjs"/,
 );
-assert.doesNotMatch(
-  taskActionLogicSource,
-  /export function contextMenuLauncherCommand\(/,
-);
-assert.doesNotMatch(
-  taskActionLogicSource,
-  /export function contextMenuTaskCommand\(/,
-);
+assert.equal(existsSync(taskActionUrl), false);
 
 for (const modulePath of [
   "TaskContextMenuLauncherActivityLogic.mjs",
