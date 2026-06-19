@@ -14,6 +14,8 @@ QtQuick.QtObject {
     property var launcherReconciliationState: launcherSyncState.reconciliation
     property bool updatingLauncherConfig: false
 
+    signal actionResult(var result)
+
     function syncPorts() {
         return {
             readConfigLaunchers: () => root.launcherSyncPort.configLaunchers,
@@ -57,17 +59,9 @@ QtQuick.QtObject {
     }
 
     function logLauncherSyncResult(action, result) {
-        if (!result || result.ok) {
-            return;
+        const syncActionResult = LauncherSyncLogic.launcherSyncActionResult(action, result);
+        if (syncActionResult) {
+            actionResult(syncActionResult);
         }
-
-        console.warn("Numbered Task Manager launcher sync " + action + " " + result.code + ": " + JSON.stringify({
-            configLaunchers: result.configLaunchers || [],
-            error: result.error || "",
-            failedTargets: result.failedTargets || [],
-            launchers: result.launchers || [],
-            modelLaunchers: result.modelLaunchers || [],
-            retryClassification: result.retryClassification || ""
-        }));
     }
 }

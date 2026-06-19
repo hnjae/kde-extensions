@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import { actionResult } from "./ActionResultLogic.mjs";
 import { errorContext } from "./ErrorContextLogic.mjs";
 import {
   launcherListsEqual,
@@ -70,6 +71,42 @@ export function launcherSyncResultWithRetryClassification(result) {
   return Object.assign({}, syncResult, {
     retryClassification: launcherSyncRetryClassification(syncResult),
   });
+}
+
+export function launcherSyncActionResult(action, result) {
+  const syncResult = result || {};
+  if (!syncResult || syncResult.ok) {
+    return null;
+  }
+
+  const context = {
+    configLaunchers: normalizedLauncherList(syncResult.configLaunchers),
+    failedTargets: Array.from(syncResult.failedTargets || []),
+    launchers: normalizedLauncherList(syncResult.launchers),
+    launcherSyncAction: String(action || ""),
+    modelLaunchers: normalizedLauncherList(syncResult.modelLaunchers),
+    retryClassification: launcherSyncRetryClassification(syncResult),
+  };
+  if (syncResult.error) {
+    context.error = String(syncResult.error);
+  }
+  if (syncResult.errorMessage) {
+    context.errorMessage = String(syncResult.errorMessage);
+  }
+  if (syncResult.errorName) {
+    context.errorName = String(syncResult.errorName);
+  }
+  if (syncResult.errorCode !== undefined && syncResult.errorCode !== null) {
+    context.errorCode = String(syncResult.errorCode);
+  }
+
+  return actionResult(
+    "syncLaunchers",
+    syncResult.code || "launcher-sync-failed",
+    false,
+    true,
+    context,
+  );
 }
 
 export function launcherConfigConvergence(update, observedConfigLaunchers) {

@@ -52,6 +52,10 @@ PlasmoidItem {
         id: launcherSync
 
         launcherSyncPort: launcherSyncPort
+
+        onActionResult: result => {
+            actionLogger.logActionResult(result);
+        }
     }
 
     LauncherCommandPort {

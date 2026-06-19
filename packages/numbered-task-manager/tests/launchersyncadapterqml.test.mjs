@@ -158,7 +158,7 @@ assert.match(
   sourceQml,
   /LauncherSyncLogic\.launcherSyncActionResult\(action,\s*result\)/,
 );
-assert.match(sourceQml, /actionResult\(actionResult\)/);
+assert.match(sourceQml, /actionResult\(syncActionResult\)/);
 assert.doesNotMatch(
   sourceQml,
   /retryClassification:\s*result\.retryClassification \|\| ""/,
