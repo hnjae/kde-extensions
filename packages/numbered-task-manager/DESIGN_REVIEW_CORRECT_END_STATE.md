@@ -7,7 +7,7 @@
 
 The codebase has a strong existing direction: external behavior is specified in `docs/spec/SPEC.md`, architectural intent is documented in `docs/architecture/ARCHITECTURE.md`, and most domain decisions already have pure `.mjs` helpers with focused tests. The most important remaining design risks are not a lack of architecture, but several places where the current implementation has outgrown its boundaries.
 
-The highest-impact risks are around action/effect boundaries. Footer actions still bypass the structured action-result path used by the rest of the task actions, and desktop action backend testing still depends on source-shape checks for behavior that should be executable-tested.
+The highest-impact risks are around action/effect boundaries. Desktop action backend testing still depends on source-shape checks for behavior that should be executable-tested, and standalone launcher sync diagnostics still use a separate warning formatter from action results.
 
 The second major risk is module breadth. `TaskContextMenuLogic.mjs` and `LauncherListLogic.mjs` still contain multiple feature families. That makes local changes harder to reason about and can push tests toward very large suites or regex assertions against QML instead of executable behavior tests.
 
@@ -34,27 +34,9 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Correct end state:** Split pure menu policy by ownership. `TaskContextMenuRoleLogic.mjs` should own role reads and snapshots. Focused action-family owners should own labels, icons, visibility, enabled, checked state, commands, and updates. `TaskContextMenuActionSectionsLogic.mjs` should own final aggregate section assembly only. `TaskContextMenuLogic.mjs` should remain a thin QML-visible facade for aggregate section assembly and a platform snapshot helper owner.
 
-**Suggested migration:** Keep footer actions as a separate descriptor/action-result checkpoint. Continue reducing broad context-menu wiring assertions only after executable behavior tests exist for the same contracts.
+**Suggested migration:** Continue reducing broad context-menu wiring assertions only after executable behavior tests exist for the same contracts.
 
 **Acceptance criteria:** `TaskContextMenuLogic.mjs` no longer imports launcher list mutation helpers and task activity mutation helpers together. Each menu feature family has focused pure tests. `contextMenuActionSections(...)` is an assembly function, not the owner of per-action policy.
-
-## Logic Placement and Flow Predictability
-
-### Finding: Footer menu actions bypass descriptors and action-result classification
-
-**Priority:** P2.
-
-**Evidence:** `TaskContextMenu.qml` has an unconditional footer separator, reads `Plasmoid.internalAction("configure")` and `Plasmoid.containment.internalAction("configure")` directly, and calls `.trigger()` directly for both footer actions.
-
-**Current state:** Most task actions flow through descriptors, dispatch adapters, and action results. Footer actions are handled inline in the QML menu.
-
-**Design concern:** Footer visibility and execution are not covered by the same policy/test boundary as the rest of the menu. Missing or thrown footer actions are not classified.
-
-**Correct end state:** Footer actions should have descriptor state in a context-menu/footer helper. A small QML adapter should trigger the Plasma internal action and convert missing or thrown triggers into structured action results.
-
-**Suggested migration:** Add footer descriptor helpers for configure, edit mode, and footer separator visibility. Bind QML to descriptors and route clicks through a footer action adapter. Keep `Plasmoid.internalAction(...)` lookup in QML as the effect source.
-
-**Acceptance criteria:** Footer separator visibility and footer action state are covered by `.mjs` tests. `TaskContextMenu.qml` no longer directly calls `.trigger()`. Missing configure/edit actions produce structured no-op or diagnostic results.
 
 ## Testability Problems
 
@@ -116,13 +98,13 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Evidence:** `TaskContextMenuActionSectionsLogic.mjs` contains section composition while composing focused virtual-desktop action, window-action, pin-action, launcher-activity, and task-activity owners; `TaskContextMenuRoleLogic.mjs` contains role snapshots; `TaskContextMenu.qml` consumes one aggregate `actionSections`; `TaskContextMenuLogic.mjs` keeps only the QML-visible action-section facade, panel placement, and platform entry snapshots.
 
-**Current state:** Virtual desktop actions, pin actions, route helpers, window actions, launcher activity actions, task activity actions, and aggregate action-section composition have focused owners. Runtime QML still consumes one aggregate menu section facade, and footer actions remain inline.
+**Current state:** Virtual desktop actions, pin actions, route helpers, window actions, launcher activity actions, task activity actions, footer actions, and aggregate action-section composition have focused owners. Runtime QML still consumes one aggregate menu section facade.
 
 **Design concern:** Feature boundaries are unclear, and unrelated menu behavior can regress during deletion or feature changes.
 
 **Correct end state:** Each menu feature family should have a focused pure module and focused tests. A top-level composer may assemble sections, but it should not own per-action policy.
 
-**Suggested migration:** Continue with footer action descriptor/action-result ownership after QML and focused tests consume the extracted owners directly.
+**Suggested migration:** Continue reducing the remaining aggregate context-menu facade only where executable tests cover the extracted contracts.
 
 **Acceptance criteria:** Removing launcher activity code does not touch window action, virtual desktop, or role snapshot modules. Each extracted feature family has a focused test file.
 
