@@ -51,6 +51,7 @@ item order with `Meta+0`.
 - Window-management actions such as Move, Resize, Maximize, Minimize, Keep Above, Keep Below, Fullscreen, No Titlebar and Frame, Hide from Screencast, and grouping are collected under a More submenu when applicable.
 - Task actions appear before any widget configuration or panel edit actions.
 - Configure and edit-mode actions may appear in the task context menu only as footer actions after task actions.
+- Unavailable configure and edit-mode footer actions are hidden, and failed footer action triggers are reported as action diagnostics.
 - Close appears as the terminal task action after footer actions when the task can be closed.
 
 ## Pinned Applications
