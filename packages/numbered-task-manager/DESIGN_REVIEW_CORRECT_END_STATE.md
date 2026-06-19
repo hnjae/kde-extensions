@@ -39,22 +39,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 ## Invariant and Correctness Risks
 
-### Finding: Launcher pin/unpin reports success while persistence can fail
-
-**Priority:** P1.
-
-**Evidence:** `package/contents/ui/LauncherCommandAdapter.qml` calls a narrow launcher command port for `requestAddLauncher(...)`, `requestRemoveLauncher(...)`, and `launcherList` reads in `pinLauncher(...)` and `unpinLauncher(...)`; `requestLauncherMutation(...)` captures the port's launcher list, calls `launcherSync.persistLaunchers(...)`, and routes `ok: false` sync results through `TaskActionLogic.launcherMutationPersistenceResult(...)`; `LauncherSyncAdapter.qml` returns structured convergence results from `persistLaunchers(...)`; `LauncherListLogic.mjs` can produce `ok: false` with `code: "write-mismatch"` or `code: "write-failed"`.
-
-**Current state:** Pin/unpin now has one user-visible outcome channel. Model request failures remain action results, and configuration persistence failures are converted into structured launcher-command failures by `LauncherCommandAdapter.qml`.
-
-**Design concern:** The remaining launcher-sync orchestration still lives in QML, and retry/observability behavior is still encoded in string comparisons and broad warning paths.
-
-**Correct end state:** Launcher command execution should produce one structured outcome for the whole pin/unpin command. `LauncherCommandAdapter.qml` should combine model request result and persistence result, or delegate the full transaction to a launcher command/sync owner that returns a single typed result.
-
-**Suggested migration:** Keep future launcher-sync cleanup on the same structured result boundary so pin/unpin does not regress to a silent-success path.
-
-**Acceptance criteria:** `pinLauncher(...)` and `unpinLauncher(...)` return or emit failure when persistence fails. Tests cover request failure, request rejection, accepted model mutation plus failed config convergence, missing `launcherSync`, and full success. No call site ignores an `ok: false` launcher persistence result.
-
 ## Cohesion, Coupling, and Ownership Problems
 
 ### Finding: `TaskContextMenuLogic.mjs` is a feature monolith
@@ -291,17 +275,17 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P2.
 
-**Evidence:** `TaskActionResultLogger.qml` formats action results as `Numbered Task Manager action ...`; `LauncherSyncAdapter.qml` formats launcher sync failures separately with `console.warn("Numbered Task Manager launcher sync ...")`; launcher command persistence failures are not converted to action results.
+**Evidence:** `TaskActionResultLogger.qml` formats action results as `Numbered Task Manager action ...`; `LauncherSyncAdapter.qml` formats launcher sync failures separately with `console.warn("Numbered Task Manager launcher sync ...")`.
 
-**Current state:** There are separate warning paths for user actions and launcher sync failures.
+**Current state:** Launcher command persistence results are action-shaped and include the launcher action plus sync code. Standalone launcher sync failures still use a separate warning path.
 
-**Design concern:** Related failures can be split across different log formats and ownership boundaries. The launcher command caller cannot correlate pin/unpin with later persistence failure without reading sync logs.
+**Design concern:** Related failures can still be split across different log formats and ownership boundaries when sync runs outside a launcher command.
 
-**Correct end state:** There should be one diagnostic representation, with specialized action or sync fields as context. Formatting can remain in separate thin adapters if necessary, but classification and correlation should be structured.
+**Correct end state:** There should be one diagnostic representation for standalone action and sync failures, with specialized action or sync fields as context. Formatting can remain in separate thin adapters if necessary, but classification and correlation should be structured.
 
-**Suggested migration:** Route failed persistence from launcher commands through action-result context first. Then decide whether sync warnings should become structured action results, typed sync results consumed by a logger, or a shared diagnostic logger.
+**Suggested migration:** Decide whether standalone sync warnings should become structured action results, typed sync results consumed by a logger, or a shared diagnostic logger.
 
-**Acceptance criteria:** Pin/unpin persistence failure logs include launcher action and sync failure code in one structured diagnostic. Formatting policy is not duplicated between broad adapters.
+**Acceptance criteria:** Standalone launcher sync failures and action failures share classification and formatting policy instead of duplicating broad adapter warning logic.
 
 ## Deletion, Modularity, and Abstraction Problems
 
@@ -377,7 +361,7 @@ Domain rules should live in focused pure modules. Activity rules stay in `Activi
 
 State definitions should be explicit descriptors rather than multi-field conventions. Context-menu routes and command kinds should be centralized constants or typed helpers.
 
-Validation should happen before effects. Launcher commands should combine model mutation and persistence outcomes before reporting success.
+Validation should happen before effects.
 
 External effects should be isolated behind narrow ports. Raw `TasksModel` should be wrapped by task command, launcher command/repository, launcher sync, and activation ports. C++ desktop action resolution should produce descriptors before constructing `QAction` objects or launching `KIO` jobs. QML adapters should supply ports and execute returned commands.
 
@@ -387,7 +371,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 ## Suggested Refactoring Sequence
 
-1. Add characterization tests around current behavior. Prioritize launcher pin/unpin persistence outcomes, launcher sync retry classification, and source lifecycle transitions.
+1. Add characterization tests around current behavior. Prioritize launcher sync retry classification and source lifecycle transitions.
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Extract launcher sync orchestration into fakeable pure functions or port-based helpers. Extract source lifecycle state machines from hidden QML delegate event ordering. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, split launcher sync from launcher list domain rules, and introduce narrow ports around raw `TasksModel`.
@@ -411,11 +395,11 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. These were merged with deletion/modularity findings. The broad context-menu module remains P1; action-result and launcher-list splits are P2.
 
-**Logic Placement / Flow Readability Agent:** Reported `NormalTaskSource.qml` bypassing its injected launcher-position callback, ignored launcher persistence results, and implicit `visualParent.contextMenuOpen` mutation. All were kept. The persistence result issue was merged with the error-handling report and is P1.
+**Logic Placement / Flow Readability Agent:** Reported `NormalTaskSource.qml` bypassing its injected launcher-position callback and implicit `visualParent.contextMenuOpen` mutation. Both were kept.
 
 **Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, task source lifecycle depending on delegate events, and footer menu actions bypassing descriptors/action results. These were kept. Launcher sync and source lifecycle are P1 because important behavior is currently hard to execute-test; desktop actions and footer actions are P2.
 
-**Error Handling / Observability Agent:** Reported ignored launcher persistence failures, implicit launcher sync retry semantics, lossy exception serialization, and unobserved desktop action launch failures. All were kept, with duplicate launcher persistence merged into the top P1 finding.
+**Error Handling / Observability Agent:** Reported implicit launcher sync retry semantics, lossy exception serialization, and unobserved desktop action launch failures. All were kept.
 
 **Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. These were merged into cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
