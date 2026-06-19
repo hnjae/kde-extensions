@@ -62,6 +62,38 @@ export function launcherSyncCode(changed, failedTargets) {
   return changed ? "converged" : "unchanged";
 }
 
+export function launcherSyncRetryClassification(result) {
+  const syncResult = result || {};
+  if (syncResult.ok) {
+    return "none";
+  }
+
+  if (syncResult.retryClassification) {
+    return String(syncResult.retryClassification);
+  }
+
+  switch (syncResult.code) {
+    case "write-mismatch":
+      return "retry-after-change";
+    case "reconciliation-expired":
+    case "write-failed":
+      return "fatal";
+    default:
+      return "fatal";
+  }
+}
+
+export function launcherSyncResultWithRetryClassification(result) {
+  const syncResult = result || {};
+  if (syncResult.ok) {
+    return syncResult;
+  }
+
+  return Object.assign({}, syncResult, {
+    retryClassification: launcherSyncRetryClassification(syncResult),
+  });
+}
+
 export function launcherConfigConvergence(update, observedConfigLaunchers) {
   const launcherUpdate = update || {};
   const launchers = normalizedLauncherList(launcherUpdate.launchers);
@@ -69,7 +101,7 @@ export function launcherConfigConvergence(update, observedConfigLaunchers) {
   const configConverged = launcherListsEqual(launchers, configLaunchers);
   const failedTargets = configConverged ? [] : ["config"];
 
-  return {
+  return launcherSyncResultWithRetryClassification({
     changed: Boolean(launcherUpdate.changed),
     code: launcherSyncCode(Boolean(launcherUpdate.changed), failedTargets),
     configConverged,
@@ -77,7 +109,7 @@ export function launcherConfigConvergence(update, observedConfigLaunchers) {
     failedTargets,
     launchers,
     ok: failedTargets.length === 0,
-  };
+  });
 }
 
 export function launcherModelConvergence(
@@ -99,7 +131,7 @@ export function launcherModelConvergence(
     failedTargets.push("config");
   }
 
-  return {
+  return launcherSyncResultWithRetryClassification({
     changed: Boolean(launcherUpdate.changed),
     code: launcherSyncCode(Boolean(launcherUpdate.changed), failedTargets),
     configConverged,
@@ -109,7 +141,7 @@ export function launcherModelConvergence(
     modelConverged,
     modelLaunchers,
     ok: failedTargets.length === 0,
-  };
+  });
 }
 
 export function launcherWriteErrorMessage(error) {
@@ -126,12 +158,12 @@ export function runLauncherListUpdateTransaction(state, action) {
   try {
     return action();
   } catch (error) {
-    return {
+    return launcherSyncResultWithRetryClassification({
       changed: false,
       code: "write-failed",
       error: launcherWriteErrorMessage(error),
       ok: false,
-    };
+    });
   } finally {
     updateState.updatingLauncherConfig = false;
   }
@@ -160,7 +192,10 @@ export function clearLauncherReconciliationState(state) {
 export function launcherReconciliationAfterResult(state, result) {
   const current = createLauncherReconciliationState(state);
   const syncResult = result || {};
-  if (syncResult.ok || syncResult.code !== "write-mismatch") {
+  if (
+    syncResult.ok ||
+    launcherSyncRetryClassification(syncResult) !== "retry-after-change"
+  ) {
     return clearLauncherReconciliationState(current);
   }
 

@@ -75,7 +75,8 @@ QtQuick.QtObject {
             error: result.error || "",
             failedTargets: result.failedTargets || [],
             launchers: result.launchers || [],
-            modelLaunchers: result.modelLaunchers || []
+            modelLaunchers: result.modelLaunchers || [],
+            retryClassification: result.retryClassification || ""
         }));
     }
 }

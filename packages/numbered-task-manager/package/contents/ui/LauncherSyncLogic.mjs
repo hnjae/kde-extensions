@@ -9,6 +9,7 @@ import {
   launcherModelUpdate,
   launcherReconciliationAfterResult,
   launcherReconciliationDecision,
+  launcherSyncResultWithRetryClassification,
   launcherWriteErrorMessage,
 } from "./LauncherListLogic.mjs";
 
@@ -42,12 +43,12 @@ function runLauncherSyncTransaction(ports, action) {
   try {
     return action();
   } catch (error) {
-    return {
+    return launcherSyncResultWithRetryClassification({
       changed: false,
       code: "write-failed",
       error: launcherWriteErrorMessage(error),
       ok: false,
-    };
+    });
   } finally {
     setUpdatingLauncherConfig(ports, false);
   }
@@ -154,21 +155,28 @@ export function reconcileLauncherListChange(modelLaunchers, ports, state) {
   }
 
   if (decision.action === "expired") {
-    const expiredResult = launcherModelConvergence(
-      {
-        changed: true,
-        launchers: decision.launchers || [],
-      },
-      modelLaunchers,
-      readConfigLaunchers(ports),
+    const expiredResult = launcherSyncResultWithRetryClassification(
+      Object.assign(
+        {},
+        launcherModelConvergence(
+          {
+            changed: true,
+            launchers: decision.launchers || [],
+          },
+          modelLaunchers,
+          readConfigLaunchers(ports),
+        ),
+        {
+          code: "reconciliation-expired",
+          ok: false,
+          retryClassification: "fatal",
+        },
+      ),
     );
     return {
       action: "expired",
       handled: true,
-      result: Object.assign({}, expiredResult, {
-        code: "reconciliation-expired",
-        ok: false,
-      }),
+      result: expiredResult,
       state: nextState,
     };
   }

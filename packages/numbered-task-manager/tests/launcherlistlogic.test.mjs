@@ -113,6 +113,7 @@ assert.deepEqual(
     failedTargets: ["config"],
     launchers: ["b.desktop"],
     ok: false,
+    retryClassification: "retry-after-change",
   },
 );
 assert.deepEqual(
@@ -185,6 +186,7 @@ assert.deepEqual(
     modelConverged: true,
     modelLaunchers: ["b.desktop"],
     ok: false,
+    retryClassification: "retry-after-change",
   },
 );
 assert.deepEqual(
@@ -398,6 +400,7 @@ assert.deepEqual(
     code: "write-failed",
     error: "assignment denied",
     ok: false,
+    retryClassification: "fatal",
   },
 );
 assert.equal(failingLauncherUpdateState.updatingLauncherConfig, false);
