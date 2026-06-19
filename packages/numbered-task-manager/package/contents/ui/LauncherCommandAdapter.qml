@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "TaskActionLogic.mjs" as TaskActionLogic
+import "LauncherCommandLogic.mjs" as LauncherCommandLogic
 
 QtQuick.QtObject {
     id: root
@@ -23,7 +23,7 @@ QtQuick.QtObject {
     }
 
     function requestLauncherMutation(action, launcherUrl, requestLauncher) {
-        const request = TaskActionLogic.launcherMutationRequest(action, launcherUrl);
+        const request = LauncherCommandLogic.launcherMutationRequest(action, launcherUrl);
         if (!request.ok) {
             actionResult(request);
             return request;
@@ -33,12 +33,12 @@ QtQuick.QtObject {
         try {
             accepted = requestLauncher(request.launcherUrl);
         } catch (error) {
-            const failedResult = TaskActionLogic.launcherMutationResult(request, undefined, error);
+            const failedResult = LauncherCommandLogic.launcherMutationResult(request, undefined, error);
             actionResult(failedResult);
             return failedResult;
         }
 
-        const result = TaskActionLogic.launcherMutationResult(request, accepted);
+        const result = LauncherCommandLogic.launcherMutationResult(request, accepted);
         if (!result.ok) {
             actionResult(result);
             return result;
@@ -46,7 +46,7 @@ QtQuick.QtObject {
 
         const launcherList = launcherPort && launcherPort.launcherList ? launcherPort.launcherList : [];
         if (!launcherSync || typeof launcherSync.persistLaunchers !== "function") {
-            const missingSyncResult = TaskActionLogic.launcherMutationPersistenceResult(result, {
+            const missingSyncResult = LauncherCommandLogic.launcherMutationPersistenceResult(result, {
                 code: "missing-launcher-sync",
                 failedTargets: ["sync"],
                 launchers: launcherList,
@@ -60,7 +60,7 @@ QtQuick.QtObject {
         try {
             persistResult = launcherSync.persistLaunchers(launcherList);
         } catch (error) {
-            const failedResult = TaskActionLogic.launcherMutationPersistenceResult(result, {
+            const failedResult = LauncherCommandLogic.launcherMutationPersistenceResult(result, {
                 code: "launcher-persistence-threw",
                 error: error,
                 failedTargets: ["sync"],
@@ -71,7 +71,7 @@ QtQuick.QtObject {
             return failedResult;
         }
 
-        const persistenceResult = TaskActionLogic.launcherMutationPersistenceResult(result, persistResult);
+        const persistenceResult = LauncherCommandLogic.launcherMutationPersistenceResult(result, persistResult);
         if (!persistenceResult.ok) {
             actionResult(persistenceResult);
             return persistenceResult;
@@ -81,7 +81,7 @@ QtQuick.QtObject {
     }
 
     function dispatchLauncherCommand(command) {
-        const result = TaskActionLogic.contextMenuLauncherCommandDispatchResult(command);
+        const result = LauncherCommandLogic.contextMenuLauncherCommandDispatchResult(command);
         if (!result.ok) {
             actionResult(result);
             return result;

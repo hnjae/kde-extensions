@@ -77,6 +77,10 @@ const taskActionLogicSource = readFileSync(
   new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
   "utf8",
 );
+const launcherCommandLogicSource = readFileSync(
+  new URL("../package/contents/ui/LauncherCommandLogic.mjs", import.meta.url),
+  "utf8",
+);
 const taskCommandLogicSource = readFileSync(
   new URL(
     "../package/contents/ui/TaskContextMenuTaskCommandLogic.mjs",
@@ -85,7 +89,7 @@ const taskCommandLogicSource = readFileSync(
   "utf8",
 );
 assert.match(
-  taskActionLogicSource,
+  launcherCommandLogicSource,
   /import \{ normalizedContextMenuLauncherCommand \} from "\.\/TaskContextMenuCommandLogic\.mjs"/,
 );
 assert.match(
