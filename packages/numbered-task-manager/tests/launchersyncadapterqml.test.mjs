@@ -102,3 +102,7 @@ assert.match(
   sourceQml,
   /console\.warn\("Numbered Task Manager launcher sync "/,
 );
+assert.match(
+  sourceQml,
+  /retryClassification:\s*result\.retryClassification \|\| ""/,
+);

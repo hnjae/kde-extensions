@@ -125,6 +125,7 @@ assert.deepEqual(plain(logic.createLauncherSyncState()), {
     code: "write-failed",
     error: "config denied",
     ok: false,
+    retryClassification: "fatal",
   });
   assert.deepEqual(calls, [
     ["setUpdatingLauncherConfig", true],
@@ -143,6 +144,7 @@ assert.deepEqual(plain(logic.createLauncherSyncState()), {
 
   assert.equal(output.result.ok, false);
   assert.equal(output.result.code, "write-mismatch");
+  assert.equal(output.result.retryClassification, "retry-after-change");
   assert.deepEqual(output.result.failedTargets, ["config"]);
   assert.deepEqual(output.state.reconciliation.launchers, ["b.desktop"]);
   assert.equal(output.state.reconciliation.pending, true);
@@ -286,6 +288,7 @@ assert.deepEqual(plain(logic.createLauncherSyncState()), {
   assert.equal(output.action, "expired");
   assert.equal(output.result.ok, false);
   assert.equal(output.result.code, "reconciliation-expired");
+  assert.equal(output.result.retryClassification, "fatal");
   assert.deepEqual(output.state.reconciliation, {
     attempts: 1,
     launchers: [],

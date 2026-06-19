@@ -23,6 +23,7 @@ const helpers = await loadQmlJsModule(
     "launcherModelUpdate",
     "launcherReconciliationAfterResult",
     "launcherReconciliationDecision",
+    "launcherSyncRetryClassification",
     "launcherPinState",
     "movePinnedLauncher",
     "normalizedLauncherList",
@@ -213,6 +214,24 @@ assert.deepEqual(plain(helpers.createLauncherReconciliationState()), {
   maxAttempts: 1,
   pending: false,
 });
+assert.equal(
+  helpers.launcherSyncRetryClassification({
+    code: "write-mismatch",
+    ok: false,
+  }),
+  "retry-after-change",
+);
+assert.equal(
+  helpers.launcherSyncRetryClassification({ code: "write-failed", ok: false }),
+  "fatal",
+);
+assert.equal(
+  helpers.launcherSyncRetryClassification({
+    code: "reconciliation-expired",
+    ok: false,
+  }),
+  "fatal",
+);
 
 const pendingReconciliation = helpers.launcherReconciliationAfterResult(
   null,
@@ -241,6 +260,10 @@ assert.deepEqual(
     maxAttempts: 1,
     pending: false,
   },
+);
+assert.doesNotMatch(
+  launcherListLogicSource,
+  /syncResult\.code\s*!==\s*"write-mismatch"/,
 );
 assert.deepEqual(
   plain(
