@@ -45,7 +45,14 @@ TaskItem {
     }
 
     onContextMenuRequested: request => {
-        root.contextMenuAdapter.openTaskContextMenu(request);
+        root.contextMenuAdapter.openTaskContextMenu(Object.assign({}, request, {
+            onContextMenuOpened: () => {
+                root.contextMenuOpen = true;
+            },
+            onContextMenuClosed: () => {
+                root.contextMenuOpen = false;
+            }
+        }));
     }
 
     onTaskDropped: (sourceIndex, targetIndex, drop) => {

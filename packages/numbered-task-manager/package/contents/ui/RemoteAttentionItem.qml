@@ -29,6 +29,13 @@ AttentionItem {
     }
 
     onContextMenuRequested: request => {
-        root.source.requestVisibleContextMenu(request);
+        root.source.requestVisibleContextMenu(Object.assign({}, request, {
+            onContextMenuOpened: () => {
+                root.contextMenuOpen = true;
+            },
+            onContextMenuClosed: () => {
+                root.contextMenuOpen = false;
+            }
+        }));
     }
 }

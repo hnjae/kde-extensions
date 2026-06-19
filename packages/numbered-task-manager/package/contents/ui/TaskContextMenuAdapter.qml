@@ -26,6 +26,18 @@ QtQuick.Item {
         }, request || ({}));
     }
 
+    function notifyContextMenuOpened(menuRequest) {
+        if (typeof menuRequest.onContextMenuOpened === "function") {
+            menuRequest.onContextMenuOpened();
+        }
+    }
+
+    function notifyContextMenuClosed(menuRequest) {
+        if (typeof menuRequest.onContextMenuClosed === "function") {
+            menuRequest.onContextMenuClosed();
+        }
+    }
+
     function openTaskContextMenu(request) {
         const menuRequest = TaskActionLogic.contextMenuRequestResult(contextMenuRequest(request));
         if (!menuRequest.ok) {
@@ -49,14 +61,8 @@ QtQuick.Item {
             return;
         }
 
-        if (visualParent.contextMenuOpen !== undefined) {
-            visualParent.contextMenuOpen = true;
-            menu.closed.connect(() => {
-                if (visualParent.contextMenuOpen !== undefined) {
-                    visualParent.contextMenuOpen = false;
-                }
-            });
-        }
+        notifyContextMenuOpened(menuRequest);
+        menu.closed.connect(() => root.notifyContextMenuClosed(menuRequest));
 
         menu.actionResult.connect(result => root.actionResult(result));
         menu.launcherCommandRequested.connect(command => root.launcherCommandRequested(command));
