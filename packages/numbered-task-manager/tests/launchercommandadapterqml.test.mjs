@@ -62,6 +62,8 @@ assert.match(sourceQml, /TaskActionLogic\.launcherMutationResult/);
 assert.match(sourceQml, /TaskActionLogic\.launcherMutationPersistenceResult/);
 assert.match(sourceQml, /launcherPort\.requestAddLauncher\(url\)/);
 assert.match(sourceQml, /launcherPort\.requestRemoveLauncher\(url\)/);
+assert.doesNotMatch(sourceQml, /return false;/);
+assert.doesNotMatch(sourceQml, /return true;/);
 assert.match(
   sourceQml,
   /try\s*\{[\s\S]*?requestLauncher\(request\.launcherUrl\)[\s\S]*?\}\s*catch\s*\(error\)/,
@@ -86,5 +88,8 @@ assert.match(
   /const persistenceResult = TaskActionLogic\.launcherMutationPersistenceResult\(result, persistResult\);/,
 );
 assert.match(sourceQml, /if \(!persistenceResult\.ok\)/);
+assert.match(sourceQml, /return persistenceResult;/);
+assert.match(sourceQml, /return pinLauncher\(result\.launcherUrl\);/);
+assert.match(sourceQml, /return unpinLauncher\(result\.launcherUrl\);/);
 assert.match(sourceQml, /launcherSync\.applyLauncherList\(result\.launchers\)/);
 assert.match(sourceQml, /actionResult\(result\)/);

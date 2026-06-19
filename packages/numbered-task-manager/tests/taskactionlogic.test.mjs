@@ -900,10 +900,16 @@ assert.deepEqual(
     }),
   ),
   {
+    action: "pinLauncher",
     code: "converged",
-    configLaunchers: ["app.desktop"],
-    failedTargets: [],
-    launchers: ["app.desktop"],
+    context: {
+      configLaunchers: ["app.desktop"],
+      launchers: ["app.desktop"],
+      launcherUrl: "app.desktop",
+      syncCode: "converged",
+    },
+    diagnostic: false,
+    launcherUrl: "app.desktop",
     ok: true,
   },
 );
