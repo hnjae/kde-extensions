@@ -44,6 +44,7 @@ in `SPEC.md`.
   fields such as `isWindow`, `isLauncher`, `launcherUrl`, `activities`, and
   `virtualDesktops` should be consumed from the role snapshot directly instead
   of through menu-local passthrough functions.
+- Keep context-menu live role reads behind a narrow role port. `TaskContextMenuAdapter.qml`, `TaskContextMenu.qml`, and `TaskContextMenuRoleState.qml` may consume model indexes and task snapshots, but they should not receive the full root `TasksModel` only to validate the menu request and read task roles.
 - Keep context-menu launcher-activity menu state in `TaskContextMenuLauncherActivityLogic.mjs`.
   Raw launcher activity lists entering the menu should be normalized through the
   same all-activities semantics as launcher serialization before checked-state
