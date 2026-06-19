@@ -173,22 +173,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 ## Testability Problems
 
-### Finding: Remote attention source lifecycle depends on hidden QML delegate events
-
-**Priority:** P1.
-
-**Evidence:** `NormalTaskSourceLifecycleLogic.mjs` now owns normal task row appeared/changed/removed publication decisions and `NormalTaskSource.qml` executes returned commands. `RemoteAttentionSource.qml` still uses a hidden delegate pattern and computes `becameQualified` from delegate-local `hasSyncedAttention` and `previousQualifies`; source QML tests mostly assert remote source structure by reading files with regex.
-
-**Current state:** Normal task source publication lifecycle is pure-tested for appeared, changed, and removed row transitions. Remote attention lifecycle still decides row appeared, row changed, qualification changed, row removed, and newly qualified attention state inside QML delegate event ordering.
-
-**Design concern:** Remote attention target order depends on QML lifecycle behavior that is hard to test deterministically without a QML runtime and fake `TasksModel`.
-
-**Correct end state:** Remote attention source lifecycle should be represented as tested controller/state transitions in `.mjs`: row appeared, row changed, qualification changed, row removed, newly qualified, and diagnostics emitted. QML delegates should project live roles into snapshots and forward lifecycle events to that controller.
-
-**Suggested migration:** Extract a remote attention per-row state machine. Move “became qualified,” “publish/remove target,” and “emit diagnostics command” decisions into pure functions. Let QML execute returned commands.
-
-**Acceptance criteria:** Remote attention `becameQualified` and target ordering are tested from row-event sequences. `RemoteAttentionSource.qml` no longer holds transition state beyond raw projected role values.
-
 ### Finding: Launcher sync write orchestration is trapped in QML effects
 
 **Priority:** P1.
@@ -351,13 +335,13 @@ External effects should be isolated behind narrow ports. Raw `TasksModel` should
 
 Errors should be represented through one structured diagnostic shape. The generic result helper should define result shape, structured error context, and logging predicate. Domain-specific result classifiers should live near their workflow. Launcher sync and action execution should share error serialization and produce correlated diagnostics for user actions.
 
-Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover launcher sync orchestration through fake ports and source lifecycle state machines. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch failure observability without requiring real KIO job execution.
+Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover launcher sync orchestration through fake ports. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch failure observability without requiring real KIO job execution.
 
 ## Suggested Refactoring Sequence
 
-1. Add characterization tests around current behavior. Prioritize source lifecycle transitions.
+1. Add characterization tests around current behavior.
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
-3. Isolate core domain logic from external effects. Extract launcher sync orchestration into fakeable pure functions or port-based helpers. Extract source lifecycle state machines from hidden QML delegate event ordering. Add a desktop action descriptor seam in the C++ backend.
+3. Isolate core domain logic from external effects. Extract launcher sync orchestration into fakeable pure functions or port-based helpers. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, split launcher sync from launcher list domain rules, and introduce narrow ports around raw `TasksModel`.
 5. Improve error semantics and observability. Add structured error context and connect desktop action launch failures to diagnostics.
 6. Remove or simplify premature abstractions. After the behavior boundaries are stable, consider extracting `TaskLikeItemShell.qml` if the duplicated visual shell still creates real maintenance pressure. Keep compatibility re-exports only temporarily and remove them once QML and tests consume focused modules directly.
@@ -381,7 +365,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Logic Placement / Flow Readability Agent:** Reported `NormalTaskSource.qml` bypassing its injected launcher-position callback and implicit `visualParent.contextMenuOpen` mutation. Both were kept.
 
-**Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, task source lifecycle depending on delegate events, and footer menu actions bypassing descriptors/action results. These were kept. Launcher sync and source lifecycle are P1 because important behavior is currently hard to execute-test; desktop actions and footer actions are P2.
+**Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. These were kept. Launcher sync remains P1 because important behavior is still being migrated out of a broad launcher module; desktop actions and footer actions are P2.
 
 **Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Both were kept.
 
