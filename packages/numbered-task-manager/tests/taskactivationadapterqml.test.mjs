@@ -79,7 +79,14 @@ assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(sourceQml, /property var taskActivationPort/);
 assert.doesNotMatch(sourceQml, /property var taskModel/);
 assert.match(sourceQml, /property var remoteAttentionSource/);
-assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
+assert.match(
+  sourceQml,
+  /import "TaskActivationLogic\.mjs" as TaskActivationLogic/,
+);
+assert.doesNotMatch(
+  sourceQml,
+  /import "TaskActionLogic\.mjs" as TaskActionLogic/,
+);
 assert.match(
   sourceQml,
   /import "VisibleTaskItemsLogic\.mjs" as VisibleTaskItemsLogic/,
@@ -89,17 +96,17 @@ assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /function activateTaskAtIndex\(index\)/);
 assert.match(
   sourceQml,
-  /TaskActionLogic\.shortcutActivationRequest\(visibleTaskItems,\s*index\)/,
+  /TaskActivationLogic\.shortcutActivationRequest\(visibleTaskItems,\s*index\)/,
 );
 assert.match(sourceQml, /function activateTaskEntry\(task\)/);
 assert.match(
   sourceQml,
-  /TaskActionLogic\.taskActivationRequest\("activateTask",\s*task,/,
+  /TaskActivationLogic\.taskActivationRequest\("activateTask",\s*task,/,
 );
 assert.match(sourceQml, /function activateRemoteAttention\(visibleItem\)/);
 assert.match(
   sourceQml,
-  /TaskActionLogic\.taskActivationRequest\("activateRemoteAttention",\s*visibleItem\s*\?\s*visibleItem\.entry\s*:\s*null,/,
+  /TaskActivationLogic\.taskActivationRequest\("activateRemoteAttention",\s*visibleItem\s*\?\s*visibleItem\.entry\s*:\s*null,/,
 );
 assert.match(sourceQml, /actionResult\(result\)/);
 assert.match(sourceQml, /function activationTarget\(result\)/);
@@ -112,7 +119,7 @@ assert.match(sourceQml, /return remoteAttentionSource/);
 assert.match(sourceQml, /return taskActivationPort/);
 assert.match(
   sourceQml,
-  /TaskActionLogic\.activationExecutionResult\(result,\s*target\)/,
+  /TaskActivationLogic\.activationExecutionResult\(result,\s*target\)/,
 );
 assert.match(sourceQml, /actionResult\(executionResult\)/);
 assert.match(
@@ -121,7 +128,7 @@ assert.match(
 );
 assert.match(
   sourceQml,
-  /TaskActionLogic\.activationExecutionResult\(result,\s*target,\s*error\)/,
+  /TaskActivationLogic\.activationExecutionResult\(result,\s*target,\s*error\)/,
 );
 assert.doesNotMatch(
   sourceQml,

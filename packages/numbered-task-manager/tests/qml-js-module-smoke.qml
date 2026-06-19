@@ -3,7 +3,7 @@
 
 import QtQml
 import "../package/contents/ui/ActivityScopeLogic.mjs" as ActivityScopeLogic
-import "../package/contents/ui/TaskActionLogic.mjs" as TaskActionLogic
+import "../package/contents/ui/TaskActivationLogic.mjs" as TaskActivationLogic
 import "../package/contents/ui/TaskContextMenuLogic.mjs" as TaskContextMenuLogic
 import "../package/contents/ui/TaskContextMenuRouteLogic.mjs" as TaskContextMenuRouteLogic
 import "../package/contents/ui/TaskItemPresentationLogic.mjs" as TaskItemPresentationLogic
@@ -30,8 +30,8 @@ QtObject {
         }).isLauncher) {
             throw new Error("TaskModelLogic.mjs did not load its dependency");
         }
-        if (TaskActionLogic.shortcutActivationRequest([], 0).code !== "no-target") {
-            throw new Error("TaskActionLogic.mjs did not load its dependency");
+        if (TaskActivationLogic.shortcutActivationRequest([], 0).code !== "no-target") {
+            throw new Error("TaskActivationLogic.mjs did not load its dependency");
         }
         if (TaskContextMenuLogic.panelMenuPlacement(0, {}, {
             TopPosedLeftAlignedPopup: 1
