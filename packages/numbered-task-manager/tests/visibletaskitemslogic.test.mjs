@@ -20,7 +20,11 @@ const logic = await loadQmlJsModule(
   [
     "activationTargetForShortcutIndex",
     "composeVisibleTaskItems",
+    "isNormalVisibleItem",
+    "isRemoteAttentionVisibleItem",
+    "normalItemKind",
     "normalVisibleTaskItems",
+    "remoteAttentionItemKind",
     "visibleRemoteAttentionItem",
   ],
 );
@@ -36,6 +40,13 @@ const attentionTarget = {
   modelIndex: { valid: true, row: 99 },
   title: "Needs Attention",
 };
+
+assert.equal(logic.normalItemKind, "normal");
+assert.equal(logic.remoteAttentionItemKind, "remoteAttention");
+assert.equal(logic.isNormalVisibleItem({ kind: "normal" }), true);
+assert.equal(logic.isNormalVisibleItem({ kind: "remoteAttention" }), false);
+assert.equal(logic.isRemoteAttentionVisibleItem({ kind: "remoteAttention" }), true);
+assert.equal(logic.isRemoteAttentionVisibleItem({ kind: "normal" }), false);
 
 assert.deepEqual(plain(logic.composeVisibleTaskItems([], {})), []);
 assert.equal(logic.activationTargetForShortcutIndex([], 0), null);
@@ -221,4 +232,17 @@ assert.deepEqual(
       sourceIndex: 2,
     },
   ],
+);
+
+const taskActionLogicSource = readFileSync(
+  new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
+  "utf8",
+);
+assert.match(
+  taskActionLogicSource,
+  /import \{[^}]*isNormalVisibleItem[^}]*isRemoteAttentionVisibleItem[^}]*\} from "\.\/VisibleTaskItemsLogic\.mjs"/s,
+);
+assert.doesNotMatch(
+  taskActionLogicSource,
+  /targetItem\.kind !== "normal" && targetItem\.kind !== "remoteAttention"/,
 );

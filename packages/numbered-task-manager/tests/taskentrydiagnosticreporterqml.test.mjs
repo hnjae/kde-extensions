@@ -40,7 +40,14 @@ assert.match(sourceQml, /JSON\.stringify\(diagnostics\)/);
 
 assert.match(normalSourceQml, /\bTaskEntryDiagnosticReporter\s*\{/);
 assert.match(normalSourceQml, /id:\s*taskEntryDiagnostics/);
-assert.match(normalSourceQml, /sourceModel:\s*"normal"/);
+assert.match(
+  normalSourceQml,
+  /import "VisibleTaskItemsLogic\.mjs" as VisibleTaskItemsLogic/,
+);
+assert.match(
+  normalSourceQml,
+  /sourceModel:\s*VisibleTaskItemsLogic\.normalItemKind/,
+);
 assert.match(normalSourceQml, /sourceRow:\s*index/);
 assert.match(normalSourceQml, /publicationKey:\s*publishedKey/);
 assert.match(
@@ -62,7 +69,10 @@ assert.doesNotMatch(
 
 assert.match(remoteSourceQml, /\bTaskEntryDiagnosticReporter\s*\{/);
 assert.match(remoteSourceQml, /id:\s*taskEntryDiagnostics/);
-assert.match(remoteSourceQml, /sourceModel:\s*"remoteAttention"/);
+assert.match(
+  remoteSourceQml,
+  /sourceModel:\s*VisibleTaskItemsLogic\.remoteAttentionItemKind/,
+);
 assert.match(remoteSourceQml, /sourceRow:\s*index/);
 assert.match(remoteSourceQml, /publicationKey:\s*publishedKey/);
 assert.match(
