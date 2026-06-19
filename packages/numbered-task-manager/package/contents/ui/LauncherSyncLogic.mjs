@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import { errorContext } from "./ErrorContextLogic.mjs";
 import {
   launcherListsEqual,
   normalizedLauncherList,
@@ -121,26 +122,22 @@ export function launcherModelConvergence(
   });
 }
 
-export function launcherWriteErrorMessage(error) {
-  if (error?.message) {
-    return String(error.message);
-  }
-
-  return String(error);
-}
-
 export function runLauncherListUpdateTransaction(state, action) {
   const updateState = state || {};
   updateState.updatingLauncherConfig = true;
   try {
     return action();
   } catch (error) {
-    return launcherSyncResultWithRetryClassification({
-      changed: false,
-      code: "write-failed",
-      error: launcherWriteErrorMessage(error),
-      ok: false,
-    });
+    return launcherSyncResultWithRetryClassification(
+      Object.assign(
+        {
+          changed: false,
+          code: "write-failed",
+          ok: false,
+        },
+        errorContext(error),
+      ),
+    );
   } finally {
     updateState.updatingLauncherConfig = false;
   }
@@ -268,12 +265,16 @@ function runLauncherSyncTransaction(ports, action) {
   try {
     return action();
   } catch (error) {
-    return launcherSyncResultWithRetryClassification({
-      changed: false,
-      code: "write-failed",
-      error: launcherWriteErrorMessage(error),
-      ok: false,
-    });
+    return launcherSyncResultWithRetryClassification(
+      Object.assign(
+        {
+          changed: false,
+          code: "write-failed",
+          ok: false,
+        },
+        errorContext(error),
+      ),
+    );
   } finally {
     setUpdatingLauncherConfig(ports, false);
   }

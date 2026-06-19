@@ -6,6 +6,7 @@ import {
   normalizedContextMenuLauncherCommand,
   normalizedContextMenuTaskCommand,
 } from "./TaskContextMenuCommandLogic.mjs";
+import { assignErrorContext } from "./ErrorContextLogic.mjs";
 import {
   activationTargetForShortcutIndex,
   isNormalVisibleItem,
@@ -29,14 +30,6 @@ export function actionResult(action, code, ok, diagnostic, context) {
     diagnostic: Boolean(diagnostic),
     ok: Boolean(ok),
   };
-}
-
-export function actionErrorMessage(error) {
-  if (error?.message) {
-    return String(error.message);
-  }
-
-  return String(error);
 }
 
 export function taskEntryDiagnosticResult(diagnostic) {
@@ -198,7 +191,7 @@ export function activationExecutionResult(
   }
 
   if (error !== undefined && error !== null) {
-    context.error = actionErrorMessage(error);
+    assignErrorContext(context, error);
     return actionResult(requestAction, "request-threw", false, true, context);
   }
 
@@ -659,7 +652,7 @@ export function contextMenuTaskExecutionResult(requestResult, error) {
   }
 
   if (error !== undefined && error !== null) {
-    context.error = actionErrorMessage(error);
+    assignErrorContext(context, error);
     context.requestMethod = requestMethod;
     return Object.assign(
       actionResult(
@@ -726,7 +719,7 @@ export function launcherMutationResult(requestResult, accepted, error) {
     request.launcherUrl || request.context?.launcherUrl,
   );
   if (error !== undefined && error !== null) {
-    context.error = actionErrorMessage(error);
+    assignErrorContext(context, error);
     return Object.assign(
       actionResult(
         request.action || "launcherMutation",
@@ -790,7 +783,7 @@ export function launcherMutationPersistenceResult(
     context.modelLaunchers = modelLaunchers;
   }
   if (persistence.error !== undefined && persistence.error !== null) {
-    context.error = actionErrorMessage(persistence.error);
+    assignErrorContext(context, persistence.error);
   }
 
   if (persistence.ok) {
