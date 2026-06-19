@@ -5,11 +5,13 @@
 
 #include <KDesktopFile>
 #include <KIO/ApplicationLauncherJob>
+#include <KJob>
 #include <KService>
 #include <KServiceAction>
 
 #include <QAction>
 #include <QIcon>
+#include <QVariantMap>
 
 TaskContextMenuBackend::TaskContextMenuBackend(QObject *parent)
     : QObject(parent) {}
@@ -29,7 +31,7 @@ QUrl TaskContextMenuBackend::desktopEntryUrl(const QUrl &launcherUrl) const {
 }
 
 QVariantList TaskContextMenuBackend::desktopActions(const QUrl &launcherUrl,
-                                                    QObject *parent) const {
+                                                    QObject *parent) {
   QVariantList actions;
   if (!parent) {
     return actions;
@@ -49,7 +51,9 @@ QVariantList TaskContextMenuBackend::desktopActions(const QUrl &launcherUrl,
 
   const QList<DesktopActionDescriptor> descriptors =
       desktopActionDescriptors(service->actions());
-  return desktopActionsFromDescriptors(descriptors, parent);
+  const QList<DesktopActionDescriptor> contextualDescriptors =
+      descriptorsWithContext(descriptors, launcherUrl, entryUrl.toLocalFile());
+  return desktopActionsFromDescriptors(contextualDescriptors, parent);
 }
 
 QList<TaskContextMenuBackend::DesktopActionDescriptor>
@@ -64,6 +68,8 @@ TaskContextMenuBackend::desktopActionDescriptors(
     descriptors << DesktopActionDescriptor{
         .text = serviceAction.text(),
         .iconName = serviceAction.icon(),
+        .launcherUrl = {},
+        .desktopEntryPath = {},
         .separator = serviceAction.isSeparator(),
         .serviceAction = serviceAction,
     };
@@ -72,8 +78,23 @@ TaskContextMenuBackend::desktopActionDescriptors(
   return descriptors;
 }
 
+QList<TaskContextMenuBackend::DesktopActionDescriptor>
+TaskContextMenuBackend::descriptorsWithContext(
+    const QList<DesktopActionDescriptor> &descriptors, const QUrl &launcherUrl,
+    const QString &desktopEntryPath) const {
+  QList<DesktopActionDescriptor> contextualDescriptors;
+  contextualDescriptors.reserve(descriptors.size());
+  for (DesktopActionDescriptor descriptor : descriptors) {
+    descriptor.launcherUrl = launcherUrl.toString();
+    descriptor.desktopEntryPath = desktopEntryPath;
+    contextualDescriptors << descriptor;
+  }
+
+  return contextualDescriptors;
+}
+
 QVariantList TaskContextMenuBackend::desktopActionsFromDescriptors(
-    const QList<DesktopActionDescriptor> &descriptors, QObject *parent) const {
+    const QList<DesktopActionDescriptor> &descriptors, QObject *parent) {
   QVariantList actions;
   if (!parent) {
     return actions;
@@ -85,8 +106,30 @@ QVariantList TaskContextMenuBackend::desktopActionsFromDescriptors(
     action->setIcon(QIcon::fromTheme(descriptor.iconName));
     action->setSeparator(descriptor.separator);
 
-    connect(action, &QAction::triggered, action, [descriptor]() {
+    connect(action, &QAction::triggered, action, [this, descriptor]() {
       auto *job = new KIO::ApplicationLauncherJob(descriptor.serviceAction);
+      connect(job, &KJob::result, this, [this, descriptor](KJob *job) {
+        if (!job || job->error() == 0) {
+          return;
+        }
+
+        QVariantMap context{
+            {QStringLiteral("launcherUrl"), descriptor.launcherUrl},
+            {QStringLiteral("desktopEntryPath"), descriptor.desktopEntryPath},
+            {QStringLiteral("desktopActionText"), descriptor.text},
+            {QStringLiteral("errorCode"), job->error()},
+            {QStringLiteral("errorMessage"), job->errorString()},
+        };
+        QVariantMap actionResult{
+            {QStringLiteral("action"), QStringLiteral("desktopAction")},
+            {QStringLiteral("code"),
+             QStringLiteral("desktop-action-launch-failed")},
+            {QStringLiteral("ok"), false},
+            {QStringLiteral("diagnostic"), true},
+            {QStringLiteral("context"), context},
+        };
+        Q_EMIT desktopActionResult(actionResult);
+      });
       job->start();
     });
 

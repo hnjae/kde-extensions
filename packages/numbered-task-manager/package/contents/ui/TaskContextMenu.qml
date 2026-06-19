@@ -160,6 +160,10 @@ PlasmaExtras.Menu {
 
     readonly property NumberedTaskManager.TaskContextMenuBackend _contextMenuBackend: NumberedTaskManager.TaskContextMenuBackend {
         id: contextMenuBackend
+
+        onDesktopActionResult: result => {
+            root.actionResult(result);
+        }
     }
 
     readonly property QtQuick.Instantiator _desktopActionItems: QtQuick.Instantiator {
