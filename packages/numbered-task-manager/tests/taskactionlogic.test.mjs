@@ -246,6 +246,36 @@ assert.equal(
   "remoteAttention",
 );
 
+const mismatchedDescriptorActivation = logic.shortcutActivationRequest(
+  [
+    {
+      entry: normalTask,
+      isMeta0Target: false,
+      kind: "normal",
+      numbered: true,
+      slotNumber: 1,
+      sourceIndex: 0,
+      sourceModel: "remoteAttention",
+    },
+  ],
+  0,
+);
+assert.equal(mismatchedDescriptorActivation.ok, false);
+assert.equal(mismatchedDescriptorActivation.code, "invalid-visible-item");
+assert.equal(
+  mismatchedDescriptorActivation.context.validationCode,
+  "source-model-mismatch",
+);
+assert.equal(
+  mismatchedDescriptorActivation.context.sourceModel,
+  "remoteAttention",
+);
+assert.equal(
+  mismatchedDescriptorActivation.context.expectedSourceModel,
+  "normal",
+);
+assert.equal(logic.shouldLogActionResult(mismatchedDescriptorActivation), true);
+
 const emptyShortcutResult = logic.shortcutActivationRequest([], 0);
 assert.equal(emptyShortcutResult.ok, false);
 assert.equal(emptyShortcutResult.code, "no-target");

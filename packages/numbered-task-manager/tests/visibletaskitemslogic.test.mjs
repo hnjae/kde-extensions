@@ -25,6 +25,7 @@ const logic = await loadQmlJsModule(
     "normalItemKind",
     "normalVisibleTaskItems",
     "remoteAttentionItemKind",
+    "validateVisibleItemDescriptor",
     "visibleRemoteAttentionItem",
   ],
 );
@@ -45,8 +46,67 @@ assert.equal(logic.normalItemKind, "normal");
 assert.equal(logic.remoteAttentionItemKind, "remoteAttention");
 assert.equal(logic.isNormalVisibleItem({ kind: "normal" }), true);
 assert.equal(logic.isNormalVisibleItem({ kind: "remoteAttention" }), false);
-assert.equal(logic.isRemoteAttentionVisibleItem({ kind: "remoteAttention" }), true);
+assert.equal(
+  logic.isRemoteAttentionVisibleItem({ kind: "remoteAttention" }),
+  true,
+);
 assert.equal(logic.isRemoteAttentionVisibleItem({ kind: "normal" }), false);
+
+assert.deepEqual(plain(logic.validateVisibleItemDescriptor(null)), {
+  code: "missing-visible-item",
+  context: {
+    numbered: false,
+    slotNumber: undefined,
+    sourceIndex: undefined,
+    sourceModel: "",
+    targetKind: "",
+  },
+  ok: false,
+});
+assert.deepEqual(
+  plain(
+    logic.validateVisibleItemDescriptor({
+      kind: "normal",
+      numbered: true,
+      slotNumber: 1,
+      sourceIndex: 0,
+      sourceModel: "remoteAttention",
+    }),
+  ),
+  {
+    code: "source-model-mismatch",
+    context: {
+      expectedSourceModel: "normal",
+      numbered: true,
+      slotNumber: 1,
+      sourceIndex: 0,
+      sourceModel: "remoteAttention",
+      targetKind: "normal",
+    },
+    ok: false,
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.validateVisibleItemDescriptor({
+      kind: "remoteAttention",
+      numbered: false,
+      slotNumber: 0,
+      sourceIndex: -1,
+      sourceModel: "remoteAttention",
+    }),
+  ),
+  {
+    context: {
+      numbered: false,
+      slotNumber: 0,
+      sourceIndex: -1,
+      sourceModel: "remoteAttention",
+      targetKind: "remoteAttention",
+    },
+    ok: true,
+  },
+);
 
 assert.deepEqual(plain(logic.composeVisibleTaskItems([], {})), []);
 assert.equal(logic.activationTargetForShortcutIndex([], 0), null);
