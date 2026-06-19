@@ -21,7 +21,14 @@ const remoteSourceQml = readFileSync(
   "utf8",
 );
 
-assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
+assert.match(
+  sourceQml,
+  /import "TaskEntryDiagnosticLogic\.mjs" as TaskEntryDiagnosticLogic/,
+);
+assert.doesNotMatch(
+  sourceQml,
+  /import "TaskActionLogic\.mjs" as TaskActionLogic/,
+);
 assert.match(sourceQml, /import "TaskEntryLogic\.mjs" as TaskEntryLogic/);
 assert.match(sourceQml, /property string sourceModel:\s*""/);
 assert.match(sourceQml, /property int sourceRow:\s*-1/);
@@ -31,7 +38,10 @@ assert.match(sourceQml, /property string lastDiagnosticSignature:\s*""/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /function emitDiagnostics\(\)/);
 assert.match(sourceQml, /TaskEntryLogic\.taskEntryDiagnostics\(root\.roles/);
-assert.match(sourceQml, /TaskActionLogic\.taskEntryDiagnosticResult\(/);
+assert.match(
+  sourceQml,
+  /TaskEntryDiagnosticLogic\.taskEntryDiagnosticResult\(/,
+);
 assert.doesNotMatch(
   sourceQml,
   /TaskActionLogic\.actionResult\("projectTaskEntry"/,
