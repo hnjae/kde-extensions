@@ -24,7 +24,7 @@
         qmlImportFlags = lib.concatMapStringsSep " " (path: "-I ${lib.escapeShellArg path}") qmlImportPaths;
       in
       {
-        checks.numbered-task-manager-check = pkgs.stdenvNoCC.mkDerivation {
+        checks.numbered-task-manager-check = pkgs.stdenv.mkDerivation {
           pname = "numbered-task-manager-check";
           inherit (package) version source;
           src = package.source;
@@ -32,11 +32,22 @@
           nativeBuildInputs = [
             pkgs.appstream
             pkgs.biome
+            pkgs.cmake
+            pkgs.ninja
             pkgs.kdePackages.kpackage
+            pkgs.kdePackages.extra-cmake-modules
             pkgs.kdePackages.libplasma
             pkgs.kdePackages.plasma-workspace
             pkgs.nodejs
             pkgs.qt6.qtdeclarative
+          ];
+
+          buildInputs = [
+            pkgs.kdePackages.kconfig
+            pkgs.kdePackages.kio
+            pkgs.kdePackages.kservice
+            pkgs.kdePackages.qtbase
+            pkgs.kdePackages.qtdeclarative
           ];
 
           dontConfigure = true;
@@ -44,6 +55,12 @@
 
           buildPhase = ''
             runHook preBuild
+
+            cmake -S ${packageRoot} -B build -G Ninja \
+              -DBUILD_TESTING=ON \
+              -DKDE_INSTALL_QMLDIR=lib/qt-6/qml
+            cmake --build build
+            ctest --test-dir build --output-on-failure
 
             biome lint --error-on-warnings ${packageRoot}/package/contents/ui/*.mjs ${packageRoot}/tests/*.mjs
 

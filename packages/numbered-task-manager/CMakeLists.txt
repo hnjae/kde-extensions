@@ -15,8 +15,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
+include(CTest)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Test)
 find_package(KF6 REQUIRED COMPONENTS Config KIO Service)
 
 set(CMAKE_AUTOMOC ON)
@@ -24,6 +25,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(numberedtaskmanagerplugin SHARED
+    src/desktopactionlogic.cpp
+    src/desktopactionlogic.h
     src/numberedtaskmanagerplugin.cpp
     src/numberedtaskmanagerplugin.h
     src/taskcontextmenubackend.cpp
@@ -40,6 +43,22 @@ target_link_libraries(numberedtaskmanagerplugin PRIVATE
     KF6::KIOGui
     KF6::Service
 )
+
+if(BUILD_TESTING)
+    add_executable(desktopactionlogic_test
+        src/desktopactionlogic.cpp
+        src/desktopactionlogic.h
+        tests/desktopactionlogic_test.cpp
+    )
+    target_link_libraries(desktopactionlogic_test PRIVATE
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Test
+        KF6::KIOGui
+        KF6::Service
+    )
+    add_test(NAME desktopactionlogic_test COMMAND desktopactionlogic_test)
+endif()
 
 install(TARGETS numberedtaskmanagerplugin
     LIBRARY DESTINATION "${KDE_INSTALL_QMLDIR}/${QML_MODULE_DIR}"
