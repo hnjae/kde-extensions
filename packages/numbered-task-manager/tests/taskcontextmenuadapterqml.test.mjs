@@ -16,13 +16,19 @@ const cmakeSource = readFileSync(
   new URL("../CMakeLists.txt", import.meta.url),
   "utf8",
 );
+const rolePortUrl = new URL(
+  "../package/contents/ui/TaskContextMenuRolePort.qml",
+  import.meta.url,
+);
 const sourceUrl = new URL(
   "../package/contents/ui/TaskContextMenuAdapter.qml",
   import.meta.url,
 );
 
+assert.equal(existsSync(rolePortUrl), true);
 assert.equal(existsSync(sourceUrl), true);
 
+const rolePortQml = readFileSync(rolePortUrl, "utf8");
 const sourceQml = readFileSync(sourceUrl, "utf8");
 
 assert.match(mainQml, /\bTaskContextMenuAdapter\s*\{/);
@@ -37,7 +43,11 @@ assert.match(
   mainQml,
   /\bTaskCommandPort\s*\{[\s\S]*?id:\s*taskCommandPort[\s\S]*?taskModel:\s*tasksModel[\s\S]*?\}/,
 );
-assert.match(mainQml, /taskModel:\s*tasksModel/);
+assert.match(
+  mainQml,
+  /\bTaskContextMenuRolePort\s*\{[\s\S]*?id:\s*taskContextMenuRolePort[\s\S]*?taskModel:\s*tasksModel[\s\S]*?\}/,
+);
+assert.match(mainQml, /taskRolePort:\s*taskContextMenuRolePort/);
 assert.match(mainQml, /taskCommandPort:\s*taskCommandPort/);
 assert.match(
   mainQml,
@@ -59,7 +69,8 @@ assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
 assert.match(sourceQml, /QtQuick\.Item\s*\{/);
 assert.match(sourceQml, /property var launcherReadPort/);
 assert.doesNotMatch(sourceQml, /property var launcherModel/);
-assert.match(sourceQml, /property var taskModel/);
+assert.match(sourceQml, /property var taskRolePort/);
+assert.doesNotMatch(sourceQml, /property var taskModel/);
 assert.match(sourceQml, /property var taskCommandPort/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /signal launcherCommandRequested\(var command\)/);
@@ -68,7 +79,7 @@ assert.match(sourceQml, /function notifyContextMenuClosed\(menuRequest\)/);
 assert.match(sourceQml, /function contextMenuRequest\(request\)/);
 assert.match(
   sourceQml,
-  /Object\.assign\(\{\s*taskModel:\s*root\.taskModel\s*\},\s*request \|\| \(\{\}\)\)/,
+  /Object\.assign\(\{\s*taskRolePort:\s*root\.taskRolePort\s*\},\s*request \|\| \(\{\}\)\)/,
 );
 assert.match(sourceQml, /function openTaskContextMenu\(request\)/);
 assert.match(
@@ -78,6 +89,8 @@ assert.match(
 assert.match(sourceQml, /contextMenuComponent\.createObject\(visualParent/);
 assert.match(sourceQml, /launcherReadPort:\s*root\.launcherReadPort/);
 assert.doesNotMatch(sourceQml, /launcherModel:\s*root\.launcherModel/);
+assert.match(sourceQml, /taskRolePort:\s*menuRequest\.taskRolePort/);
+assert.doesNotMatch(sourceQml, /taskModel:\s*menuRequest\.taskModel/);
 assert.match(sourceQml, /taskCommandPort:\s*root\.taskCommandPort/);
 assert.match(
   sourceQml,
@@ -104,8 +117,11 @@ assert.match(menuQml, /signal actionResult\(var result\)/);
 assert.match(menuQml, /root\.actionResult\(result\)/);
 assert.match(menuQml, /property var launcherReadPort/);
 assert.doesNotMatch(menuQml, /property var launcherModel/);
+assert.match(menuQml, /property var taskRolePort/);
+assert.doesNotMatch(menuQml, /property var taskModel/);
 assert.match(menuQml, /property var taskCommandPort/);
 assert.match(menuQml, /launcherReadPort:\s*root\.launcherReadPort/);
+assert.match(menuQml, /taskRolePort:\s*root\.taskRolePort/);
 assert.match(menuQml, /taskCommandPort:\s*root\.taskCommandPort/);
 assert.doesNotMatch(menuQml, /console\.warn\("Numbered Task Manager action "/);
 assert.match(
@@ -122,3 +138,10 @@ assert.match(cmakeSource, /project\(numberedtaskmanager\b/);
 assert.match(cmakeSource, /add_library\(numberedtaskmanagerplugin SHARED/);
 assert.match(cmakeSource, /src\/taskcontextmenubackend\.cpp/);
 assert.match(cmakeSource, /install\(DIRECTORY package\//);
+
+assert.match(rolePortQml, /property var taskModel/);
+assert.match(rolePortQml, /function hasTask\(modelIndex\)/);
+assert.match(rolePortQml, /TaskEntryLogic\.hasValidModelIndex\(modelIndex\)/);
+assert.match(rolePortQml, /function data\(modelIndex, role\)/);
+assert.match(rolePortQml, /taskModel\.data\(modelIndex, role\)/);
+assert.match(rolePortQml, /function roleIds\(\)/);

@@ -3858,12 +3858,9 @@ const roleStateQml = readFileSync(
   ),
   "utf8",
 );
-assert.equal(roleStateQml.includes("TaskManager.AbstractTasksModel"), true);
-assert.equal(roleStateQml.includes('import "TaskEntryLogic.mjs"'), true);
-assert.equal(
-  roleStateQml.includes("TaskEntryLogic.hasValidModelIndex(modelIndex)"),
-  true,
-);
+assert.equal(roleStateQml.includes("TaskManager.AbstractTasksModel"), false);
+assert.equal(roleStateQml.includes('import "TaskEntryLogic.mjs"'), false);
+assert.equal(roleStateQml.includes("taskRolePort.hasTask(modelIndex)"), true);
 assert.equal(
   roleStateQml.includes('import "TaskContextMenuRoleLogic.mjs"'),
   true,
@@ -3876,7 +3873,9 @@ assert.equal(roleStateQml.includes("function roleIds()"), true);
 assert.equal(roleStateQml.includes("function roleSource()"), true);
 assert.equal(roleStateQml.includes("property var modelIndex"), true);
 assert.equal(roleStateQml.includes("property var task: ({})"), true);
-assert.equal(roleStateQml.includes("property var taskModel"), true);
+assert.equal(roleStateQml.includes("property var taskRolePort"), true);
+assert.equal(roleStateQml.includes("property var taskModel"), false);
+assert.equal(roleStateQml.includes("rolePort: taskRolePort"), true);
 
 const taskCommandAdapterQml = readFileSync(
   new URL(

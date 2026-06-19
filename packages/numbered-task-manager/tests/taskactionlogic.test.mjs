@@ -286,13 +286,13 @@ assert.equal(emptyShortcutResult.code, "no-target");
 assert.equal(logic.shouldLogActionResult(emptyShortcutResult), false);
 
 const visualParent = { width: 128 };
-const taskModel = { objectName: "tasksModel" };
+const taskRolePort = { objectName: "taskRolePort" };
 assert.deepEqual(
   plain(
     logic.contextMenuRequestResult({
       modelIndex: validModelIndex,
       task: normalTask,
-      taskModel,
+      taskRolePort,
       visualParent,
     }),
   ),
@@ -309,7 +309,7 @@ assert.deepEqual(
     modelIndex: validModelIndex,
     ok: true,
     task: normalTask,
-    taskModel,
+    taskRolePort,
     visualParent,
     visualParentWidth: 128,
   },
@@ -318,7 +318,7 @@ assert.deepEqual(
 const invalidMenuRequest = logic.contextMenuRequestResult({
   modelIndex: invalidModelIndex,
   task: normalTask,
-  taskModel,
+  taskRolePort,
   visualParent,
 });
 assert.equal(invalidMenuRequest.ok, false);
@@ -330,7 +330,7 @@ assert.deepEqual(
     logic.contextMenuRequestResult({
       modelIndex: unknownShapeModelIndex,
       task: normalTask,
-      taskModel,
+      taskRolePort,
       visualParent,
     }),
   ),
@@ -347,11 +347,20 @@ assert.deepEqual(
     modelIndex: unknownShapeModelIndex,
     ok: true,
     task: normalTask,
-    taskModel,
+    taskRolePort,
     visualParent,
     visualParentWidth: 128,
   },
 );
+
+const missingTaskRolePortRequest = logic.contextMenuRequestResult({
+  modelIndex: validModelIndex,
+  task: normalTask,
+  visualParent,
+});
+assert.equal(missingTaskRolePortRequest.ok, false);
+assert.equal(missingTaskRolePortRequest.code, "missing-task-role-port");
+assert.equal(logic.shouldLogActionResult(missingTaskRolePortRequest), true);
 
 const creationFailure = logic.contextMenuCreationResult(null, {
   context: { entryKey: "normal-task" },

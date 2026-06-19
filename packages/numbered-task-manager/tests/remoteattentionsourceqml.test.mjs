@@ -81,6 +81,10 @@ assert.match(
 );
 assert.match(mainQml, /visibleTaskItems:\s*root\.visibleTaskItems/);
 assert.match(
+  sourceQml,
+  /\bTaskContextMenuRolePort\s*\{[\s\S]*?id:\s*taskRolePort[\s\S]*?taskModel:\s*attentionTasksModel[\s\S]*?\}/,
+);
+assert.match(
   mainQml,
   /onActivationRequested:\s*visibleItem\s*=>\s*\{[\s\S]*?taskActivation\.activateRemoteAttention\(visibleItem\);[\s\S]*?\}/,
 );
@@ -102,6 +106,14 @@ assert.doesNotMatch(mainQml, /taskModel:\s*remoteAttentionSource\.taskModel/);
 assert.match(
   sourceQml,
   /import "VisibleTaskItemsLogic\.mjs" as VisibleTaskItemsLogic/,
+);
+assert.match(
+  sourceQml,
+  /root\.contextMenuRequested\(Object\.assign\(\{\s*taskRolePort:\s*taskRolePort\s*\},\s*request\)\)/,
+);
+assert.doesNotMatch(
+  sourceQml,
+  /root\.contextMenuRequested\(Object\.assign\(\{\s*taskModel:\s*root\.taskModel\s*\},\s*request\)\)/,
 );
 assert.match(sourceQml, /property var visibleTaskItems/);
 assert.match(

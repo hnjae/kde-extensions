@@ -57,7 +57,7 @@ const roleCalls = [];
 const roleSource = {
   hasTask: true,
   modelIndex: { row: 5 },
-  taskModel: {
+  rolePort: {
     data(modelIndex, role) {
       roleCalls.push({ modelIndex, role });
       return liveRoles[role];
