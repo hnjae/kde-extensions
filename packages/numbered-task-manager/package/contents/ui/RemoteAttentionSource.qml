@@ -101,10 +101,9 @@ QtQuick.Item {
             required property var model
 
             property string launcherUrl: TaskEntryLogic.launcherUrlFromRoles(model.LauncherUrlWithoutIcon, model.LauncherUrl)
-            property bool hasSyncedAttention: false
+            property var lifecycleState: RemoteAttentionLogic.createRemoteAttentionSourceRowState()
             property var persistentModelIndex: root.taskModel.makePersistentModelIndex(index)
-            property string publishedKey: ""
-            property bool previousQualifies: false
+            property string publishedKey: lifecycleState.publishedKey || ""
             property var taskInfo: RemoteAttentionLogic.createRemoteAttentionEntry({
                 activities: model.Activities,
                 appName: model.AppName,
@@ -147,17 +146,36 @@ QtQuick.Item {
                 }
             }
 
-            function syncAttention() {
-                const becameQualified = hasSyncedAttention && !previousQualifies && qualifies;
-                publishedKey = root.publishRemoteAttention(publishedKey, taskKey, qualifies, taskInfo, becameQualified);
-                taskEntryDiagnostics.emitDiagnostics();
-                previousQualifies = qualifies;
-                hasSyncedAttention = true;
+            function lifecycleSnapshot() {
+                return {
+                    key: taskKey,
+                    qualifies,
+                    task: taskInfo
+                };
             }
 
-            QtQuick.Component.onCompleted: syncAttention()
+            function executeLifecycleCommands(output) {
+                lifecycleState = output.state;
+                const commands = Array.from(output.commands || []);
+                for (let i = 0; i < commands.length; ++i) {
+                    const command = commands[i];
+                    if (command.type === "publishRemoteAttention") {
+                        root.publishRemoteAttention(command.previousKey, command.key, command.qualifies, command.task, command.becameQualified);
+                    } else if (command.type === "removeRemoteAttention") {
+                        root.removeRemoteAttention(command.key);
+                    } else if (command.type === "emitDiagnostics") {
+                        taskEntryDiagnostics.emitDiagnostics();
+                    }
+                }
+            }
+
+            function syncAttention() {
+                executeLifecycleCommands(RemoteAttentionLogic.remoteAttentionSourceRowChanged(lifecycleState, lifecycleSnapshot()));
+            }
+
+            QtQuick.Component.onCompleted: executeLifecycleCommands(RemoteAttentionLogic.remoteAttentionSourceRowAppeared(lifecycleState, lifecycleSnapshot()))
             QtQuick.Component.onDestruction: {
-                root.removeRemoteAttention(publishedKey);
+                executeLifecycleCommands(RemoteAttentionLogic.remoteAttentionSourceRowRemoved(lifecycleState));
             }
             onQualifiesChanged: syncAttention()
             onTaskInfoChanged: syncAttention()

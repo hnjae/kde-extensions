@@ -72,6 +72,86 @@ export function createRemoteAttentionState() {
   return remoteAttentionStateFromParts({}, []);
 }
 
+export function createRemoteAttentionSourceRowState(values) {
+  const state = values || {};
+  return {
+    hasSyncedAttention: Boolean(state.hasSyncedAttention),
+    previousQualifies: Boolean(state.previousQualifies),
+    publishedKey: String(state.publishedKey || ""),
+  };
+}
+
+export function remoteAttentionSourceRowSnapshot(values) {
+  const snapshot = values || {};
+  return {
+    key: String(snapshot.key || ""),
+    qualifies: Boolean(snapshot.qualifies),
+    task: Object.assign({}, snapshot.task || {}),
+  };
+}
+
+export function remoteAttentionPublishCommand(
+  previousKey,
+  snapshot,
+  becameQualified,
+) {
+  const taskSnapshot = remoteAttentionSourceRowSnapshot(snapshot);
+  return {
+    becameQualified: Boolean(becameQualified),
+    key: taskSnapshot.key,
+    previousKey,
+    qualifies: taskSnapshot.qualifies,
+    task: taskSnapshot.task,
+    type: "publishRemoteAttention",
+  };
+}
+
+export function remoteAttentionSourceRowChanged(state, snapshot) {
+  const current = createRemoteAttentionSourceRowState(state);
+  const taskSnapshot = remoteAttentionSourceRowSnapshot(snapshot);
+  const becameQualified =
+    current.hasSyncedAttention &&
+    !current.previousQualifies &&
+    taskSnapshot.qualifies;
+
+  return {
+    commands: [
+      remoteAttentionPublishCommand(
+        current.publishedKey,
+        taskSnapshot,
+        becameQualified,
+      ),
+      {
+        type: "emitDiagnostics",
+      },
+    ],
+    state: createRemoteAttentionSourceRowState({
+      hasSyncedAttention: true,
+      previousQualifies: taskSnapshot.qualifies,
+      publishedKey: taskSnapshot.qualifies ? taskSnapshot.key : "",
+    }),
+  };
+}
+
+export function remoteAttentionSourceRowAppeared(state, snapshot) {
+  return remoteAttentionSourceRowChanged(state, snapshot);
+}
+
+export function remoteAttentionSourceRowRemoved(state) {
+  const current = createRemoteAttentionSourceRowState(state);
+  return {
+    commands: current.publishedKey
+      ? [
+          {
+            key: current.publishedKey,
+            type: "removeRemoteAttention",
+          },
+        ]
+      : [],
+    state: createRemoteAttentionSourceRowState(),
+  };
+}
+
 export function publishRemoteAttention(
   entryMap,
   order,
