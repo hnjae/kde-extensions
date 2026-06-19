@@ -197,11 +197,11 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Current state:** The read/write sequencing, guard-state transitions, convergence checks, retry, clear, and expiry paths are executable-tested without Plasma/QML. QML still owns real model/configuration effects and warning formatting.
 
-**Design concern:** The original executable-testability gap for launcher sync orchestration is closed. Remaining launcher sync concerns are narrower: retry classification is still implicit, formatting remains separate from action-result logging, and lower-level sync primitives still live in the broad launcher module.
+**Design concern:** The original executable-testability gap for launcher sync orchestration is closed. Remaining launcher sync concerns are narrower: formatting remains separate from action-result logging, and lower-level sync primitives still live in the broad launcher module.
 
 **Correct end state:** A sync orchestration helper should accept explicit effect ports: read model launchers, write model launchers, read config launchers, write config launchers, update guard, and emit diagnostics. QML should provide real ports only.
 
-**Suggested migration:** Keep future changes on the `LauncherSyncLogic.mjs` port boundary. Address retry classification and shared diagnostic formatting as separate observability checkpoints, and leave broader launcher-list domain/sync separation to the modularity finding.
+**Suggested migration:** Keep future changes on the `LauncherSyncLogic.mjs` port boundary. Address shared diagnostic formatting as a separate observability checkpoint, and leave broader launcher-list domain/sync separation to the modularity finding.
 
 **Acceptance criteria:** Launcher sync retry and convergence behavior is covered by unit tests without QML or Plasma. QML no longer owns model/config write branching. Failures produce structured results before formatting.
 
@@ -254,22 +254,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 **Suggested migration:** Connect `KJob::result` for `ApplicationLauncherJob`. Map nonzero errors to a stable code such as `desktop-action-launch-failed`. Forward the result to `TaskContextMenu.qml` and `TaskActionResultLogger.qml`, or to a backend logging category.
 
 **Acceptance criteria:** Failed desktop action jobs are observable. Logs/results include launcher URL or desktop entry path and service action text/name. Expected empty desktop-action discovery remains quiet.
-
-### Finding: Launcher sync retry semantics are implicit
-
-**Priority:** P2.
-
-**Evidence:** `LauncherListLogic.launcherReconciliationAfterResult(...)` retains reconciliation state only when `syncResult.code === "write-mismatch"`; `runLauncherListUpdateTransaction(...)` converts exceptions to `code: "write-failed"`; `LauncherSyncAdapter.qml` executes retry decisions from those helpers.
-
-**Current state:** Retry policy is encoded as a string comparison. `write-failed` clears pending retry state, and the result does not say whether the failure is retryable or fatal.
-
-**Design concern:** Operators and maintainers cannot tell from a sync result whether the system will retry, wait for another model change, or give up. New failure codes can accidentally bypass retry.
-
-**Correct end state:** Launcher sync results should carry explicit retry classification such as `retryable`, `retryAfterChange`, or `fatal`. Reconciliation should branch on that classification, not raw code strings alone.
-
-**Suggested migration:** Add a retry classification field while preserving existing `code` values. Test `write-mismatch`, `write-failed`, and `reconciliation-expired` classifications. Include retry state in warning output.
-
-**Acceptance criteria:** Every launcher sync failure code has a tested retry classification. `launcherReconciliationAfterResult(...)` no longer depends solely on `code !== "write-mismatch"`.
 
 ### Finding: Action-result formatting is split between action and sync paths
 
@@ -371,11 +355,11 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 ## Suggested Refactoring Sequence
 
-1. Add characterization tests around current behavior. Prioritize launcher sync retry classification and source lifecycle transitions.
+1. Add characterization tests around current behavior. Prioritize source lifecycle transitions.
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Extract launcher sync orchestration into fakeable pure functions or port-based helpers. Extract source lifecycle state machines from hidden QML delegate event ordering. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, split launcher sync from launcher list domain rules, and introduce narrow ports around raw `TasksModel`.
-5. Improve error semantics and observability. Add structured error context, connect desktop action launch failures to diagnostics, and carry retry classification in launcher sync results.
+5. Improve error semantics and observability. Add structured error context and connect desktop action launch failures to diagnostics.
 6. Remove or simplify premature abstractions. After the behavior boundaries are stable, consider extracting `TaskLikeItemShell.qml` if the duplicated visual shell still creates real maintenance pressure. Keep compatibility re-exports only temporarily and remove them once QML and tests consume focused modules directly.
 
 ## Things Not To Change Yet
@@ -399,7 +383,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, task source lifecycle depending on delegate events, and footer menu actions bypassing descriptors/action results. These were kept. Launcher sync and source lifecycle are P1 because important behavior is currently hard to execute-test; desktop actions and footer actions are P2.
 
-**Error Handling / Observability Agent:** Reported implicit launcher sync retry semantics, lossy exception serialization, and unobserved desktop action launch failures. All were kept.
+**Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Both were kept.
 
 **Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. These were merged into cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
