@@ -74,21 +74,21 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 ## Testability Problems
 
-### Finding: Desktop action backend has no descriptor seam
+### Finding: Desktop action backend descriptor seam lacks executable fake-input tests
 
 **Priority:** P2.
 
-**Evidence:** `src/taskcontextmenubackend.cpp` resolves services in `desktopEntryUrl(...)`, validates desktop files and resolves `KService` in `desktopActions(...)`, creates live `QAction` objects, and connects `QAction::triggered` directly to `new KIO::ApplicationLauncherJob(serviceAction)->start()`; `TaskContextMenu.qml` consumes `contextMenuBackend.desktopActions(...)` as live actions.
+**Evidence:** `src/taskcontextmenubackend.cpp` now resolves services in `desktopActions(...)`, converts visible `KServiceAction` entries into internal `DesktopActionDescriptor` values, and adapts descriptors into live `QAction` objects that still connect directly to `new KIO::ApplicationLauncherJob(...)->start()`; `tests/taskcontextmenubackendcpp.test.mjs` verifies the source seam but there is no executable C++ test with fake service actions or launch adapters.
 
-**Current state:** Discovery, filtering, presentation object creation, and launch execution are all inside `TaskContextMenuBackend::desktopActions(...)`.
+**Current state:** Discovery/filtering and `QAction` construction are split in code, but the seam is protected by source-shape tests rather than executable C++ behavior tests.
 
-**Design concern:** Desktop action behavior is hard to verify without KDE service databases, filesystem desktop files, Qt action objects, and KIO job execution. The code cannot test “which actions should appear” independently from launch side effects.
+**Design concern:** Desktop action behavior is still hard to verify without KDE service databases, filesystem desktop files, Qt action objects, and KIO job execution. The code cannot yet test “which actions should appear” or launch dispatch independently from live KDE objects.
 
-**Correct end state:** The backend should have a descriptor boundary. A resolver should map launcher URL to desktop action descriptors, and a launcher should map a descriptor to a `KIO::ApplicationLauncherJob`. `TaskContextMenuBackend` should become a thin adapter that exposes QML-compatible actions or descriptors.
+**Correct end state:** The descriptor resolver and launch adapter should be executable-tested with fake inputs. `TaskContextMenuBackend` should remain a thin adapter that exposes QML-compatible actions or descriptors over tested resolver/descriptor logic.
 
-**Suggested migration:** Add an internal descriptor type with text, icon, separator, and stable service payload. Extract service resolution and filtering into testable code with fake inputs. Keep `QAction` construction as the final adapter step.
+**Suggested migration:** Add a C++ test target or another executable test harness for descriptor filtering and launch dispatch. Keep `QAction` construction as the final adapter step.
 
-**Acceptance criteria:** Desktop action filtering can be tested without real KDE service lookup. Launch dispatch can be tested without starting `KIO::ApplicationLauncherJob`. `TaskContextMenuBackend::desktopActions(...)` becomes a thin adapter over tested resolver/descriptor logic.
+**Acceptance criteria:** Desktop action filtering can be tested without real KDE service lookup. Launch dispatch can be tested without starting `KIO::ApplicationLauncherJob`.
 
 ### Finding: Task-like visual shell is only partially abstracted
 
