@@ -5,38 +5,17 @@
 
 ## Executive Summary
 
-The codebase has a strong existing direction: external behavior is specified in `docs/spec/SPEC.md`, architectural intent is documented in `docs/architecture/ARCHITECTURE.md`, and most domain decisions already have pure `.mjs` helpers with focused tests. The most important remaining design risks are not a lack of architecture, but the few places where executable verification or shared visual structure still lag the intended boundaries.
+The codebase has a strong existing direction: external behavior is specified in `docs/spec/SPEC.md`, architectural intent is documented in `docs/architecture/ARCHITECTURE.md`, and most domain decisions already have pure `.mjs` helpers with focused tests. The remaining design risk is a lower-priority visual structure cleanup.
 
-The highest-impact risks are around action/effect boundaries. Desktop action backend testing still depends on source-shape checks for behavior that should be executable-tested.
-
-The remaining module-breadth risk is lower priority: normal task and remote-attention delegates still duplicate the task-like visual shell around shared subcomponents.
+Normal task and remote-attention delegates still duplicate the task-like visual shell around shared subcomponents.
 
 The correct end state should keep the current behavioral design, KDE Plasma API usage, native menu approach, and pure-helper strategy. The target is narrower ownership: domain rules live in one pure owner, QML components wire platform effects through explicit ports, and every user action that crosses into Plasma or KIO has a structured result path.
 
 ## Top Design Risks
 
-1. **Some effect boundaries are hard to test with executable fakes.** C++ desktop actions still require live `QAction`/KIO objects for executable verification despite having descriptors and launch-failure diagnostics.
-2. **The task-like visual shell is duplicated.** Normal and remote-attention delegates share subcomponents but still duplicate the containing frame/content/interaction stack.
+1. **The task-like visual shell is duplicated.** Normal and remote-attention delegates share subcomponents but still duplicate the containing frame/content/interaction stack.
 
 ## Invariant and Correctness Risks
-
-## Testability Problems
-
-### Finding: Desktop action backend descriptor seam lacks executable fake-input tests
-
-**Priority:** P2.
-
-**Evidence:** `src/taskcontextmenubackend.cpp` now resolves services in `desktopActions(...)`, converts visible `KServiceAction` entries into internal `DesktopActionDescriptor` values, and adapts descriptors into live `QAction` objects that still connect directly to `new KIO::ApplicationLauncherJob(...)->start()`; `tests/taskcontextmenubackendcpp.test.mjs` verifies the source seam but there is no executable C++ test with fake service actions or launch adapters.
-
-**Current state:** Discovery/filtering and `QAction` construction are split in code, but the seam is protected by source-shape tests rather than executable C++ behavior tests.
-
-**Design concern:** Desktop action behavior is still hard to verify without KDE service databases, filesystem desktop files, Qt action objects, and KIO job execution. The code cannot yet test “which actions should appear” or launch dispatch independently from live KDE objects.
-
-**Correct end state:** The descriptor resolver and launch adapter should be executable-tested with fake inputs. `TaskContextMenuBackend` should remain a thin adapter that exposes QML-compatible actions or descriptors over tested resolver/descriptor logic.
-
-**Suggested migration:** Add a C++ test target or another executable test harness for descriptor filtering and launch dispatch. Keep `QAction` construction as the final adapter step.
-
-**Acceptance criteria:** Desktop action filtering can be tested without real KDE service lookup. Launch dispatch can be tested without starting `KIO::ApplicationLauncherJob`.
 
 ### Finding: Task-like visual shell is only partially abstracted
 
@@ -64,17 +43,17 @@ State definitions should be explicit descriptors rather than multi-field convent
 
 Validation should happen before effects.
 
-External effects should be isolated behind narrow ports. Raw `TasksModel` should be wrapped by task command, launcher command/repository, launcher sync, and activation ports. C++ desktop action resolution should produce descriptors before constructing `QAction` objects or launching `KIO` jobs. QML adapters should supply ports and execute returned commands.
+External effects should be isolated behind narrow ports. Raw `TasksModel` should be wrapped by task command, launcher command/repository, launcher sync, and activation ports. C++ desktop action resolution produces descriptors before constructing `QAction` objects or launching `KIO` jobs. QML adapters should supply ports and execute returned commands.
 
 Errors should be represented through one structured diagnostic shape. `ErrorContextLogic.mjs` now defines shared structured error context; the generic result helper should still define result shape and logging predicates, while domain-specific result classifiers should live near their workflow. Launcher sync and action execution use the shared serializer and produce correlated diagnostics for user actions.
 
-Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover launcher sync orchestration through fake ports. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch dispatch without requiring real KIO job execution.
+Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover launcher sync orchestration through fake ports. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests cover desktop action descriptors and launch dispatch without requiring real KIO job execution.
 
 ## Suggested Refactoring Sequence
 
 1. Add characterization tests around current behavior.
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
-3. Isolate core domain logic from external effects. Add a desktop action descriptor seam in the C++ backend.
+3. Isolate core domain logic from external effects.
 4. Clarify ownership boundaries. Keep action-result classifiers in focused workflow owners.
 5. Improve error semantics and observability. Keep backend effect failures visible through structured results.
 6. Remove or simplify premature abstractions. After the behavior boundaries are stable, consider extracting `TaskLikeItemShell.qml` if the duplicated visual shell still creates real maintenance pressure. Keep compatibility re-exports only temporarily and remove them once QML and tests consume focused modules directly.
@@ -106,9 +85,9 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Logic Placement / Flow Readability Agent:** Reported implicit `visualParent.contextMenuOpen` mutation. This is complete; menu-open state now flows through explicit lifecycle callbacks owned by delegates.
 
-**Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. Launcher sync orchestration is now covered through `LauncherSyncLogic.mjs`; footer actions route through descriptors/action results; desktop action descriptors exist but still lack executable fake-input tests.
+**Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. Launcher sync orchestration is now covered through `LauncherSyncLogic.mjs`; footer actions route through descriptors/action results; desktop action filtering and launch dispatch have executable fake-input C++ coverage.
 
-**Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Exception serialization, desktop action launch diagnostics, and launcher sync action-result diagnostics are complete; residual backend work is executable fake-input coverage.
+**Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Exception serialization, desktop action launch diagnostics, launcher sync action-result diagnostics, and executable backend fake-input coverage are complete.
 
 **Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. The raw model adapter, broad launcher list, and context-menu monolith concerns are complete. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
