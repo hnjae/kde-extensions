@@ -5,8 +5,8 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import "LauncherListLogic.mjs" as LauncherListLogic
-import "TaskActionLogic.mjs" as TaskActionLogic
 import "TaskModelLogic.mjs" as TaskModelLogic
+import "TaskMoveLogic.mjs" as TaskMoveLogic
 
 QtQuick.QtObject {
     id: root
@@ -61,7 +61,7 @@ QtQuick.QtObject {
     }
 
     function rejectDragMove(moveDecision, sourceIndex, targetIndex) {
-        const rejection = TaskActionLogic.dragMoveRejectionResult(moveDecision, sourceIndex, targetIndex);
+        const rejection = TaskMoveLogic.dragMoveRejectionResult(moveDecision, sourceIndex, targetIndex);
         actionResult(rejection);
         return rejection;
     }

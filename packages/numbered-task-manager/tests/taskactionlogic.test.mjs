@@ -7,7 +7,7 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const actionLogic = await loadQmlJsModule(
   new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
-  ["dragMoveRejectionResult", "taskEntryDiagnosticResult"],
+  ["taskEntryDiagnosticResult"],
 );
 const activationLogic = await loadQmlJsModule(
   new URL("../package/contents/ui/TaskActivationLogic.mjs", import.meta.url),
@@ -62,6 +62,10 @@ const launcherCommandLogic = await loadQmlJsModule(
     "launcherMutationResult",
   ],
 );
+const taskMoveLogic = await loadQmlJsModule(
+  new URL("../package/contents/ui/TaskMoveLogic.mjs", import.meta.url),
+  ["dragMoveRejectionResult"],
+);
 const logic = Object.assign(
   {},
   actionLogic,
@@ -72,6 +76,7 @@ const logic = Object.assign(
   contextMenuRequestLogic,
   contextMenuTaskCommandLogic,
   launcherCommandLogic,
+  taskMoveLogic,
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const validModelIndex = { valid: true, row: 4 };
