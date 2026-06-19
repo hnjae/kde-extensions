@@ -9,7 +9,7 @@ The codebase has a strong existing direction: external behavior is specified in 
 
 The highest-impact risks are around action/effect boundaries. Context-menu action descriptors can remain executable even when their rendered menu items are disabled or hidden. Model-index shape is diagnosed as malformed but still treated as actionable. Desktop actions and footer actions bypass the structured action-result path used by the rest of the task actions.
 
-The second major risk is weakly centralized invariants. Model-index shape is diagnosed as malformed but still treated as actionable, visible-item descriptors rely on matching string fields that are not validated, virtual desktop identity is implemented twice, and source/model kind strings are repeated across activation, diagnostics, and composition code.
+The second major risk is weakly centralized invariants. Model-index shape is diagnosed as malformed but still treated as actionable, and visible-item descriptors rely on matching string fields that are not validated.
 
 The third major risk is module breadth. `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` each contain multiple feature families. That makes local changes harder to reason about and pushes tests toward very large suites or regex assertions against QML instead of executable behavior tests.
 
@@ -24,22 +24,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 5. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into context menu role/opening paths and launcher sync, while launcher pin/unpin commands, context-menu task commands, context-menu launcher state reads, normal task activation, and task movement now use narrow ports.
 
 ## Single Source of Truth Violations
-
-### Finding: Virtual desktop identity is implemented twice
-
-**Priority:** P2.
-
-**Evidence:** `package/contents/ui/TaskEntryLogic.mjs` defines `desktopId(...)`, `desktopListContains(...)`, `isOnCurrentVirtualDesktop(...)`, and `isRemoteVirtualDesktop(...)`; `package/contents/ui/TaskContextMenuLogic.mjs` defines equivalent `virtualDesktopId(...)` and `virtualDesktopListContains(...)`; `package/contents/ui/TaskScopeLogic.mjs` imports desktop membership from `TaskEntryLogic.mjs`; `TaskContextMenuLogic.mjs` uses its duplicate helpers in `virtualDesktopMenuState(...)`.
-
-**Current state:** Task qualification and context-menu checked-state use separate virtual desktop normalization logic. The implementations currently match, but they are independent definitions.
-
-**Design concern:** If KDE exposes a different virtual desktop object shape or the project tightens identity coercion, source qualification and context-menu checked state can drift.
-
-**Correct end state:** One focused owner should define desktop identity and membership. The cleanest end state is a `VirtualDesktopLogic.mjs` module that owns ID coercion, list membership, current-desktop qualification, remote-desktop qualification, and menu checked-state primitives. `TaskEntryLogic.mjs` should stay focused on task entry projection.
-
-**Suggested migration:** Add characterization tests that show current task-scope and menu checked-state behavior is identical. Move `desktopId(...)` and `desktopListContains(...)` into the shared owner. Update `TaskScopeLogic.mjs` and `TaskContextMenuLogic.mjs` to import the shared helpers. Keep compatibility exports only during migration.
-
-**Acceptance criteria:** Only one production implementation converts virtual desktop objects or strings to IDs. Task scope tests and context-menu checked-state tests both use the shared helper. A desktop identity behavior change requires one code edit.
 
 ### Finding: Error serialization is duplicated and too lossy
 
@@ -457,7 +441,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 The root `main.qml` should remain the composition root. It should instantiate Plasma `TasksModel`, platform state, adapters, sources, and the rendered `TaskListRepresentation.qml`, but it should not own domain policy beyond unavoidable wiring.
 
-Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Virtual desktop identity and membership should move into a focused virtual desktop owner. Visible-item descriptors and shortcut target selection should have one descriptor owner. Launcher domain rules should be split from launcher sync policy. Context-menu feature families should have focused pure modules.
+Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Visible-item descriptors and shortcut target selection should have one descriptor owner. Launcher domain rules should be split from launcher sync policy. Context-menu feature families should have focused pure modules.
 
 State definitions should be explicit descriptors rather than multi-field conventions. Visible item descriptors should have a validated discriminated shape. Model-index state should have named states instead of a boolean that treats unknown shape as valid. Context-menu routes and command kinds should be centralized constants or typed helpers.
 
@@ -467,12 +451,12 @@ External effects should be isolated behind narrow ports. Raw `TasksModel` should
 
 Errors should be represented through one structured diagnostic shape. The generic result helper should define result shape, structured error context, and logging predicate. Domain-specific result classifiers should live near their workflow. Launcher sync and action execution should share error serialization and produce correlated diagnostics for user actions.
 
-Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover descriptor invariants, virtual desktop identity, launcher sync orchestration through fake ports, and source lifecycle state machines. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch failure observability without requiring real KIO job execution.
+Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover descriptor invariants, launcher sync orchestration through fake ports, and source lifecycle state machines. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch failure observability without requiring real KIO job execution.
 
 ## Suggested Refactoring Sequence
 
 1. Add characterization tests around current behavior. Prioritize launcher pin/unpin persistence outcomes, disabled context-menu dispatch, model-index unknown-shape policy, visible-item `kind/sourceModel` mismatch, launcher sync retry classification, and source lifecycle transitions.
-2. Centralize duplicated rules/state. Move virtual desktop identity into one owner and centralize context-menu route kinds.
+2. Centralize duplicated rules/state. Centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Extract launcher sync orchestration into fakeable pure functions or port-based helpers. Extract source lifecycle state machines from hidden QML delegate event ordering. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, split launcher sync from launcher list domain rules, and introduce narrow ports around raw `TasksModel`.
 5. Improve error semantics and observability. Add structured error context, connect desktop action launch failures to diagnostics, and carry retry classification in launcher sync results.
@@ -491,7 +475,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 ## Appendix: Subagent Reports
 
-**Single Source of Truth / Duplication Agent:** Reported duplicated virtual desktop identity and repeated context-menu route-kind strings. These were merged into “Single Source of Truth Violations.” Virtual desktop duplication was merged with similar cohesion/deletion findings and prioritized as P2 by the main review because it is a drift risk rather than a known current behavior bug.
+**Single Source of Truth / Duplication Agent:** Reported repeated context-menu route-kind strings. This was merged into “Single Source of Truth Violations.”
 
 **Invariant / Correctness Agent:** Reported model-index unknown shape being both diagnostic and actionable, disabled/invisible context-menu actions carrying executable commands, and visible-item descriptor mismatch risk. All three were kept. The first two are P1 because they affect effect-boundary correctness; the descriptor mismatch is P2 because the current composer produces valid descriptors but the boundary is not protected.
 
