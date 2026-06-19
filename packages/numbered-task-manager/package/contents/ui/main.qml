@@ -72,6 +72,12 @@ PlasmoidItem {
         taskModel: tasksModel
     }
 
+    TaskContextMenuRolePort {
+        id: taskContextMenuRolePort
+
+        taskModel: tasksModel
+    }
+
     TaskActivationPort {
         id: taskActivationPort
 
@@ -111,8 +117,8 @@ PlasmoidItem {
         id: contextMenuAdapter
 
         launcherReadPort: launcherReadPort
-        taskModel: tasksModel
         taskCommandPort: taskCommandPort
+        taskRolePort: taskContextMenuRolePort
 
         onActionResult: result => {
             actionLogger.logActionResult(result);

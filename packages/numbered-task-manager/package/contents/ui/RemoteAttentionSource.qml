@@ -62,7 +62,7 @@ QtQuick.Item {
 
     function requestVisibleContextMenu(request) {
         root.contextMenuRequested(Object.assign({
-            taskModel: root.taskModel
+            taskRolePort: taskRolePort
         }, request));
     }
 
@@ -91,6 +91,12 @@ QtQuick.Item {
         groupMode: TaskManager.TasksModel.GroupDisabled
         sortMode: TaskManager.TasksModel.SortManual
         virtualDesktop: root.currentDesktop
+    }
+
+    TaskContextMenuRolePort {
+        id: taskRolePort
+
+        taskModel: attentionTasksModel
     }
 
     QtQuick.Repeater {

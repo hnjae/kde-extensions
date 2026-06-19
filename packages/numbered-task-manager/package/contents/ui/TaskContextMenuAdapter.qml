@@ -10,8 +10,8 @@ QtQuick.Item {
     id: root
 
     property var launcherReadPort
-    property var taskModel
     property var taskCommandPort
+    property var taskRolePort
 
     signal actionResult(var result)
     signal launcherCommandRequested(var command)
@@ -22,7 +22,7 @@ QtQuick.Item {
 
     function contextMenuRequest(request) {
         return Object.assign({
-            taskModel: root.taskModel
+            taskRolePort: root.taskRolePort
         }, request || ({}));
     }
 
@@ -50,8 +50,8 @@ QtQuick.Item {
             launcherReadPort: root.launcherReadPort,
             modelIndex: menuRequest.modelIndex,
             task: menuRequest.task || {},
-            taskModel: menuRequest.taskModel,
             taskCommandPort: root.taskCommandPort,
+            taskRolePort: menuRequest.taskRolePort,
             visualParent: visualParent,
             visualParentWidth: menuRequest.visualParentWidth
         }) as TaskContextMenu;

@@ -289,10 +289,10 @@ export function contextMenuRequestResult(request) {
     );
   }
 
-  if (!menuRequest.taskModel) {
+  if (!menuRequest.taskRolePort) {
     return actionResult(
       "openContextMenu",
-      "missing-task-model",
+      "missing-task-role-port",
       false,
       true,
       context,
@@ -314,7 +314,7 @@ export function contextMenuRequestResult(request) {
     {
       modelIndex: menuRequest.modelIndex,
       task: menuRequest.task || {},
-      taskModel: menuRequest.taskModel,
+      taskRolePort: menuRequest.taskRolePort,
       visualParent: menuRequest.visualParent,
       visualParentWidth: context.visualParentWidth,
     },

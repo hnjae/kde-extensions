@@ -34,7 +34,7 @@ PlasmaExtras.Menu {
         currentActivity: platformState.currentActivity,
         fullscreenShadeBorderRoles: fullscreenShadeBorderRoles,
         hasTask: hasTask,
-        hasTaskModel: taskModel,
+        hasTaskModel: taskRolePort,
         hasWindowTask: hasWindowTask,
         isWindow: taskRoles.isWindow,
         keepAboveBelowRoles: keepAboveBelowRoles,
@@ -61,8 +61,8 @@ PlasmaExtras.Menu {
     property var launcherReadPort
     property var modelIndex
     property var task: ({})
-    property var taskModel
     property var taskCommandPort
+    property var taskRolePort
     property int visualParentWidth: 0
 
     minimumWidth: visualParentWidth
@@ -94,7 +94,7 @@ PlasmaExtras.Menu {
 
         modelIndex: root.modelIndex
         task: root.task
-        taskModel: root.taskModel
+        taskRolePort: root.taskRolePort
     }
 
     readonly property TaskContextMenuLauncherState _launcherState: TaskContextMenuLauncherState {

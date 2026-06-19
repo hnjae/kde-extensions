@@ -7,17 +7,17 @@ export function roleData(roleSource, role, fallback) {
   const source = roleSource || {};
   if (
     !source.hasTask ||
-    !source.taskModel ||
+    !source.rolePort ||
     source.modelIndex === undefined ||
     source.modelIndex === null ||
     role === undefined ||
     role === null ||
-    typeof source.taskModel.data !== "function"
+    typeof source.rolePort.data !== "function"
   ) {
     return fallback;
   }
 
-  const value = source.taskModel.data(source.modelIndex, role);
+  const value = source.rolePort.data(source.modelIndex, role);
   return value === undefined || value === null ? fallback : value;
 }
 

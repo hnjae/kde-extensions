@@ -133,7 +133,7 @@ assert.match(sourceQml, /root\.activationRequested\(root\.visibleItem\)/);
 assert.match(sourceQml, /function requestVisibleContextMenu\(request\)/);
 assert.match(
   sourceQml,
-  /root\.contextMenuRequested\(Object\.assign\(\{\s*taskModel:\s*root\.taskModel\s*\},\s*request\)\)/,
+  /root\.contextMenuRequested\(Object\.assign\(\{\s*taskRolePort:\s*taskRolePort\s*\},\s*request\)\)/,
 );
 assert.doesNotMatch(sourceQml, /property var publishAttention:/);
 assert.doesNotMatch(sourceQml, /property var removeAttention:/);
