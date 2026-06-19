@@ -3886,6 +3886,12 @@ const taskCommandAdapterQml = readFileSync(
 );
 assert.equal(
   taskCommandAdapterQml.includes("TaskActionLogic.contextMenuTaskRequest"),
+  false,
+);
+assert.equal(
+  taskCommandAdapterQml.includes(
+    "TaskContextMenuTaskCommandLogic.contextMenuTaskRequest",
+  ),
   true,
 );
 assert.equal(
@@ -3897,6 +3903,12 @@ assert.equal(
 assert.equal(
   taskCommandAdapterQml.includes(
     "TaskActionLogic.executeContextMenuTaskRequest",
+  ),
+  false,
+);
+assert.equal(
+  taskCommandAdapterQml.includes(
+    "TaskContextMenuTaskCommandLogic.executeContextMenuTaskRequest",
   ),
   true,
 );
@@ -3920,13 +3932,13 @@ assert.equal(
 assert.equal(taskCommandAdapterQml.includes("property var taskModel"), false);
 assert.equal(
   taskCommandAdapterQml.includes(
-    "TaskActionLogic.contextMenuTaskRequest(command, taskCommandPort, modelIndex, task)",
+    "TaskContextMenuTaskCommandLogic.contextMenuTaskRequest(command, taskCommandPort, modelIndex, task)",
   ),
   true,
 );
 assert.equal(
   taskCommandAdapterQml.includes(
-    "TaskActionLogic.executeContextMenuTaskRequest(result, taskCommandPort)",
+    "TaskContextMenuTaskCommandLogic.executeContextMenuTaskRequest(result, taskCommandPort)",
   ),
   true,
 );
