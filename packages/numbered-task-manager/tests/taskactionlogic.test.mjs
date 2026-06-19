@@ -8,11 +8,9 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 const actionLogic = await loadQmlJsModule(
   new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
   [
-    "contextMenuCreationResult",
     "contextMenuActionDispatchFailure",
     "contextMenuLauncherCommandDispatchResult",
     "contextMenuLauncherActivityResult",
-    "contextMenuRequestResult",
     "executeContextMenuTaskRequest",
     "contextMenuTaskExecutionResult",
     "contextMenuTaskRequest",
@@ -42,12 +40,20 @@ const commandLogic = await loadQmlJsModule(
   ),
   ["contextMenuLauncherCommand", "contextMenuTaskCommand"],
 );
+const contextMenuRequestLogic = await loadQmlJsModule(
+  new URL(
+    "../package/contents/ui/TaskContextMenuRequestLogic.mjs",
+    import.meta.url,
+  ),
+  ["contextMenuCreationResult", "contextMenuRequestResult"],
+);
 const logic = Object.assign(
   {},
   actionLogic,
   actionResultLogic,
   activationLogic,
   commandLogic,
+  contextMenuRequestLogic,
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const validModelIndex = { valid: true, row: 4 };

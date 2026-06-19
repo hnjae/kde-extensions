@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "TaskActionLogic.mjs" as TaskActionLogic
+import "TaskContextMenuRequestLogic.mjs" as TaskContextMenuRequestLogic
 
 QtQuick.Item {
     id: root
@@ -39,7 +39,7 @@ QtQuick.Item {
     }
 
     function openTaskContextMenu(request) {
-        const menuRequest = TaskActionLogic.contextMenuRequestResult(contextMenuRequest(request));
+        const menuRequest = TaskContextMenuRequestLogic.contextMenuRequestResult(contextMenuRequest(request));
         if (!menuRequest.ok) {
             actionResult(menuRequest);
             return;
@@ -55,7 +55,7 @@ QtQuick.Item {
             visualParent: visualParent,
             visualParentWidth: menuRequest.visualParentWidth
         }) as TaskContextMenu;
-        const creationResult = TaskActionLogic.contextMenuCreationResult(menu, menuRequest);
+        const creationResult = TaskContextMenuRequestLogic.contextMenuCreationResult(menu, menuRequest);
         if (!creationResult.ok) {
             actionResult(creationResult);
             return;
