@@ -10,19 +10,11 @@ const helpers = await loadQmlJsModule(
   new URL("../package/contents/ui/LauncherListLogic.mjs", import.meta.url),
   [
     "canMovePinnedLauncher",
-    "effectiveSerializedLauncherActivities",
-    "launcherActivityUpdate",
-    "launcherActivitiesAfterAllToggle",
-    "launcherActivitiesAfterToggle",
-    "launcherListWithActivitiesAt",
     "launcherListsEqual",
     "launcherPinState",
     "movePinnedLauncher",
     "normalizedLauncherList",
-    "parseSerializedLauncher",
     "pinnedLauncherGlobalPosition",
-    "serializeLauncherWithActivities",
-    "serializedLauncherVisibleInActivity",
     "visibleLauncherPosition",
   ],
 );
@@ -60,107 +52,6 @@ assert.doesNotMatch(
 assert.doesNotMatch(
   launcherListLogicSource,
   /syncResult\.code\s*!==\s*"write-mismatch"/,
-);
-
-assert.deepEqual(
-  plain(helpers.parseSerializedLauncher("org.example.App.desktop")),
-  {
-    activities: [],
-    url: "org.example.App.desktop",
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.parseSerializedLauncher("[work,chat]\norg.example.App.desktop"),
-  ),
-  {
-    activities: ["work", "chat"],
-    url: "org.example.App.desktop",
-  },
-);
-assert.deepEqual(
-  plain(helpers.parseSerializedLauncher("[work]org.example.App.desktop")),
-  {
-    activities: [],
-    url: "[work]org.example.App.desktop",
-  },
-);
-
-assert.deepEqual(
-  plain(helpers.effectiveSerializedLauncherActivities("[work]\napp.desktop")),
-  ["work"],
-);
-assert.deepEqual(
-  plain(helpers.effectiveSerializedLauncherActivities("app.desktop")),
-  [nullActivityId],
-);
-
-assert.equal(
-  helpers.serializedLauncherVisibleInActivity("[work]\napp.desktop", "work"),
-  true,
-);
-assert.equal(
-  helpers.serializedLauncherVisibleInActivity("[chat]\napp.desktop", "work"),
-  false,
-);
-
-assert.equal(
-  helpers.serializeLauncherWithActivities("[old]\napp.desktop", ["work"]),
-  "[work]\napp.desktop",
-);
-assert.equal(
-  helpers.serializeLauncherWithActivities("[old]\napp.desktop", [
-    nullActivityId,
-  ]),
-  "app.desktop",
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherListWithActivitiesAt(["one.desktop", "two.desktop"], 1, [
-      "work",
-    ]),
-  ),
-  ["one.desktop", "[work]\ntwo.desktop"],
-);
-assert.equal(
-  helpers.launcherListWithActivitiesAt(["one.desktop"], 2, ["work"]),
-  null,
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherActivityUpdate(["one.desktop", "two.desktop"], 1, ["work"]),
-  ),
-  {
-    activities: ["work"],
-    changed: true,
-    launchers: ["one.desktop", "[work]\ntwo.desktop"],
-    ok: true,
-    reason: "updated",
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherActivityUpdate(["one.desktop", "[work]\ntwo.desktop"], 1, [
-      "work",
-    ]),
-  ),
-  {
-    activities: ["work"],
-    changed: false,
-    launchers: ["one.desktop", "[work]\ntwo.desktop"],
-    ok: true,
-    reason: "unchanged",
-  },
-);
-assert.deepEqual(
-  plain(helpers.launcherActivityUpdate(["one.desktop"], 3, ["work"])),
-  {
-    activities: [],
-    changed: false,
-    launchers: ["one.desktop"],
-    ok: false,
-    reason: "invalid-position",
-  },
 );
 
 assert.deepEqual(
@@ -209,43 +100,6 @@ assert.deepEqual(
   },
 );
 
-assert.deepEqual(
-  plain(helpers.launcherActivitiesAfterAllToggle([nullActivityId], "work")),
-  ["work"],
-);
-assert.equal(
-  helpers.launcherActivitiesAfterAllToggle([nullActivityId], ""),
-  null,
-);
-assert.deepEqual(
-  plain(helpers.launcherActivitiesAfterAllToggle(["work"], "work")),
-  [nullActivityId],
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherActivitiesAfterToggle([nullActivityId], "chat", "work"),
-  ),
-  ["chat"],
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherActivitiesAfterToggle(["work", "chat"], "work", "work"),
-  ),
-  ["chat"],
-);
-assert.deepEqual(
-  plain(helpers.launcherActivitiesAfterToggle(["work"], "work", "chat")),
-  ["chat"],
-);
-assert.deepEqual(
-  plain(helpers.launcherActivitiesAfterToggle(["work"], "work", "")),
-  ["work"],
-);
-assert.deepEqual(
-  plain(helpers.launcherActivitiesAfterToggle(["work"], "chat", "work")),
-  ["work", "chat"],
-);
-
 assert.doesNotMatch(launcherListLogicSource, /function stringListContains\b/);
 assert.doesNotMatch(launcherListLogicSource, /function uniqueStringList\b/);
 assert.doesNotMatch(launcherListLogicSource, /function activitiesAreAll\b/);
@@ -254,9 +108,14 @@ assert.doesNotMatch(
   /function normalizedActivityList\b/,
 );
 assert.doesNotMatch(launcherListLogicSource, /function isInCurrentActivity\b/);
-assert.match(
+assert.doesNotMatch(launcherListLogicSource, /ActivityScopeLogic/);
+assert.doesNotMatch(
   launcherListLogicSource,
-  /ActivityScopeLogic\.isInCurrentActivity/,
+  /function parseSerializedLauncher\b/,
+);
+assert.doesNotMatch(
+  launcherListLogicSource,
+  /function launcherActivityUpdate\b/,
 );
 assert.match(launcherListLogicSource, /ActivityScopeLogic\.activitiesAreAll/);
 assert.match(
