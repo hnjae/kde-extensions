@@ -34,6 +34,10 @@ assert.match(
   sourceQml,
   /import "NormalTaskSourceLifecycleLogic\.mjs" as NormalTaskSourceLifecycleLogic/,
 );
+assert.doesNotMatch(
+  sourceQml,
+  /import "LauncherListLogic\.mjs" as LauncherListLogic/,
+);
 assert.match(sourceQml, /signal taskPublished\(/);
 assert.match(sourceQml, /signal taskRemoved\(/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
@@ -60,3 +64,14 @@ assert.doesNotMatch(
   sourceQml,
   /function syncTask\(\)\s*\{\s*if \(!publishedKey\)/s,
 );
+assert.match(
+  sourceQml,
+  /property int launcherPosition:\s*launcherPositionForUrl\(launcherUrl, launcherRevisionToken\)/,
+);
+assert.match(
+  sourceQml,
+  /property bool launcherPinned:\s*launcherPosition !== -1/,
+);
+assert.doesNotMatch(sourceQml, /LauncherListLogic\.launcherPinState/);
+assert.doesNotMatch(sourceQml, /root\.taskModel\.launcherList/);
+assert.doesNotMatch(sourceQml, /root\.taskModel\.launcherPosition/);
