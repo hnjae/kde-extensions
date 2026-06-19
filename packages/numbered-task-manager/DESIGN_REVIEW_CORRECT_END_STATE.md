@@ -9,18 +9,15 @@ The codebase has a strong existing direction: external behavior is specified in 
 
 The highest-impact risks are around action/effect boundaries. Desktop actions and footer actions bypass the structured action-result path used by the rest of the task actions.
 
-The second major risk is weakly centralized invariants. Visible-item descriptors rely on matching string fields that are not validated.
-
-The third major risk is module breadth. `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` each contain multiple feature families. That makes local changes harder to reason about and pushes tests toward very large suites or regex assertions against QML instead of executable behavior tests.
+The second major risk is module breadth. `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` each contain multiple feature families. That makes local changes harder to reason about and pushes tests toward very large suites or regex assertions against QML instead of executable behavior tests.
 
 The correct end state should keep the current behavioral design, KDE Plasma API usage, native menu approach, and pure-helper strategy. The target is narrower ownership: domain rules live in one pure owner, QML components wire platform effects through explicit ports, and every user action that crosses into Plasma or KIO has a structured result path.
 
 ## Top Design Risks
 
-1. **Core descriptor invariants are implicit.** Activation routing trusts `sourceModel` even when it could disagree with visible-item `kind`.
-2. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
-3. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, launcher sync orchestration is mostly QML imperative code, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
-4. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into context menu role/opening paths and launcher sync, while launcher pin/unpin commands, context-menu task commands, context-menu launcher state reads, normal task activation, and task movement now use narrow ports.
+1. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
+2. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, launcher sync orchestration is mostly QML imperative code, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
+3. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into context menu role/opening paths and launcher sync, while launcher pin/unpin commands, context-menu task commands, context-menu launcher state reads, normal task activation, and task movement now use narrow ports.
 
 ## Single Source of Truth Violations
 
@@ -57,22 +54,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 **Suggested migration:** Keep future launcher-sync cleanup on the same structured result boundary so pin/unpin does not regress to a silent-success path.
 
 **Acceptance criteria:** `pinLauncher(...)` and `unpinLauncher(...)` return or emit failure when persistence fails. Tests cover request failure, request rejection, accepted model mutation plus failed config convergence, missing `launcherSync`, and full success. No call site ignores an `ok: false` launcher persistence result.
-
-### Finding: Visible-item descriptors can route activation to the wrong model
-
-**Priority:** P2.
-
-**Evidence:** `VisibleTaskItemsLogic.mjs` emits descriptors with both `kind` and `sourceModel`; `TaskActionLogic.shortcutActivationRequest(...)` validates `kind` but not the relationship between `kind` and `sourceModel`; `TaskActivationAdapter.qml` selects `remoteAttentionSource` when `result.sourceModel === "remoteAttention"`.
-
-**Current state:** The composer creates consistent descriptors, but the action boundary accepts mismatched descriptors such as `kind: "normal"` with `sourceModel: "remoteAttention"`.
-
-**Design concern:** Activation correctness depends on a multi-field descriptor convention that is not validated at the boundary.
-
-**Correct end state:** Visible-item metadata should be a validated discriminated shape. Activation should derive `sourceModel` from `kind` or reject descriptors whose `kind`, `sourceModel`, `sourceIndex`, `numbered`, and `slotNumber` are inconsistent.
-
-**Suggested migration:** Add `validateVisibleItemDescriptor(...)` in `VisibleTaskItemsLogic.mjs` or a descriptor schema module. Use it in shortcut activation and remote-attention activation before selecting an activation target.
-
-**Acceptance criteria:** Mismatched `kind`/`sourceModel` combinations are rejected before any `requestActivate(...)`. The composer remains the single producer of valid descriptors, and action boundaries validate externally supplied descriptors.
 
 ### Finding: Drag move stale-state failures can disappear silently
 
@@ -408,21 +389,21 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 The root `main.qml` should remain the composition root. It should instantiate Plasma `TasksModel`, platform state, adapters, sources, and the rendered `TaskListRepresentation.qml`, but it should not own domain policy beyond unavoidable wiring.
 
-Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Visible-item descriptors and shortcut target selection should have one descriptor owner. Launcher domain rules should be split from launcher sync policy. Context-menu feature families should have focused pure modules.
+Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Launcher domain rules should be split from launcher sync policy. Context-menu feature families should have focused pure modules.
 
-State definitions should be explicit descriptors rather than multi-field conventions. Visible item descriptors should have a validated discriminated shape. Context-menu routes and command kinds should be centralized constants or typed helpers.
+State definitions should be explicit descriptors rather than multi-field conventions. Context-menu routes and command kinds should be centralized constants or typed helpers.
 
-Validation should happen before effects. Activation requests should validate visible-item descriptor consistency before choosing a model. Launcher commands should combine model mutation and persistence outcomes before reporting success.
+Validation should happen before effects. Launcher commands should combine model mutation and persistence outcomes before reporting success.
 
 External effects should be isolated behind narrow ports. Raw `TasksModel` should be wrapped by task command, launcher command/repository, launcher sync, and activation ports. C++ desktop action resolution should produce descriptors before constructing `QAction` objects or launching `KIO` jobs. QML adapters should supply ports and execute returned commands.
 
 Errors should be represented through one structured diagnostic shape. The generic result helper should define result shape, structured error context, and logging predicate. Domain-specific result classifiers should live near their workflow. Launcher sync and action execution should share error serialization and produce correlated diagnostics for user actions.
 
-Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover descriptor invariants, launcher sync orchestration through fake ports, and source lifecycle state machines. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch failure observability without requiring real KIO job execution.
+Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover launcher sync orchestration through fake ports and source lifecycle state machines. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch failure observability without requiring real KIO job execution.
 
 ## Suggested Refactoring Sequence
 
-1. Add characterization tests around current behavior. Prioritize launcher pin/unpin persistence outcomes, visible-item `kind/sourceModel` mismatch, launcher sync retry classification, and source lifecycle transitions.
+1. Add characterization tests around current behavior. Prioritize launcher pin/unpin persistence outcomes, launcher sync retry classification, and source lifecycle transitions.
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Extract launcher sync orchestration into fakeable pure functions or port-based helpers. Extract source lifecycle state machines from hidden QML delegate event ordering. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, split launcher sync from launcher list domain rules, and introduce narrow ports around raw `TasksModel`.
@@ -437,14 +418,12 @@ Tests should be layered by risk. Characterization tests should pin current behav
 - Do not start with a broad rewrite of `TaskContextMenu.qml`; extract pure policy modules first and keep QML rendering behavior stable.
 - Do not introduce backward-compatibility migrations for pre-release user data unless separately requested.
 - Do not add a settings UI while fixing architecture; it is out of scope for v1 and would add configuration surface before invariants are tightened.
-- Do not optimize or abstract the visual shell before action/effect correctness, launcher sync, and descriptor invariants are covered.
+- Do not optimize or abstract the visual shell before action/effect correctness and launcher sync concerns are covered.
 - Do not remove existing regex/source-shape QML tests until executable behavior tests exist for the same contracts.
 
 ## Appendix: Subagent Reports
 
 **Single Source of Truth / Duplication Agent:** Reported repeated context-menu route-kind strings. This was merged into “Single Source of Truth Violations.”
-
-**Invariant / Correctness Agent:** Reported visible-item descriptor mismatch risk. It was kept as P2 because the current composer produces valid descriptors but the boundary is not protected.
 
 **Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. These were merged with deletion/modularity findings. The broad context-menu module remains P1; action-result and launcher-list splits are P2.
 
