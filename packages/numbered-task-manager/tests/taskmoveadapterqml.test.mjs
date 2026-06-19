@@ -90,6 +90,14 @@ assert.match(
 assert.match(sourceQml, /TaskActionLogic\.dragMoveRejectionResult/);
 assert.match(sourceQml, /TaskModelLogic\.canMoveTaskResult/);
 assert.match(sourceQml, /TaskModelLogic\.normalTaskEntryForSourceIndex/);
+assert.doesNotMatch(
+  sourceQml,
+  /if\s*\(!sourceEntry\s*\|\|\s*!targetEntry\)\s*\{\s*return false;\s*\}/s,
+);
+assert.match(
+  sourceQml,
+  /TaskActionLogic\.dragMoveRejectionResult\(\s*TaskModelLogic\.canMoveTaskResult\(/s,
+);
 assert.match(sourceQml, /normalTaskStore\.moveManualTask/);
 assert.match(sourceQml, /LauncherListLogic\.movePinnedLauncher/);
 assert.match(sourceQml, /LauncherListLogic\.canMovePinnedLauncher/);
