@@ -173,21 +173,21 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 ## Testability Problems
 
-### Finding: Task source publication lifecycle depends on hidden QML delegate events
+### Finding: Remote attention source lifecycle depends on hidden QML delegate events
 
 **Priority:** P1.
 
-**Evidence:** `NormalTaskSource.qml` uses a hidden `Repeater` over `root.taskModel`, allocates publication keys in `Component.onCompleted`, removes keys in `Component.onDestruction`, and republishes through several `on*Changed` handlers; `RemoteAttentionSource.qml` uses the same hidden delegate pattern and computes `becameQualified` from delegate-local `hasSyncedAttention` and `previousQualifies`; source QML tests mostly assert structure by reading files with regex.
+**Evidence:** `NormalTaskSourceLifecycleLogic.mjs` now owns normal task row appeared/changed/removed publication decisions and `NormalTaskSource.qml` executes returned commands. `RemoteAttentionSource.qml` still uses a hidden delegate pattern and computes `becameQualified` from delegate-local `hasSyncedAttention` and `previousQualifies`; source QML tests mostly assert remote source structure by reading files with regex.
 
-**Current state:** Entry projection and final store mutations are pure-tested, but the lifecycle that decides row appeared, row changed, row key changed, row qualified/unqualified, row removed, and remote attention became newly qualified lives in QML delegate event ordering.
+**Current state:** Normal task source publication lifecycle is pure-tested for appeared, changed, and removed row transitions. Remote attention lifecycle still decides row appeared, row changed, qualification changed, row removed, and newly qualified attention state inside QML delegate event ordering.
 
-**Design concern:** Remote attention target order and normal task publication depend on QML lifecycle behavior that is hard to test deterministically without a QML runtime and fake `TasksModel`.
+**Design concern:** Remote attention target order depends on QML lifecycle behavior that is hard to test deterministically without a QML runtime and fake `TasksModel`.
 
-**Correct end state:** Source lifecycle should be represented as tested controller/state transitions in `.mjs`: row appeared, row changed, row key changed, qualification changed, row removed, and diagnostics emitted. QML delegates should project live roles into snapshots and forward lifecycle events to that controller.
+**Correct end state:** Remote attention source lifecycle should be represented as tested controller/state transitions in `.mjs`: row appeared, row changed, qualification changed, row removed, newly qualified, and diagnostics emitted. QML delegates should project live roles into snapshots and forward lifecycle events to that controller.
 
-**Suggested migration:** Extract per-row source state machines for normal tasks and remote attention. Move “allocate or reuse key,” “emit publish/remove command,” “became qualified,” and “emit diagnostics command” decisions into pure functions. Let QML execute returned commands.
+**Suggested migration:** Extract a remote attention per-row state machine. Move “became qualified,” “publish/remove target,” and “emit diagnostics command” decisions into pure functions. Let QML execute returned commands.
 
-**Acceptance criteria:** Normal publication lifecycle is tested without QML delegate lifecycle. Remote attention `becameQualified` and target ordering are tested from row-event sequences. QML source files no longer hold transition state beyond raw projected role values.
+**Acceptance criteria:** Remote attention `becameQualified` and target ordering are tested from row-event sequences. `RemoteAttentionSource.qml` no longer holds transition state beyond raw projected role values.
 
 ### Finding: Launcher sync write orchestration is trapped in QML effects
 
