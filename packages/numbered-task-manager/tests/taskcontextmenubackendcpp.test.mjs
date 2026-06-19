@@ -12,49 +12,82 @@ const source = readFileSync(
   new URL("../src/taskcontextmenubackend.cpp", import.meta.url),
   "utf8",
 );
+const desktopActionLogicHeader = readFileSync(
+  new URL("../src/desktopactionlogic.h", import.meta.url),
+  "utf8",
+);
+const desktopActionLogicSource = readFileSync(
+  new URL("../src/desktopactionlogic.cpp", import.meta.url),
+  "utf8",
+);
 
-assert.match(header, /struct DesktopActionDescriptor/);
+assert.match(desktopActionLogicHeader, /struct DesktopActionDescriptor/);
 assert.match(
   header,
   /Q_SIGNAL void desktopActionResult\(const QVariantMap &result\)/,
 );
 assert.match(
-  header,
+  desktopActionLogicHeader,
   /QList<DesktopActionDescriptor>\s+desktopActionDescriptors/,
 );
-assert.match(header, /QVariantList\s+desktopActionsFromDescriptors/);
+assert.match(
+  desktopActionLogicHeader,
+  /QVariantList\s+desktopActionsFromDescriptors/,
+);
 
-assert.match(source, /TaskContextMenuBackend::desktopActionDescriptors/);
-assert.match(source, /DesktopActionDescriptor\s*\{/);
-assert.match(source, /\.text\s*=\s*serviceAction\.text\(\)/);
-assert.match(source, /\.iconName\s*=\s*serviceAction\.icon\(\)/);
-assert.match(source, /\.separator\s*=\s*serviceAction\.isSeparator\(\)/);
-assert.match(source, /\.serviceAction\s*=\s*serviceAction/);
-assert.match(source, /if \(serviceAction\.noDisplay\(\)\)\s*\{\s*continue;/);
-assert.match(source, /TaskContextMenuBackend::descriptorsWithContext/);
-assert.match(source, /descriptor\.launcherUrl\s*=\s*launcherUrl\.toString\(\)/);
-assert.match(source, /descriptor\.desktopEntryPath\s*=\s*desktopEntryPath/);
+assert.match(desktopActionLogicSource, /DesktopActionDescriptor\s*\{/);
+assert.match(desktopActionLogicSource, /\.text\s*=\s*serviceAction\.text\(\)/);
+assert.match(
+  desktopActionLogicSource,
+  /\.iconName\s*=\s*serviceAction\.icon\(\)/,
+);
+assert.match(
+  desktopActionLogicSource,
+  /\.separator\s*=\s*serviceAction\.isSeparator\(\)/,
+);
+assert.match(desktopActionLogicSource, /\.serviceAction\s*=\s*serviceAction/);
+assert.match(
+  desktopActionLogicSource,
+  /if \(source\.noDisplay\)\s*\{\s*continue;/,
+);
+assert.match(desktopActionLogicSource, /descriptorsWithContext/);
+assert.match(
+  desktopActionLogicSource,
+  /descriptor\.launcherUrl\s*=\s*launcherUrl\.toString\(\)/,
+);
+assert.match(
+  desktopActionLogicSource,
+  /descriptor\.desktopEntryPath\s*=\s*desktopEntryPath/,
+);
 
-assert.match(source, /TaskContextMenuBackend::desktopActionsFromDescriptors/);
-assert.match(source, /action->setText\(descriptor\.text\)/);
-assert.match(source, /QIcon::fromTheme\(descriptor\.iconName\)/);
-assert.match(source, /action->setSeparator\(descriptor\.separator\)/);
+assert.match(desktopActionLogicSource, /desktopActionFromDescriptor/);
+assert.match(desktopActionLogicSource, /action->setText\(descriptor\.text\)/);
+assert.match(
+  desktopActionLogicSource,
+  /QIcon::fromTheme\(descriptor\.iconName\)/,
+);
+assert.match(
+  desktopActionLogicSource,
+  /action->setSeparator\(descriptor\.separator\)/,
+);
 assert.match(
   source,
   /KIO::ApplicationLauncherJob\(descriptor\.serviceAction\)/,
 );
-assert.match(source, /connect\(job, &KJob::result, this/);
-assert.match(source, /desktop-action-launch-failed/);
-assert.match(source, /Q_EMIT desktopActionResult\(actionResult\)/);
-assert.match(source, /descriptor\.launcherUrl/);
-assert.match(source, /descriptor\.text/);
+assert.match(desktopActionLogicSource, /connect\(.*job, &KJob::result/s);
+assert.match(desktopActionLogicSource, /desktop-action-launch-failed/);
+assert.match(desktopActionLogicHeader, /DesktopActionResultHandler/);
+assert.match(desktopActionLogicSource, /resultHandler\(actionResult\)/);
+assert.match(desktopActionLogicSource, /descriptor\.launcherUrl/);
+assert.match(desktopActionLogicSource, /descriptor\.text/);
 
 assert.match(
   source,
-  /const QList<DesktopActionDescriptor> descriptors\s*=\s*desktopActionDescriptors\(service->actions\(\)\);/,
+  /const QList<DesktopActionDescriptor> descriptors\s*=\s*desktopActionDescriptors\(\s*desktopActionSources\(service->actions\(\)\)\);/,
 );
 assert.match(source, /descriptorsWithContext\(descriptors, launcherUrl/);
 assert.match(
   source,
-  /return desktopActionsFromDescriptors\(contextualDescriptors,\s*parent\);/,
+  /return desktopActionsFromDescriptors\(\s*contextualDescriptors,\s*parent,/,
 );
+assert.match(source, /Q_EMIT desktopActionResult\(result\)/);

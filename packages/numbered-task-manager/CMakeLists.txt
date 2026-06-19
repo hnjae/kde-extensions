@@ -58,6 +58,9 @@ if(BUILD_TESTING)
         KF6::Service
     )
     add_test(NAME desktopactionlogic_test COMMAND desktopactionlogic_test)
+    set_tests_properties(desktopactionlogic_test PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+    )
 endif()
 
 install(TARGETS numberedtaskmanagerplugin

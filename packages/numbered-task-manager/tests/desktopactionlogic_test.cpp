@@ -6,21 +6,22 @@
 #include <KJob>
 
 #include <QAction>
-#include <QSignalSpy>
 #include <QTest>
+#include <QVariantMap>
 
 class FakeLaunchJob final : public KJob {
   Q_OBJECT
 
 public:
   explicit FakeLaunchJob(int errorCode, const QString &errorText,
-                         QObject *parent = nullptr)
-      : KJob(parent), m_errorCode(errorCode), m_errorText(errorText) {}
-
-  int startCount() const { return m_startCount; }
+                         int *startCounter, QObject *parent = nullptr)
+      : KJob(parent), m_errorCode(errorCode), m_errorText(errorText),
+        m_startCounter(startCounter) {}
 
   void start() override {
-    ++m_startCount;
+    if (m_startCounter) {
+      ++(*m_startCounter);
+    }
     if (m_errorCode != 0) {
       setError(m_errorCode);
       setErrorText(m_errorText);
@@ -31,7 +32,7 @@ public:
 private:
   int m_errorCode = 0;
   QString m_errorText;
-  int m_startCount = 0;
+  int *m_startCounter = nullptr;
 };
 
 class DesktopActionLogicTest final : public QObject {
@@ -41,13 +42,6 @@ private Q_SLOTS:
   void filtersHiddenServiceActions();
   void addsLauncherContextToDescriptors();
   void emitsLaunchFailureResultFromFakeJob();
-};
-
-class DesktopActionResultEmitter final : public QObject {
-  Q_OBJECT
-
-Q_SIGNALS:
-  void desktopActionResult(const QVariantMap &result);
 };
 
 void DesktopActionLogicTest::filtersHiddenServiceActions() {
@@ -103,25 +97,23 @@ void DesktopActionLogicTest::emitsLaunchFailureResultFromFakeJob() {
       .desktopEntryPath =
           QStringLiteral("/usr/share/applications/broken.desktop"),
   };
-  DesktopActionResultEmitter resultEmitter;
-  FakeLaunchJob *fakeJob = nullptr;
+  int startCount = 0;
+  QList<QVariantMap> results;
 
   QAction *action = desktopActionFromDescriptor(
-      descriptor, &resultEmitter, &resultEmitter,
+      descriptor, this,
       [&](const DesktopActionDescriptor &) {
-        fakeJob = new FakeLaunchJob(7, QStringLiteral("launch failed"));
-        return fakeJob;
-      });
+        return new FakeLaunchJob(7, QStringLiteral("launch failed"),
+                                 &startCount);
+      },
+      [&](const QVariantMap &result) { results << result; });
   QVERIFY(action);
-  QSignalSpy resultSpy(&resultEmitter,
-                       SIGNAL(desktopActionResult(QVariantMap)));
 
   action->trigger();
 
-  QVERIFY(fakeJob);
-  QCOMPARE(fakeJob->startCount(), 1);
-  QCOMPARE(resultSpy.size(), 1);
-  const QVariantMap result = resultSpy.takeFirst().at(0).toMap();
+  QCOMPARE(startCount, 1);
+  QCOMPARE(results.size(), 1);
+  const QVariantMap result = results.takeFirst();
   QCOMPARE(result.value(QStringLiteral("action")).toString(),
            QStringLiteral("desktopAction"));
   QCOMPARE(result.value(QStringLiteral("code")).toString(),
