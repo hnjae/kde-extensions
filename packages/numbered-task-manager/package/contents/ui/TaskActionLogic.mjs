@@ -7,10 +7,6 @@ import {
   normalizedContextMenuTaskCommand,
 } from "./TaskContextMenuCommandLogic.mjs";
 import {
-  CONTEXT_MENU_LAUNCHER_COMMAND_KIND,
-  CONTEXT_MENU_TASK_MODEL_REQUEST_KIND,
-} from "./TaskContextMenuRouteLogic.mjs";
-import {
   activationTargetForShortcutIndex,
   isNormalVisibleItem,
   isRemoteAttentionVisibleItem,
