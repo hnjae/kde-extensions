@@ -40,7 +40,14 @@ assert.doesNotMatch(
 assert.doesNotMatch(mainQml, /TaskActionLogic\.launcherMutationRequest/);
 assert.doesNotMatch(mainQml, /TaskActionLogic\.launcherMutationResult/);
 
-assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
+assert.match(
+  sourceQml,
+  /import "LauncherCommandLogic\.mjs" as LauncherCommandLogic/,
+);
+assert.doesNotMatch(
+  sourceQml,
+  /import "TaskActionLogic\.mjs" as TaskActionLogic/,
+);
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(sourceQml, /property var launcherPort/);
 assert.match(sourceQml, /property var launcherSync/);
@@ -55,11 +62,14 @@ assert.match(
 assert.match(sourceQml, /function dispatchLauncherCommand\(command\)/);
 assert.match(
   sourceQml,
-  /TaskActionLogic\.contextMenuLauncherCommandDispatchResult\(command\)/,
+  /LauncherCommandLogic\.contextMenuLauncherCommandDispatchResult\(command\)/,
 );
-assert.match(sourceQml, /TaskActionLogic\.launcherMutationRequest/);
-assert.match(sourceQml, /TaskActionLogic\.launcherMutationResult/);
-assert.match(sourceQml, /TaskActionLogic\.launcherMutationPersistenceResult/);
+assert.match(sourceQml, /LauncherCommandLogic\.launcherMutationRequest/);
+assert.match(sourceQml, /LauncherCommandLogic\.launcherMutationResult/);
+assert.match(
+  sourceQml,
+  /LauncherCommandLogic\.launcherMutationPersistenceResult/,
+);
 assert.match(sourceQml, /launcherPort\.requestAddLauncher\(url\)/);
 assert.match(sourceQml, /launcherPort\.requestRemoveLauncher\(url\)/);
 assert.doesNotMatch(sourceQml, /return false;/);
@@ -70,7 +80,7 @@ assert.match(
 );
 assert.match(
   sourceQml,
-  /TaskActionLogic\.launcherMutationResult\(request,\s*undefined,\s*error\)/,
+  /LauncherCommandLogic\.launcherMutationResult\(request,\s*undefined,\s*error\)/,
 );
 assert.match(
   sourceQml,
@@ -85,7 +95,7 @@ assert.match(sourceQml, /launcher-persistence-threw/);
 assert.match(sourceQml, /launcherSync\.persistLaunchers\(launcherList\)/);
 assert.match(
   sourceQml,
-  /const persistenceResult = TaskActionLogic\.launcherMutationPersistenceResult\(result, persistResult\);/,
+  /const persistenceResult = LauncherCommandLogic\.launcherMutationPersistenceResult\(result, persistResult\);/,
 );
 assert.match(sourceQml, /if \(!persistenceResult\.ok\)/);
 assert.match(sourceQml, /return persistenceResult;/);
