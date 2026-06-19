@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import * as ActivityScopeLogic from "./ActivityScopeLogic.mjs";
-import { contextMenuLauncherCommand } from "./TaskContextMenuCommandLogic.mjs";
 import {
   launcherActivitiesAfterAllToggle,
   launcherActivitiesAfterToggle,
   launcherActivityUpdate,
-  normalizedLauncherList,
-} from "./LauncherListLogic.mjs";
+} from "./LauncherActivityLogic.mjs";
+import { normalizedLauncherList } from "./LauncherListLogic.mjs";
+import { contextMenuLauncherCommand } from "./TaskContextMenuCommandLogic.mjs";
 
 function actionWithIcon(action, icon) {
   const actionState = Object.assign({}, action || {});

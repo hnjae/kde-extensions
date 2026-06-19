@@ -19,7 +19,6 @@ const helpers = await loadQmlJsModule(
   ],
 );
 
-const nullActivityId = "00000000-0000-0000-0000-000000000000";
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const launcherListLogicSource = readFileSync(
   new URL("../package/contents/ui/LauncherListLogic.mjs", import.meta.url),
@@ -116,11 +115,6 @@ assert.doesNotMatch(
 assert.doesNotMatch(
   launcherListLogicSource,
   /function launcherActivityUpdate\b/,
-);
-assert.match(launcherListLogicSource, /ActivityScopeLogic\.activitiesAreAll/);
-assert.match(
-  launcherListLogicSource,
-  /ActivityScopeLogic\.normalizedActivityList/,
 );
 
 const visibleLaunchers = [
