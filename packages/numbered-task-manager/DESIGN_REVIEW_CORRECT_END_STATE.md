@@ -42,15 +42,15 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P2.
 
-**Evidence:** `ActionResultLogic.mjs` now owns the generic action-result shape and logging predicate, `TaskActivationLogic.mjs` owns activation request/execution classification, `TaskContextMenuRequestLogic.mjs` owns context-menu open/create classification, and `TaskContextMenuDispatchLogic.mjs` owns context-menu route dispatch plus launcher-activity failure classification. `TaskActionLogic.mjs` still defines task-model request/execution classification, launcher mutation classification, task-entry diagnostic adaptation, and drag-move diagnostic policy; it is imported by `LauncherCommandAdapter.qml`, `TaskMoveAdapter.qml`, and `TaskEntryDiagnosticReporter.qml`.
+**Evidence:** `ActionResultLogic.mjs` now owns the generic action-result shape and logging predicate, `TaskActivationLogic.mjs` owns activation request/execution classification, `TaskContextMenuRequestLogic.mjs` owns context-menu open/create classification, `TaskContextMenuDispatchLogic.mjs` owns context-menu route dispatch plus launcher-activity failure classification, and `TaskContextMenuTaskCommandLogic.mjs` owns task command request/execution classification. `TaskActionLogic.mjs` still defines launcher mutation classification, task-entry diagnostic adaptation, and drag-move diagnostic policy; it is imported by `LauncherCommandAdapter.qml`, `TaskMoveAdapter.qml`, and `TaskEntryDiagnosticReporter.qml`.
 
-**Current state:** The generic result factory, diagnostic logging predicate, activation classifiers, context-menu open/create classifiers, and context-menu dispatch classifiers have focused owners. `TaskActionLogic.mjs` remains the owner of several unrelated workflows.
+**Current state:** The generic result factory, diagnostic logging predicate, activation classifiers, and context-menu request/dispatch/task-command classifiers have focused owners. `TaskActionLogic.mjs` remains the owner of launcher mutation, task-entry diagnostic, and drag/drop workflows.
 
-**Design concern:** Launcher mutation, task command execution, task-entry diagnostics, and drag/drop rejection are still coupled through one broad service. Consumers transitively depend on domains they do not use.
+**Design concern:** Launcher mutation, task-entry diagnostics, and drag/drop rejection are still coupled through one broad service. Consumers transitively depend on domains they do not use.
 
 **Correct end state:** Keep a small generic `ActionResultLogic.mjs` with result shape, error context, and logging predicate. Move domain-specific classification next to the workflow that uses it: activation logic near `TaskActivationAdapter.qml`, context-menu request and dispatch logic near the context-menu subsystem, launcher mutation logic near `LauncherCommandAdapter.qml`, and drag rejection policy near task move/drag logic.
 
-**Suggested migration:** Move context-menu task-command helpers next, then launcher mutation helpers, then drag rejection helpers. Update imports in QML adapters incrementally.
+**Suggested migration:** Move launcher mutation helpers next, then drag rejection helpers, then task-entry diagnostic adaptation. Update imports in QML adapters incrementally.
 
 **Acceptance criteria:** No single module contains activation, context-menu, launcher mutation, task-entry diagnostic, and drag/drop diagnostic policy together.
 
