@@ -13,6 +13,10 @@ const logic = await loadQmlJsModule(
     "publishRemoteAttention",
     "publishRemoteAttentionState",
     "remoteAttentionKey",
+    "remoteAttentionSourceRowAppeared",
+    "remoteAttentionSourceRowChanged",
+    "remoteAttentionSourceRowRemoved",
+    "createRemoteAttentionSourceRowState",
     "remoteAttentionSnapshot",
     "removeRemoteAttention",
     "removeRemoteAttentionState",
@@ -66,6 +70,113 @@ assert.deepEqual(plain(logic.createRemoteAttentionState()), {
   order: [],
   target: null,
 });
+assert.deepEqual(plain(logic.createRemoteAttentionSourceRowState()), {
+  hasSyncedAttention: false,
+  previousQualifies: false,
+  publishedKey: "",
+});
+
+const firstAttentionRow = logic.remoteAttentionSourceRowAppeared(
+  logic.createRemoteAttentionSourceRowState(),
+  {
+    key: "row-a",
+    qualifies: false,
+    task: { title: "A hidden" },
+  },
+);
+assert.deepEqual(plain(firstAttentionRow), {
+  commands: [
+    {
+      becameQualified: false,
+      key: "row-a",
+      previousKey: "",
+      qualifies: false,
+      task: {
+        title: "A hidden",
+      },
+      type: "publishRemoteAttention",
+    },
+    {
+      type: "emitDiagnostics",
+    },
+  ],
+  state: {
+    hasSyncedAttention: true,
+    previousQualifies: false,
+    publishedKey: "",
+  },
+});
+
+const becameQualifiedRow = logic.remoteAttentionSourceRowChanged(
+  firstAttentionRow.state,
+  {
+    key: "row-a",
+    qualifies: true,
+    task: { title: "A visible" },
+  },
+);
+assert.equal(becameQualifiedRow.commands[0].becameQualified, true);
+assert.deepEqual(plain(becameQualifiedRow.state), {
+  hasSyncedAttention: true,
+  previousQualifies: true,
+  publishedKey: "row-a",
+});
+
+let lifecycleAttentionState = logic.createRemoteAttentionState();
+for (const command of becameQualifiedRow.commands) {
+  if (command.type === "publishRemoteAttention") {
+    lifecycleAttentionState = logic.publishRemoteAttentionState(
+      lifecycleAttentionState,
+      command.previousKey,
+      command.key,
+      command.qualifies,
+      command.task,
+      command.becameQualified,
+    ).state;
+  }
+}
+assert.equal(lifecycleAttentionState.target.title, "A visible");
+
+const changedKeyRow = logic.remoteAttentionSourceRowChanged(
+  becameQualifiedRow.state,
+  {
+    key: "window:1",
+    qualifies: true,
+    task: { title: "A stable key" },
+  },
+);
+assert.deepEqual(plain(changedKeyRow.commands[0]), {
+  becameQualified: false,
+  key: "window:1",
+  previousKey: "row-a",
+  qualifies: true,
+  task: {
+    title: "A stable key",
+  },
+  type: "publishRemoteAttention",
+});
+assert.deepEqual(plain(changedKeyRow.state), {
+  hasSyncedAttention: true,
+  previousQualifies: true,
+  publishedKey: "window:1",
+});
+
+assert.deepEqual(
+  plain(logic.remoteAttentionSourceRowRemoved(changedKeyRow.state)),
+  {
+    commands: [
+      {
+        key: "window:1",
+        type: "removeRemoteAttention",
+      },
+    ],
+    state: {
+      hasSyncedAttention: false,
+      previousQualifies: false,
+      publishedKey: "",
+    },
+  },
+);
 
 let attentionState = logic.createRemoteAttentionState();
 let stateResult = logic.publishRemoteAttentionState(

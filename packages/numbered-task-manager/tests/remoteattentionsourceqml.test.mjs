@@ -51,6 +51,21 @@ assert.match(
   /roles:\s*\(\{[\s\S]*?activities:\s*model\.Activities[\s\S]*?demandingAttention:\s*model\.IsDemandingAttention[\s\S]*?index:[\s\S]*?isOnAllVirtualDesktops:\s*model\.IsOnAllVirtualDesktops[\s\S]*?isWindow:\s*model\.IsWindow[\s\S]*?modelIndex:\s*persistentModelIndex[\s\S]*?virtualDesktops:\s*model\.VirtualDesktops[\s\S]*?\}\)/,
 );
 assert.match(sourceQml, /taskEntryDiagnostics\.emitDiagnostics\(\)/);
+assert.match(sourceQml, /function executeLifecycleCommands\(output\)/);
+assert.match(
+  sourceQml,
+  /RemoteAttentionLogic\.remoteAttentionSourceRowAppeared/,
+);
+assert.match(
+  sourceQml,
+  /RemoteAttentionLogic\.remoteAttentionSourceRowChanged/,
+);
+assert.match(
+  sourceQml,
+  /RemoteAttentionLogic\.remoteAttentionSourceRowRemoved/,
+);
+assert.doesNotMatch(sourceQml, /property bool hasSyncedAttention/);
+assert.doesNotMatch(sourceQml, /property bool previousQualifies/);
 assert.match(
   sourceQml,
   /property var attentionState:\s*RemoteAttentionLogic\.createRemoteAttentionState\(\)/,
