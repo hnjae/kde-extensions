@@ -26,7 +26,7 @@ QtQuick.QtObject {
         const request = TaskActionLogic.launcherMutationRequest(action, launcherUrl);
         if (!request.ok) {
             actionResult(request);
-            return false;
+            return request;
         }
 
         let accepted = false;
@@ -35,13 +35,13 @@ QtQuick.QtObject {
         } catch (error) {
             const failedResult = TaskActionLogic.launcherMutationResult(request, undefined, error);
             actionResult(failedResult);
-            return false;
+            return failedResult;
         }
 
         const result = TaskActionLogic.launcherMutationResult(request, accepted);
         if (!result.ok) {
             actionResult(result);
-            return false;
+            return result;
         }
 
         const launcherList = launcherPort && launcherPort.launcherList ? launcherPort.launcherList : [];
@@ -53,7 +53,7 @@ QtQuick.QtObject {
                 ok: false
             });
             actionResult(missingSyncResult);
-            return false;
+            return missingSyncResult;
         }
 
         let persistResult;
@@ -68,16 +68,16 @@ QtQuick.QtObject {
                 ok: false
             });
             actionResult(failedResult);
-            return false;
+            return failedResult;
         }
 
         const persistenceResult = TaskActionLogic.launcherMutationPersistenceResult(result, persistResult);
         if (!persistenceResult.ok) {
             actionResult(persistenceResult);
-            return false;
+            return persistenceResult;
         }
 
-        return true;
+        return persistenceResult;
     }
 
     function dispatchLauncherCommand(command) {
@@ -88,13 +88,11 @@ QtQuick.QtObject {
         }
 
         if (result.action === "pinLauncher") {
-            pinLauncher(result.launcherUrl);
-            return result;
+            return pinLauncher(result.launcherUrl);
         }
 
         if (result.action === "unpinLauncher") {
-            unpinLauncher(result.launcherUrl);
-            return result;
+            return unpinLauncher(result.launcherUrl);
         }
 
         if (result.action === "replaceLauncherList") {

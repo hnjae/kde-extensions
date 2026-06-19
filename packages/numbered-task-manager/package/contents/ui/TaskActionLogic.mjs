@@ -766,10 +766,6 @@ export function launcherMutationPersistenceResult(
   }
 
   const persistence = persistResult || {};
-  if (persistence.ok) {
-    return persistence;
-  }
-
   const context = Object.assign({}, request.context || {});
   if (request.launcherUrl) {
     context.launcherUrl = request.launcherUrl;
@@ -777,20 +773,39 @@ export function launcherMutationPersistenceResult(
   if (persistence.code) {
     context.syncCode = String(persistence.code);
   }
-  if (persistence.failedTargets) {
-    context.failedTargets = normalizedStringList(persistence.failedTargets);
+  const failedTargets = normalizedStringList(persistence.failedTargets);
+  if (failedTargets.length > 0) {
+    context.failedTargets = failedTargets;
   }
-  if (persistence.launchers) {
-    context.launchers = normalizedStringList(persistence.launchers);
+  const launchers = normalizedStringList(persistence.launchers);
+  if (launchers.length > 0) {
+    context.launchers = launchers;
   }
-  if (persistence.configLaunchers) {
-    context.configLaunchers = normalizedStringList(persistence.configLaunchers);
+  const configLaunchers = normalizedStringList(persistence.configLaunchers);
+  if (configLaunchers.length > 0) {
+    context.configLaunchers = configLaunchers;
   }
-  if (persistence.modelLaunchers) {
-    context.modelLaunchers = normalizedStringList(persistence.modelLaunchers);
+  const modelLaunchers = normalizedStringList(persistence.modelLaunchers);
+  if (modelLaunchers.length > 0) {
+    context.modelLaunchers = modelLaunchers;
   }
   if (persistence.error !== undefined && persistence.error !== null) {
     context.error = actionErrorMessage(persistence.error);
+  }
+
+  if (persistence.ok) {
+    return Object.assign(
+      actionResult(
+        request.action || "launcherMutation",
+        persistence.code || "launcher-persisted",
+        true,
+        false,
+        context,
+      ),
+      {
+        launcherUrl: context.launcherUrl || "",
+      },
+    );
   }
 
   return Object.assign(
