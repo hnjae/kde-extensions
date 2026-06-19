@@ -11,11 +11,9 @@ const helpers = await loadQmlJsModule(
   [
     "canMovePinnedLauncher",
     "launcherListsEqual",
-    "launcherPinState",
     "movePinnedLauncher",
     "normalizedLauncherList",
     "pinnedLauncherGlobalPosition",
-    "visibleLauncherPosition",
   ],
 );
 
@@ -53,52 +51,6 @@ assert.doesNotMatch(
   /syncResult\.code\s*!==\s*"write-mismatch"/,
 );
 
-assert.deepEqual(
-  plain(
-    helpers.launcherPinState(["app.desktop"], "app.desktop", "work", () => 0),
-  ),
-  {
-    canPin: true,
-    isPinned: true,
-    launcherUrl: "app.desktop",
-    pinnedLauncherPosition: 0,
-  },
-);
-assert.deepEqual(
-  plain(helpers.launcherPinState([], "app.desktop", "work", () => -1)),
-  {
-    canPin: true,
-    isPinned: false,
-    launcherUrl: "app.desktop",
-    pinnedLauncherPosition: -1,
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherPinState(
-      ["[chat]\napp.desktop"],
-      "app.desktop",
-      "work",
-      () => 0,
-    ),
-  ),
-  {
-    canPin: true,
-    isPinned: false,
-    launcherUrl: "app.desktop",
-    pinnedLauncherPosition: -1,
-  },
-);
-assert.deepEqual(
-  plain(helpers.launcherPinState(["app.desktop"], "", "work", () => 0)),
-  {
-    canPin: false,
-    isPinned: false,
-    launcherUrl: "",
-    pinnedLauncherPosition: -1,
-  },
-);
-
 assert.doesNotMatch(launcherListLogicSource, /function stringListContains\b/);
 assert.doesNotMatch(launcherListLogicSource, /function uniqueStringList\b/);
 assert.doesNotMatch(launcherListLogicSource, /function activitiesAreAll\b/);
@@ -116,12 +68,13 @@ assert.doesNotMatch(
   launcherListLogicSource,
   /function launcherActivityUpdate\b/,
 );
+assert.doesNotMatch(launcherListLogicSource, /function launcherPinState\b/);
+assert.doesNotMatch(
+  launcherListLogicSource,
+  /function visibleLauncherPosition\b/,
+);
 
-const visibleLaunchers = [
-  "[work]\napp-a.desktop",
-  "[chat]\napp-b.desktop",
-  "app-c.desktop",
-];
+const visibleLaunchers = ["app-a.desktop", "app-b.desktop", "app-c.desktop"];
 const launcherPosition = (launcherUrl) =>
   ({
     "app-a.desktop": 0,
