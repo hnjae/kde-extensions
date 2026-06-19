@@ -9,13 +9,13 @@ The codebase has a strong existing direction: external behavior is specified in 
 
 The highest-impact risks are around action/effect boundaries. Footer actions still bypass the structured action-result path used by the rest of the task actions, and desktop action backend testing still depends on source-shape checks for behavior that should be executable-tested.
 
-The second major risk is module breadth. `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` each contain multiple feature families. That makes local changes harder to reason about and pushes tests toward very large suites or regex assertions against QML instead of executable behavior tests.
+The second major risk is module breadth. `TaskContextMenuLogic.mjs` and `LauncherListLogic.mjs` still contain multiple feature families, and `TaskActionLogic.mjs` remains as a residual task-entry diagnostic adapter after broader action classifiers were moved out. That makes local changes harder to reason about and can push tests toward very large suites or regex assertions against QML instead of executable behavior tests.
 
 The correct end state should keep the current behavioral design, KDE Plasma API usage, native menu approach, and pure-helper strategy. The target is narrower ownership: domain rules live in one pure owner, QML components wire platform effects through explicit ports, and every user action that crosses into Plasma or KIO has a structured result path.
 
 ## Top Design Risks
 
-1. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
+1. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs` and `LauncherListLogic.mjs` mix unrelated policies, and the remaining `TaskActionLogic.mjs` task-entry adapter is named broader than its responsibility, which increases blast radius and makes deletion or isolated testing harder.
 2. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, standalone launcher sync diagnostics still use a separate warning formatter, and C++ desktop actions still require live `QAction`/KIO objects for executable verification despite having descriptors and launch-failure diagnostics.
 
 ## Invariant and Correctness Risks
@@ -38,21 +38,21 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** `TaskContextMenuLogic.mjs` no longer imports launcher list mutation helpers and task activity mutation helpers together. Each menu feature family has focused pure tests. `contextMenuActionSections(...)` is an assembly function, not the owner of per-action policy.
 
-### Finding: `TaskActionLogic.mjs` is an overly broad action service
+### Finding: `TaskActionLogic.mjs` is a residual task-entry diagnostic adapter
 
 **Priority:** P2.
 
-**Evidence:** `ActionResultLogic.mjs` now owns the generic action-result shape and logging predicate, `TaskActivationLogic.mjs` owns activation request/execution classification, `TaskContextMenuRequestLogic.mjs` owns context-menu open/create classification, `TaskContextMenuDispatchLogic.mjs` owns context-menu route dispatch plus launcher-activity failure classification, `TaskContextMenuTaskCommandLogic.mjs` owns task command request/execution classification, and `LauncherCommandLogic.mjs` owns launcher command/mutation classification. `TaskActionLogic.mjs` still defines task-entry diagnostic adaptation and drag-move diagnostic policy; it is imported by `TaskMoveAdapter.qml` and `TaskEntryDiagnosticReporter.qml`.
+**Evidence:** `ActionResultLogic.mjs` owns the generic action-result shape and logging predicate, `TaskActivationLogic.mjs` owns activation request/execution classification, `TaskContextMenuRequestLogic.mjs` owns context-menu open/create classification, `TaskContextMenuDispatchLogic.mjs` owns context-menu route dispatch plus launcher-activity failure classification, `TaskContextMenuTaskCommandLogic.mjs` owns task command request/execution classification, `LauncherCommandLogic.mjs` owns launcher command/mutation classification, and `TaskMoveLogic.mjs` owns drag-move rejection classification. `TaskActionLogic.mjs` now only defines task-entry diagnostic adaptation and is imported by `TaskEntryDiagnosticReporter.qml`.
 
-**Current state:** The generic result factory, diagnostic logging predicate, activation classifiers, context-menu request/dispatch/task-command classifiers, and launcher command classifiers have focused owners. `TaskActionLogic.mjs` remains the owner of task-entry diagnostic and drag/drop workflows.
+**Current state:** The generic result factory, diagnostic logging predicate, activation classifiers, context-menu request/dispatch/task-command classifiers, launcher command classifiers, and drag-move classifiers have focused owners. `TaskActionLogic.mjs` remains the owner of task-entry diagnostic adaptation only.
 
-**Design concern:** Task-entry diagnostics and drag/drop rejection are still coupled through one broad service. Consumers transitively depend on domains they do not use.
+**Design concern:** The remaining module name and ownership boundary imply a broad action service even though the implementation now adapts one task-entry diagnostic shape. Keeping the residual adapter under `TaskActionLogic.mjs` makes it harder to delete the broad service entirely.
 
-**Correct end state:** Keep a small generic `ActionResultLogic.mjs` with result shape, error context, and logging predicate. Move domain-specific classification next to the workflow that uses it: activation logic near `TaskActivationAdapter.qml`, context-menu request and dispatch logic near the context-menu subsystem, launcher mutation logic near `LauncherCommandAdapter.qml`, and drag rejection policy near task move/drag logic.
+**Correct end state:** Keep a small generic `ActionResultLogic.mjs` with result shape, error context, and logging predicate. Move task-entry diagnostic adaptation next to the task-entry reporting workflow, then remove or rename `TaskActionLogic.mjs` so no broad action-service facade remains.
 
-**Suggested migration:** Move drag rejection helpers next, then task-entry diagnostic adaptation. Update imports in QML adapters incrementally.
+**Suggested migration:** Move task-entry diagnostic adaptation into a focused task-entry diagnostic module and update `TaskEntryDiagnosticReporter.qml` plus aggregate tests to import it directly.
 
-**Acceptance criteria:** No single module contains activation, context-menu, launcher mutation, task-entry diagnostic, and drag/drop diagnostic policy together.
+**Acceptance criteria:** `TaskActionLogic.mjs` no longer exists as a broad action-service module, or it is renamed to a focused task-entry diagnostic owner. No single module contains activation, context-menu, launcher mutation, task-entry diagnostic, and drag/drop diagnostic policy together.
 
 ## Logic Placement and Flow Predictability
 
