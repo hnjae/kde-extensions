@@ -5,38 +5,20 @@
 
 ## Executive Summary
 
-The codebase has a strong existing direction: external behavior is specified in `docs/spec/SPEC.md`, architectural intent is documented in `docs/architecture/ARCHITECTURE.md`, and most domain decisions already have pure `.mjs` helpers with focused tests. The most important remaining design risks are not a lack of architecture, but several places where the current implementation has outgrown its boundaries.
+The codebase has a strong existing direction: external behavior is specified in `docs/spec/SPEC.md`, architectural intent is documented in `docs/architecture/ARCHITECTURE.md`, and most domain decisions already have pure `.mjs` helpers with focused tests. The most important remaining design risks are not a lack of architecture, but the few places where executable verification or shared visual structure still lag the intended boundaries.
 
 The highest-impact risks are around action/effect boundaries. Desktop action backend testing still depends on source-shape checks for behavior that should be executable-tested.
 
-The second major risk is module breadth. `TaskContextMenuLogic.mjs` still fronts multiple context-menu feature families. That makes local changes harder to reason about and can push tests toward very large suites or regex assertions against QML instead of executable behavior tests.
+The remaining module-breadth risk is lower priority: normal task and remote-attention delegates still duplicate the task-like visual shell around shared subcomponents.
 
 The correct end state should keep the current behavioral design, KDE Plasma API usage, native menu approach, and pure-helper strategy. The target is narrower ownership: domain rules live in one pure owner, QML components wire platform effects through explicit ports, and every user action that crosses into Plasma or KIO has a structured result path.
 
 ## Top Design Risks
 
-1. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs` still fronts aggregate context-menu policy, which increases blast radius and makes deletion or isolated testing harder.
-2. **Some effect boundaries are hard to test with executable fakes.** C++ desktop actions still require live `QAction`/KIO objects for executable verification despite having descriptors and launch-failure diagnostics.
+1. **Some effect boundaries are hard to test with executable fakes.** C++ desktop actions still require live `QAction`/KIO objects for executable verification despite having descriptors and launch-failure diagnostics.
+2. **The task-like visual shell is duplicated.** Normal and remote-attention delegates share subcomponents but still duplicate the containing frame/content/interaction stack.
 
 ## Invariant and Correctness Risks
-
-## Cohesion, Coupling, and Ownership Problems
-
-### Finding: `TaskContextMenuLogic.mjs` is a feature monolith
-
-**Priority:** P1.
-
-**Evidence:** `TaskContextMenuActionSectionsLogic.mjs` composes focused window-action, virtual-desktop action, pin-action, launcher-activity, and task-activity owners into the aggregate `contextMenuActionSections(...)` output; `TaskContextMenuLogic.mjs` owns panel placement, platform snapshots, and the QML-visible action-section facade; `TaskContextMenuRoleLogic.mjs` owns live role snapshotting; `TaskContextMenu.qml` consumes one aggregate `contextMenuActionSections(...)`; `tests/taskcontextmenulogic.test.mjs` remains much larger than other logic tests because it still carries broad context-menu wiring assertions.
-
-**Current state:** Role snapshotting, action-family descriptors, routes, and aggregate action-section composition have focused owners. `TaskContextMenuLogic.mjs` remains the QML-visible facade for aggregate action sections and still owns platform snapshot helpers.
-
-**Design concern:** A change to launcher activity behavior, task role snapshotting, menu labels/icons, virtual desktop checked state, or route descriptors lands in the same module. Removing one menu feature requires auditing unrelated policy.
-
-**Correct end state:** Split pure menu policy by ownership. `TaskContextMenuRoleLogic.mjs` should own role reads and snapshots. Focused action-family owners should own labels, icons, visibility, enabled, checked state, commands, and updates. `TaskContextMenuActionSectionsLogic.mjs` should own final aggregate section assembly only. `TaskContextMenuLogic.mjs` should remain a thin QML-visible facade for aggregate section assembly and a platform snapshot helper owner.
-
-**Suggested migration:** Continue reducing broad context-menu wiring assertions only after executable behavior tests exist for the same contracts.
-
-**Acceptance criteria:** `TaskContextMenuLogic.mjs` no longer imports launcher list mutation helpers and task activity mutation helpers together. Each menu feature family has focused pure tests. `contextMenuActionSections(...)` is an assembly function, not the owner of per-action policy.
 
 ## Testability Problems
 
@@ -72,29 +54,11 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** `TaskItem.qml` and `AttentionItem.qml` no longer duplicate the full frame/content/interaction stack. Title visibility and implicit width are computed in one QML owner.
 
-## Deletion, Modularity, and Abstraction Problems
-
-### Finding: Context-menu features are hard to remove independently
-
-**Priority:** P1.
-
-**Evidence:** `TaskContextMenuActionSectionsLogic.mjs` contains section composition while composing focused virtual-desktop action, window-action, pin-action, launcher-activity, and task-activity owners; `TaskContextMenuRoleLogic.mjs` contains role snapshots; `TaskContextMenu.qml` consumes one aggregate `actionSections`; `TaskContextMenuLogic.mjs` keeps only the QML-visible action-section facade, panel placement, and platform entry snapshots.
-
-**Current state:** Virtual desktop actions, pin actions, route helpers, window actions, launcher activity actions, task activity actions, footer actions, and aggregate action-section composition have focused owners. Runtime QML still consumes one aggregate menu section facade.
-
-**Design concern:** Feature boundaries are unclear, and unrelated menu behavior can regress during deletion or feature changes.
-
-**Correct end state:** Each menu feature family should have a focused pure module and focused tests. A top-level composer may assemble sections, but it should not own per-action policy.
-
-**Suggested migration:** Continue reducing the remaining aggregate context-menu facade only where executable tests cover the extracted contracts.
-
-**Acceptance criteria:** Removing launcher activity code does not touch window action, virtual desktop, or role snapshot modules. Each extracted feature family has a focused test file.
-
 ## Recommended Correct End-State Architecture
 
 The root `main.qml` should remain the composition root. It should instantiate Plasma `TasksModel`, platform state, adapters, sources, and the rendered `TaskListRepresentation.qml`, but it should not own domain policy beyond unavoidable wiring.
 
-Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Launcher sync policy lives in `LauncherSyncLogic.mjs`; launcher activity scoping, pin visibility, and structural pinned reordering have focused owners. Context-menu feature families should have focused pure modules.
+Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Launcher sync policy lives in `LauncherSyncLogic.mjs`; launcher activity scoping, pin visibility, and structural pinned reordering have focused owners. Context-menu feature families and platform menu helpers have focused pure modules.
 
 State definitions should be explicit descriptors rather than multi-field conventions. Context-menu routes and command kinds should be centralized constants or typed helpers.
 
@@ -111,7 +75,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 1. Add characterization tests around current behavior.
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Add a desktop action descriptor seam in the C++ backend.
-4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family and keep action-result classifiers in focused workflow owners.
+4. Clarify ownership boundaries. Keep action-result classifiers in focused workflow owners.
 5. Improve error semantics and observability. Keep backend effect failures visible through structured results.
 6. Remove or simplify premature abstractions. After the behavior boundaries are stable, consider extracting `TaskLikeItemShell.qml` if the duplicated visual shell still creates real maintenance pressure. Keep compatibility re-exports only temporarily and remove them once QML and tests consume focused modules directly.
 
@@ -136,9 +100,9 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 ## Appendix: Subagent Reports
 
-**Single Source of Truth / Duplication Agent:** Reported repeated context-menu route-kind strings and duplicated error serialization. Error serialization is complete; route-kind cleanup remains folded into the broader action/result and context-menu ownership work.
+**Single Source of Truth / Duplication Agent:** Reported repeated context-menu route-kind strings and duplicated error serialization. Error serialization and route-kind cleanup are complete.
 
-**Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. The broad action service and launcher sync/activity/pin ownership splits are complete; the broad context-menu module remains P1.
+**Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. These ownership splits are complete.
 
 **Logic Placement / Flow Readability Agent:** Reported implicit `visualParent.contextMenuOpen` mutation. This is complete; menu-open state now flows through explicit lifecycle callbacks owned by delegates.
 
@@ -146,6 +110,6 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Exception serialization, desktop action launch diagnostics, and launcher sync action-result diagnostics are complete; residual backend work is executable fake-input coverage.
 
-**Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. The raw model adapter and broad launcher list concerns are complete; remaining active items are kept in cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
+**Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. The raw model adapter, broad launcher list, and context-menu monolith concerns are complete. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
 **Rejected or deferred findings:** No subagent finding was rejected for lack of code evidence. Visual shell extraction was deferred because the current duplication is smaller and less risky than action/effect boundary issues. A big rewrite of context menu QML, raw model plumbing, or source delegates is explicitly not recommended; the migration should proceed through characterization tests and narrow extracted owners.
