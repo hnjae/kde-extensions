@@ -43,6 +43,13 @@ private Q_SLOTS:
   void emitsLaunchFailureResultFromFakeJob();
 };
 
+class DesktopActionResultEmitter final : public QObject {
+  Q_OBJECT
+
+Q_SIGNALS:
+  void desktopActionResult(const QVariantMap &result);
+};
+
 void DesktopActionLogicTest::filtersHiddenServiceActions() {
   QList<DesktopActionSource> sources{
       {
@@ -96,7 +103,7 @@ void DesktopActionLogicTest::emitsLaunchFailureResultFromFakeJob() {
       .desktopEntryPath =
           QStringLiteral("/usr/share/applications/broken.desktop"),
   };
-  QObject resultEmitter;
+  DesktopActionResultEmitter resultEmitter;
   FakeLaunchJob *fakeJob = nullptr;
 
   QAction *action = desktopActionFromDescriptor(
