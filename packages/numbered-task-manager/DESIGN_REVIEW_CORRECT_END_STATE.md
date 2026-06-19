@@ -207,22 +207,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** Unit tests can mock each port with only feature-specific methods. Raw `TasksModel` access is contained near root/platform wiring.
 
-### Finding: Some abstractions should not be extracted yet
-
-**Priority:** P3.
-
-**Evidence:** `TaskItem.qml` and `AttentionItem.qml` duplicate some visual shell structure, but the duplication is small compared with the action/effect boundary issues; existing shared subcomponents already cover `TaskLikeFrame`, `TaskLikeContentRow`, `TaskLikeIconSlot`, `TaskLikeTitle`, and `TaskLikeInteraction`.
-
-**Current state:** The visual shell is partially abstracted.
-
-**Design concern:** Extracting the shell too early could add QML indirection while more important correctness and testability issues remain.
-
-**Correct end state:** Extract a shell only after behavior boundaries are stable and characterization tests protect normal and remote attention visuals.
-
-**Suggested migration:** Defer until after P1/P2 action, effect-boundary, and invariant work.
-
-**Acceptance criteria:** No visual shell refactor happens before higher-priority behavior boundaries are covered by tests.
-
 ## Recommended Correct End-State Architecture
 
 The root `main.qml` should remain the composition root. It should instantiate Plasma `TasksModel`, platform state, adapters, sources, and the rendered `TaskListRepresentation.qml`, but it should not own domain policy beyond unavoidable wiring.
@@ -265,6 +249,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 - P2 context-menu task command boundary: Removed the completed narrow-port finding from the active backlog; the command path already uses explicit supported-method validation and `TaskCommandPort.qml`, while remaining raw-model work is tracked by the broader adapter-port finding.
 - P2 structured error context: Added `ErrorContextLogic.mjs` as the single serializer for caught action and launcher sync failures, preserving legacy `error` while adding `errorMessage`, `errorName`, and `errorCode` where available. Verified with `node tests/errorcontextlogic.test.mjs`, `node tests/taskactionlogic.test.mjs`, and `node tests/launchersynclogic.test.mjs`. Commit: `b5a053b`, `3eb6a95`.
 - P2 explicit menu-open lifecycle: Replaced `TaskContextMenuAdapter.qml` mutation of `visualParent.contextMenuOpen` with request lifecycle callbacks supplied by `NormalTaskItem.qml` and `RemoteAttentionItem.qml`, so delegates own highlight state and the adapter only manages menu validation, creation, signal wiring, and show/close notification. Verified with `node tests/taskcontextmenuadapterqml.test.mjs`, `node tests/normaltaskitemqml.test.mjs`, and `node tests/remoteattentionitemqml.test.mjs`. Commit: `24df7cf`, `6e8108c`.
+- P3 premature-abstraction guardrail: Removed the non-actionable “some abstractions should not be extracted yet” item from active findings and kept the guidance in “Things Not To Change Yet,” so the backlog only tracks changes to make.
 
 ## Appendix: Subagent Reports
 
