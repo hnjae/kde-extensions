@@ -9,32 +9,23 @@ import "LauncherSyncLogic.mjs" as LauncherSyncLogic
 QtQuick.QtObject {
     id: root
 
-    property var configuration
+    property var launcherSyncPort
     property var launcherSyncState: LauncherSyncLogic.createLauncherSyncState()
     property var launcherReconciliationState: launcherSyncState.reconciliation
-    property var taskModel
     property bool updatingLauncherConfig: false
-
-    function configurationLaunchers() {
-        return configuration ? configuration.launchers : [];
-    }
-
-    function modelLaunchers() {
-        return taskModel ? taskModel.launcherList : [];
-    }
 
     function syncPorts() {
         return {
-            readConfigLaunchers: () => configurationLaunchers(),
-            readModelLaunchers: () => modelLaunchers(),
+            readConfigLaunchers: () => root.launcherSyncPort.configLaunchers,
+            readModelLaunchers: () => root.launcherSyncPort.modelLaunchers,
             setUpdatingLauncherConfig: updating => {
                 updatingLauncherConfig = updating;
             },
             writeConfigLaunchers: launchers => {
-                configuration.launchers = launchers;
+                root.launcherSyncPort.writeConfigLaunchers(launchers);
             },
             writeModelLaunchers: launchers => {
-                taskModel.launcherList = launchers;
+                root.launcherSyncPort.writeModelLaunchers(launchers);
             }
         };
     }

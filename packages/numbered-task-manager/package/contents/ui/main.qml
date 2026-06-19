@@ -41,11 +41,17 @@ PlasmoidItem {
         id: actionLogger
     }
 
-    LauncherSyncAdapter {
-        id: launcherSync
+    LauncherSyncPort {
+        id: launcherSyncPort
 
         configuration: Plasmoid.configuration
         taskModel: tasksModel
+    }
+
+    LauncherSyncAdapter {
+        id: launcherSync
+
+        launcherSyncPort: launcherSyncPort
     }
 
     LauncherCommandPort {
@@ -158,7 +164,7 @@ PlasmoidItem {
                 if (launcherSync.reconcileLauncherListChange(launcherList)) {
                     return;
                 }
-                launcherSync.persistLaunchers(tasksModel.launcherList);
+                launcherSync.persistLaunchers(launcherSyncPort.modelLaunchers);
             }
         }
     }
