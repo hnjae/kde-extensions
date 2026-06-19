@@ -47,19 +47,46 @@ QVariantList TaskContextMenuBackend::desktopActions(const QUrl &launcherUrl,
     return actions;
   }
 
-  const QList<KServiceAction> serviceActions = service->actions();
+  const QList<DesktopActionDescriptor> descriptors =
+      desktopActionDescriptors(service->actions());
+  return desktopActionsFromDescriptors(descriptors, parent);
+}
+
+QList<TaskContextMenuBackend::DesktopActionDescriptor>
+TaskContextMenuBackend::desktopActionDescriptors(
+    const QList<KServiceAction> &serviceActions) const {
+  QList<DesktopActionDescriptor> descriptors;
   for (const KServiceAction &serviceAction : serviceActions) {
     if (serviceAction.noDisplay()) {
       continue;
     }
 
-    auto *action = new QAction(parent);
-    action->setText(serviceAction.text());
-    action->setIcon(QIcon::fromTheme(serviceAction.icon()));
-    action->setSeparator(serviceAction.isSeparator());
+    descriptors << DesktopActionDescriptor{
+        .text = serviceAction.text(),
+        .iconName = serviceAction.icon(),
+        .separator = serviceAction.isSeparator(),
+        .serviceAction = serviceAction,
+    };
+  }
 
-    connect(action, &QAction::triggered, action, [serviceAction]() {
-      auto *job = new KIO::ApplicationLauncherJob(serviceAction);
+  return descriptors;
+}
+
+QVariantList TaskContextMenuBackend::desktopActionsFromDescriptors(
+    const QList<DesktopActionDescriptor> &descriptors, QObject *parent) const {
+  QVariantList actions;
+  if (!parent) {
+    return actions;
+  }
+
+  for (const DesktopActionDescriptor &descriptor : descriptors) {
+    auto *action = new QAction(parent);
+    action->setText(descriptor.text);
+    action->setIcon(QIcon::fromTheme(descriptor.iconName));
+    action->setSeparator(descriptor.separator);
+
+    connect(action, &QAction::triggered, action, [descriptor]() {
+      auto *job = new KIO::ApplicationLauncherJob(descriptor.serviceAction);
       job->start();
     });
 

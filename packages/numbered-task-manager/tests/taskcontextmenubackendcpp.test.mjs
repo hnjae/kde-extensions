@@ -14,8 +14,11 @@ const source = readFileSync(
 );
 
 assert.match(header, /struct DesktopActionDescriptor/);
-assert.match(header, /QList<DesktopActionDescriptor> desktopActionDescriptors/);
-assert.match(header, /QVariantList desktopActionsFromDescriptors/);
+assert.match(
+  header,
+  /QList<DesktopActionDescriptor>\s+desktopActionDescriptors/,
+);
+assert.match(header, /QVariantList\s+desktopActionsFromDescriptors/);
 
 assert.match(source, /TaskContextMenuBackend::desktopActionDescriptors/);
 assert.match(source, /DesktopActionDescriptor\s*\{/);

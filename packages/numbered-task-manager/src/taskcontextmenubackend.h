@@ -3,7 +3,10 @@
 
 #pragma once
 
+#include <KServiceAction>
+
 #include <QObject>
+#include <QString>
 #include <QUrl>
 #include <QVariantList>
 
@@ -11,6 +14,13 @@ class TaskContextMenuBackend : public QObject {
   Q_OBJECT
 
 public:
+  struct DesktopActionDescriptor {
+    QString text;
+    QString iconName;
+    bool separator = false;
+    KServiceAction serviceAction;
+  };
+
   explicit TaskContextMenuBackend(QObject *parent = nullptr);
   ~TaskContextMenuBackend() override;
 
@@ -18,5 +28,9 @@ public:
                                           QObject *parent) const;
 
 private:
+  [[nodiscard]] QList<DesktopActionDescriptor>
+  desktopActionDescriptors(const QList<KServiceAction> &serviceActions) const;
+  [[nodiscard]] QVariantList desktopActionsFromDescriptors(
+      const QList<DesktopActionDescriptor> &descriptors, QObject *parent) const;
   [[nodiscard]] QUrl desktopEntryUrl(const QUrl &launcherUrl) const;
 };
