@@ -3940,9 +3940,15 @@ const launcherActivityAdapterQml = readFileSync(
 );
 assert.equal(
   launcherActivityAdapterQml.includes(
-    'import "TaskActionLogic.mjs" as TaskActionLogic',
+    'import "TaskContextMenuDispatchLogic.mjs" as TaskContextMenuDispatchLogic',
   ),
   true,
+);
+assert.equal(
+  launcherActivityAdapterQml.includes(
+    'import "TaskActionLogic.mjs" as TaskActionLogic',
+  ),
+  false,
 );
 assert.equal(
   launcherActivityAdapterQml.includes(
@@ -3982,7 +3988,7 @@ assert.equal(
 );
 assert.equal(
   launcherActivityAdapterQml.includes(
-    "TaskActionLogic.contextMenuLauncherActivityResult",
+    "TaskContextMenuDispatchLogic.contextMenuLauncherActivityResult",
   ),
   true,
 );
@@ -4121,9 +4127,15 @@ assert.equal(
 );
 assert.equal(
   actionDispatcherQml.includes(
-    'import "TaskActionLogic.mjs" as TaskActionLogic',
+    'import "TaskContextMenuDispatchLogic.mjs" as TaskContextMenuDispatchLogic',
   ),
   true,
+);
+assert.equal(
+  actionDispatcherQml.includes(
+    'import "TaskActionLogic.mjs" as TaskActionLogic',
+  ),
+  false,
 );
 assert.equal(
   actionDispatcherQml.includes("signal actionResult(var result)"),
@@ -4132,7 +4144,7 @@ assert.equal(
 assert.equal(actionDispatcherQml.includes("function triggerAction"), true);
 assert.equal(
   actionDispatcherQml.includes(
-    "TaskActionLogic.contextMenuActionDispatchFailure(route, code)",
+    "TaskContextMenuDispatchLogic.contextMenuActionDispatchFailure(route, code)",
   ),
   true,
 );
