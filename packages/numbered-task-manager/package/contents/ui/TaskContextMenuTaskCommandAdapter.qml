@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "TaskActionLogic.mjs" as TaskActionLogic
+import "TaskContextMenuTaskCommandLogic.mjs" as TaskContextMenuTaskCommandLogic
 
 QtQuick.QtObject {
     id: root
@@ -16,13 +16,13 @@ QtQuick.QtObject {
     signal actionResult(var result)
 
     function requestTaskModelCommand(command) {
-        const result = TaskActionLogic.contextMenuTaskRequest(command, taskCommandPort, modelIndex, task);
+        const result = TaskContextMenuTaskCommandLogic.contextMenuTaskRequest(command, taskCommandPort, modelIndex, task);
         if (!result.ok) {
             actionResult(result);
             return result;
         }
 
-        const executionResult = TaskActionLogic.executeContextMenuTaskRequest(result, taskCommandPort);
+        const executionResult = TaskContextMenuTaskCommandLogic.executeContextMenuTaskRequest(result, taskCommandPort);
         if (!executionResult.ok) {
             actionResult(executionResult);
         }

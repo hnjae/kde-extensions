@@ -9,9 +9,6 @@ const actionLogic = await loadQmlJsModule(
   new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
   [
     "contextMenuLauncherCommandDispatchResult",
-    "executeContextMenuTaskRequest",
-    "contextMenuTaskExecutionResult",
-    "contextMenuTaskRequest",
     "dragMoveRejectionResult",
     "launcherMutationRequest",
     "launcherMutationResult",
@@ -52,6 +49,17 @@ const contextMenuDispatchLogic = await loadQmlJsModule(
   ),
   ["contextMenuActionDispatchFailure", "contextMenuLauncherActivityResult"],
 );
+const contextMenuTaskCommandLogic = await loadQmlJsModule(
+  new URL(
+    "../package/contents/ui/TaskContextMenuTaskCommandLogic.mjs",
+    import.meta.url,
+  ),
+  [
+    "contextMenuTaskExecutionResult",
+    "contextMenuTaskRequest",
+    "executeContextMenuTaskRequest",
+  ],
+);
 const logic = Object.assign(
   {},
   actionLogic,
@@ -60,6 +68,7 @@ const logic = Object.assign(
   commandLogic,
   contextMenuDispatchLogic,
   contextMenuRequestLogic,
+  contextMenuTaskCommandLogic,
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const validModelIndex = { valid: true, row: 4 };

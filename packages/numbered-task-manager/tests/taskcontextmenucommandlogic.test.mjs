@@ -20,14 +20,19 @@ const logic = await loadQmlJsModule(
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
-assert.deepEqual(plain(logic.contextMenuLauncherCommand("pinLauncher", "app.desktop")), {
-  action: "pinLauncher",
-  kind: "launcher-command",
-  launcherUrl: "app.desktop",
-  launchers: [],
-});
 assert.deepEqual(
-  plain(logic.contextMenuLauncherCommand("replaceLauncherList", ["a", "", "b"])),
+  plain(logic.contextMenuLauncherCommand("pinLauncher", "app.desktop")),
+  {
+    action: "pinLauncher",
+    kind: "launcher-command",
+    launcherUrl: "app.desktop",
+    launchers: [],
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.contextMenuLauncherCommand("replaceLauncherList", ["a", "", "b"]),
+  ),
   {
     action: "replaceLauncherList",
     kind: "launcher-command",
@@ -72,12 +77,29 @@ const taskActionLogicSource = readFileSync(
   new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
   "utf8",
 );
+const taskCommandLogicSource = readFileSync(
+  new URL(
+    "../package/contents/ui/TaskContextMenuTaskCommandLogic.mjs",
+    import.meta.url,
+  ),
+  "utf8",
+);
 assert.match(
   taskActionLogicSource,
-  /import \{[^}]*normalizedContextMenuLauncherCommand[^}]*normalizedContextMenuTaskCommand[^}]*\} from "\.\/TaskContextMenuCommandLogic\.mjs"/s,
+  /import \{ normalizedContextMenuLauncherCommand \} from "\.\/TaskContextMenuCommandLogic\.mjs"/,
 );
-assert.doesNotMatch(taskActionLogicSource, /export function contextMenuLauncherCommand\(/);
-assert.doesNotMatch(taskActionLogicSource, /export function contextMenuTaskCommand\(/);
+assert.match(
+  taskCommandLogicSource,
+  /import \{ normalizedContextMenuTaskCommand \} from "\.\/TaskContextMenuCommandLogic\.mjs"/,
+);
+assert.doesNotMatch(
+  taskActionLogicSource,
+  /export function contextMenuLauncherCommand\(/,
+);
+assert.doesNotMatch(
+  taskActionLogicSource,
+  /export function contextMenuTaskCommand\(/,
+);
 
 for (const modulePath of [
   "TaskContextMenuLauncherActivityLogic.mjs",
@@ -90,6 +112,9 @@ for (const modulePath of [
     new URL(`../package/contents/ui/${modulePath}`, import.meta.url),
     "utf8",
   );
-  assert.match(source, /import \{[^}]*contextMenu.*Command[^}]*\} from "\.\/TaskContextMenuCommandLogic\.mjs"/s);
+  assert.match(
+    source,
+    /import \{[^}]*contextMenu.*Command[^}]*\} from "\.\/TaskContextMenuCommandLogic\.mjs"/s,
+  );
   assert.doesNotMatch(source, /from "\.\/TaskActionLogic\.mjs"/);
 }
