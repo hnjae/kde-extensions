@@ -63,6 +63,8 @@ assert.match(sourceQml, /property var taskModel/);
 assert.match(sourceQml, /property var taskCommandPort/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /signal launcherCommandRequested\(var command\)/);
+assert.match(sourceQml, /function notifyContextMenuOpened\(menuRequest\)/);
+assert.match(sourceQml, /function notifyContextMenuClosed\(menuRequest\)/);
 assert.match(sourceQml, /function contextMenuRequest\(request\)/);
 assert.match(
   sourceQml,
@@ -81,8 +83,12 @@ assert.match(
   sourceQml,
   /TaskActionLogic\.contextMenuCreationResult\(menu, menuRequest\)/,
 );
-assert.match(sourceQml, /visualParent\.contextMenuOpen = true/);
-assert.match(sourceQml, /visualParent\.contextMenuOpen = false/);
+assert.doesNotMatch(sourceQml, /visualParent\.contextMenuOpen/);
+assert.match(sourceQml, /notifyContextMenuOpened\(menuRequest\)/);
+assert.match(
+  sourceQml,
+  /menu\.closed\.connect\(\(\) => root\.notifyContextMenuClosed\(menuRequest\)\)/,
+);
 assert.match(
   sourceQml,
   /menu\.launcherCommandRequested\.connect\(command => root\.launcherCommandRequested\(command\)\)/,

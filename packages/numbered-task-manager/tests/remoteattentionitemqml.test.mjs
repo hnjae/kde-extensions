@@ -73,4 +73,7 @@ assert.match(sourceQml, /taskData:\s*root\.source\.itemTaskData/);
 assert.match(sourceQml, /title:\s*root\.source\.itemTitle/);
 assert.match(sourceQml, /visible:\s*root\.source\.itemVisible/);
 assert.match(sourceQml, /root\.source\.requestVisibleActivation\(\)/);
-assert.match(sourceQml, /root\.source\.requestVisibleContextMenu\(request\)/);
+assert.match(
+  sourceQml,
+  /root\.source\.requestVisibleContextMenu\(Object\.assign\(\{\},\s*request,\s*\{[\s\S]*?onContextMenuOpened:\s*\(\) => \{[\s\S]*?root\.contextMenuOpen = true;[\s\S]*?\},[\s\S]*?onContextMenuClosed:\s*\(\) => \{[\s\S]*?root\.contextMenuOpen = false;[\s\S]*?\}[\s\S]*?\}\)\)/,
+);

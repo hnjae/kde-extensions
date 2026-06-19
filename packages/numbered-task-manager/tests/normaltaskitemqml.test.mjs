@@ -120,7 +120,7 @@ assert.match(
 );
 assert.match(
   sourceQml,
-  /root\.contextMenuAdapter\.openTaskContextMenu\(request\)/,
+  /root\.contextMenuAdapter\.openTaskContextMenu\(Object\.assign\(\{\},\s*request,\s*\{[\s\S]*?onContextMenuOpened:\s*\(\) => \{[\s\S]*?root\.contextMenuOpen = true;[\s\S]*?\},[\s\S]*?onContextMenuClosed:\s*\(\) => \{[\s\S]*?root\.contextMenuOpen = false;[\s\S]*?\}[\s\S]*?\}\)\)/,
 );
 assert.match(
   sourceQml,
