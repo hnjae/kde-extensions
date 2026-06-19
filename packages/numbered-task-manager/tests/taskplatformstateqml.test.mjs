@@ -52,7 +52,7 @@ assert.match(
   sourceQml,
   /import "ActivityScopeLogic\.mjs" as ActivityScopeLogic/,
 );
-assert.match(sourceQml, /import "LauncherListLogic\.mjs" as LauncherListLogic/);
+assert.match(sourceQml, /import "LauncherPinLogic\.mjs" as LauncherPinLogic/);
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(sourceQml, /required property var taskModel/);
 assert.match(
@@ -77,7 +77,7 @@ assert.match(
 );
 assert.match(
   sourceQml,
-  /LauncherListLogic\.visibleLauncherPosition\(root\.taskModel\.launcherList, launcherUrl, root\.currentActivity, url => root\.taskModel\.launcherPosition\(url\)\)/,
+  /LauncherPinLogic\.visibleLauncherPosition\(root\.taskModel\.launcherList, launcherUrl, root\.currentActivity, url => root\.taskModel\.launcherPosition\(url\)\)/,
 );
 assert.match(sourceQml, /function isInCurrentActivity\(activities\)/);
 assert.match(

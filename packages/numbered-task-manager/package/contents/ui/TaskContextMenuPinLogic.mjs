@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { contextMenuLauncherCommand } from "./TaskContextMenuCommandLogic.mjs";
-import { launcherPinState } from "./LauncherListLogic.mjs";
+import { launcherPinState } from "./LauncherPinLogic.mjs";
 
 function actionWithIcon(action, icon) {
   const actionState = Object.assign({}, action || {});

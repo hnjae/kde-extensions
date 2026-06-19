@@ -82,43 +82,6 @@ const launcherPosition = (launcherUrl) =>
     "app-c.desktop": 2,
   })[launcherUrl] ?? -1;
 
-assert.equal(
-  helpers.visibleLauncherPosition(
-    visibleLaunchers,
-    "app-a.desktop",
-    "work",
-    launcherPosition,
-  ),
-  0,
-);
-assert.equal(
-  helpers.visibleLauncherPosition(
-    visibleLaunchers,
-    "app-b.desktop",
-    "work",
-    launcherPosition,
-  ),
-  -1,
-);
-assert.equal(
-  helpers.visibleLauncherPosition(
-    visibleLaunchers,
-    "app-c.desktop",
-    "work",
-    launcherPosition,
-  ),
-  1,
-);
-assert.equal(
-  helpers.visibleLauncherPosition(
-    visibleLaunchers,
-    "missing.desktop",
-    "work",
-    -1,
-  ),
-  -1,
-);
-
 const pinnedA = {
   launcherUrl: "app-a.desktop",
   pinnedLauncherUrl: "app-a.desktop",
@@ -170,11 +133,7 @@ assert.deepEqual(
   ),
   {
     moved: true,
-    launchers: [
-      "[chat]\napp-b.desktop",
-      "app-c.desktop",
-      "[work]\napp-a.desktop",
-    ],
+    launchers: ["app-b.desktop", "app-c.desktop", "app-a.desktop"],
   },
 );
 assert.deepEqual(

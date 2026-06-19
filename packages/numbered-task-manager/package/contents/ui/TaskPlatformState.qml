@@ -6,7 +6,7 @@ pragma ComponentBehavior: Bound
 import QtQuick as QtQuick
 import org.kde.taskmanager as TaskManager
 import "ActivityScopeLogic.mjs" as ActivityScopeLogic
-import "LauncherListLogic.mjs" as LauncherListLogic
+import "LauncherPinLogic.mjs" as LauncherPinLogic
 
 QtQuick.QtObject {
     id: root
@@ -30,7 +30,7 @@ QtQuick.QtObject {
             return -1;
         }
 
-        return LauncherListLogic.visibleLauncherPosition(root.taskModel.launcherList, launcherUrl, root.currentActivity, url => root.taskModel.launcherPosition(url));
+        return LauncherPinLogic.visibleLauncherPosition(root.taskModel.launcherList, launcherUrl, root.currentActivity, url => root.taskModel.launcherPosition(url));
     }
 
     function isInCurrentActivity(activities) {
