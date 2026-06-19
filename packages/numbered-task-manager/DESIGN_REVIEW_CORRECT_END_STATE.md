@@ -7,7 +7,7 @@
 
 The codebase has a strong existing direction: external behavior is specified in `docs/spec/SPEC.md`, architectural intent is documented in `docs/architecture/ARCHITECTURE.md`, and most domain decisions already have pure `.mjs` helpers with focused tests. The most important remaining design risks are not a lack of architecture, but several places where the current implementation has outgrown its boundaries.
 
-The highest-impact risks are around action/effect boundaries. Desktop action backend testing still depends on source-shape checks for behavior that should be executable-tested, and standalone launcher sync diagnostics still use a separate warning formatter from action results.
+The highest-impact risks are around action/effect boundaries. Desktop action backend testing still depends on source-shape checks for behavior that should be executable-tested.
 
 The second major risk is module breadth. `TaskContextMenuLogic.mjs` and `LauncherListLogic.mjs` still contain multiple feature families. That makes local changes harder to reason about and can push tests toward very large suites or regex assertions against QML instead of executable behavior tests.
 
@@ -72,24 +72,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** `TaskItem.qml` and `AttentionItem.qml` no longer duplicate the full frame/content/interaction stack. Title visibility and implicit width are computed in one QML owner.
 
-## Error Handling and Observability Problems
-
-### Finding: Action-result formatting is split between action and sync paths
-
-**Priority:** P2.
-
-**Evidence:** `TaskActionResultLogger.qml` formats action results as `Numbered Task Manager action ...`; `LauncherSyncAdapter.qml` formats launcher sync failures separately with `console.warn("Numbered Task Manager launcher sync ...")`.
-
-**Current state:** Launcher command persistence results are action-shaped and include the launcher action plus sync code. Standalone launcher sync failures still use a separate warning path.
-
-**Design concern:** Related failures can still be split across different log formats and ownership boundaries when sync runs outside a launcher command.
-
-**Correct end state:** There should be one diagnostic representation for standalone action and sync failures, with specialized action or sync fields as context. Formatting can remain in separate thin adapters if necessary, but classification and correlation should be structured.
-
-**Suggested migration:** Decide whether standalone sync warnings should become structured action results, typed sync results consumed by a logger, or a shared diagnostic logger.
-
-**Acceptance criteria:** Standalone launcher sync failures and action failures share classification and formatting policy instead of duplicating broad adapter warning logic.
-
 ## Deletion, Modularity, and Abstraction Problems
 
 ### Finding: Context-menu features are hard to remove independently
@@ -136,7 +118,7 @@ Validation should happen before effects.
 
 External effects should be isolated behind narrow ports. Raw `TasksModel` should be wrapped by task command, launcher command/repository, launcher sync, and activation ports. C++ desktop action resolution should produce descriptors before constructing `QAction` objects or launching `KIO` jobs. QML adapters should supply ports and execute returned commands.
 
-Errors should be represented through one structured diagnostic shape. `ErrorContextLogic.mjs` now defines shared structured error context; the generic result helper should still define result shape and logging predicates, while domain-specific result classifiers should live near their workflow. Launcher sync and action execution should continue to use the shared serializer and produce correlated diagnostics for user actions.
+Errors should be represented through one structured diagnostic shape. `ErrorContextLogic.mjs` now defines shared structured error context; the generic result helper should still define result shape and logging predicates, while domain-specific result classifiers should live near their workflow. Launcher sync and action execution use the shared serializer and produce correlated diagnostics for user actions.
 
 Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover launcher sync orchestration through fake ports. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch dispatch without requiring real KIO job execution.
 
@@ -146,7 +128,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, keep action-result classifiers in focused workflow owners, and split remaining broad launcher-domain responsibilities if they keep coupling unrelated features.
-5. Improve error semantics and observability. Keep standalone launcher sync diagnostics correlated with action-result formatting, and keep backend effect failures visible through structured results.
+5. Improve error semantics and observability. Keep backend effect failures visible through structured results.
 6. Remove or simplify premature abstractions. After the behavior boundaries are stable, consider extracting `TaskLikeItemShell.qml` if the duplicated visual shell still creates real maintenance pressure. Keep compatibility re-exports only temporarily and remove them once QML and tests consume focused modules directly.
 
 ## Things Not To Change Yet
