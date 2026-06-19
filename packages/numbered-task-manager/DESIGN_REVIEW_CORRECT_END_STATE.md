@@ -16,7 +16,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 ## Top Design Risks
 
 1. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
-2. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, launcher sync orchestration is mostly QML imperative code, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
+2. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, standalone launcher sync diagnostics still use a separate warning formatter, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
 3. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into context menu role/opening paths and launcher sync, while launcher pin/unpin commands, context-menu task commands, context-menu launcher state reads, normal task activation, and task movement now use narrow ports.
 
 ## Single Source of Truth Violations
@@ -72,22 +72,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 **Suggested migration:** Extract the generic result factory first. Move activation helpers next, then context-menu helpers, then launcher mutation helpers, then drag rejection helpers. Update imports in QML adapters incrementally.
 
 **Acceptance criteria:** No single module contains activation, context-menu, launcher mutation, task-entry diagnostic, and drag/drop diagnostic policy together. `TaskActionResultLogger.qml` imports only the generic result/logging helper.
-
-### Finding: `LauncherListLogic.mjs` mixes domain rules and synchronization policy
-
-**Priority:** P2.
-
-**Evidence:** `LauncherListLogic.mjs` owns launcher-list normalization, model/config update diffing, convergence results, transaction guard mutation, reconciliation retry state, serialized activity prefixes, activity toggles, pin visibility, visible launcher position, and pinned launcher reordering; consumers include `LauncherSyncAdapter.qml`, `TaskPlatformState.qml`, `TaskContextMenuLogic.mjs`, and `TaskMoveAdapter.qml`.
-
-**Current state:** Pure launcher-list transformations and operational write/reconciliation policy live in one broad module.
-
-**Design concern:** Changing sync behavior touches the module used by drag reordering, context-menu activity updates, and platform pin visibility. The transaction helper mutates a passed QML object, which differs from the pure style used elsewhere in the module.
-
-**Correct end state:** Split launcher responsibilities. `LauncherListLogic.mjs` should own domain transformations such as serialization, activity visibility, pin state, visible position, activity updates, and pinned reordering. `LauncherSyncLogic.mjs` should own config/model diffs, convergence results, retry classification, reconciliation state, and transaction guard policy. Runtime adapters should import only the responsibility they execute.
-
-**Suggested migration:** Extract sync/reconciliation helpers first because `LauncherSyncAdapter.qml` is the only intended consumer. Leave serialization, pin state, visible position, and reorder helpers in launcher domain logic. Split tests by sync, serialization/activity, pin state, and reorder behavior.
-
-**Acceptance criteria:** `LauncherSyncAdapter.qml` imports no pin/reorder/activity menu functions. `TaskMoveAdapter.qml` imports no sync/reconciliation functions. No pure launcher-list helper mutates a passed QML object.
 
 ### Finding: Adapters depend on broad live `TasksModel` objects
 
@@ -156,22 +140,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 **Acceptance criteria:** The task command adapter depends on a task-command port that can be mocked with only supported request methods. Unsupported command names remain structured diagnostics before any Plasma method lookup.
 
 ## Testability Problems
-
-### Finding: Launcher sync write orchestration is trapped in QML effects
-
-**Priority:** P1.
-
-**Evidence:** `LauncherSyncLogic.mjs` now computes updates, drives fakeable model/config write ports, checks convergence, updates reconciliation state, and handles retry/expiry sequencing; `LauncherSyncAdapter.qml` provides real QML ports and warning formatting. `LauncherListLogic.mjs` still owns lower-level update and reconciliation primitives during migration.
-
-**Current state:** The read/write sequencing, guard-state transitions, convergence checks, retry, clear, and expiry paths are executable-tested without Plasma/QML. QML still owns real model/configuration effects and warning formatting.
-
-**Design concern:** The original executable-testability gap for launcher sync orchestration is closed. Remaining launcher sync concerns are narrower: formatting remains separate from action-result logging, and lower-level sync primitives still live in the broad launcher module.
-
-**Correct end state:** A sync orchestration helper should accept explicit effect ports: read model launchers, write model launchers, read config launchers, write config launchers, update guard, and emit diagnostics. QML should provide real ports only.
-
-**Suggested migration:** Keep future changes on the `LauncherSyncLogic.mjs` port boundary. Address shared diagnostic formatting as a separate observability checkpoint, and leave broader launcher-list domain/sync separation to the modularity finding.
-
-**Acceptance criteria:** Launcher sync retry and convergence behavior is covered by unit tests without QML or Plasma. QML no longer owns model/config write branching. Failures produce structured results before formatting.
 
 ### Finding: Desktop action backend has no descriptor seam
 
@@ -261,17 +229,17 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P2.
 
-**Evidence:** `LauncherListLogic.mjs` combines sync/reconciliation, activity serialization, activity updates, pin visibility, visible position, and pinned reordering; call sites include sync, platform state, source publication, context menu, and task movement.
+**Evidence:** `LauncherListLogic.mjs` still combines activity serialization, activity updates, pin visibility, visible position, and pinned reordering; call sites include platform state, context-menu launcher activity paths, and task movement. Sync/reconciliation policy now lives in `LauncherSyncLogic.mjs`.
 
 **Current state:** Launcher feature families are grouped by noun rather than ownership.
 
-**Design concern:** Removing launcher activity menu behavior or changing sync policy requires auditing code used by unrelated drag and pin state paths.
+**Design concern:** Removing launcher activity menu behavior still requires auditing code used by unrelated drag and pin state paths.
 
-**Correct end state:** Keep the launcher domain boundary, but split responsibility modules: sync/reconciliation, serialization/activity scope, pin visibility, and pinned reordering.
+**Correct end state:** Keep the launcher domain boundary, but split responsibility modules for serialization/activity scope, pin visibility, and pinned reordering if the domain module remains too broad.
 
-**Suggested migration:** Extract sync first, then activity serialization/update helpers if they remain large. Leave re-exports temporarily to reduce churn.
+**Suggested migration:** Extract activity serialization/update helpers if they remain large. Leave re-exports temporarily to reduce churn.
 
-**Acceptance criteria:** Runtime adapters import only the launcher responsibility they execute. Tests can fail independently for sync, serialized activity updates, pin state, and pinned reordering.
+**Acceptance criteria:** Runtime adapters import only the launcher responsibility they execute. Tests can fail independently for serialized activity updates, pin state, and pinned reordering.
 
 ### Finding: Broad raw model ports make feature removal harder
 
@@ -301,7 +269,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Correct end state:** Extract a shell only after behavior boundaries are stable and characterization tests protect normal and remote attention visuals.
 
-**Suggested migration:** Defer until after P1/P2 action, sync, and invariant work.
+**Suggested migration:** Defer until after P1/P2 action, effect-boundary, and invariant work.
 
 **Acceptance criteria:** No visual shell refactor happens before higher-priority behavior boundaries are covered by tests.
 
@@ -309,7 +277,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 The root `main.qml` should remain the composition root. It should instantiate Plasma `TasksModel`, platform state, adapters, sources, and the rendered `TaskListRepresentation.qml`, but it should not own domain policy beyond unavoidable wiring.
 
-Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Launcher domain rules should be split from launcher sync policy. Context-menu feature families should have focused pure modules.
+Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Launcher sync policy lives in `LauncherSyncLogic.mjs`; remaining launcher domain rules should split further only where ownership remains broad. Context-menu feature families should have focused pure modules.
 
 State definitions should be explicit descriptors rather than multi-field conventions. Context-menu routes and command kinds should be centralized constants or typed helpers.
 
@@ -325,8 +293,8 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 1. Add characterization tests around current behavior.
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
-3. Isolate core domain logic from external effects. Extract launcher sync orchestration into fakeable pure functions or port-based helpers. Add a desktop action descriptor seam in the C++ backend.
-4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, split launcher sync from launcher list domain rules, and introduce narrow ports around raw `TasksModel`.
+3. Isolate core domain logic from external effects. Add a desktop action descriptor seam in the C++ backend and continue moving remaining raw-model adapters behind narrow ports.
+4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, and split remaining broad launcher-domain responsibilities if they keep coupling unrelated features.
 5. Improve error semantics and observability. Add structured error context and connect desktop action launch failures to diagnostics.
 6. Remove or simplify premature abstractions. After the behavior boundaries are stable, consider extracting `TaskLikeItemShell.qml` if the duplicated visual shell still creates real maintenance pressure. Keep compatibility re-exports only temporarily and remove them once QML and tests consume focused modules directly.
 
@@ -338,21 +306,25 @@ Tests should be layered by risk. Characterization tests should pin current behav
 - Do not start with a broad rewrite of `TaskContextMenu.qml`; extract pure policy modules first and keep QML rendering behavior stable.
 - Do not introduce backward-compatibility migrations for pre-release user data unless separately requested.
 - Do not add a settings UI while fixing architecture; it is out of scope for v1 and would add configuration surface before invariants are tightened.
-- Do not optimize or abstract the visual shell before action/effect correctness and launcher sync concerns are covered.
+- Do not optimize or abstract the visual shell before action/effect correctness concerns are covered.
 - Do not remove existing regex/source-shape QML tests until executable behavior tests exist for the same contracts.
+
+## Progress Log
+
+- P1/P2 launcher sync/domain ownership: Moved config/model sync diffing, convergence, retry classification, reconciliation state, and transaction guard policy from `LauncherListLogic.mjs` into `LauncherSyncLogic.mjs`; `LauncherListLogic.mjs` now keeps launcher-list domain helpers while `LauncherSyncLogic.mjs` owns sync primitives and orchestration. Verified with `node tests/launchersynclogic.test.mjs`, `node tests/launcherlistlogic.test.mjs`, and `node tests/launchersyncadapterqml.test.mjs`. Commit: `ae0c7a1`, `0538185`.
 
 ## Appendix: Subagent Reports
 
 **Single Source of Truth / Duplication Agent:** Reported repeated context-menu route-kind strings. This was merged into “Single Source of Truth Violations.”
 
-**Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. These were merged with deletion/modularity findings. The broad context-menu module remains P1; action-result and launcher-list splits are P2.
+**Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. The sync/domain split is complete; the broad context-menu module remains P1, and action-result plus remaining launcher-domain splits are P2.
 
 **Logic Placement / Flow Readability Agent:** Reported implicit `visualParent.contextMenuOpen` mutation. It was kept.
 
-**Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. These were kept. Launcher sync remains P1 because important behavior is still being migrated out of a broad launcher module; desktop actions and footer actions are P2.
+**Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. Launcher sync orchestration is now covered through `LauncherSyncLogic.mjs`; desktop actions and footer actions remain P2.
 
 **Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Both were kept.
 
-**Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. These were merged into cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
+**Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. These were merged into cohesion/modularity sections; the sync part of the launcher module concern is complete. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
 **Rejected or deferred findings:** No subagent finding was rejected for lack of code evidence. Visual shell extraction was deferred because the current duplication is smaller and less risky than action/effect boundary issues. A big rewrite of context menu QML, raw model plumbing, or source delegates is explicitly not recommended; the migration should proceed through characterization tests and narrow extracted owners.
