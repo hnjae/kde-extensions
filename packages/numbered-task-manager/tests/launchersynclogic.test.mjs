@@ -9,7 +9,16 @@ const logic = await loadQmlJsModule(
   new URL("../package/contents/ui/LauncherSyncLogic.mjs", import.meta.url),
   [
     "applyLauncherList",
+    "createLauncherReconciliationState",
     "createLauncherSyncState",
+    "launcherConfigConvergence",
+    "launcherConfigUpdate",
+    "launcherModelConvergence",
+    "launcherModelUpdate",
+    "launcherReconciliationAfterResult",
+    "launcherReconciliationDecision",
+    "launcherSyncRetryClassification",
+    "runLauncherListUpdateTransaction",
     "persistLaunchers",
     "reconcileLauncherListChange",
   ],
@@ -65,6 +74,93 @@ assert.deepEqual(plain(logic.createLauncherSyncState()), {
     pending: false,
   },
 });
+assert.deepEqual(plain(logic.createLauncherReconciliationState()), {
+  attempts: 0,
+  launchers: [],
+  maxAttempts: 1,
+  pending: false,
+});
+assert.deepEqual(
+  plain(logic.launcherConfigUpdate(["a.desktop"], ["", "a.desktop"])),
+  {
+    changed: false,
+    launchers: ["a.desktop"],
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherConfigConvergence(
+      logic.launcherConfigUpdate(["a.desktop"], ["b.desktop"]),
+      ["a.desktop"],
+    ),
+  ),
+  {
+    changed: true,
+    code: "write-mismatch",
+    configConverged: false,
+    configLaunchers: ["a.desktop"],
+    failedTargets: ["config"],
+    launchers: ["b.desktop"],
+    ok: false,
+    retryClassification: "retry-after-change",
+  },
+);
+assert.deepEqual(
+  plain(
+    logic.launcherModelUpdate(["a.desktop"], ["old.desktop"], ["a.desktop"]),
+  ),
+  {
+    changed: true,
+    configChanged: true,
+    launchers: ["a.desktop"],
+    modelChanged: false,
+  },
+);
+assert.equal(
+  logic.launcherSyncRetryClassification({
+    code: "write-failed",
+    ok: false,
+  }),
+  "fatal",
+);
+assert.deepEqual(
+  plain(
+    logic.launcherReconciliationDecision(
+      {
+        attempts: 0,
+        launchers: ["b.desktop"],
+        maxAttempts: 1,
+        pending: true,
+      },
+      ["a.desktop"],
+      ["old.desktop"],
+    ),
+  ),
+  {
+    action: "retry",
+    launchers: ["b.desktop"],
+    state: {
+      attempts: 1,
+      launchers: ["b.desktop"],
+      maxAttempts: 1,
+      pending: true,
+    },
+  },
+);
+const launcherUpdateState = { updatingLauncherConfig: false };
+assert.deepEqual(
+  plain(
+    logic.runLauncherListUpdateTransaction(launcherUpdateState, () => {
+      assert.equal(launcherUpdateState.updatingLauncherConfig, true);
+      return { code: "converged", ok: true };
+    }),
+  ),
+  {
+    code: "converged",
+    ok: true,
+  },
+);
+assert.equal(launcherUpdateState.updatingLauncherConfig, false);
 
 {
   const { calls, ports, state } = createPorts({

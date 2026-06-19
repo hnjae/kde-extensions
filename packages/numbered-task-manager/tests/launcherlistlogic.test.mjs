@@ -11,25 +11,16 @@ const helpers = await loadQmlJsModule(
   [
     "canMovePinnedLauncher",
     "effectiveSerializedLauncherActivities",
-    "createLauncherReconciliationState",
     "launcherActivityUpdate",
     "launcherActivitiesAfterAllToggle",
     "launcherActivitiesAfterToggle",
-    "launcherConfigConvergence",
-    "launcherConfigUpdate",
     "launcherListWithActivitiesAt",
     "launcherListsEqual",
-    "launcherModelConvergence",
-    "launcherModelUpdate",
-    "launcherReconciliationAfterResult",
-    "launcherReconciliationDecision",
-    "launcherSyncRetryClassification",
     "launcherPinState",
     "movePinnedLauncher",
     "normalizedLauncherList",
     "parseSerializedLauncher",
     "pinnedLauncherGlobalPosition",
-    "runLauncherListUpdateTransaction",
     "serializeLauncherWithActivities",
     "serializedLauncherVisibleInActivity",
     "visibleLauncherPosition",
@@ -50,360 +41,26 @@ assert.deepEqual(
 );
 assert.equal(helpers.launcherListsEqual(["a", "", "b"], ["a", "b"]), true);
 assert.equal(helpers.launcherListsEqual(["a", "b"], ["b", "a"]), false);
-assert.deepEqual(
-  plain(helpers.launcherConfigUpdate(["a.desktop"], ["", "a.desktop"])),
-  {
-    changed: false,
-    launchers: ["a.desktop"],
-  },
+assert.doesNotMatch(
+  launcherListLogicSource,
+  /export function launcherConfigUpdate\b/,
 );
-assert.deepEqual(
-  plain(helpers.launcherConfigUpdate(["a.desktop"], ["b.desktop"])),
-  {
-    changed: true,
-    launchers: ["b.desktop"],
-  },
+assert.doesNotMatch(
+  launcherListLogicSource,
+  /export function launcherModelUpdate\b/,
 );
-assert.deepEqual(
-  plain(
-    helpers.launcherConfigConvergence(
-      helpers.launcherConfigUpdate(["a.desktop"], ["a.desktop"]),
-      ["a.desktop"],
-    ),
-  ),
-  {
-    changed: false,
-    code: "unchanged",
-    configConverged: true,
-    configLaunchers: ["a.desktop"],
-    failedTargets: [],
-    launchers: ["a.desktop"],
-    ok: true,
-  },
+assert.doesNotMatch(
+  launcherListLogicSource,
+  /export function launcherReconciliationDecision\b/,
 );
-assert.deepEqual(
-  plain(
-    helpers.launcherConfigConvergence(
-      helpers.launcherConfigUpdate(["a.desktop"], ["b.desktop"]),
-      ["b.desktop"],
-    ),
-  ),
-  {
-    changed: true,
-    code: "converged",
-    configConverged: true,
-    configLaunchers: ["b.desktop"],
-    failedTargets: [],
-    launchers: ["b.desktop"],
-    ok: true,
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherConfigConvergence(
-      helpers.launcherConfigUpdate(["a.desktop"], ["b.desktop"]),
-      ["a.desktop"],
-    ),
-  ),
-  {
-    changed: true,
-    code: "write-mismatch",
-    configConverged: false,
-    configLaunchers: ["a.desktop"],
-    failedTargets: ["config"],
-    launchers: ["b.desktop"],
-    ok: false,
-    retryClassification: "retry-after-change",
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherModelUpdate(
-      ["a.desktop"],
-      ["old.desktop"],
-      ["", "a.desktop"],
-    ),
-  ),
-  {
-    changed: true,
-    configChanged: true,
-    launchers: ["a.desktop"],
-    modelChanged: false,
-  },
-);
-assert.deepEqual(
-  plain(helpers.launcherModelUpdate(["a.desktop"], ["a.desktop"], [""])),
-  {
-    changed: true,
-    configChanged: true,
-    launchers: [],
-    modelChanged: true,
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherModelConvergence(
-      helpers.launcherModelUpdate(
-        ["a.desktop"],
-        ["old.desktop"],
-        ["b.desktop"],
-      ),
-      ["b.desktop"],
-      ["b.desktop"],
-    ),
-  ),
-  {
-    changed: true,
-    code: "converged",
-    configConverged: true,
-    configLaunchers: ["b.desktop"],
-    failedTargets: [],
-    launchers: ["b.desktop"],
-    modelConverged: true,
-    modelLaunchers: ["b.desktop"],
-    ok: true,
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherModelConvergence(
-      helpers.launcherModelUpdate(
-        ["a.desktop"],
-        ["old.desktop"],
-        ["b.desktop"],
-      ),
-      ["b.desktop"],
-      ["old.desktop"],
-    ),
-  ),
-  {
-    changed: true,
-    code: "write-mismatch",
-    configConverged: false,
-    configLaunchers: ["old.desktop"],
-    failedTargets: ["config"],
-    launchers: ["b.desktop"],
-    modelConverged: true,
-    modelLaunchers: ["b.desktop"],
-    ok: false,
-    retryClassification: "retry-after-change",
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherModelConvergence(
-      helpers.launcherModelUpdate(["a.desktop"], ["a.desktop"], ["a.desktop"]),
-      ["a.desktop"],
-      ["a.desktop"],
-    ),
-  ),
-  {
-    changed: false,
-    code: "unchanged",
-    configConverged: true,
-    configLaunchers: ["a.desktop"],
-    failedTargets: [],
-    launchers: ["a.desktop"],
-    modelConverged: true,
-    modelLaunchers: ["a.desktop"],
-    ok: true,
-  },
-);
-
-assert.deepEqual(plain(helpers.createLauncherReconciliationState()), {
-  attempts: 0,
-  launchers: [],
-  maxAttempts: 1,
-  pending: false,
-});
-assert.equal(
-  helpers.launcherSyncRetryClassification({
-    code: "write-mismatch",
-    ok: false,
-  }),
-  "retry-after-change",
-);
-assert.equal(
-  helpers.launcherSyncRetryClassification({ code: "write-failed", ok: false }),
-  "fatal",
-);
-assert.equal(
-  helpers.launcherSyncRetryClassification({
-    code: "reconciliation-expired",
-    ok: false,
-  }),
-  "fatal",
-);
-
-const pendingReconciliation = helpers.launcherReconciliationAfterResult(
-  null,
-  helpers.launcherModelConvergence(
-    helpers.launcherModelUpdate(["a.desktop"], ["old.desktop"], ["b.desktop"]),
-    ["a.desktop"],
-    ["old.desktop"],
-  ),
-);
-assert.deepEqual(plain(pendingReconciliation), {
-  attempts: 0,
-  launchers: ["b.desktop"],
-  maxAttempts: 1,
-  pending: true,
-});
-assert.deepEqual(
-  plain(
-    helpers.launcherReconciliationAfterResult(pendingReconciliation, {
-      code: "converged",
-      ok: true,
-    }),
-  ),
-  {
-    attempts: 0,
-    launchers: [],
-    maxAttempts: 1,
-    pending: false,
-  },
+assert.doesNotMatch(
+  launcherListLogicSource,
+  /export function runLauncherListUpdateTransaction\b/,
 );
 assert.doesNotMatch(
   launcherListLogicSource,
   /syncResult\.code\s*!==\s*"write-mismatch"/,
 );
-assert.deepEqual(
-  plain(
-    helpers.launcherReconciliationDecision(
-      pendingReconciliation,
-      ["b.desktop"],
-      ["b.desktop"],
-    ),
-  ),
-  {
-    action: "clear",
-    launchers: [],
-    state: {
-      attempts: 0,
-      launchers: [],
-      maxAttempts: 1,
-      pending: false,
-    },
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherReconciliationDecision(
-      pendingReconciliation,
-      ["a.desktop"],
-      ["old.desktop"],
-    ),
-  ),
-  {
-    action: "retry",
-    launchers: ["b.desktop"],
-    state: {
-      attempts: 1,
-      launchers: ["b.desktop"],
-      maxAttempts: 1,
-      pending: true,
-    },
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherReconciliationDecision(
-      {
-        attempts: 1,
-        launchers: ["b.desktop"],
-        maxAttempts: 1,
-        pending: true,
-      },
-      ["a.desktop"],
-      ["old.desktop"],
-    ),
-  ),
-  {
-    action: "expired",
-    launchers: ["b.desktop"],
-    state: {
-      attempts: 1,
-      launchers: [],
-      maxAttempts: 1,
-      pending: false,
-    },
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherReconciliationAfterResult(
-      {
-        attempts: 1,
-        launchers: ["b.desktop"],
-        maxAttempts: 1,
-        pending: true,
-      },
-      helpers.launcherModelConvergence(
-        helpers.launcherModelUpdate(
-          ["a.desktop"],
-          ["old.desktop"],
-          ["b.desktop"],
-        ),
-        ["a.desktop"],
-        ["old.desktop"],
-      ),
-    ),
-  ),
-  {
-    attempts: 1,
-    launchers: [],
-    maxAttempts: 1,
-    pending: false,
-  },
-);
-assert.deepEqual(
-  plain(
-    helpers.launcherReconciliationAfterResult(
-      null,
-      helpers.launcherModelConvergence(
-        helpers.launcherModelUpdate(["a.desktop"], ["a.desktop"], []),
-        ["a.desktop"],
-        ["a.desktop"],
-      ),
-    ),
-  ),
-  {
-    attempts: 0,
-    launchers: [],
-    maxAttempts: 1,
-    pending: true,
-  },
-);
-
-const launcherUpdateState = { updatingLauncherConfig: false };
-assert.deepEqual(
-  plain(
-    helpers.runLauncherListUpdateTransaction(launcherUpdateState, () => {
-      assert.equal(launcherUpdateState.updatingLauncherConfig, true);
-      return { code: "converged", ok: true };
-    }),
-  ),
-  { code: "converged", ok: true },
-);
-assert.equal(launcherUpdateState.updatingLauncherConfig, false);
-
-const failingLauncherUpdateState = { updatingLauncherConfig: false };
-assert.deepEqual(
-  plain(
-    helpers.runLauncherListUpdateTransaction(failingLauncherUpdateState, () => {
-      assert.equal(failingLauncherUpdateState.updatingLauncherConfig, true);
-      throw new Error("assignment denied");
-    }),
-  ),
-  {
-    changed: false,
-    code: "write-failed",
-    error: "assignment denied",
-    ok: false,
-    retryClassification: "fatal",
-  },
-);
-assert.equal(failingLauncherUpdateState.updatingLauncherConfig, false);
 
 assert.deepEqual(
   plain(helpers.parseSerializedLauncher("org.example.App.desktop")),
