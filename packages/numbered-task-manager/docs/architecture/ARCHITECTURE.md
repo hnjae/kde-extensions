@@ -94,7 +94,7 @@ in `SPEC.md`.
   launcher commands, or launcher-activity adapters, but missing adapters and
   unknown routes should produce structured diagnostic results instead of silent
   false returns.
-- Keep context-menu command descriptor construction in `TaskContextMenuCommandLogic.mjs`. Focused menu feature modules should import launcher and task command factories from that owner, while `TaskActionLogic.mjs` keeps execution/result classification for malformed, unsupported, missing, or thrown requests.
+- Keep context-menu command descriptor construction in `TaskContextMenuCommandLogic.mjs`. Focused menu feature modules should import launcher and task command factories from that owner, while context-menu task execution/result classification stays in `TaskContextMenuTaskCommandLogic.mjs`.
 - Keep launcher-list transformations in `LauncherListLogic.mjs` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
@@ -131,13 +131,7 @@ in `SPEC.md`.
   virtual-desktop list role shapes should not be duplicated between normal
   task composition, remote attention, context menu code, and task-like
   delegates.
-- Keep source-side task-entry diagnostic action-result adaptation in
-  `TaskEntryDiagnosticReporter.qml`. Normal and remote-attention source
-  delegates should provide source model, source row, publication key, and roles;
-  those role snapshots should include any projected fields that `TaskEntryLogic.mjs`
-  can diagnose, including activity and virtual-desktop list roles. The reporter
-  owns diagnostic context and repeated-signature suppression while
-  `TaskActionLogic.mjs` owns `projectTaskEntry` action-result mapping.
+- Keep source-side task-entry diagnostic action-result adaptation in focused task-entry diagnostic logic consumed by `TaskEntryDiagnosticReporter.qml`. Normal and remote-attention source delegates should provide source model, source row, publication key, and roles; those role snapshots should include any projected fields that `TaskEntryLogic.mjs` can diagnose, including activity and virtual-desktop list roles. The reporter owns diagnostic context and repeated-signature suppression while the focused task-entry diagnostic owner maps diagnostics to `projectTaskEntry` action results.
 - Keep normal-task projection dependencies explicit. `TaskModelLogic.mjs` should include the shared task-entry mechanics it needs directly instead of accepting a broad runtime-injected `taskEntryLogic` namespace from QML call sites.
 - Keep normal-task entry schema limited to fields with production consumers or documented purpose. Raw upstream launcher association should not be carried as a separate `hasAnyLauncher` field unless a production consumer is added.
 - Keep normal task publication state transitions in `NormalTaskStoreLogic.mjs`.
@@ -169,7 +163,7 @@ in `SPEC.md`.
 - Route activation decisions for rendered task-like items through composed visible item descriptors where practical. Root QML still executes the unavoidable `TasksModel.requestActivate(...)` side effect, but normal shortcut activation, `Meta+0`, and remote-attention item activation should share the same visible-item metadata contract.
 - Bind rendered remote-attention item metadata from its composed visible item descriptor instead of reconstructing the attention target separately in root layout bindings.
 - Keep the rendered task-list representation in `TaskListRepresentation.qml`. It should own the `fullRepresentation` layout, task-list viewport, normal item delegate instantiation, and remote-attention item placement, while `main.qml` wires platform models, adapters, and composed visible-item inputs.
-- Keep the generic action-result shape and diagnostic logging predicate in a small `ActionResultLogic.mjs` helper. Workflow-specific result classifiers can migrate incrementally out of `TaskActionLogic.mjs`, but they should all consume the same result factory so root QML, adapters, and loggers share one result contract.
+- Keep the generic action-result shape and diagnostic logging predicate in a small `ActionResultLogic.mjs` helper. Workflow-specific result classifiers should live in focused owners near their workflow and consume the same result factory so root QML, adapters, and loggers share one result contract.
 - Keep shortcut activation, context-menu creation, and launcher pin/unpin request outcomes in focused action-result classifiers. Root QML should still execute Plasma side effects, but invalid requests, stale model indexes, missing targets, rejected launcher requests, and creation failures should be classified before deciding whether to log a diagnostic.
 - Keep activation request and execution outcome classification in `TaskActivationLogic.mjs`. `TaskActivationAdapter.qml` may dispatch the unavoidable `TasksModel.requestActivate(...)` effects through a narrow activation port, but missing activation targets and thrown activation requests should become structured diagnostics instead of unhandled adapter failures.
 - Keep launcher command dispatch and launcher mutation execution outcomes in `LauncherCommandLogic.mjs`. `LauncherCommandAdapter.qml` should consume a narrow launcher command port that exposes launcher-list reads and the unavoidable `TasksModel.requestAddLauncher(...)` and `requestRemoveLauncher(...)` effects, so malformed launcher commands, thrown launcher requests, rejected mutations, and persistence failures become structured diagnostics without giving the adapter unrelated `TasksModel` API surface.
