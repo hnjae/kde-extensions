@@ -10,6 +10,7 @@ import org.kde.plasma.plasmoid
 import io.github.hnjae.numberedtaskmanager as NumberedTaskManager
 import "TaskContextMenuFooterLogic.mjs" as TaskContextMenuFooterLogic
 import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
+import "TaskContextMenuPlatformLogic.mjs" as TaskContextMenuPlatformLogic
 
 // qmllint disable incompatible-type
 PlasmaExtras.Menu {
@@ -72,7 +73,7 @@ PlasmaExtras.Menu {
     property int visualParentWidth: 0
 
     minimumWidth: visualParentWidth
-    placement: TaskContextMenuLogic.panelMenuPlacement(Plasmoid.location, PlasmaCore.Types, PlasmaExtras.Menu)
+    placement: TaskContextMenuPlatformLogic.panelMenuPlacement(Plasmoid.location, PlasmaCore.Types, PlasmaExtras.Menu)
 
     signal actionResult(var result)
     signal launcherCommandRequested(var command)

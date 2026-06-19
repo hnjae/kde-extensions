@@ -5,17 +5,17 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import org.kde.taskmanager as TaskManager
-import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
+import "TaskContextMenuPlatformLogic.mjs" as TaskContextMenuPlatformLogic
 
 QtQuick.QtObject {
     id: root
 
     readonly property var currentActivity: activityInfo.currentActivity
     property var activityEntries: []
-    readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
+    readonly property var desktopEntries: TaskContextMenuPlatformLogic.virtualDesktopEntriesSnapshot(virtualDesktopInfo.desktopIds, virtualDesktopInfo.desktopNames)
 
     function refreshActivities() {
-        activityEntries = TaskContextMenuLogic.activityEntriesSnapshot(activityInfo.runningActivities(), id => activityInfo.activityName(id), id => activityInfo.activityIcon(id));
+        activityEntries = TaskContextMenuPlatformLogic.activityEntriesSnapshot(activityInfo.runningActivities(), id => activityInfo.activityName(id), id => activityInfo.activityIcon(id));
     }
 
     QtQuick.Component.onCompleted: refreshActivities()
