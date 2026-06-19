@@ -7,9 +7,9 @@
 
 The codebase has a strong existing direction: external behavior is specified in `docs/spec/SPEC.md`, architectural intent is documented in `docs/architecture/ARCHITECTURE.md`, and most domain decisions already have pure `.mjs` helpers with focused tests. The most important remaining design risks are not a lack of architecture, but several places where the current implementation has outgrown its boundaries.
 
-The highest-impact risks are around action/effect boundaries. Context-menu action descriptors can remain executable even when their rendered menu items are disabled or hidden. Model-index shape is diagnosed as malformed but still treated as actionable. Desktop actions and footer actions bypass the structured action-result path used by the rest of the task actions.
+The highest-impact risks are around action/effect boundaries. Desktop actions and footer actions bypass the structured action-result path used by the rest of the task actions.
 
-The second major risk is weakly centralized invariants. Model-index shape is diagnosed as malformed but still treated as actionable, and visible-item descriptors rely on matching string fields that are not validated.
+The second major risk is weakly centralized invariants. Visible-item descriptors rely on matching string fields that are not validated.
 
 The third major risk is module breadth. `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` each contain multiple feature families. That makes local changes harder to reason about and pushes tests toward very large suites or regex assertions against QML instead of executable behavior tests.
 
@@ -17,11 +17,10 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 ## Top Design Risks
 
-1. **Context-menu commandability is not centrally protected.** `TaskContextMenuLogic.mjs` attaches commands to disabled or invisible actions, and `TaskContextMenuActionDispatcher.qml` dispatches by route without checking action availability.
-2. **Core descriptor invariants are implicit.** `TaskEntryLogic.hasValidModelIndex({})` returns true while diagnostics report `unknown-model-index-shape`, and activation routing trusts `sourceModel` even when it could disagree with visible-item `kind`.
-3. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
-4. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, launcher sync orchestration is mostly QML imperative code, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
-5. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into context menu role/opening paths and launcher sync, while launcher pin/unpin commands, context-menu task commands, context-menu launcher state reads, normal task activation, and task movement now use narrow ports.
+1. **Core descriptor invariants are implicit.** Activation routing trusts `sourceModel` even when it could disagree with visible-item `kind`.
+2. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
+3. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, launcher sync orchestration is mostly QML imperative code, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
+4. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into context menu role/opening paths and launcher sync, while launcher pin/unpin commands, context-menu task commands, context-menu launcher state reads, normal task activation, and task movement now use narrow ports.
 
 ## Single Source of Truth Violations
 
@@ -58,38 +57,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 **Suggested migration:** Keep future launcher-sync cleanup on the same structured result boundary so pin/unpin does not regress to a silent-success path.
 
 **Acceptance criteria:** `pinLauncher(...)` and `unpinLauncher(...)` return or emit failure when persistence fails. Tests cover request failure, request rejection, accepted model mutation plus failed config convergence, missing `launcherSync`, and full success. No call site ignores an `ok: false` launcher persistence result.
-
-### Finding: Disabled or invisible context-menu actions remain executable
-
-**Priority:** P1.
-
-**Evidence:** `TaskContextMenuLogic.mjs` functions such as `newInstanceAction(...)`, `basicResizeAction(...)`, and `shadeAction(...)` attach commands regardless of enabled/visible state; `contextMenuActionRoute(...)` routes solely by `update` or `command`; `TaskContextMenuActionDispatcher.qml` dispatches without checking `enabled` or `visible`.
-
-**Current state:** Availability is enforced by rendered `PlasmaExtras.MenuItem` `enabled` and `visible` properties, not by the action descriptor or dispatcher.
-
-**Design concern:** The rule “unavailable actions cannot execute” is protected opportunistically at the UI layer. Tests of routing cannot prove that unavailable action states are non-actionable, and stale menu state can still dispatch a command if passed directly.
-
-**Correct end state:** Commandability should be part of the descriptor/routing contract. Unavailable descriptors should either omit commands/updates or be centrally rejected by the dispatcher with a structured result such as `action-disabled` or `action-hidden`.
-
-**Suggested migration:** Add tests that pass disabled resize, hidden activity, and unavailable launcher-activity descriptors into `contextMenuActionRoute(...)` or `triggerAction(...)`. Then either remove commands from unavailable descriptors or add a central availability check before route dispatch.
-
-**Acceptance criteria:** A disabled or invisible task-model action cannot reach `TaskContextMenuTaskCommandAdapter.requestTaskModelCommand(...)`. A disabled or invisible launcher activity action cannot request a launcher-list replacement. Rejections are structured results, not silent reliance on QML rendering behavior.
-
-### Finding: Model-index shape is both malformed and actionable
-
-**Priority:** P1.
-
-**Evidence:** `TaskEntryLogic.modelIndexState(...)` now names `modelIndex.valid === undefined` as `unknown-shape`, and the actionability policy still allows that state for activation and context-menu effects until the real Plasma persistent model-index shape is confirmed.
-
-**Current state:** A model-index object with no `valid` property is explicitly classified as `unknown-shape` and remains accepted for activation and context-menu effects under a named preservation policy.
-
-**Design concern:** The model-index invariant is split between “diagnose” and “allow effects.” That makes stale or malformed model-index handling dependent on which boundary sees the object first.
-
-**Correct end state:** `TaskEntryLogic.mjs` should own one explicit model-index contract with states such as `missing`, `valid`, `invalid`, and `unknown-shape`. If `unknown-shape` must remain actionable for Plasma runtime reasons, that must be a named policy outcome rather than simply “valid.”
-
-**Suggested migration:** Add `modelIndexState(modelIndex)`. Migrate diagnostics and action request checks to consume it. Preserve runtime behavior initially if needed, but update tests so `{}` is not asserted as simply valid without naming the unknown-shape policy. Confirm the real `makePersistentModelIndex(...)` shape in Plasma before tightening rejection.
-
-**Acceptance criteria:** One helper classifies model-index state. Diagnostics and effect boundaries no longer disagree on the same shape. Activation and context-menu tests cover missing, invalid, valid, and unknown-shape indexes.
 
 ### Finding: Visible-item descriptors can route activation to the wrong model
 
@@ -443,9 +410,9 @@ The root `main.qml` should remain the composition root. It should instantiate Pl
 
 Domain rules should live in focused pure modules. Activity rules stay in `ActivityScopeLogic.mjs`. Visible-item descriptors and shortcut target selection should have one descriptor owner. Launcher domain rules should be split from launcher sync policy. Context-menu feature families should have focused pure modules.
 
-State definitions should be explicit descriptors rather than multi-field conventions. Visible item descriptors should have a validated discriminated shape. Model-index state should have named states instead of a boolean that treats unknown shape as valid. Context-menu routes and command kinds should be centralized constants or typed helpers.
+State definitions should be explicit descriptors rather than multi-field conventions. Visible item descriptors should have a validated discriminated shape. Context-menu routes and command kinds should be centralized constants or typed helpers.
 
-Validation should happen before effects. Activation requests should validate visible-item descriptor consistency and model-index state before choosing a model. Context-menu dispatch should reject disabled or hidden actions before routing. Launcher commands should combine model mutation and persistence outcomes before reporting success.
+Validation should happen before effects. Activation requests should validate visible-item descriptor consistency before choosing a model. Launcher commands should combine model mutation and persistence outcomes before reporting success.
 
 External effects should be isolated behind narrow ports. Raw `TasksModel` should be wrapped by task command, launcher command/repository, launcher sync, and activation ports. C++ desktop action resolution should produce descriptors before constructing `QAction` objects or launching `KIO` jobs. QML adapters should supply ports and execute returned commands.
 
@@ -455,7 +422,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 ## Suggested Refactoring Sequence
 
-1. Add characterization tests around current behavior. Prioritize launcher pin/unpin persistence outcomes, disabled context-menu dispatch, model-index unknown-shape policy, visible-item `kind/sourceModel` mismatch, launcher sync retry classification, and source lifecycle transitions.
+1. Add characterization tests around current behavior. Prioritize launcher pin/unpin persistence outcomes, visible-item `kind/sourceModel` mismatch, launcher sync retry classification, and source lifecycle transitions.
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Extract launcher sync orchestration into fakeable pure functions or port-based helpers. Extract source lifecycle state machines from hidden QML delegate event ordering. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, split launcher sync from launcher list domain rules, and introduce narrow ports around raw `TasksModel`.
@@ -477,9 +444,9 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Single Source of Truth / Duplication Agent:** Reported repeated context-menu route-kind strings. This was merged into “Single Source of Truth Violations.”
 
-**Invariant / Correctness Agent:** Reported model-index unknown shape being both diagnostic and actionable, disabled/invisible context-menu actions carrying executable commands, and visible-item descriptor mismatch risk. All three were kept. The first two are P1 because they affect effect-boundary correctness; the descriptor mismatch is P2 because the current composer produces valid descriptors but the boundary is not protected.
+**Invariant / Correctness Agent:** Reported visible-item descriptor mismatch risk. It was kept as P2 because the current composer produces valid descriptors but the boundary is not protected.
 
-**Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, duplicated virtual desktop helpers, and `LauncherListLogic.mjs` mixing sync/domain rules. These were merged with deletion/modularity findings. The broad context-menu module remains P1; action-result and launcher-list splits are P2.
+**Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. These were merged with deletion/modularity findings. The broad context-menu module remains P1; action-result and launcher-list splits are P2.
 
 **Logic Placement / Flow Readability Agent:** Reported `NormalTaskSource.qml` bypassing its injected launcher-position callback, ignored launcher persistence results, and implicit `visualParent.contextMenuOpen` mutation. All were kept. The persistence result issue was merged with the error-handling report and is P1.
 
@@ -487,6 +454,6 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Error Handling / Observability Agent:** Reported ignored launcher persistence failures, implicit launcher sync retry semantics, silent stale drag failures, lossy exception serialization, and unobserved desktop action launch failures. All were kept, with duplicate launcher persistence merged into the top P1 finding.
 
-**Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, virtual desktop duplication, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. These were merged into cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
+**Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. These were merged into cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
 **Rejected or deferred findings:** No subagent finding was rejected for lack of code evidence. Visual shell extraction was deferred because the current duplication is smaller and less risky than action/effect boundary issues. A big rewrite of context menu QML, raw model plumbing, or source delegates is explicitly not recommended; the migration should proceed through characterization tests and narrow extracted owners.
