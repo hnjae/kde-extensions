@@ -94,15 +94,15 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P2.
 
-**Evidence:** `LauncherListLogic.mjs` still combines activity serialization, activity updates, pin visibility, visible position, and pinned reordering; call sites include platform state, context-menu launcher activity paths, and task movement. Sync/reconciliation policy now lives in `LauncherSyncLogic.mjs`.
+**Evidence:** `LauncherActivityLogic.mjs` owns activity serialization and activity update policy, and sync/reconciliation policy lives in `LauncherSyncLogic.mjs`. `LauncherListLogic.mjs` still combines pin visibility, visible position, and pinned reordering; call sites include platform state, context-menu pin state, and task movement.
 
-**Current state:** Launcher feature families are grouped by noun rather than ownership.
+**Current state:** Launcher activity and sync feature families have focused owners. Remaining launcher list policy is still grouped by noun rather than ownership.
 
-**Design concern:** Removing launcher activity menu behavior still requires auditing code used by unrelated drag and pin state paths.
+**Design concern:** Removing or changing pin visibility still requires auditing code used by unrelated drag/reorder paths.
 
 **Correct end state:** Keep the launcher domain boundary, but split responsibility modules for serialization/activity scope, pin visibility, and pinned reordering if the domain module remains too broad.
 
-**Suggested migration:** Extract activity serialization/update helpers if they remain large. Leave re-exports temporarily to reduce churn.
+**Suggested migration:** Extract pin visibility helpers next if they remain coupled to pinned reordering. Leave re-exports temporarily only where needed to reduce churn.
 
 **Acceptance criteria:** Runtime adapters import only the launcher responsibility they execute. Tests can fail independently for serialized activity updates, pin state, and pinned reordering.
 
