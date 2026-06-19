@@ -8,6 +8,7 @@ import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid
 import io.github.hnjae.numberedtaskmanager as NumberedTaskManager
+import "TaskContextMenuFooterLogic.mjs" as TaskContextMenuFooterLogic
 import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
 
 // qmllint disable incompatible-type
@@ -58,6 +59,11 @@ PlasmaExtras.Menu {
     readonly property var taskActivityActionsSection: actionSections.taskActivityActions
     readonly property var virtualDesktopActionsSection: actionSections.virtualDesktopActions
     readonly property var desktopActions: contextMenuBackend.desktopActions(root.taskRoles.launcherUrl || "", root)
+    readonly property var configureFooterAction: Plasmoid.internalAction("configure")
+    readonly property var configureFooterActionState: TaskContextMenuFooterLogic.contextMenuFooterAction("configureWidget", configureFooterAction)
+    readonly property var editModeFooterAction: Plasmoid.containment ? Plasmoid.containment.internalAction("configure") : null
+    readonly property var editModeFooterActionState: TaskContextMenuFooterLogic.contextMenuFooterAction("editMode", editModeFooterAction)
+    readonly property var footerActionSection: TaskContextMenuFooterLogic.contextMenuFooterSection(configureFooterActionState, editModeFooterActionState)
     property var launcherReadPort
     property var modelIndex
     property var task: ({})
@@ -557,32 +563,35 @@ PlasmaExtras.Menu {
     }
 
     PlasmaExtras.MenuItem {
+        readonly property var sectionState: root.footerActionSection
+
         separator: true
+        visible: sectionState.visible
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var configureAction: Plasmoid.internalAction("configure")
+        readonly property var actionState: root.configureFooterActionState
 
-        enabled: configureAction && configureAction.enabled
-        icon: configureAction ? configureAction.icon : ""
-        text: configureAction ? configureAction.text : ""
-        visible: configureAction && configureAction.visible
+        enabled: actionState.enabled
+        icon: actionState.icon || ""
+        text: actionState.text
+        visible: actionState.visible
 
         onClicked: {
-            configureAction.trigger();
+            root.actionResult(TaskContextMenuFooterLogic.executeContextMenuFooterAction(actionState, root.configureFooterAction));
         }
     }
 
     PlasmaExtras.MenuItem {
-        readonly property var editModeAction: Plasmoid.containment ? Plasmoid.containment.internalAction("configure") : null
+        readonly property var actionState: root.editModeFooterActionState
 
-        enabled: editModeAction && editModeAction.enabled
-        icon: editModeAction ? editModeAction.icon : ""
-        text: editModeAction ? editModeAction.text : ""
-        visible: editModeAction && editModeAction.visible
+        enabled: actionState.enabled
+        icon: actionState.icon || ""
+        text: actionState.text
+        visible: actionState.visible
 
         onClicked: {
-            editModeAction.trigger();
+            root.actionResult(TaskContextMenuFooterLogic.executeContextMenuFooterAction(actionState, root.editModeFooterAction));
         }
     }
 
