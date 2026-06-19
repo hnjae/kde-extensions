@@ -7,7 +7,7 @@
 
 The codebase has a strong existing direction: external behavior is specified in `docs/spec/SPEC.md`, architectural intent is documented in `docs/architecture/ARCHITECTURE.md`, and most domain decisions already have pure `.mjs` helpers with focused tests. The most important remaining design risks are not a lack of architecture, but several places where the current implementation has outgrown its boundaries.
 
-The highest-impact risks are around action/effect boundaries. Desktop actions and footer actions bypass the structured action-result path used by the rest of the task actions.
+The highest-impact risks are around action/effect boundaries. Footer actions still bypass the structured action-result path used by the rest of the task actions, and desktop action backend testing still depends on source-shape checks for behavior that should be executable-tested.
 
 The second major risk is module breadth. `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` each contain multiple feature families. That makes local changes harder to reason about and pushes tests toward very large suites or regex assertions against QML instead of executable behavior tests.
 
@@ -16,7 +16,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 ## Top Design Risks
 
 1. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
-2. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, standalone launcher sync diagnostics still use a separate warning formatter, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
+2. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, standalone launcher sync diagnostics still use a separate warning formatter, and C++ desktop actions still require live `QAction`/KIO objects for executable verification despite having descriptors and launch-failure diagnostics.
 
 ## Invariant and Correctness Risks
 
@@ -108,22 +108,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 ## Error Handling and Observability Problems
 
-### Finding: Desktop action launch failures are unobserved
-
-**Priority:** P2.
-
-**Evidence:** `TaskContextMenuBackend::desktopActions(...)` starts `KIO::ApplicationLauncherJob` in the `QAction::triggered` lambda and does not connect to job result/error signals; `TaskContextMenu.qml` binds desktop action menu items directly through `action: modelData`; lookup failures collapse to an empty action list.
-
-**Current state:** Clicking a backend-created desktop action can fail without a widget-owned diagnostic. The path bypasses `TaskActionResultLogger.qml`.
-
-**Design concern:** Desktop action failures are hard to distinguish from missing actions, disabled menu state, or no-op behavior.
-
-**Correct end state:** Backend-created desktop actions should be observable. `TaskContextMenuBackend` should emit a QML-visible structured result or log through a KDE logging category with launcher URL, desktop entry path, service action identity, and job error details.
-
-**Suggested migration:** Connect `KJob::result` for `ApplicationLauncherJob`. Map nonzero errors to a stable code such as `desktop-action-launch-failed`. Forward the result to `TaskContextMenu.qml` and `TaskActionResultLogger.qml`, or to a backend logging category.
-
-**Acceptance criteria:** Failed desktop action jobs are observable. Logs/results include launcher URL or desktop entry path and service action text/name. Expected empty desktop-action discovery remains quiet.
-
 ### Finding: Action-result formatting is split between action and sync paths
 
 **Priority:** P2.
@@ -188,7 +172,7 @@ External effects should be isolated behind narrow ports. Raw `TasksModel` should
 
 Errors should be represented through one structured diagnostic shape. `ErrorContextLogic.mjs` now defines shared structured error context; the generic result helper should still define result shape and logging predicates, while domain-specific result classifiers should live near their workflow. Launcher sync and action execution should continue to use the shared serializer and produce correlated diagnostics for user actions.
 
-Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover launcher sync orchestration through fake ports. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch failure observability without requiring real KIO job execution.
+Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover launcher sync orchestration through fake ports. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch dispatch without requiring real KIO job execution.
 
 ## Suggested Refactoring Sequence
 
@@ -196,7 +180,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
 3. Isolate core domain logic from external effects. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, and split remaining broad launcher-domain responsibilities if they keep coupling unrelated features.
-5. Improve error semantics and observability. Add structured error context and connect desktop action launch failures to diagnostics.
+5. Improve error semantics and observability. Keep standalone launcher sync diagnostics correlated with action-result formatting, and keep backend effect failures visible through structured results.
 6. Remove or simplify premature abstractions. After the behavior boundaries are stable, consider extracting `TaskLikeItemShell.qml` if the duplicated visual shell still creates real maintenance pressure. Keep compatibility re-exports only temporarily and remove them once QML and tests consume focused modules directly.
 
 ## Things Not To Change Yet
@@ -226,9 +210,9 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Logic Placement / Flow Readability Agent:** Reported implicit `visualParent.contextMenuOpen` mutation. This is complete; menu-open state now flows through explicit lifecycle callbacks owned by delegates.
 
-**Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. Launcher sync orchestration is now covered through `LauncherSyncLogic.mjs`; desktop actions and footer actions remain P2.
+**Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. Launcher sync orchestration is now covered through `LauncherSyncLogic.mjs`; desktop action descriptors exist but still lack executable fake-input tests, and footer actions remain P2.
 
-**Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Exception serialization is complete; desktop action launch observability remains.
+**Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Exception serialization and desktop action launch diagnostics are complete; standalone launcher sync diagnostic formatting remains split from the generic action-result logger.
 
 **Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. The raw model adapter concern is complete; remaining active items are kept in cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
