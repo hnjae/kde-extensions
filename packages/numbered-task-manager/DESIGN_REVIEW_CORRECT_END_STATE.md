@@ -41,22 +41,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** Only one production implementation converts virtual desktop objects or strings to IDs. Task scope tests and context-menu checked-state tests both use the shared helper. A desktop identity behavior change requires one code edit.
 
-### Finding: Context-menu command descriptors lack a focused owner
-
-**Priority:** P2.
-
-**Evidence:** `TaskContextMenuRouteLogic.mjs` declares the context-menu command and route kinds, owns route classification, and exports route-kind predicates. `TaskActionLogic.mjs` consumes the shared command-kind constants, and `TaskContextMenuActionDispatcher.qml` consumes the route predicates directly.
-
-**Current state:** Route kind strings are centralized. Command descriptor construction still lives in `TaskActionLogic.mjs`.
-
-**Design concern:** Context-menu command descriptor construction remains in the generic action-result module instead of a context-menu command owner.
-
-**Correct end state:** Command descriptor construction moves out of the generic action-result module and into a context-menu command module.
-
-**Suggested migration:** Move context-menu command factories out of `TaskActionLogic.mjs` when the action-result split happens.
-
-**Acceptance criteria:** Context-menu command descriptor construction has a focused owner outside the generic action-result module.
-
 ### Finding: Error serialization is duplicated and too lossy
 
 **Priority:** P2.
