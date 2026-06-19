@@ -30,6 +30,10 @@ assert.match(
   sourceQml,
   /QtQuick\.Repeater\s*\{[\s\S]*?model:\s*root\.taskModel/,
 );
+assert.match(
+  sourceQml,
+  /import "NormalTaskSourceLifecycleLogic\.mjs" as NormalTaskSourceLifecycleLogic/,
+);
 assert.match(sourceQml, /signal taskPublished\(/);
 assert.match(sourceQml, /signal taskRemoved\(/);
 assert.match(sourceQml, /signal actionResult\(var result\)/);
@@ -39,3 +43,20 @@ assert.match(
   /roles:\s*\(\{[\s\S]*?activities:\s*model\.Activities[\s\S]*?demandingAttention:\s*model\.IsDemandingAttention[\s\S]*?index:[\s\S]*?isLauncher:\s*model\.IsLauncher[\s\S]*?isOnAllVirtualDesktops:\s*model\.IsOnAllVirtualDesktops[\s\S]*?isWindow:\s*model\.IsWindow[\s\S]*?modelIndex:\s*persistentModelIndex[\s\S]*?virtualDesktops:\s*model\.VirtualDesktops[\s\S]*?\}\)/,
 );
 assert.match(sourceQml, /taskEntryDiagnostics\.emitDiagnostics\(\)/);
+assert.match(sourceQml, /function executeLifecycleCommands\(output\)/);
+assert.match(
+  sourceQml,
+  /NormalTaskSourceLifecycleLogic\.normalTaskSourceRowAppeared/,
+);
+assert.match(
+  sourceQml,
+  /NormalTaskSourceLifecycleLogic\.normalTaskSourceRowChanged/,
+);
+assert.match(
+  sourceQml,
+  /NormalTaskSourceLifecycleLogic\.normalTaskSourceRowRemoved/,
+);
+assert.doesNotMatch(
+  sourceQml,
+  /function syncTask\(\)\s*\{\s*if \(!publishedKey\)/s,
+);
