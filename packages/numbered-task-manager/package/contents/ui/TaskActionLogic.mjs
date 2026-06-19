@@ -10,6 +10,7 @@ import {
   activationTargetForShortcutIndex,
   isNormalVisibleItem,
   isRemoteAttentionVisibleItem,
+  validateVisibleItemDescriptor,
 } from "./VisibleTaskItemsLogic.mjs";
 
 export function normalizedStringList(value) {
@@ -241,6 +242,23 @@ export function shortcutActivationRequest(visibleItems, shortcutIndex) {
         sourceModel: targetItem.sourceModel || "",
         targetKind: targetItem.kind || "",
       },
+    );
+  }
+
+  const validation = validateVisibleItemDescriptor(targetItem);
+  if (!validation.ok) {
+    return actionResult(
+      "activateShortcut",
+      "invalid-visible-item",
+      false,
+      true,
+      Object.assign(
+        {
+          shortcutIndex,
+          validationCode: validation.code || "",
+        },
+        validation.context || {},
+      ),
     );
   }
 

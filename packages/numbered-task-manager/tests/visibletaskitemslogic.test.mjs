@@ -56,8 +56,8 @@ assert.deepEqual(plain(logic.validateVisibleItemDescriptor(null)), {
   code: "missing-visible-item",
   context: {
     numbered: false,
-    slotNumber: undefined,
-    sourceIndex: undefined,
+    slotNumber: null,
+    sourceIndex: null,
     sourceModel: "",
     targetKind: "",
   },

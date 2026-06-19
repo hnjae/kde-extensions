@@ -22,6 +22,82 @@ export function isRemoteAttentionVisibleItem(item) {
   return item?.kind === remoteAttentionItemKind;
 }
 
+export function visibleItemDescriptorContext(item) {
+  const descriptor = item || {};
+  return {
+    numbered: Boolean(descriptor.numbered),
+    slotNumber:
+      descriptor.slotNumber === undefined ? null : descriptor.slotNumber,
+    sourceIndex:
+      descriptor.sourceIndex === undefined ? null : descriptor.sourceIndex,
+    sourceModel: descriptor.sourceModel || "",
+    targetKind: descriptor.kind || "",
+  };
+}
+
+export function invalidVisibleItemDescriptor(code, item, extraContext) {
+  return {
+    code,
+    context: Object.assign(
+      visibleItemDescriptorContext(item),
+      extraContext || {},
+    ),
+    ok: false,
+  };
+}
+
+export function validateVisibleItemDescriptor(item) {
+  if (!item) {
+    return invalidVisibleItemDescriptor("missing-visible-item", item);
+  }
+
+  const descriptor = item || {};
+  const kind = descriptor.kind || "";
+  if (kind !== normalItemKind && kind !== remoteAttentionItemKind) {
+    return invalidVisibleItemDescriptor("unsupported-target-kind", item);
+  }
+
+  const expectedSourceModel = kind;
+  if ((descriptor.sourceModel || "") !== expectedSourceModel) {
+    return invalidVisibleItemDescriptor("source-model-mismatch", item, {
+      expectedSourceModel,
+    });
+  }
+
+  if (kind === normalItemKind) {
+    if (descriptor.sourceIndex === undefined || descriptor.sourceIndex < 0) {
+      return invalidVisibleItemDescriptor("invalid-source-index", item);
+    }
+
+    if (descriptor.numbered !== true) {
+      return invalidVisibleItemDescriptor("invalid-numbered-state", item);
+    }
+
+    if (descriptor.slotNumber < 1 || descriptor.slotNumber > 9) {
+      return invalidVisibleItemDescriptor("invalid-slot-number", item);
+    }
+  }
+
+  if (kind === remoteAttentionItemKind) {
+    if (descriptor.sourceIndex !== -1) {
+      return invalidVisibleItemDescriptor("invalid-source-index", item);
+    }
+
+    if (descriptor.numbered !== false) {
+      return invalidVisibleItemDescriptor("invalid-numbered-state", item);
+    }
+
+    if (descriptor.slotNumber !== 0) {
+      return invalidVisibleItemDescriptor("invalid-slot-number", item);
+    }
+  }
+
+  return {
+    context: visibleItemDescriptorContext(item),
+    ok: true,
+  };
+}
+
 export function hasRemoteAttentionItem(remoteAttentionSnapshot) {
   const snapshot = remoteAttentionSnapshot || {};
   return Number(snapshot.count || 0) > 0;
