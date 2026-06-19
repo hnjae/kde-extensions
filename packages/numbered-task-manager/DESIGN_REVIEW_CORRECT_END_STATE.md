@@ -77,7 +77,7 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Priority:** P2.
 
-**Evidence:** `LauncherListLogic.mjs` owns launcher-list normalization, model/config update diffing, convergence results, transaction guard mutation, reconciliation retry state, serialized activity prefixes, activity toggles, pin visibility, visible launcher position, and pinned launcher reordering; consumers include `LauncherSyncAdapter.qml`, `TaskPlatformState.qml`, `NormalTaskSource.qml`, `TaskContextMenuLogic.mjs`, and `TaskMoveAdapter.qml`.
+**Evidence:** `LauncherListLogic.mjs` owns launcher-list normalization, model/config update diffing, convergence results, transaction guard mutation, reconciliation retry state, serialized activity prefixes, activity toggles, pin visibility, visible launcher position, and pinned launcher reordering; consumers include `LauncherSyncAdapter.qml`, `TaskPlatformState.qml`, `TaskContextMenuLogic.mjs`, and `TaskMoveAdapter.qml`.
 
 **Current state:** Pure launcher-list transformations and operational write/reconciliation policy live in one broad module.
 
@@ -104,22 +104,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 **Suggested migration:** Introduce wrapper ports without changing behavior. Context-menu task requests now have an explicit allowlist and a narrow task-command port, launcher pin/unpin commands now use a narrow add/remove/list port, context-menu launcher state reads now use a narrow read port, normal task activation now uses a narrow activation port, and task movement now uses a narrow move port; continue by wrapping sync and role/opening paths. Finally update adapters to depend on those wrappers.
 
 **Acceptance criteria:** No adapter except the root/platform adapter receives raw `TasksModel` for unrelated purposes. Context-menu task execution has an explicit supported-method map. Unit tests can mock each port with only the methods that feature uses.
-
-### Finding: Normal task source bypasses its injected launcher-position boundary
-
-**Priority:** P2.
-
-**Evidence:** `main.qml` passes `launcherRevision` and `visibleLauncherPosition` into `NormalTaskSource`; `NormalTaskSource.qml` defines `launcherPositionForUrl(...)` to call that injected callback; the delegate still imports `LauncherListLogic.mjs` and computes `launcherPinState(...)` directly from `root.taskModel.launcherList`, `root.currentActivity`, and `root.taskModel.launcherPosition(...)`; `TaskPlatformState.qml` already owns `visibleLauncherPosition(...)`.
-
-**Current state:** `NormalTaskSource` has an injected platform-owned visible launcher API but does not use it for launcher pin projection.
-
-**Design concern:** Launcher visibility and pin membership are split across `TaskPlatformState`, `NormalTaskSource`, `LauncherListLogic`, and `NormalTaskStoreAdapter`. Initial source publication and later store recomposition can drift if launcher-position semantics change.
-
-**Correct end state:** `TaskPlatformState` should remain the QML owner of platform-backed visible launcher lookup. `NormalTaskSource` should use its injected `visibleLauncherPosition` callback, or receive a fully formed launcher pin snapshot from a dedicated adapter. It should not directly read `taskModel.launcherList` for this policy.
-
-**Suggested migration:** Replace direct `LauncherListLogic.launcherPinState(...)` in `NormalTaskSource.qml` with `launcherPositionForUrl(launcherUrl, launcherRevisionToken)`. Derive `launcherPinned` from `launcherPosition !== -1`. Remove the now-unused `LauncherListLogic` import.
-
-**Acceptance criteria:** `NormalTaskSource.qml` no longer imports `LauncherListLogic.mjs`. Source-published `launcherPosition` and store-recomputed launcher position use the same callback semantics. Tests cover launcher revision/current-activity changes without relying on an ignored extra argument to `launcherPinState(...)`.
 
 ## Logic Placement and Flow Predictability
 
@@ -363,7 +347,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. These were merged with deletion/modularity findings. The broad context-menu module remains P1; action-result and launcher-list splits are P2.
 
-**Logic Placement / Flow Readability Agent:** Reported `NormalTaskSource.qml` bypassing its injected launcher-position callback and implicit `visualParent.contextMenuOpen` mutation. Both were kept.
+**Logic Placement / Flow Readability Agent:** Reported implicit `visualParent.contextMenuOpen` mutation. It was kept.
 
 **Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. These were kept. Launcher sync remains P1 because important behavior is still being migrated out of a broad launcher module; desktop actions and footer actions are P2.
 
