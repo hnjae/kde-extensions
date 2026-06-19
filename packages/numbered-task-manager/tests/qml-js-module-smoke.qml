@@ -5,6 +5,7 @@ import QtQml
 import "../package/contents/ui/ActivityScopeLogic.mjs" as ActivityScopeLogic
 import "../package/contents/ui/TaskActivationLogic.mjs" as TaskActivationLogic
 import "../package/contents/ui/TaskContextMenuLogic.mjs" as TaskContextMenuLogic
+import "../package/contents/ui/TaskContextMenuPlatformLogic.mjs" as TaskContextMenuPlatformLogic
 import "../package/contents/ui/TaskContextMenuRouteLogic.mjs" as TaskContextMenuRouteLogic
 import "../package/contents/ui/TaskItemPresentationLogic.mjs" as TaskItemPresentationLogic
 import "../package/contents/ui/TaskMetricsLogic.mjs" as TaskMetricsLogic
@@ -33,10 +34,13 @@ QtObject {
         if (TaskActivationLogic.shortcutActivationRequest([], 0).code !== "no-target") {
             throw new Error("TaskActivationLogic.mjs did not load its dependency");
         }
-        if (TaskContextMenuLogic.panelMenuPlacement(0, {}, {
+        if (TaskContextMenuLogic.contextMenuActionSections({}).basicActions === undefined) {
+            throw new Error("TaskContextMenuLogic.mjs did not load");
+        }
+        if (TaskContextMenuPlatformLogic.panelMenuPlacement(0, {}, {
             TopPosedLeftAlignedPopup: 1
         }) !== 1) {
-            throw new Error("TaskContextMenuLogic.mjs did not load");
+            throw new Error("TaskContextMenuPlatformLogic.mjs did not load");
         }
         if (!TaskContextMenuRouteLogic.isNoneRoute(TaskContextMenuRouteLogic.contextMenuActionRoute(null))) {
             throw new Error("TaskContextMenuRouteLogic.mjs did not load");

@@ -8,12 +8,7 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 
 const facade = await loadQmlJsModule(
   new URL("../package/contents/ui/TaskContextMenuLogic.mjs", import.meta.url),
-  [
-    "contextMenuActionSections",
-    "activityEntriesSnapshot",
-    "panelMenuPlacement",
-    "virtualDesktopEntriesSnapshot",
-  ],
+  ["contextMenuActionSections"],
 );
 const routeLogic = await loadQmlJsModule(
   new URL(
@@ -166,19 +161,6 @@ const logic = Object.assign(
   windowActionLogic,
 );
 
-const plasmaCoreTypes = {
-  BottomEdge: "bottom",
-  LeftEdge: "left",
-  RightEdge: "right",
-  TopEdge: "top",
-};
-
-const plasmaMenu = {
-  BottomPosedLeftAlignedPopup: "open-down",
-  LeftPosedTopAlignedPopup: "open-left",
-  RightPosedTopAlignedPopup: "open-right",
-  TopPosedLeftAlignedPopup: "open-up",
-};
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const nullActivityId = "00000000-0000-0000-0000-000000000000";
 const taskContextMenuLogicSource = readFileSync(
@@ -198,6 +180,16 @@ assert.match(
   taskContextMenuLogicSource,
   /return ActionSectionsLogic\.contextMenuActionSections\(menuState\)/,
 );
+for (const functionName of [
+  "activityEntriesSnapshot",
+  "panelMenuPlacement",
+  "virtualDesktopEntriesSnapshot",
+]) {
+  assert.doesNotMatch(
+    taskContextMenuLogicSource,
+    new RegExp(`function ${functionName}\\b`),
+  );
+}
 assert.doesNotMatch(
   taskContextMenuLogicSource,
   /export \{[\s\S]*\} from "\.\/TaskContextMenuRouteLogic\.mjs"/,
@@ -294,93 +286,6 @@ for (const functionName of [
     new RegExp(`function ${functionName}\\b`),
   );
 }
-
-assert.equal(
-  logic.panelMenuPlacement(
-    plasmaCoreTypes.BottomEdge,
-    plasmaCoreTypes,
-    plasmaMenu,
-  ),
-  plasmaMenu.TopPosedLeftAlignedPopup,
-);
-assert.equal(
-  logic.panelMenuPlacement(
-    plasmaCoreTypes.TopEdge,
-    plasmaCoreTypes,
-    plasmaMenu,
-  ),
-  plasmaMenu.BottomPosedLeftAlignedPopup,
-);
-assert.equal(
-  logic.panelMenuPlacement(
-    plasmaCoreTypes.LeftEdge,
-    plasmaCoreTypes,
-    plasmaMenu,
-  ),
-  plasmaMenu.RightPosedTopAlignedPopup,
-);
-assert.equal(
-  logic.panelMenuPlacement(
-    plasmaCoreTypes.RightEdge,
-    plasmaCoreTypes,
-    plasmaMenu,
-  ),
-  plasmaMenu.LeftPosedTopAlignedPopup,
-);
-assert.equal(
-  logic.panelMenuPlacement(undefined, plasmaCoreTypes, plasmaMenu),
-  plasmaMenu.TopPosedLeftAlignedPopup,
-);
-assert.deepEqual(
-  plain(
-    logic.virtualDesktopEntriesSnapshot(["desktop-a", "desktop-b"], ["Work"]),
-  ),
-  [
-    {
-      id: "desktop-a",
-      name: "Work",
-    },
-    {
-      id: "desktop-b",
-      name: "Desktop 2",
-    },
-  ],
-);
-assert.deepEqual(
-  plain(logic.virtualDesktopEntriesSnapshot(null, ["Work"])),
-  [],
-);
-assert.deepEqual(
-  plain(
-    logic.activityEntriesSnapshot(
-      ["activity-a", 42],
-      (id) => (id === "activity-a" ? "Work" : ""),
-      (id) => `icon-${id}`,
-    ),
-  ),
-  [
-    {
-      icon: "icon-activity-a",
-      id: "activity-a",
-      name: "Work",
-    },
-    {
-      icon: "icon-42",
-      id: "42",
-      name: "42",
-    },
-  ],
-);
-assert.deepEqual(
-  plain(logic.activityEntriesSnapshot(["activity-a"], null, null)),
-  [
-    {
-      icon: "",
-      id: "activity-a",
-      name: "activity-a",
-    },
-  ],
-);
 
 assert.deepEqual(
   plain(logic.pinActionState({ canPin: true, isPinned: true })),
@@ -3835,18 +3740,20 @@ assert.equal(
 );
 assert.equal(
   platformStateQml.includes(
-    "readonly property var desktopEntries: TaskContextMenuLogic.virtualDesktopEntriesSnapshot",
+    "readonly property var desktopEntries: TaskContextMenuPlatformLogic.virtualDesktopEntriesSnapshot",
   ),
   true,
 );
 assert.equal(platformStateQml.includes("function refreshActivities()"), true);
 assert.equal(
-  platformStateQml.includes("TaskContextMenuLogic.activityEntriesSnapshot"),
+  platformStateQml.includes(
+    "TaskContextMenuPlatformLogic.activityEntriesSnapshot",
+  ),
   true,
 );
 assert.equal(
   platformStateQml.includes(
-    "TaskContextMenuLogic.virtualDesktopEntriesSnapshot",
+    "TaskContextMenuPlatformLogic.virtualDesktopEntriesSnapshot",
   ),
   true,
 );
