@@ -96,12 +96,8 @@ in `SPEC.md`.
   unknown routes should produce structured diagnostic results instead of silent
   false returns.
 - Keep context-menu command descriptor construction in `TaskContextMenuCommandLogic.mjs`. Focused menu feature modules should import launcher and task command factories from that owner, while context-menu task execution/result classification stays in `TaskContextMenuTaskCommandLogic.mjs`.
-- Keep launcher-list transformations in `LauncherListLogic.mjs` so serialized
-  activity prefixes, visible launcher positions, and pinned launcher reordering
-  are exercised by unit tests instead of being spread across QML components.
-  Launcher-specific activity serialization and visibility helpers may use
-  `ActivityScopeLogic.mjs`, but generic activity primitives should not be
-  re-exported from launcher logic.
+- Keep launcher activity serialization and update policy in focused launcher activity logic so serialized activity prefixes, launcher activity toggles, and activity-scoped launcher-list replacement are exercised by unit tests instead of being spread across QML components. Launcher-specific activity serialization and visibility helpers may use `ActivityScopeLogic.mjs`, but generic activity primitives should not be re-exported from launcher logic.
+- Keep launcher-list structural transformations in `LauncherListLogic.mjs` so visible launcher positions and pinned launcher reordering are exercised by unit tests instead of being spread across QML components.
 - Keep widget pin membership in `LauncherListLogic.mjs`, derived from launcher URL, launcher list, current activity, and launcher-position lookup. Context-menu Pin/Unpin state should consume that menu-facing pin state instead of KDE's raw launcher-association role.
 - Keep launcher-list mutation decisions in `LauncherListLogic.mjs`. QML code may
   apply returned writes to Plasma objects, but normalization, equality checks,
