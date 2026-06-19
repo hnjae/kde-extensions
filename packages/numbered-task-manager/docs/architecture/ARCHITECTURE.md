@@ -47,6 +47,7 @@ in `SPEC.md`.
   of through menu-local passthrough functions.
 - Keep context-menu open/create request classification in `TaskContextMenuRequestLogic.mjs`. `TaskContextMenuAdapter.qml` should own menu object creation and lifecycle callbacks, but request validation and create-failure results should be pure and tested outside QML.
 - Keep context-menu live role reads behind a narrow role port. `TaskContextMenuAdapter.qml`, `TaskContextMenu.qml`, and `TaskContextMenuRoleState.qml` may consume model indexes and task snapshots, but they should not receive the full root `TasksModel` only to validate the menu request and read task roles.
+- Keep context-menu route dispatch and launcher-activity failure classification in `TaskContextMenuDispatchLogic.mjs`. `TaskContextMenuActionDispatcher.qml` and `TaskContextMenuLauncherActivityAdapter.qml` should execute routing effects, but malformed route/update diagnostics should share one focused pure owner.
 - Keep context-menu launcher-activity menu state in `TaskContextMenuLauncherActivityLogic.mjs`.
   Raw launcher activity lists entering the menu should be normalized through the
   same all-activities semantics as launcher serialization before checked-state
