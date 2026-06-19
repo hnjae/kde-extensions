@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { iconExtentForTaskFrame } from "./TaskMetricsLogic.mjs";
-
-export function validSlotNumber(slotNumber) {
-  const number = Number(slotNumber || 0);
-  return number >= 1 && number <= 9 ? number : 0;
-}
+import { validSlotNumber } from "./TaskNumberingLogic.mjs";
 
 export function taskItemPresentation(input) {
   const values = input || {};
