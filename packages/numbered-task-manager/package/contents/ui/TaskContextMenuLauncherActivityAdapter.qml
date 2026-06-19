@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "TaskActionLogic.mjs" as TaskActionLogic
+import "TaskContextMenuDispatchLogic.mjs" as TaskContextMenuDispatchLogic
 import "TaskContextMenuLauncherActivityLogic.mjs" as LauncherActivityLogic
 
 QtQuick.QtObject {
@@ -18,7 +18,7 @@ QtQuick.QtObject {
     signal launcherCommandRequested(var command)
 
     function launcherActivityFailure(update, code) {
-        const result = TaskActionLogic.contextMenuLauncherActivityResult(update, code, launcherUrl);
+        const result = TaskContextMenuDispatchLogic.contextMenuLauncherActivityResult(update, code, launcherUrl);
         actionResult(result);
         return false;
     }

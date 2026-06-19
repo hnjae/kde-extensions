@@ -8,9 +8,7 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 const actionLogic = await loadQmlJsModule(
   new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
   [
-    "contextMenuActionDispatchFailure",
     "contextMenuLauncherCommandDispatchResult",
-    "contextMenuLauncherActivityResult",
     "executeContextMenuTaskRequest",
     "contextMenuTaskExecutionResult",
     "contextMenuTaskRequest",
@@ -47,12 +45,20 @@ const contextMenuRequestLogic = await loadQmlJsModule(
   ),
   ["contextMenuCreationResult", "contextMenuRequestResult"],
 );
+const contextMenuDispatchLogic = await loadQmlJsModule(
+  new URL(
+    "../package/contents/ui/TaskContextMenuDispatchLogic.mjs",
+    import.meta.url,
+  ),
+  ["contextMenuActionDispatchFailure", "contextMenuLauncherActivityResult"],
+);
 const logic = Object.assign(
   {},
   actionLogic,
   actionResultLogic,
   activationLogic,
   commandLogic,
+  contextMenuDispatchLogic,
   contextMenuRequestLogic,
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
