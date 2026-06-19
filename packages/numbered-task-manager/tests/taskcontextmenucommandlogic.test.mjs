@@ -76,8 +76,8 @@ assert.match(
   taskActionLogicSource,
   /import \{[^}]*normalizedContextMenuLauncherCommand[^}]*normalizedContextMenuTaskCommand[^}]*\} from "\.\/TaskContextMenuCommandLogic\.mjs"/s,
 );
-assert.doesNotMatch(taskActionLogicSource, /export function contextMenuLauncherCommand/);
-assert.doesNotMatch(taskActionLogicSource, /export function contextMenuTaskCommand/);
+assert.doesNotMatch(taskActionLogicSource, /export function contextMenuLauncherCommand\(/);
+assert.doesNotMatch(taskActionLogicSource, /export function contextMenuTaskCommand\(/);
 
 for (const modulePath of [
   "TaskContextMenuLauncherActivityLogic.mjs",

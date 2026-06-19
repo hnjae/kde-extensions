@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { contextMenuTaskCommand } from "./TaskActionLogic.mjs";
+import { contextMenuTaskCommand } from "./TaskContextMenuCommandLogic.mjs";
 
 function actionWithIcon(action, icon) {
   const actionState = Object.assign({}, action || {});

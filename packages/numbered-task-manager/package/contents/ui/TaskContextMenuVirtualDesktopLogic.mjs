@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { contextMenuTaskCommand } from "./TaskActionLogic.mjs";
+import { contextMenuTaskCommand } from "./TaskContextMenuCommandLogic.mjs";
 import * as VirtualDesktopLogic from "./VirtualDesktopLogic.mjs";
 import * as WindowActionLogic from "./TaskContextMenuWindowActionLogic.mjs";
 

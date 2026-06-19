@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 KIM Hyunjae
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { contextMenuLauncherCommand } from "./TaskActionLogic.mjs";
+import { contextMenuLauncherCommand } from "./TaskContextMenuCommandLogic.mjs";
 import { launcherPinState } from "./LauncherListLogic.mjs";
 
 function actionWithIcon(action, icon) {

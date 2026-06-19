@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import * as ActivityScopeLogic from "./ActivityScopeLogic.mjs";
-import { contextMenuLauncherCommand } from "./TaskActionLogic.mjs";
+import { contextMenuLauncherCommand } from "./TaskContextMenuCommandLogic.mjs";
 import {
   launcherActivitiesAfterAllToggle,
   launcherActivitiesAfterToggle,

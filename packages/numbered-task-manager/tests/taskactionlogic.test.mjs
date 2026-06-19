@@ -5,17 +5,15 @@ import assert from "node:assert/strict";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
-const logic = await loadQmlJsModule(
+const actionLogic = await loadQmlJsModule(
   new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
   [
     "activationExecutionResult",
     "contextMenuCreationResult",
     "contextMenuActionDispatchFailure",
-    "contextMenuLauncherCommand",
     "contextMenuLauncherCommandDispatchResult",
     "contextMenuLauncherActivityResult",
     "contextMenuRequestResult",
-    "contextMenuTaskCommand",
     "executeContextMenuTaskRequest",
     "contextMenuTaskExecutionResult",
     "contextMenuTaskRequest",
@@ -29,6 +27,14 @@ const logic = await loadQmlJsModule(
     "taskEntryDiagnosticResult",
   ],
 );
+const commandLogic = await loadQmlJsModule(
+  new URL(
+    "../package/contents/ui/TaskContextMenuCommandLogic.mjs",
+    import.meta.url,
+  ),
+  ["contextMenuLauncherCommand", "contextMenuTaskCommand"],
+);
+const logic = Object.assign({}, actionLogic, commandLogic);
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const validModelIndex = { valid: true, row: 4 };
 const invalidModelIndex = { valid: false, row: 4 };

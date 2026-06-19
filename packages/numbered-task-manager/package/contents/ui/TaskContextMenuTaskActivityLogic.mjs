@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import * as ActivityScopeLogic from "./ActivityScopeLogic.mjs";
-import { contextMenuTaskCommand } from "./TaskActionLogic.mjs";
+import { contextMenuTaskCommand } from "./TaskContextMenuCommandLogic.mjs";
 import { taskActivitiesAfterToggle } from "./TaskActivityLogic.mjs";
 
 function actionWithIcon(action, icon) {
