@@ -4,7 +4,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "LauncherListLogic.mjs" as LauncherListLogic
 import "NormalTaskSourceLifecycleLogic.mjs" as NormalTaskSourceLifecycleLogic
 import "TaskEntryLogic.mjs" as TaskEntryLogic
 import "TaskModelLogic.mjs" as TaskModelLogic
@@ -63,9 +62,8 @@ QtQuick.Item {
 
             property string launcherUrl: TaskEntryLogic.launcherUrlFromRoles(model.LauncherUrlWithoutIcon, model.LauncherUrl)
             property int launcherRevisionToken: root.launcherRevision
-            property var launcherPinState: LauncherListLogic.launcherPinState(root.taskModel.launcherList, launcherUrl, root.currentActivity, url => root.taskModel.launcherPosition(url), launcherRevisionToken)
-            property int launcherPosition: launcherPinState.pinnedLauncherPosition
-            property bool launcherPinned: launcherPinState.isPinned
+            property int launcherPosition: launcherPositionForUrl(launcherUrl, launcherRevisionToken)
+            property bool launcherPinned: launcherPosition !== -1
             property var persistentModelIndex: root.taskModel.makePersistentModelIndex(index)
             property var lifecycleState: NormalTaskSourceLifecycleLogic.createNormalTaskSourceRowState()
             property string publishedKey: lifecycleState.publishedKey || ""
