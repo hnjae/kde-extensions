@@ -19,24 +19,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 2. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, standalone launcher sync diagnostics still use a separate warning formatter, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
 3. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into context menu role/opening paths and launcher sync, while launcher pin/unpin commands, context-menu task commands, context-menu launcher state reads, normal task activation, and task movement now use narrow ports.
 
-## Single Source of Truth Violations
-
-### Finding: Error serialization is duplicated and too lossy
-
-**Priority:** P2.
-
-**Evidence:** `TaskActionLogic.mjs` defines `actionErrorMessage(...)`; `LauncherListLogic.mjs` defines `launcherWriteErrorMessage(...)`; activation, context-menu task execution, and launcher mutation failures store only `context.error`.
-
-**Current state:** Caught exceptions are reduced to `error.message` or `String(error)` in two modules.
-
-**Design concern:** Message-only warnings are often insufficient for QML/JS production failures, especially when multiple effects share codes like `request-threw`. The duplicated serializers can also drift.
-
-**Correct end state:** A shared error helper should produce bounded structured context such as `errorMessage`, `errorName`, `errorCode`, `fileName`, `lineNumber`, and optionally a trimmed stack. Launcher sync and action execution should use the same shape.
-
-**Suggested migration:** Introduce `ErrorContextLogic.mjs` or include the helper in a small generic result module. Keep the legacy `error` field temporarily for log compatibility, then migrate tests and formatting to structured fields.
-
-**Acceptance criteria:** All caught exceptions use one serializer. Tests cover `Error`, non-`Error` thrown values, and objects with `code`. Launcher write failures and action failures expose the same error context shape.
-
 ## Invariant and Correctness Risks
 
 ## Cohesion, Coupling, and Ownership Problems
@@ -269,7 +251,7 @@ Validation should happen before effects.
 
 External effects should be isolated behind narrow ports. Raw `TasksModel` should be wrapped by task command, launcher command/repository, launcher sync, and activation ports. C++ desktop action resolution should produce descriptors before constructing `QAction` objects or launching `KIO` jobs. QML adapters should supply ports and execute returned commands.
 
-Errors should be represented through one structured diagnostic shape. The generic result helper should define result shape, structured error context, and logging predicate. Domain-specific result classifiers should live near their workflow. Launcher sync and action execution should share error serialization and produce correlated diagnostics for user actions.
+Errors should be represented through one structured diagnostic shape. `ErrorContextLogic.mjs` now defines shared structured error context; the generic result helper should still define result shape and logging predicates, while domain-specific result classifiers should live near their workflow. Launcher sync and action execution should continue to use the shared serializer and produce correlated diagnostics for user actions.
 
 Tests should be layered by risk. Characterization tests should pin current behavior first. Pure domain tests should cover launcher sync orchestration through fake ports. QML tests should focus on wiring and effect adapter boundaries. C++ backend tests should cover desktop action descriptors and launch failure observability without requiring real KIO job execution.
 
@@ -297,10 +279,11 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 - P1/P2 launcher sync/domain ownership: Moved config/model sync diffing, convergence, retry classification, reconciliation state, and transaction guard policy from `LauncherListLogic.mjs` into `LauncherSyncLogic.mjs`; `LauncherListLogic.mjs` now keeps launcher-list domain helpers while `LauncherSyncLogic.mjs` owns sync primitives and orchestration. Verified with `node tests/launchersynclogic.test.mjs`, `node tests/launcherlistlogic.test.mjs`, and `node tests/launchersyncadapterqml.test.mjs`. Commit: `ae0c7a1`, `0538185`.
 - P2 context-menu task command boundary: Removed the completed narrow-port finding from the active backlog; the command path already uses explicit supported-method validation and `TaskCommandPort.qml`, while remaining raw-model work is tracked by the broader adapter-port finding.
+- P2 structured error context: Added `ErrorContextLogic.mjs` as the single serializer for caught action and launcher sync failures, preserving legacy `error` while adding `errorMessage`, `errorName`, and `errorCode` where available. Verified with `node tests/errorcontextlogic.test.mjs`, `node tests/taskactionlogic.test.mjs`, and `node tests/launchersynclogic.test.mjs`. Commit: `b5a053b`, `3eb6a95`.
 
 ## Appendix: Subagent Reports
 
-**Single Source of Truth / Duplication Agent:** Reported repeated context-menu route-kind strings. This was merged into “Single Source of Truth Violations.”
+**Single Source of Truth / Duplication Agent:** Reported repeated context-menu route-kind strings and duplicated error serialization. Error serialization is complete; route-kind cleanup remains folded into the broader action/result and context-menu ownership work.
 
 **Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. The sync/domain split is complete; the broad context-menu module remains P1, and action-result plus remaining launcher-domain splits are P2.
 
@@ -308,7 +291,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. Launcher sync orchestration is now covered through `LauncherSyncLogic.mjs`; desktop actions and footer actions remain P2.
 
-**Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Both were kept.
+**Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Exception serialization is complete; desktop action launch observability remains.
 
 **Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. These were merged into cohesion/modularity sections; the sync part of the launcher module concern is complete. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
