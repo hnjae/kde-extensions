@@ -6,9 +6,20 @@ import {
   normalSlotNumberForIndex,
 } from "./TaskNumberingLogic.mjs";
 
+export const normalItemKind = "normal";
+export const remoteAttentionItemKind = "remoteAttention";
+
 export function integerValue(value, fallback) {
   const number = Number(value);
   return Number.isInteger(number) ? number : fallback;
+}
+
+export function isNormalVisibleItem(item) {
+  return item?.kind === normalItemKind;
+}
+
+export function isRemoteAttentionVisibleItem(item) {
+  return item?.kind === remoteAttentionItemKind;
 }
 
 export function hasRemoteAttentionItem(remoteAttentionSnapshot) {
@@ -36,12 +47,12 @@ export function composeVisibleTaskItems(
     const slotNumber = normalSlotNumberForIndex(index);
     visibleItems.push({
       entry: entries[index],
-      kind: "normal",
+      kind: normalItemKind,
       modelIndex: entries[index]?.modelIndex,
       numbered: slotNumber !== 0,
       slotNumber,
       sourceIndex: index,
-      sourceModel: "normal",
+      sourceModel: normalItemKind,
     });
   }
 
@@ -51,12 +62,12 @@ export function composeVisibleTaskItems(
     visibleItems.push({
       count: Number(snapshot.count || 0),
       entry: target,
-      kind: "remoteAttention",
+      kind: remoteAttentionItemKind,
       modelIndex: target?.modelIndex,
       numbered: false,
       slotNumber: 0,
       sourceIndex: -1,
-      sourceModel: "remoteAttention",
+      sourceModel: remoteAttentionItemKind,
     });
   }
 
@@ -65,14 +76,14 @@ export function composeVisibleTaskItems(
 
 export function normalVisibleTaskItems(visibleItems) {
   const items = Array.from(visibleItems || []);
-  return items.filter((item) => item?.kind === "normal");
+  return items.filter(isNormalVisibleItem);
 }
 
 export function visibleRemoteAttentionItem(visibleItems) {
   const items = Array.from(visibleItems || []);
   for (let index = 0; index < items.length; ++index) {
     const item = items[index];
-    if (item?.kind === "remoteAttention") {
+    if (isRemoteAttentionVisibleItem(item)) {
       return item;
     }
   }
@@ -99,7 +110,7 @@ export function activationTargetForShortcutIndex(visibleItems, shortcutIndex) {
   const slotNumber = index + 1;
   for (let itemIndex = 0; itemIndex < items.length; ++itemIndex) {
     const item = items[itemIndex];
-    if (item?.kind === "normal" && item.slotNumber === slotNumber) {
+    if (isNormalVisibleItem(item) && item.slotNumber === slotNumber) {
       return item;
     }
   }

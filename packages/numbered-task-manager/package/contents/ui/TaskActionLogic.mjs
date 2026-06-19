@@ -6,7 +6,11 @@ import {
   CONTEXT_MENU_LAUNCHER_COMMAND_KIND,
   CONTEXT_MENU_TASK_MODEL_REQUEST_KIND,
 } from "./TaskContextMenuRouteLogic.mjs";
-import { activationTargetForShortcutIndex } from "./VisibleTaskItemsLogic.mjs";
+import {
+  activationTargetForShortcutIndex,
+  isNormalVisibleItem,
+  isRemoteAttentionVisibleItem,
+} from "./VisibleTaskItemsLogic.mjs";
 
 export function normalizedStringList(value) {
   if (!value) {
@@ -205,7 +209,7 @@ export function shortcutActivationOptions(targetItem, shortcutIndex) {
   const kind = item.kind || "";
 
   return {
-    requireSourceIndex: kind === "normal",
+    requireSourceIndex: isNormalVisibleItem(item),
     shortcutIndex,
     sourceModel: item.sourceModel || kind,
     targetKind: kind,
@@ -223,7 +227,10 @@ export function shortcutActivationRequest(visibleItems, shortcutIndex) {
     });
   }
 
-  if (targetItem.kind !== "normal" && targetItem.kind !== "remoteAttention") {
+  if (
+    !isNormalVisibleItem(targetItem) &&
+    !isRemoteAttentionVisibleItem(targetItem)
+  ) {
     return actionResult(
       "activateShortcut",
       "unsupported-target-kind",

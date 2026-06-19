@@ -139,7 +139,7 @@ QtQuick.Item {
                         modelIndex: persistentModelIndex,
                         virtualDesktops: model.VirtualDesktops
                     })
-                sourceModel: "remoteAttention"
+                sourceModel: VisibleTaskItemsLogic.remoteAttentionItemKind
                 sourceRow: index
 
                 onActionResult: result => {

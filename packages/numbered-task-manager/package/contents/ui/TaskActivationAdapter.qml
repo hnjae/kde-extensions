@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
 import "TaskActionLogic.mjs" as TaskActionLogic
+import "VisibleTaskItemsLogic.mjs" as VisibleTaskItemsLogic
 
 QtQuick.QtObject {
     id: root
@@ -29,7 +30,7 @@ QtQuick.QtObject {
     function activateTaskEntry(task) {
         const result = TaskActionLogic.taskActivationRequest("activateTask", task, {
             requireSourceIndex: true,
-            sourceModel: "normal"
+            sourceModel: VisibleTaskItemsLogic.normalItemKind
         });
         if (!result.ok) {
             root.actionResult(result);
@@ -43,8 +44,8 @@ QtQuick.QtObject {
     function activateRemoteAttention(visibleItem) {
         const result = TaskActionLogic.taskActivationRequest("activateRemoteAttention", visibleItem ? visibleItem.entry : null, {
             requireSourceIndex: false,
-            sourceModel: visibleItem ? visibleItem.sourceModel : "remoteAttention",
-            targetKind: visibleItem ? visibleItem.kind : "remoteAttention"
+            sourceModel: visibleItem ? visibleItem.sourceModel : VisibleTaskItemsLogic.remoteAttentionItemKind,
+            targetKind: visibleItem ? visibleItem.kind : VisibleTaskItemsLogic.remoteAttentionItemKind
         });
         if (!result.ok) {
             root.actionResult(result);
@@ -56,7 +57,7 @@ QtQuick.QtObject {
     }
 
     function activationTarget(result) {
-        if (result.sourceModel === "remoteAttention") {
+        if (result.sourceModel === VisibleTaskItemsLogic.remoteAttentionItemKind) {
             return remoteAttentionSource;
         }
 

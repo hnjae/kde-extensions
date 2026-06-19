@@ -8,6 +8,7 @@ import "LauncherListLogic.mjs" as LauncherListLogic
 import "TaskEntryLogic.mjs" as TaskEntryLogic
 import "TaskModelLogic.mjs" as TaskModelLogic
 import "TaskScopeLogic.mjs" as TaskScopeLogic
+import "VisibleTaskItemsLogic.mjs" as VisibleTaskItemsLogic
 
 QtQuick.Item {
     id: root
@@ -123,7 +124,7 @@ QtQuick.Item {
                         modelIndex: persistentModelIndex,
                         virtualDesktops: model.VirtualDesktops
                     })
-                sourceModel: "normal"
+                sourceModel: VisibleTaskItemsLogic.normalItemKind
                 sourceRow: index
 
                 onActionResult: result => {
