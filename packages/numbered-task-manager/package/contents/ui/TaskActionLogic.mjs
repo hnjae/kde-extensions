@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { isActionableModelIndex } from "./TaskEntryLogic.mjs";
+import { actionResult } from "./ActionResultLogic.mjs";
 import {
   normalizedContextMenuLauncherCommand,
   normalizedContextMenuTaskCommand,
@@ -20,16 +21,6 @@ export function normalizedStringList(value) {
   }
 
   return Array.from(value).filter((entry) => entry && entry.length > 0);
-}
-
-export function actionResult(action, code, ok, diagnostic, context) {
-  return {
-    action,
-    code,
-    context: Object.assign({}, context || {}),
-    diagnostic: Boolean(diagnostic),
-    ok: Boolean(ok),
-  };
 }
 
 export function taskEntryDiagnosticResult(diagnostic) {
@@ -854,8 +845,4 @@ export function dragMoveRejectionResult(
     dragMoveRejectionDiagnostic(context.reason),
     context,
   );
-}
-
-export function shouldLogActionResult(result) {
-  return Boolean(result && !result.ok && result.diagnostic);
 }

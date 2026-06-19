@@ -4,11 +4,11 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "TaskActionLogic.mjs" as TaskActionLogic
+import "ActionResultLogic.mjs" as ActionResultLogic
 
 QtQuick.QtObject {
     function logActionResult(result) {
-        if (!TaskActionLogic.shouldLogActionResult(result)) {
+        if (!ActionResultLogic.shouldLogActionResult(result)) {
             return;
         }
 
