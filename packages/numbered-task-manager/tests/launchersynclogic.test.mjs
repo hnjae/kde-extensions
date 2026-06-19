@@ -17,6 +17,7 @@ const logic = await loadQmlJsModule(
     "launcherModelUpdate",
     "launcherReconciliationAfterResult",
     "launcherReconciliationDecision",
+    "launcherSyncActionResult",
     "launcherSyncRetryClassification",
     "runLauncherListUpdateTransaction",
     "persistLaunchers",
@@ -124,6 +125,39 @@ assert.equal(
     ok: false,
   }),
   "fatal",
+);
+assert.deepEqual(
+  plain(
+    logic.launcherSyncActionResult("persistLaunchers", {
+      code: "write-mismatch",
+      configLaunchers: ["old.desktop"],
+      failedTargets: ["config"],
+      launchers: ["next.desktop"],
+      ok: false,
+      retryClassification: "retry-after-change",
+    }),
+  ),
+  {
+    action: "syncLaunchers",
+    code: "write-mismatch",
+    context: {
+      configLaunchers: ["old.desktop"],
+      failedTargets: ["config"],
+      launchers: ["next.desktop"],
+      launcherSyncAction: "persistLaunchers",
+      modelLaunchers: [],
+      retryClassification: "retry-after-change",
+    },
+    diagnostic: true,
+    ok: false,
+  },
+);
+assert.equal(
+  logic.launcherSyncActionResult("persistLaunchers", {
+    code: "converged",
+    ok: true,
+  }),
+  null,
 );
 assert.deepEqual(
   plain(

@@ -38,6 +38,10 @@ assert.match(mainQml, /id:\s*launcherSync/);
 assert.match(mainQml, /launcherSyncPort:\s*launcherSyncPort/);
 assert.match(
   mainQml,
+  /onActionResult:\s*result\s*=>\s*\{[\s\S]*?actionLogger\.logActionResult\(result\);[\s\S]*?\}/,
+);
+assert.match(
+  mainQml,
   /launcherSync\.persistLaunchers\(launcherSyncPort\.modelLaunchers\)/,
 );
 assert.match(
@@ -96,6 +100,7 @@ assert.match(
   /property var launcherReconciliationState:\s*launcherSyncState\.reconciliation/,
 );
 assert.match(sourceQml, /property bool updatingLauncherConfig:\s*false/);
+assert.match(sourceQml, /signal actionResult\(var result\)/);
 assert.match(sourceQml, /function syncPorts\(\)/);
 assert.match(
   sourceQml,
@@ -145,11 +150,16 @@ assert.doesNotMatch(
   sourceQml,
   /LauncherListLogic\.launcherReconciliationAfterResult/,
 );
-assert.match(
+assert.doesNotMatch(
   sourceQml,
   /console\.warn\("Numbered Task Manager launcher sync "/,
 );
 assert.match(
+  sourceQml,
+  /LauncherSyncLogic\.launcherSyncActionResult\(action,\s*result\)/,
+);
+assert.match(sourceQml, /actionResult\(actionResult\)/);
+assert.doesNotMatch(
   sourceQml,
   /retryClassification:\s*result\.retryClassification \|\| ""/,
 );
