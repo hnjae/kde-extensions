@@ -12,6 +12,10 @@ const sourceUrl = new URL(
 assert.equal(existsSync(sourceUrl), true);
 
 const sourceQml = readFileSync(sourceUrl, "utf8");
+const shellQml = readFileSync(
+  new URL("../package/contents/ui/TaskLikeItemShell.qml", import.meta.url),
+  "utf8",
+);
 const taskItemQml = readFileSync(
   new URL("../package/contents/ui/TaskItem.qml", import.meta.url),
   "utf8",
@@ -59,19 +63,22 @@ for (const marginName of [
   );
 }
 
-assert.match(taskItemQml, /\bTaskLikeFrame\s*\{/);
-assert.match(taskItemQml, /id:\s*taskFrame/);
-assert.match(taskItemQml, /active:\s*root\.active/);
+assert.match(shellQml, /\bTaskLikeFrame\s*\{/);
+assert.match(shellQml, /id:\s*taskFrame/);
+assert.match(shellQml, /active:\s*root\.active/);
+assert.match(shellQml, /attention:\s*root\.attention/);
+assert.match(shellQml, /dropHover:\s*root\.dropHover/);
+assert.match(shellQml, /hovered:\s*root\.visualHighlighted/);
+assert.match(shellQml, /launcher:\s*root\.launcher/);
+assert.match(shellQml, /minimized:\s*root\.minimized/);
+assert.match(shellQml, /mutedLauncher:\s*root\.mutedLauncher/);
+assert.match(taskItemQml, /\bTaskLikeItemShell\s*\{/);
 assert.match(taskItemQml, /attention:\s*root\.demandingAttention/);
-assert.match(taskItemQml, /dropHover:\s*root\.dropHover/);
-assert.match(taskItemQml, /hovered:\s*root\.visualHighlighted/);
-assert.match(taskItemQml, /launcher:\s*root\.launcher/);
-assert.match(taskItemQml, /minimized:\s*root\.minimized/);
 assert.match(taskItemQml, /mutedLauncher:\s*root\.pinnedLauncherOnly/);
+assert.doesNotMatch(taskItemQml, /\bTaskLikeFrame\s*\{/);
 assert.doesNotMatch(taskItemQml, /\bTaskFrame\s*\{/);
 
-assert.match(attentionItemQml, /\bTaskLikeFrame\s*\{/);
-assert.match(attentionItemQml, /id:\s*taskFrame/);
+assert.match(attentionItemQml, /\bTaskLikeItemShell\s*\{/);
 assert.match(attentionItemQml, /attention:\s*true/);
-assert.match(attentionItemQml, /hovered:\s*root\.visualHighlighted/);
+assert.doesNotMatch(attentionItemQml, /\bTaskLikeFrame\s*\{/);
 assert.doesNotMatch(attentionItemQml, /\bTaskFrame\s*\{/);

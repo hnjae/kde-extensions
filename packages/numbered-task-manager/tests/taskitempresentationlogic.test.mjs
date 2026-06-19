@@ -89,6 +89,10 @@ const taskItemQml = readFileSync(
   new URL("../package/contents/ui/TaskItem.qml", import.meta.url),
   "utf8",
 );
+const shellQml = readFileSync(
+  new URL("../package/contents/ui/TaskLikeItemShell.qml", import.meta.url),
+  "utf8",
+);
 assert.match(taskItemQml, /\bTaskLikeIconSlot\s*\{/);
 assert.match(taskItemQml, /property real slotWidth:\s*0/);
 assert.match(taskItemQml, /property bool showTitle:\s*true/);
@@ -103,7 +107,7 @@ assert.match(
   /TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\)/,
 );
 assert.match(
-  taskItemQml,
+  shellQml,
   /TaskMetricsLogic\.taskTitleVisible\(root\.showTitle, root\.slotWidth, root\.titleVisibilityThreshold\)/,
 );
 assert.match(taskItemQml, /visible:\s*root\.titleVisible/);

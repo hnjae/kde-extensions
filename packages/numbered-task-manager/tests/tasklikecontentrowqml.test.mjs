@@ -12,6 +12,10 @@ const sourceUrl = new URL(
 assert.equal(existsSync(sourceUrl), true);
 
 const sourceQml = readFileSync(sourceUrl, "utf8");
+const shellQml = readFileSync(
+  new URL("../package/contents/ui/TaskLikeItemShell.qml", import.meta.url),
+  "utf8",
+);
 const taskItemQml = readFileSync(
   new URL("../package/contents/ui/TaskItem.qml", import.meta.url),
   "utf8",
@@ -58,17 +62,23 @@ assert.match(sourceQml, /anchors\.topMargin:\s*root\.frameTopMargin/);
 assert.match(sourceQml, /opacity:\s*root\.contentOpacity/);
 assert.match(sourceQml, /spacing:\s*Kirigami\.Units\.smallSpacing/);
 
-assert.match(taskItemQml, /\bTaskLikeContentRow\s*\{/);
-assert.match(taskItemQml, /id:\s*contentRow/);
-assert.match(taskItemQml, /frame:\s*taskFrame/);
+assert.match(shellQml, /\bTaskLikeContentRow\s*\{/);
+assert.match(shellQml, /id:\s*contentRow/);
+assert.match(shellQml, /frame:\s*taskFrame/);
+assert.match(
+  shellQml,
+  /TaskMetricsLogic\.taskNaturalImplicitWidth\(root\.naturalWidthMinimum, TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth, contentRow\.horizontalPadding\)/,
+);
+assert.match(taskItemQml, /\bTaskLikeItemShell\s*\{/);
 assert.match(
   taskItemQml,
-  /TaskMetricsLogic\.taskNaturalImplicitWidth\(TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\), TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth, contentRow\.horizontalPadding\)/,
+  /naturalWidthMinimum:\s*TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\)/,
 );
 assert.match(
   taskItemQml,
   /contentOpacity:\s*TaskVisualLogic\.contentOpacity\(\{/,
 );
+assert.doesNotMatch(taskItemQml, /\bTaskLikeContentRow\s*\{/);
 assert.doesNotMatch(
   taskItemQml,
   /readonly property real contentHorizontalPadding/,
@@ -84,13 +94,12 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(taskItemQml, /spacing:\s*Kirigami\.Units\.smallSpacing/);
 
-assert.match(attentionItemQml, /\bTaskLikeContentRow\s*\{/);
-assert.match(attentionItemQml, /id:\s*contentRow/);
-assert.match(attentionItemQml, /frame:\s*taskFrame/);
+assert.match(attentionItemQml, /\bTaskLikeItemShell\s*\{/);
 assert.match(
   attentionItemQml,
-  /TaskMetricsLogic\.taskNaturalImplicitWidth\(TaskMetricsLogic\.attentionNaturalWidthMinimum\(\), TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth, contentRow\.horizontalPadding\)/,
+  /naturalWidthMinimum:\s*TaskMetricsLogic\.attentionNaturalWidthMinimum\(\)/,
 );
+assert.doesNotMatch(attentionItemQml, /\bTaskLikeContentRow\s*\{/);
 assert.doesNotMatch(
   attentionItemQml,
   /readonly property real contentHorizontalPadding/,

@@ -288,16 +288,21 @@ const taskItemQml = readFileSync(
   new URL("../package/contents/ui/TaskItem.qml", import.meta.url),
   "utf8",
 );
+const shellQml = readFileSync(
+  new URL("../package/contents/ui/TaskLikeItemShell.qml", import.meta.url),
+  "utf8",
+);
 assert.match(
   taskItemQml,
   /import "TaskInteractionLogic\.mjs" as TaskInteractionLogic/,
 );
-assert.match(taskItemQml, /\bTaskLikeFrame\s*\{/);
+assert.match(taskItemQml, /\bTaskLikeItemShell\s*\{/);
+assert.match(shellQml, /\bTaskLikeFrame\s*\{/);
 assert.match(taskItemQml, /property bool pinnedLauncherOnly:\s*false/);
 assert.match(taskItemQml, /mutedLauncher:\s*root\.pinnedLauncherOnly/);
-assert.match(taskItemQml, /readonly property bool visualHighlighted:/);
-assert.match(taskItemQml, /readonly property bool titleVisible:/);
-assert.match(taskItemQml, /\bTaskLikeContentRow\s*\{/);
+assert.match(shellQml, /readonly property bool visualHighlighted:/);
+assert.match(shellQml, /readonly property bool titleVisible:/);
+assert.match(shellQml, /\bTaskLikeContentRow\s*\{/);
 assert.match(taskItemQml, /\bTaskLikeContentSpacer\s*\{/);
 assert.match(taskItemQml, /\bTaskLikeIconSlot\s*\{/);
 assert.doesNotMatch(taskItemQml, /\bTaskLikeIcon\s*\{/);
@@ -317,9 +322,9 @@ assert.match(
   taskItemQml,
   /TaskInteractionLogic\.canAcceptTaskDrop\(sourceIndex, root\.taskIndex, root\.canDropTask\)/,
 );
-assert.match(taskItemQml, /\bTaskLikeInteraction\s*\{/);
+assert.match(shellQml, /\bTaskLikeInteraction\s*\{/);
 assert.match(
-  taskItemQml,
+  shellQml,
   /readonly property bool visualHighlighted:\s*taskLikeInteraction\.highlighted/,
 );
 assert.doesNotMatch(taskItemQml, /activeFocusOnTab:\s*true/);
@@ -368,20 +373,20 @@ assert.doesNotMatch(
   attentionItemQml,
   /import "TaskInteractionLogic\.mjs" as TaskInteractionLogic/,
 );
-assert.match(attentionItemQml, /\bTaskLikeFrame\s*\{/);
+assert.match(attentionItemQml, /\bTaskLikeItemShell\s*\{/);
 assert.match(
-  attentionItemQml,
+  shellQml,
   /readonly property bool visualHighlighted:\s*taskLikeInteraction\.highlighted/,
 );
-assert.match(attentionItemQml, /readonly property bool titleVisible:/);
-assert.match(attentionItemQml, /\bTaskLikeContentRow\s*\{/);
+assert.match(shellQml, /readonly property bool titleVisible:/);
+assert.match(shellQml, /\bTaskLikeContentRow\s*\{/);
 assert.match(attentionItemQml, /\bTaskLikeContentSpacer\s*\{/);
 assert.match(attentionItemQml, /\bTaskLikeIconSlot\s*\{/);
 assert.doesNotMatch(attentionItemQml, /\bTaskLikeIcon\s*\{/);
 assert.match(attentionItemQml, /\bTaskLikeTitle\s*\{/);
 assert.doesNotMatch(attentionItemQml, /KirigamiPrimitives\.Icon\s*\{/);
 assert.doesNotMatch(attentionItemQml, /TaskVisualLogic\.iconActive\(\{/);
-assert.match(attentionItemQml, /\bTaskLikeInteraction\s*\{/);
+assert.match(shellQml, /\bTaskLikeInteraction\s*\{/);
 assert.doesNotMatch(attentionItemQml, /activeFocusOnTab:\s*true/);
 assert.doesNotMatch(attentionItemQml, /QtQuick\.Keys\.forwardTo:/);
 assert.doesNotMatch(attentionItemQml, /focusTarget:\s*root/);

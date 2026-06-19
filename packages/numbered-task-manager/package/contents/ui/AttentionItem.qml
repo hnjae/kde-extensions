@@ -4,7 +4,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import org.kde.kirigami as Kirigami
 import "TaskEntryLogic.mjs" as TaskEntryLogic
 import "TaskMetricsLogic.mjs" as TaskMetricsLogic
 
@@ -20,30 +19,39 @@ QtQuick.Item {
     property var modelIndex
     property var taskData: ({})
     property bool contextMenuOpen: false
-    readonly property int iconExtent: TaskMetricsLogic.iconExtentForTaskFrame(height, taskFrame.contentTopMargin, taskFrame.contentBottomMargin, Kirigami.Units.iconSizes.small)
-    readonly property real naturalImplicitWidth: TaskMetricsLogic.taskNaturalImplicitWidth(TaskMetricsLogic.attentionNaturalWidthMinimum(), TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth, contentRow.horizontalPadding)
-    readonly property bool titleVisible: TaskMetricsLogic.taskTitleVisible(root.showTitle, root.slotWidth, root.titleVisibilityThreshold)
-    readonly property bool visualHighlighted: taskLikeInteraction.highlighted
+    readonly property int iconExtent: taskShell.iconExtent
+    readonly property real naturalImplicitWidth: taskShell.naturalImplicitWidth
+    readonly property bool titleVisible: taskShell.titleVisible
+    readonly property bool visualHighlighted: taskShell.visualHighlighted
 
     signal activated
     signal contextMenuRequested(var request)
 
-    implicitWidth: TaskMetricsLogic.taskImplicitWidth(root.slotWidth, naturalImplicitWidth)
-    implicitHeight: TaskMetricsLogic.taskExtent()
+    implicitWidth: taskShell.implicitWidth
+    implicitHeight: taskShell.implicitHeight
     width: implicitWidth
 
-    TaskLikeFrame {
-        id: taskFrame
+    TaskLikeItemShell {
+        id: taskShell
 
         anchors.fill: parent
         attention: true
-        hovered: root.visualHighlighted
-    }
+        contextMenuOpen: root.contextMenuOpen
+        modelIndex: root.modelIndex
+        naturalWidthMinimum: TaskMetricsLogic.attentionNaturalWidthMinimum()
+        showTitle: root.showTitle
+        slotWidth: root.slotWidth
+        taskData: root.taskData
+        titleVisibilityThreshold: root.titleVisibilityThreshold
+        visualParent: root
 
-    TaskLikeContentRow {
-        id: contentRow
+        onActivated: {
+            root.activated();
+        }
 
-        frame: taskFrame
+        onContextMenuRequested: request => {
+            root.contextMenuRequested(request);
+        }
 
         TaskLikeContentSpacer {
             fill: !root.titleVisible
@@ -72,23 +80,6 @@ QtQuick.Item {
 
         TaskLikeContentSpacer {
             fill: !root.titleVisible
-        }
-    }
-
-    TaskLikeInteraction {
-        id: taskLikeInteraction
-
-        contextMenuOpen: root.contextMenuOpen
-        modelIndex: root.modelIndex
-        taskData: root.taskData
-        visualParent: root
-
-        onActivated: {
-            root.activated();
-        }
-
-        onContextMenuRequested: request => {
-            root.contextMenuRequested(request);
         }
     }
 }

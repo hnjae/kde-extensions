@@ -35,43 +35,33 @@ QtQuick.Item {
     property bool dropHover: false
     property bool contextMenuOpen: false
     readonly property var itemPresentation: TaskItemPresentationLogic.taskItemPresentation({
-        contentEndMargin: taskFrame.contentBottomMargin,
-        contentStartMargin: taskFrame.contentTopMargin,
+        contentEndMargin: taskShell.contentBottomMargin,
+        contentStartMargin: taskShell.contentTopMargin,
         frameExtent: height,
         minimumIconExtent: Kirigami.Units.iconSizes.small,
         slotNumber: root.slotNumber
     })
-    readonly property int iconExtent: itemPresentation.iconExtent
-    readonly property real naturalImplicitWidth: TaskMetricsLogic.taskNaturalImplicitWidth(TaskMetricsLogic.normalNaturalWidthMinimum(root.showTitle), TaskMetricsLogic.maximumSlotWidth(), contentRow.implicitWidth, contentRow.horizontalPadding)
+    readonly property int iconExtent: taskShell.iconExtent
+    readonly property real naturalImplicitWidth: taskShell.naturalImplicitWidth
     readonly property string numberMode: itemPresentation.numberMode
     readonly property string slotLabel: itemPresentation.slotLabel
-    readonly property bool titleVisible: TaskMetricsLogic.taskTitleVisible(root.showTitle, root.slotWidth, root.titleVisibilityThreshold)
-    readonly property bool visualHighlighted: taskLikeInteraction.highlighted
+    readonly property bool titleVisible: taskShell.titleVisible
+    readonly property bool visualHighlighted: taskShell.visualHighlighted
 
     signal activated(int taskIndex)
     signal contextMenuRequested(var request)
     signal taskDropped(int sourceIndex, int targetIndex, var drop)
 
-    implicitWidth: TaskMetricsLogic.taskImplicitWidth(root.slotWidth, naturalImplicitWidth)
-    implicitHeight: TaskMetricsLogic.taskExtent()
+    implicitWidth: taskShell.implicitWidth
+    implicitHeight: taskShell.implicitHeight
     width: implicitWidth
 
-    TaskLikeFrame {
-        id: taskFrame
+    TaskLikeItemShell {
+        id: taskShell
 
         anchors.fill: parent
         active: root.active
         attention: root.demandingAttention
-        dropHover: root.dropHover
-        hovered: root.visualHighlighted
-        launcher: root.launcher
-        minimized: root.minimized
-        mutedLauncher: root.pinnedLauncherOnly
-    }
-
-    TaskLikeContentRow {
-        id: contentRow
-
         contentOpacity: TaskVisualLogic.contentOpacity({
             active: root.active,
             attention: root.demandingAttention,
@@ -79,7 +69,27 @@ QtQuick.Item {
             highlighted: root.visualHighlighted,
             mutedLauncher: root.pinnedLauncherOnly
         })
-        frame: taskFrame
+        contextMenuOpen: root.contextMenuOpen
+        dropHover: root.dropHover
+        iconExtentOverride: root.itemPresentation.iconExtent
+        launcher: root.launcher
+        minimized: root.minimized
+        mutedLauncher: root.pinnedLauncherOnly
+        modelIndex: root.modelIndex
+        naturalWidthMinimum: TaskMetricsLogic.normalNaturalWidthMinimum(root.showTitle)
+        showTitle: root.showTitle
+        slotWidth: root.slotWidth
+        taskData: root.taskData
+        titleVisibilityThreshold: root.titleVisibilityThreshold
+        visualParent: root
+
+        onActivated: {
+            root.activated(root.taskIndex);
+        }
+
+        onContextMenuRequested: request => {
+            root.contextMenuRequested(request);
+        }
 
         TaskLikeContentSpacer {
             fill: !root.titleVisible && !root.pinnedLauncherOnly
@@ -157,22 +167,5 @@ QtQuick.Item {
 
         acceptedButtons: QtQuick.Qt.LeftButton
         enabled: root.taskIndex >= 0
-    }
-
-    TaskLikeInteraction {
-        id: taskLikeInteraction
-
-        contextMenuOpen: root.contextMenuOpen
-        modelIndex: root.modelIndex
-        taskData: root.taskData
-        visualParent: root
-
-        onActivated: {
-            root.activated(root.taskIndex);
-        }
-
-        onContextMenuRequested: request => {
-            root.contextMenuRequested(request);
-        }
     }
 }

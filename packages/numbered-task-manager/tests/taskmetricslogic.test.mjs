@@ -66,11 +66,15 @@ const attentionItemQml = readFileSync(
   new URL("../package/contents/ui/AttentionItem.qml", import.meta.url),
   "utf8",
 );
+const shellQml = readFileSync(
+  new URL("../package/contents/ui/TaskLikeItemShell.qml", import.meta.url),
+  "utf8",
+);
 assert.match(
   attentionItemQml,
   /import "TaskMetricsLogic\.mjs" as TaskMetricsLogic/,
 );
-assert.match(attentionItemQml, /iconExtentForTaskFrame\(/);
+assert.match(shellQml, /iconExtentForTaskFrame\(/);
 assert.match(attentionItemQml, /property real slotWidth:\s*0/);
 assert.match(attentionItemQml, /property bool showTitle:\s*true/);
 assert.match(
@@ -79,18 +83,15 @@ assert.match(
 );
 assert.match(
   attentionItemQml,
-  /TaskMetricsLogic\.taskNaturalImplicitWidth\(TaskMetricsLogic\.attentionNaturalWidthMinimum\(\), TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth, contentRow\.horizontalPadding\)/,
+  /naturalWidthMinimum:\s*TaskMetricsLogic\.attentionNaturalWidthMinimum\(\)/,
+);
+assert.match(shellQml, /implicitHeight:\s*TaskMetricsLogic\.taskExtent\(\)/);
+assert.match(
+  shellQml,
+  /implicitWidth:\s*TaskMetricsLogic\.taskImplicitWidth\(root\.slotWidth, root\.naturalImplicitWidth\)/,
 );
 assert.match(
-  attentionItemQml,
-  /implicitHeight:\s*TaskMetricsLogic\.taskExtent\(\)/,
-);
-assert.match(
-  attentionItemQml,
-  /implicitWidth:\s*TaskMetricsLogic\.taskImplicitWidth\(root\.slotWidth, naturalImplicitWidth\)/,
-);
-assert.match(
-  attentionItemQml,
+  shellQml,
   /readonly property bool titleVisible:\s*TaskMetricsLogic\.taskTitleVisible\(root\.showTitle, root\.slotWidth, root\.titleVisibilityThreshold\)/,
 );
 
@@ -144,15 +145,15 @@ assert.match(
 );
 assert.match(
   taskItemQml,
-  /TaskMetricsLogic\.taskNaturalImplicitWidth\(TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\), TaskMetricsLogic\.maximumSlotWidth\(\), contentRow\.implicitWidth, contentRow\.horizontalPadding\)/,
+  /naturalWidthMinimum:\s*TaskMetricsLogic\.normalNaturalWidthMinimum\(root\.showTitle\)/,
 );
-assert.match(taskItemQml, /implicitHeight:\s*TaskMetricsLogic\.taskExtent\(\)/);
+assert.match(shellQml, /implicitHeight:\s*TaskMetricsLogic\.taskExtent\(\)/);
 assert.match(
-  taskItemQml,
-  /implicitWidth:\s*TaskMetricsLogic\.taskImplicitWidth\(root\.slotWidth, naturalImplicitWidth\)/,
+  shellQml,
+  /implicitWidth:\s*TaskMetricsLogic\.taskImplicitWidth\(root\.slotWidth, root\.naturalImplicitWidth\)/,
 );
 assert.match(
-  taskItemQml,
+  shellQml,
   /readonly property bool titleVisible:\s*TaskMetricsLogic\.taskTitleVisible\(root\.showTitle, root\.slotWidth, root\.titleVisibilityThreshold\)/,
 );
 assert.doesNotMatch(
