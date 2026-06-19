@@ -8,7 +8,6 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 const actionLogic = await loadQmlJsModule(
   new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
   [
-    "activationExecutionResult",
     "contextMenuCreationResult",
     "contextMenuActionDispatchFailure",
     "contextMenuLauncherCommandDispatchResult",
@@ -21,9 +20,15 @@ const actionLogic = await loadQmlJsModule(
     "launcherMutationRequest",
     "launcherMutationResult",
     "launcherMutationPersistenceResult",
+    "taskEntryDiagnosticResult",
+  ],
+);
+const activationLogic = await loadQmlJsModule(
+  new URL("../package/contents/ui/TaskActivationLogic.mjs", import.meta.url),
+  [
+    "activationExecutionResult",
     "shortcutActivationRequest",
     "taskActivationRequest",
-    "taskEntryDiagnosticResult",
   ],
 );
 const actionResultLogic = await loadQmlJsModule(
@@ -37,7 +42,13 @@ const commandLogic = await loadQmlJsModule(
   ),
   ["contextMenuLauncherCommand", "contextMenuTaskCommand"],
 );
-const logic = Object.assign({}, actionLogic, actionResultLogic, commandLogic);
+const logic = Object.assign(
+  {},
+  actionLogic,
+  actionResultLogic,
+  activationLogic,
+  commandLogic,
+);
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const validModelIndex = { valid: true, row: 4 };
 const invalidModelIndex = { valid: false, row: 4 };

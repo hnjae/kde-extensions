@@ -294,15 +294,15 @@ assert.deepEqual(
   ],
 );
 
-const taskActionLogicSource = readFileSync(
-  new URL("../package/contents/ui/TaskActionLogic.mjs", import.meta.url),
+const taskActivationLogicSource = readFileSync(
+  new URL("../package/contents/ui/TaskActivationLogic.mjs", import.meta.url),
   "utf8",
 );
 assert.match(
-  taskActionLogicSource,
+  taskActivationLogicSource,
   /import \{[^}]*isNormalVisibleItem[^}]*isRemoteAttentionVisibleItem[^}]*\} from "\.\/VisibleTaskItemsLogic\.mjs"/s,
 );
 assert.doesNotMatch(
-  taskActionLogicSource,
+  taskActivationLogicSource,
   /targetItem\.kind !== "normal" && targetItem\.kind !== "remoteAttention"/,
 );

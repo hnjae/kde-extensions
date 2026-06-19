@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
-import "TaskActionLogic.mjs" as TaskActionLogic
+import "TaskActivationLogic.mjs" as TaskActivationLogic
 import "VisibleTaskItemsLogic.mjs" as VisibleTaskItemsLogic
 
 QtQuick.QtObject {
@@ -17,7 +17,7 @@ QtQuick.QtObject {
     signal actionResult(var result)
 
     function activateTaskAtIndex(index) {
-        const result = TaskActionLogic.shortcutActivationRequest(visibleTaskItems, index);
+        const result = TaskActivationLogic.shortcutActivationRequest(visibleTaskItems, index);
         if (!result.ok) {
             root.actionResult(result);
             return result;
@@ -28,7 +28,7 @@ QtQuick.QtObject {
     }
 
     function activateTaskEntry(task) {
-        const result = TaskActionLogic.taskActivationRequest("activateTask", task, {
+        const result = TaskActivationLogic.taskActivationRequest("activateTask", task, {
             requireSourceIndex: true,
             sourceModel: VisibleTaskItemsLogic.normalItemKind
         });
@@ -42,7 +42,7 @@ QtQuick.QtObject {
     }
 
     function activateRemoteAttention(visibleItem) {
-        const result = TaskActionLogic.taskActivationRequest("activateRemoteAttention", visibleItem ? visibleItem.entry : null, {
+        const result = TaskActivationLogic.taskActivationRequest("activateRemoteAttention", visibleItem ? visibleItem.entry : null, {
             requireSourceIndex: false,
             sourceModel: visibleItem ? visibleItem.sourceModel : VisibleTaskItemsLogic.remoteAttentionItemKind,
             targetKind: visibleItem ? visibleItem.kind : VisibleTaskItemsLogic.remoteAttentionItemKind
@@ -66,7 +66,7 @@ QtQuick.QtObject {
 
     function requestActivation(result) {
         const target = activationTarget(result);
-        let executionResult = TaskActionLogic.activationExecutionResult(result, target);
+        let executionResult = TaskActivationLogic.activationExecutionResult(result, target);
         if (!executionResult.ok) {
             root.actionResult(executionResult);
             return executionResult;
@@ -75,11 +75,11 @@ QtQuick.QtObject {
         try {
             target.requestActivate(result.modelIndex);
         } catch (error) {
-            executionResult = TaskActionLogic.activationExecutionResult(result, target, error);
+            executionResult = TaskActivationLogic.activationExecutionResult(result, target, error);
             root.actionResult(executionResult);
             return executionResult;
         }
 
-        return TaskActionLogic.activationExecutionResult(result, target);
+        return TaskActivationLogic.activationExecutionResult(result, target);
     }
 }
