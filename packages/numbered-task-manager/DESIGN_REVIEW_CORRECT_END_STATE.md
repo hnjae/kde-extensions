@@ -55,22 +55,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** `pinLauncher(...)` and `unpinLauncher(...)` return or emit failure when persistence fails. Tests cover request failure, request rejection, accepted model mutation plus failed config convergence, missing `launcherSync`, and full success. No call site ignores an `ok: false` launcher persistence result.
 
-### Finding: Drag move stale-state failures can disappear silently
-
-**Priority:** P2.
-
-**Evidence:** `TaskMoveAdapter.qml` emits an action result when initial `canMoveTaskResult(...)` rejects a move; after a passing check, it calls `normalTaskEntryForSourceIndex(...)` for source and target and returns `false` without an action result if either lookup fails; `TaskModelLogic.canMoveTaskResult(...)` already has `missing-source` and `missing-target` reasons; `TaskActionLogic.dragMoveRejectionResult(...)` treats stale reasons as diagnostic.
-
-**Current state:** A race between drag acceptance and drop execution can produce an unclassified false return.
-
-**Design concern:** The code already has a diagnostic vocabulary for stale drag state, but one execution path bypasses it. That weakens production debugging for model churn during drag/drop.
-
-**Correct end state:** Every failed drag execution path that is not an expected quiet no-op should emit a structured drag move rejection.
-
-**Suggested migration:** Recompute a typed move decision immediately before returning `false`, or map missing post-check source/target to `dragMoveRejectionResult({ canMove: false, reason: "missing-source" | "missing-target" }, sourceIndex, targetIndex)`.
-
-**Acceptance criteria:** If source or target disappears during `moveTask(...)`, an action result is emitted. Expected denials such as same index, boundary crossing, and pinned-launcher denial remain non-diagnostic. `moveTask(...)` has no unclassified stale-state `return false`.
-
 ## Cohesion, Coupling, and Ownership Problems
 
 ### Finding: `TaskContextMenuLogic.mjs` is a feature monolith
@@ -431,7 +415,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, task source lifecycle depending on delegate events, and footer menu actions bypassing descriptors/action results. These were kept. Launcher sync and source lifecycle are P1 because important behavior is currently hard to execute-test; desktop actions and footer actions are P2.
 
-**Error Handling / Observability Agent:** Reported ignored launcher persistence failures, implicit launcher sync retry semantics, silent stale drag failures, lossy exception serialization, and unobserved desktop action launch failures. All were kept, with duplicate launcher persistence merged into the top P1 finding.
+**Error Handling / Observability Agent:** Reported ignored launcher persistence failures, implicit launcher sync retry semantics, lossy exception serialization, and unobserved desktop action launch failures. All were kept, with duplicate launcher persistence merged into the top P1 finding.
 
 **Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. These were merged into cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
