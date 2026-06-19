@@ -73,22 +73,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 ## Logic Placement and Flow Predictability
 
-### Finding: Menu-open visual state is mutated through an implicit `visualParent` side effect
-
-**Priority:** P2.
-
-**Evidence:** `TaskContextMenuAdapter.qml` checks `visualParent.contextMenuOpen !== undefined`, sets it true, and connects `menu.closed` to set it false; `TaskItem.qml` and `AttentionItem.qml` own `contextMenuOpen`; `TaskLikeInteraction.qml` computes `highlighted` from hover, focus, and `contextMenuOpen`.
-
-**Current state:** The context-menu adapter mutates a property on whichever visual object was passed as `visualParent`.
-
-**Design concern:** This creates hidden coupling between controller-style menu creation and visual delegate internals. Renaming the property or passing a different visual parent silently changes highlight behavior.
-
-**Correct end state:** Menu-open state should be explicit at the task-like interaction boundary. The adapter should emit lifecycle signals or accept typed callbacks; the delegate or `TaskLikeInteraction` should own `contextMenuOpen` mutation in response.
-
-**Suggested migration:** Add explicit `contextMenuOpened` and `contextMenuClosed` signals, or pass a typed callback in the context-menu request. Move mutation into `TaskLikeInteraction`, `TaskItem`, and `AttentionItem`. Keep `TaskContextMenuAdapter.qml` responsible only for validation, menu creation, signal wiring, and `show()`.
-
-**Acceptance criteria:** `TaskContextMenuAdapter.qml` no longer reads or writes `visualParent.contextMenuOpen`. Delegates still highlight while their menu is open. The lifecycle path is visible through named signals or callbacks.
-
 ### Finding: Footer menu actions bypass descriptors and action-result classification
 
 **Priority:** P2.
@@ -280,6 +264,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 - P1/P2 launcher sync/domain ownership: Moved config/model sync diffing, convergence, retry classification, reconciliation state, and transaction guard policy from `LauncherListLogic.mjs` into `LauncherSyncLogic.mjs`; `LauncherListLogic.mjs` now keeps launcher-list domain helpers while `LauncherSyncLogic.mjs` owns sync primitives and orchestration. Verified with `node tests/launchersynclogic.test.mjs`, `node tests/launcherlistlogic.test.mjs`, and `node tests/launchersyncadapterqml.test.mjs`. Commit: `ae0c7a1`, `0538185`.
 - P2 context-menu task command boundary: Removed the completed narrow-port finding from the active backlog; the command path already uses explicit supported-method validation and `TaskCommandPort.qml`, while remaining raw-model work is tracked by the broader adapter-port finding.
 - P2 structured error context: Added `ErrorContextLogic.mjs` as the single serializer for caught action and launcher sync failures, preserving legacy `error` while adding `errorMessage`, `errorName`, and `errorCode` where available. Verified with `node tests/errorcontextlogic.test.mjs`, `node tests/taskactionlogic.test.mjs`, and `node tests/launchersynclogic.test.mjs`. Commit: `b5a053b`, `3eb6a95`.
+- P2 explicit menu-open lifecycle: Replaced `TaskContextMenuAdapter.qml` mutation of `visualParent.contextMenuOpen` with request lifecycle callbacks supplied by `NormalTaskItem.qml` and `RemoteAttentionItem.qml`, so delegates own highlight state and the adapter only manages menu validation, creation, signal wiring, and show/close notification. Verified with `node tests/taskcontextmenuadapterqml.test.mjs`, `node tests/normaltaskitemqml.test.mjs`, and `node tests/remoteattentionitemqml.test.mjs`. Commit: `24df7cf`, `6e8108c`.
 
 ## Appendix: Subagent Reports
 
@@ -287,7 +272,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Cohesion / Coupling / Ownership Agent:** Reported `TaskContextMenuLogic.mjs` as a god module, `TaskActionLogic.mjs` as a broad service, and `LauncherListLogic.mjs` mixing sync/domain rules. The sync/domain split is complete; the broad context-menu module remains P1, and action-result plus remaining launcher-domain splits are P2.
 
-**Logic Placement / Flow Readability Agent:** Reported implicit `visualParent.contextMenuOpen` mutation. It was kept.
+**Logic Placement / Flow Readability Agent:** Reported implicit `visualParent.contextMenuOpen` mutation. This is complete; menu-open state now flows through explicit lifecycle callbacks owned by delegates.
 
 **Testability Agent:** Reported desktop action backend lacking a descriptor seam, launcher sync orchestration living in QML, and footer menu actions bypassing descriptors/action results. Launcher sync orchestration is now covered through `LauncherSyncLogic.mjs`; desktop actions and footer actions remain P2.
 
