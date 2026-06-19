@@ -16,6 +16,10 @@ const source = readFileSync(
 assert.match(header, /struct DesktopActionDescriptor/);
 assert.match(
   header,
+  /Q_SIGNAL void desktopActionResult\(const QVariantMap &result\)/,
+);
+assert.match(
+  header,
   /QList<DesktopActionDescriptor>\s+desktopActionDescriptors/,
 );
 assert.match(header, /QVariantList\s+desktopActionsFromDescriptors/);
@@ -36,6 +40,11 @@ assert.match(
   source,
   /KIO::ApplicationLauncherJob\(descriptor\.serviceAction\)/,
 );
+assert.match(source, /connect\(job, &KJob::result, this/);
+assert.match(source, /desktop-action-launch-failed/);
+assert.match(source, /emit desktopActionResult\(actionResult\)/);
+assert.match(source, /descriptor\.launcherUrl/);
+assert.match(source, /descriptor\.text/);
 
 assert.match(
   source,

@@ -129,6 +129,10 @@ assert.match(
   /import io\.github\.hnjae\.numberedtaskmanager as NumberedTaskManager/,
 );
 assert.match(menuQml, /NumberedTaskManager\.TaskContextMenuBackend\s*\{/);
+assert.match(
+  menuQml,
+  /onDesktopActionResult:\s*result\s*=>\s*\{[\s\S]*?root\.actionResult\(result\);[\s\S]*?\}/,
+);
 assert.match(menuQml, /desktopActions\(root\.taskRoles\.launcherUrl/);
 assert.match(menuQml, /item\.action = modelData/);
 assert.match(menuQml, /id:\s*moreActionsItem/);
