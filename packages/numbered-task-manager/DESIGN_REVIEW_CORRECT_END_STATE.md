@@ -17,7 +17,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 1. **High-change modules own too many feature families.** `TaskContextMenuLogic.mjs`, `TaskActionLogic.mjs`, and `LauncherListLogic.mjs` mix unrelated policies, which increases blast radius and makes deletion or isolated testing harder.
 2. **Several effect boundaries are hard to test or observe.** Hidden QML source delegates own publication lifecycle transitions, standalone launcher sync diagnostics still use a separate warning formatter, and C++ desktop actions create live `QAction`/`KIO::ApplicationLauncherJob` objects without a pure descriptor or failure signal.
-3. **Broad raw model ports make feature removal harder.** The same `TasksModel` instance still flows into context-menu role/opening paths, while launcher sync, launcher pin/unpin commands, context-menu task commands, context-menu launcher state reads, normal task activation, and task movement now use narrow ports.
 
 ## Invariant and Correctness Risks
 
@@ -54,22 +53,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 **Suggested migration:** Extract the generic result factory first. Move activation helpers next, then context-menu helpers, then launcher mutation helpers, then drag rejection helpers. Update imports in QML adapters incrementally.
 
 **Acceptance criteria:** No single module contains activation, context-menu, launcher mutation, task-entry diagnostic, and drag/drop diagnostic policy together. `TaskActionResultLogger.qml` imports only the generic result/logging helper.
-
-### Finding: Adapters depend on broad live `TasksModel` objects
-
-**Priority:** P1.
-
-**Evidence:** `main.qml` still passes the same `tasksModel` into context-menu role/opening paths; `LauncherCommandAdapter.qml` now uses `LauncherCommandPort.qml` for add/remove/list access; `TaskContextMenuTaskCommandAdapter.qml` now uses `TaskCommandPort.qml` for supported context-menu task request execution; context-menu launcher state reads now use `LauncherReadPort.qml`; normal task activation now uses `TaskActivationPort.qml`; task movement now uses `TaskMovePort.qml` for launcher-list and launcher-position reads; launcher sync now uses `LauncherSyncPort.qml` for launcher-list and configuration read/write effects.
-
-**Current state:** Several adapters still receive the full Plasma `TasksModel` and use different slices of its API.
-
-**Design concern:** The boundaries between task effects, launcher effects, launcher persistence, and menu commands are implicit. Tests must mock a large live object shape, and feature deletion requires searching broad model usage.
-
-**Correct end state:** Use narrow ports around the raw Plasma model. A task command executor should expose explicit supported task request methods. A launcher port should expose launcher list, position, activities, add/remove, and list write operations. A sync owner should handle config persistence. The raw `TasksModel` should be contained at root/platform wiring boundaries.
-
-**Suggested migration:** Introduce wrapper ports without changing behavior. Context-menu task requests now have an explicit allowlist and a narrow task-command port, launcher pin/unpin commands now use a narrow add/remove/list port, context-menu launcher state reads now use a narrow read port, normal task activation now uses a narrow activation port, task movement now uses a narrow move port, and launcher sync now uses a narrow sync port; continue by wrapping context-menu role/opening paths. Finally update adapters to depend on those wrappers.
-
-**Acceptance criteria:** No adapter except the root/platform adapter receives raw `TasksModel` for unrelated purposes. Context-menu task execution has an explicit supported-method map. Unit tests can mock each port with only the methods that feature uses.
 
 ## Logic Placement and Flow Predictability
 
@@ -191,22 +174,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** Runtime adapters import only the launcher responsibility they execute. Tests can fail independently for serialized activity updates, pin state, and pinned reordering.
 
-### Finding: Broad raw model ports make feature removal harder
-
-**Priority:** P1.
-
-**Evidence:** The same `TasksModel` instance still flows into context menu role/opening paths. Launcher sync, launcher pin/unpin commands, context-menu task commands, context-menu launcher state reads, normal task activation, and task movement now use narrow ports.
-
-**Current state:** Feature ownership is inferred from which object methods an adapter happens to call.
-
-**Design concern:** Deleting or isolating a feature requires searching broad live model usage and mocking a large object shape in tests.
-
-**Correct end state:** Narrow ports should make ownership explicit. Feature-specific adapters should depend on only the methods they need.
-
-**Suggested migration:** Introduce ports while preserving behavior. Avoid a large rewrite; wrap one feature boundary at a time.
-
-**Acceptance criteria:** Unit tests can mock each port with only feature-specific methods. Raw `TasksModel` access is contained near root/platform wiring.
-
 ## Recommended Correct End-State Architecture
 
 The root `main.qml` should remain the composition root. It should instantiate Plasma `TasksModel`, platform state, adapters, sources, and the rendered `TaskListRepresentation.qml`, but it should not own domain policy beyond unavoidable wiring.
@@ -227,7 +194,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 1. Add characterization tests around current behavior.
 2. Centralize duplicated rules/state. Centralize context-menu route kinds.
-3. Isolate core domain logic from external effects. Add a desktop action descriptor seam in the C++ backend and continue moving remaining raw-model adapters behind narrow ports.
+3. Isolate core domain logic from external effects. Add a desktop action descriptor seam in the C++ backend.
 4. Clarify ownership boundaries. Split `TaskContextMenuLogic.mjs` by feature family, split `TaskActionLogic.mjs` into generic result and domain-specific classifiers, and split remaining broad launcher-domain responsibilities if they keep coupling unrelated features.
 5. Improve error semantics and observability. Add structured error context and connect desktop action launch failures to diagnostics.
 6. Remove or simplify premature abstractions. After the behavior boundaries are stable, consider extracting `TaskLikeItemShell.qml` if the duplicated visual shell still creates real maintenance pressure. Keep compatibility re-exports only temporarily and remove them once QML and tests consume focused modules directly.
@@ -246,7 +213,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 ## Progress Log
 
 - P1/P2 launcher sync/domain ownership: Moved config/model sync diffing, convergence, retry classification, reconciliation state, and transaction guard policy from `LauncherListLogic.mjs` into `LauncherSyncLogic.mjs`; `LauncherListLogic.mjs` now keeps launcher-list domain helpers while `LauncherSyncLogic.mjs` owns sync primitives and orchestration. Verified with `node tests/launchersynclogic.test.mjs`, `node tests/launcherlistlogic.test.mjs`, and `node tests/launchersyncadapterqml.test.mjs`. Commit: `ae0c7a1`, `0538185`.
-- P2 context-menu task command boundary: Removed the completed narrow-port finding from the active backlog; the command path already uses explicit supported-method validation and `TaskCommandPort.qml`, while remaining raw-model work is tracked by the broader adapter-port finding.
+- P2 context-menu task command boundary: Removed the completed narrow-port finding from the active backlog; the command path already uses explicit supported-method validation and `TaskCommandPort.qml`.
 - P2 structured error context: Added `ErrorContextLogic.mjs` as the single serializer for caught action and launcher sync failures, preserving legacy `error` while adding `errorMessage`, `errorName`, and `errorCode` where available. Verified with `node tests/errorcontextlogic.test.mjs`, `node tests/taskactionlogic.test.mjs`, and `node tests/launchersynclogic.test.mjs`. Commit: `b5a053b`, `3eb6a95`.
 - P2 explicit menu-open lifecycle: Replaced `TaskContextMenuAdapter.qml` mutation of `visualParent.contextMenuOpen` with request lifecycle callbacks supplied by `NormalTaskItem.qml` and `RemoteAttentionItem.qml`, so delegates own highlight state and the adapter only manages menu validation, creation, signal wiring, and show/close notification. Verified with `node tests/taskcontextmenuadapterqml.test.mjs`, `node tests/normaltaskitemqml.test.mjs`, and `node tests/remoteattentionitemqml.test.mjs`. Commit: `24df7cf`, `6e8108c`.
 - P3 premature-abstraction guardrail: Removed the non-actionable “some abstractions should not be extracted yet” item from active findings and kept the guidance in “Things Not To Change Yet,” so the backlog only tracks changes to make.
@@ -263,6 +230,6 @@ Tests should be layered by risk. Characterization tests should pin current behav
 
 **Error Handling / Observability Agent:** Reported lossy exception serialization and unobserved desktop action launch failures. Exception serialization is complete; desktop action launch observability remains.
 
-**Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. These were merged into cohesion/modularity sections; the sync part of the launcher module concern is complete. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
+**Deletion / Modularity / Abstraction Agent:** Reported context-menu monolith, partial task-like visual shell abstraction, broad launcher list module, and adapters depending on raw model objects. The raw model adapter concern is complete; remaining active items are kept in cohesion/modularity sections. The task-like visual shell item was downgraded to P3 because it is a cleanup/refinement after behavior boundaries are stabilized.
 
 **Rejected or deferred findings:** No subagent finding was rejected for lack of code evidence. Visual shell extraction was deferred because the current duplication is smaller and less risky than action/effect boundary issues. A big rewrite of context menu QML, raw model plumbing, or source delegates is explicitly not recommended; the migration should proceed through characterization tests and narrow extracted owners.
