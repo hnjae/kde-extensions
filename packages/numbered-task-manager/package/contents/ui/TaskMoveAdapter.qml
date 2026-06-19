@@ -21,14 +21,14 @@ QtQuick.QtObject {
     function moveTask(sourceIndex, targetIndex) {
         const moveDecision = canMoveTaskResult(sourceIndex, targetIndex);
         if (!moveDecision.canMove) {
-            const rejection = TaskActionLogic.dragMoveRejectionResult(moveDecision, sourceIndex, targetIndex);
-            actionResult(rejection);
+            rejectDragMove(moveDecision, sourceIndex, targetIndex);
             return false;
         }
 
         const sourceEntry = normalTaskEntryForSourceIndex(sourceIndex);
         const targetEntry = normalTaskEntryForSourceIndex(targetIndex);
         if (!sourceEntry || !targetEntry) {
+            rejectDragMove(TaskModelLogic.canMoveTaskResult(normalEntries, sourceIndex, targetIndex, (sourceEntry, targetEntry) => canMovePinnedLauncher(sourceEntry, targetEntry)), sourceIndex, targetIndex);
             return false;
         }
 
@@ -58,6 +58,12 @@ QtQuick.QtObject {
 
     function canMoveTask(sourceIndex, targetIndex) {
         return canMoveTaskResult(sourceIndex, targetIndex).canMove;
+    }
+
+    function rejectDragMove(moveDecision, sourceIndex, targetIndex) {
+        const rejection = TaskActionLogic.dragMoveRejectionResult(moveDecision, sourceIndex, targetIndex);
+        actionResult(rejection);
+        return rejection;
     }
 
     function normalTaskEntryForSourceIndex(sourceIndex) {

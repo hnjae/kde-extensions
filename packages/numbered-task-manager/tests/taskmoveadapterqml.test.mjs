@@ -96,7 +96,11 @@ assert.doesNotMatch(
 );
 assert.match(
   sourceQml,
-  /TaskActionLogic\.dragMoveRejectionResult\(\s*TaskModelLogic\.canMoveTaskResult\(/s,
+  /rejectDragMove\(\s*TaskModelLogic\.canMoveTaskResult\(/s,
+);
+assert.match(
+  sourceQml,
+  /function rejectDragMove\(moveDecision, sourceIndex, targetIndex\)/,
 );
 assert.match(sourceQml, /normalTaskStore\.moveManualTask/);
 assert.match(sourceQml, /LauncherListLogic\.movePinnedLauncher/);
