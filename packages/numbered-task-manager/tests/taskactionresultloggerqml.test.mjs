@@ -29,10 +29,14 @@ assert.doesNotMatch(mainQml, /TaskActionLogic\.shouldLogActionResult/);
 assert.doesNotMatch(mainQml, /console\.warn\("Numbered Task Manager action "/);
 assert.doesNotMatch(mainQml, /root\.logActionResult\(result\)/);
 
-assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
+assert.match(sourceQml, /import "ActionResultLogic\.mjs" as ActionResultLogic/);
+assert.doesNotMatch(
+  sourceQml,
+  /import "TaskActionLogic\.mjs" as TaskActionLogic/,
+);
 assert.match(sourceQml, /QtQuick\.QtObject\s*\{/);
 assert.match(sourceQml, /function logActionResult\(result\)/);
-assert.match(sourceQml, /TaskActionLogic\.shouldLogActionResult\(result\)/);
+assert.match(sourceQml, /ActionResultLogic\.shouldLogActionResult\(result\)/);
 assert.match(
   sourceQml,
   /console\.warn\("Numbered Task Manager action " \+ result\.action/,
