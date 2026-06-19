@@ -65,7 +65,14 @@ assert.doesNotMatch(mainQml, /contextMenuComponent\.createObject/);
 assert.doesNotMatch(mainQml, /TaskActionLogic\.contextMenuRequestResult/);
 assert.doesNotMatch(mainQml, /TaskActionLogic\.contextMenuCreationResult/);
 
-assert.match(sourceQml, /import "TaskActionLogic\.mjs" as TaskActionLogic/);
+assert.match(
+  sourceQml,
+  /import "TaskContextMenuRequestLogic\.mjs" as TaskContextMenuRequestLogic/,
+);
+assert.doesNotMatch(
+  sourceQml,
+  /import "TaskActionLogic\.mjs" as TaskActionLogic/,
+);
 assert.match(sourceQml, /QtQuick\.Item\s*\{/);
 assert.match(sourceQml, /property var launcherReadPort/);
 assert.doesNotMatch(sourceQml, /property var launcherModel/);
@@ -84,7 +91,7 @@ assert.match(
 assert.match(sourceQml, /function openTaskContextMenu\(request\)/);
 assert.match(
   sourceQml,
-  /TaskActionLogic\.contextMenuRequestResult\(contextMenuRequest\(request\)\)/,
+  /TaskContextMenuRequestLogic\.contextMenuRequestResult\(contextMenuRequest\(request\)\)/,
 );
 assert.match(sourceQml, /contextMenuComponent\.createObject\(visualParent/);
 assert.match(sourceQml, /launcherReadPort:\s*root\.launcherReadPort/);
@@ -94,7 +101,7 @@ assert.doesNotMatch(sourceQml, /taskModel:\s*menuRequest\.taskModel/);
 assert.match(sourceQml, /taskCommandPort:\s*root\.taskCommandPort/);
 assert.match(
   sourceQml,
-  /TaskActionLogic\.contextMenuCreationResult\(menu, menuRequest\)/,
+  /TaskContextMenuRequestLogic\.contextMenuCreationResult\(menu, menuRequest\)/,
 );
 assert.doesNotMatch(sourceQml, /visualParent\.contextMenuOpen/);
 assert.match(sourceQml, /notifyContextMenuOpened\(menuRequest\)/);
