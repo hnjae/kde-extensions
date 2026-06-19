@@ -123,22 +123,6 @@ The correct end state should keep the current behavioral design, KDE Plasma API 
 
 **Acceptance criteria:** Footer separator visibility and footer action state are covered by `.mjs` tests. `TaskContextMenu.qml` no longer directly calls `.trigger()`. Missing configure/edit actions produce structured no-op or diagnostic results.
 
-### Finding: Context-menu command execution has a narrow port
-
-**Priority:** P2.
-
-**Evidence:** `TaskActionLogic.mjs` validates context-menu task request names against an explicit supported-method allowlist, and `TaskContextMenuTaskCommandAdapter.qml` executes supported context-menu task request methods through `TaskCommandPort.qml`.
-
-**Current state:** The command path uses an explicit supported command map and a narrow task-command port while preserving existing descriptor names.
-
-**Design concern:** This specific dynamic-dispatch and raw task-command adapter risk is closed. The broader raw-model-port concern remains for other adapters and context-menu role/opening paths.
-
-**Correct end state:** Context-menu task commands should continue to execute through a narrow task-command port that exposes only the supported Plasma request methods and argument shapes.
-
-**Suggested migration:** Keep future context-menu task command changes on the task-command port boundary so the adapter does not regain unrelated `TasksModel` API surface.
-
-**Acceptance criteria:** The task command adapter depends on a task-command port that can be mocked with only supported request methods. Unsupported command names remain structured diagnostics before any Plasma method lookup.
-
 ## Testability Problems
 
 ### Finding: Desktop action backend has no descriptor seam
@@ -312,6 +296,7 @@ Tests should be layered by risk. Characterization tests should pin current behav
 ## Progress Log
 
 - P1/P2 launcher sync/domain ownership: Moved config/model sync diffing, convergence, retry classification, reconciliation state, and transaction guard policy from `LauncherListLogic.mjs` into `LauncherSyncLogic.mjs`; `LauncherListLogic.mjs` now keeps launcher-list domain helpers while `LauncherSyncLogic.mjs` owns sync primitives and orchestration. Verified with `node tests/launchersynclogic.test.mjs`, `node tests/launcherlistlogic.test.mjs`, and `node tests/launchersyncadapterqml.test.mjs`. Commit: `ae0c7a1`, `0538185`.
+- P2 context-menu task command boundary: Removed the completed narrow-port finding from the active backlog; the command path already uses explicit supported-method validation and `TaskCommandPort.qml`, while remaining raw-model work is tracked by the broader adapter-port finding.
 
 ## Appendix: Subagent Reports
 
