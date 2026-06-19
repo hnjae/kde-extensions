@@ -89,6 +89,7 @@ in `SPEC.md`.
   launcher commands, or launcher-activity adapters, but missing adapters and
   unknown routes should produce structured diagnostic results instead of silent
   false returns.
+- Keep context-menu command descriptor construction in `TaskContextMenuCommandLogic.mjs`. Focused menu feature modules should import launcher and task command factories from that owner, while `TaskActionLogic.mjs` keeps execution/result classification for malformed, unsupported, missing, or thrown requests.
 - Keep launcher-list transformations in `LauncherListLogic.mjs` so serialized
   activity prefixes, visible launcher positions, and pinned launcher reordering
   are exercised by unit tests instead of being spread across QML components.
