@@ -33,16 +33,18 @@ void expectActivationSignal(const QSignalSpy &spy, int signalIndex,
 
 class FakeDesktopStateStore final : public TabPagerDesktopStateStore {
 public:
-  [[nodiscard]] int count() const override { return m_desktops.size(); }
+  [[nodiscard]] int count() const override {
+    return static_cast<int>(m_desktops.size());
+  }
 
   [[nodiscard]] int currentIndex() const override {
     if (!m_currentDesktop.isValid()) {
       return -1;
     }
 
-    for (qsizetype index = 0; index < m_desktops.size(); ++index) {
+    for (int index = 0; index < count(); ++index) {
       if (m_desktops.at(index).id == m_currentDesktop) {
-        return static_cast<int>(index);
+        return index;
       }
     }
 

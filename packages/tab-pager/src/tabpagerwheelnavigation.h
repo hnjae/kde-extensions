@@ -3,7 +3,9 @@
 
 #pragma once
 
-enum class TabPagerWheelNavigationResultType {
+#include <cstdint>
+
+enum class TabPagerWheelNavigationResultType : std::uint8_t {
   Offset,
   NoWheelStep,
 };

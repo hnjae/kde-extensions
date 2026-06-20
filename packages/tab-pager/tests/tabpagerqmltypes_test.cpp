@@ -79,8 +79,8 @@ QList<QmlParameter> cppParametersFromSignature(const QString &arguments) {
     if (spaceIndex < 0) {
       qFatal("Unable to parse Q_INVOKABLE argument %s", qPrintable(argument));
     }
-    parameters.append({argument.mid(spaceIndex + 1).trimmed(),
-                       qmlTypeForCppType(argument.left(spaceIndex))});
+    parameters.append({.name = argument.mid(spaceIndex + 1).trimmed(),
+                       .type = qmlTypeForCppType(argument.left(spaceIndex))});
   }
   return parameters;
 }
@@ -110,10 +110,11 @@ QList<QmlProperty> backendHeaderProperties(const QString &header) {
     }
 
     properties.append(
-        {tokens.last(),
-         qmlTypeForCppType(
+        {.name = tokens.last(),
+         .type = qmlTypeForCppType(
              tokens.mid(0, tokens.size() - 1).join(QLatin1Char(' '))),
-         isPointer, !declaration.contains(QStringLiteral(" WRITE "))});
+         .isPointer = isPointer,
+         .isReadonly = !declaration.contains(QStringLiteral(" WRITE "))});
   }
   return properties;
 }
@@ -127,7 +128,8 @@ QList<QmlMethod> backendHeaderInvokables(const QString &header) {
   while (matchIterator.hasNext()) {
     const auto match = matchIterator.next();
     methods.append(
-        {match.captured(1), cppParametersFromSignature(match.captured(2))});
+        {.name = match.captured(1),
+         .parameters = cppParametersFromSignature(match.captured(2))});
   }
   return methods;
 }
@@ -168,10 +170,11 @@ QList<QmlProperty> qmltypesProperties(const QString &qmltypes) {
   auto matchIterator = propertyExpression.globalMatch(qmltypes);
   while (matchIterator.hasNext()) {
     const auto body = matchIterator.next().captured(1);
-    properties.append({nameExpression.match(body).captured(1),
-                       typeExpression.match(body).captured(1),
-                       body.contains(QStringLiteral("isPointer: true")),
-                       body.contains(QStringLiteral("isReadonly: true"))});
+    properties.append(
+        {.name = nameExpression.match(body).captured(1),
+         .type = typeExpression.match(body).captured(1),
+         .isPointer = body.contains(QStringLiteral("isPointer: true")),
+         .isReadonly = body.contains(QStringLiteral("isReadonly: true"))});
   }
   return properties;
 }
@@ -196,10 +199,12 @@ QList<QmlMethod> qmltypesMethods(const QString &qmltypes) {
     auto parameterIterator = parameterExpression.globalMatch(body);
     while (parameterIterator.hasNext()) {
       const auto parameterBody = parameterIterator.next().captured(1);
-      parameters.append({nameExpression.match(parameterBody).captured(1),
-                         typeExpression.match(parameterBody).captured(1)});
+      parameters.append(
+          {.name = nameExpression.match(parameterBody).captured(1),
+           .type = typeExpression.match(parameterBody).captured(1)});
     }
-    methods.append({nameExpression.match(body).captured(1), parameters});
+    methods.append({.name = nameExpression.match(body).captured(1),
+                    .parameters = parameters});
   }
   return methods;
 }

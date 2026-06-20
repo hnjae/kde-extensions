@@ -12,6 +12,7 @@
 #include <QTest>
 #include <QWheelEvent>
 
+#include <cstdint>
 #include <memory>
 
 namespace {
@@ -38,7 +39,7 @@ class FakeDesktopModel final : public QAbstractListModel {
   Q_OBJECT
 
 public:
-  enum Role {
+  enum Role : std::uint16_t {
     LabelRole = Qt::UserRole + 1,
     ActiveRole,
   };

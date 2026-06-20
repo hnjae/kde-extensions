@@ -49,18 +49,17 @@ void TabPagerDesktopRowsTest::detectsChangedRowRanges() {
                        defaultDesktop("c", 3)},
                       desktopId("c")));
 
-  const std::optional<QList<TabPagerDesktopRowsChange>> rowChanges =
-      rows.changesTo(nextRows);
+  const QList<TabPagerDesktopRowsChange> rowChanges =
+      rows.changesTo(nextRows).value_or({});
 
-  QVERIFY(rowChanges.has_value());
-  QCOMPARE(rowChanges->size(), 2);
-  QCOMPARE(rowChanges->at(0).firstRow, 0);
-  QCOMPARE(rowChanges->at(0).lastRow, 1);
-  QCOMPARE(rowChanges->at(0).roles,
+  QCOMPARE(rowChanges.size(), 2);
+  QCOMPARE(rowChanges.at(0).firstRow, 0);
+  QCOMPARE(rowChanges.at(0).lastRow, 1);
+  QCOMPARE(rowChanges.at(0).roles,
            QList<int>{role(TabPagerDesktopRowRole::Label)});
-  QCOMPARE(rowChanges->at(1).firstRow, 2);
-  QCOMPARE(rowChanges->at(1).lastRow, 2);
-  QCOMPARE(rowChanges->at(1).roles,
+  QCOMPARE(rowChanges.at(1).firstRow, 2);
+  QCOMPARE(rowChanges.at(1).lastRow, 2);
+  QCOMPARE(rowChanges.at(1).roles,
            QList<int>{role(TabPagerDesktopRowRole::Active)});
 }
 

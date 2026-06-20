@@ -5,12 +5,14 @@
 
 #include "tabpagerwheelnavigation.h"
 
+#include <cstdint>
+
 struct TabPagerDesktopNavigationContext {
   int currentIndex = -1;
   int desktopCount = 0;
 };
 
-enum class TabPagerDesktopNavigationResultType {
+enum class TabPagerDesktopNavigationResultType : std::uint8_t {
   Target,
   NoCurrentDesktop,
   StoppedAtEdge,

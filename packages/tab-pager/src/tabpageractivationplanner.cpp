@@ -23,7 +23,7 @@ TabPagerActivationPlan tabPagerActivationPlanForIndex(
 
   return TabPagerActivationPlan{
       .result = TabPagerActivationResult::ActivationRequested,
-      .desktopId = *desktopId,
+      .desktopId = desktopId,
       .targetIndex = std::nullopt,
   };
 }
@@ -67,7 +67,7 @@ TabPagerActivationPlan tabPagerActivationPlanForNavigationResult(
 TabPagerActivationPlan tabPagerActivationPlanForNavigationTarget(
     const TabPagerDesktopNavigationResult &navigationResult,
     const std::optional<TabPagerDesktopId> &desktopId) {
-  const TabPagerActivationPlan navigationPlan =
+  TabPagerActivationPlan navigationPlan =
       tabPagerActivationPlanForNavigationResult(navigationResult);
   if (!navigationPlan.targetIndex.has_value()) {
     return navigationPlan;

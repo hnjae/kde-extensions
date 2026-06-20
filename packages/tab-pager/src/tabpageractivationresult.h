@@ -5,7 +5,9 @@
 
 #include <QString>
 
-enum class TabPagerActivationResult {
+#include <cstdint>
+
+enum class TabPagerActivationResult : std::uint8_t {
   ActivationRequested,
   InvalidIndex,
   InvalidDesktopId,
