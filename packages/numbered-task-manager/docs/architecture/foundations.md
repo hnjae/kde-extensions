@@ -1,0 +1,12 @@
+# Numbered Task Manager Architecture Foundations
+
+- Build on KDE Plasma's task manager APIs instead of implementing window discovery or activation from scratch.
+- Use the Plasma Workspace `org.kde.taskmanager` QML module for task data and task actions.
+- Advertise Plasma's fill-area constraint and request fill layout on both axes so the widget occupies available panel space; task delegates remain content-sized while the task list viewport absorbs extra long-axis space and clips when content exceeds the panel allocation.
+- Keep the implementation on public QML APIs where possible. Context menu actions should call `TasksModel.request*` methods directly.
+- Use a widget-owned C++ QML backend for task context-menu data that Plasma does not expose through public QML task roles, such as `.desktop` actions. Do not import or depend on another applet's private QML module such as Plasma's built-in task manager backend.
+- Keep owned context-menu backend behavior on public Qt and KDE Frameworks APIs. Desktop actions should be discovered through `KService`/`KDesktopFile` and executed through `KIO::ApplicationLauncherJob` rather than by parsing command lines or copying Plasma's private applet module at runtime.
+- Keep backend-launched desktop actions observable. Failed `KIO::ApplicationLauncherJob` results should be converted into structured action results with launcher URL or desktop action context and forwarded through the same QML action-result logging path as widget-owned actions.
+- Build the plasmoid through CMake when native QML plugin code is present, and install both the applet package and the owned QML module as package artifacts.
+- Keep QML JavaScript logic dependencies in `.mjs` ECMAScript modules with named imports and exports. Production QML logic must not use `Qt.include()`, because module boundaries should be explicit and loadable by the QML engine without deprecated include evaluation.
+- Keep applet-wide activity/desktop platform state in `TaskPlatformState.qml`. It should own `ActivityInfo`, `VirtualDesktopInfo`, current activity/current desktop exposure, launcher revision changes, current-activity membership checks, and visible launcher position lookups for source components, while `main.qml` keeps `TasksModel` instantiation and launcher-list write effects.
