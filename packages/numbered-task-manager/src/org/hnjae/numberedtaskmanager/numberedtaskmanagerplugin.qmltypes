@@ -4,7 +4,7 @@ Module {
     Component {
         name: "TaskContextMenuBackend"
         prototype: "QObject"
-        exports: ["io.github.hnjae.numberedtaskmanager/TaskContextMenuBackend 1.0"]
+        exports: ["org.hnjae.numberedtaskmanager/TaskContextMenuBackend 1.0"]
         Method {
             name: "desktopActions"
             type: "QVariantList"

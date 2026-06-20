@@ -3,4 +3,4 @@
 
 #include "tabpagerlogging.h"
 
-Q_LOGGING_CATEGORY(tabPagerLog, "io.github.hnjae.tabpager")
+Q_LOGGING_CATEGORY(tabPagerLog, "org.hnjae.tabpager")

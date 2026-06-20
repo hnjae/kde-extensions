@@ -10,7 +10,7 @@
     "Description": "A Plasma 6 task manager for keyboard-friendly window selection.",
     "EnabledByDefault": true,
     "Icon": "preferences-system-windows",
-    "Id": "io.github.hnjae.numberedtaskmanager",
+    "Id": "org.hnjae.numberedtaskmanager",
     "License": "AGPL-3.0-or-later",
     "Name": "Numbered Task Manager",
     "Version": "0.1.0",

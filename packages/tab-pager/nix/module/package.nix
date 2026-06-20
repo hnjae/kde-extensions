@@ -18,6 +18,7 @@
             fileset = lib.fileset.unions [
               ../../.clang-tidy
               ../../CMakeLists.txt
+              ../../nix
               ../../package
               ../../src
               ../../tests

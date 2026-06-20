@@ -6,7 +6,7 @@
     {
       packages.kwin-run-or-raise =
         let
-          pluginId = "io.github.hnjae.kwin-run-or-raise";
+          pluginId = "org.hnjae.kwin-run-or-raise";
           version = "0.1.0";
 
           packageRoot = ../../.;

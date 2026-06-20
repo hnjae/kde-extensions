@@ -4,11 +4,11 @@ SPDX-FileCopyrightText: 2026 KIM Hyunjae
 SPDX-License-Identifier: CC0-1.0
 -->
 <component type="addon">
-    <id>io.github.hnjae.numberedtaskmanager</id>
+    <id>org.hnjae.numberedtaskmanager</id>
     <extends>org.kde.plasma.desktop</extends>
     <name>Numbered Task Manager</name>
     <summary>A Plasma 6 task manager for keyboard-friendly window selection</summary>
-    <developer id="io.github.hnjae">
+    <developer id="org.hnjae">
         <name>KIM Hyunjae</name>
     </developer>
     <url type="homepage">https://github.com/hnjae/kde-plasma-extensions</url>

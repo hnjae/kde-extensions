@@ -7,7 +7,7 @@ import QtQuick as QtQuick
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid
-import io.github.hnjae.numberedtaskmanager as NumberedTaskManager
+import org.hnjae.numberedtaskmanager as NumberedTaskManager
 import "TaskContextMenuFooterLogic.mjs" as TaskContextMenuFooterLogic
 import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
 import "TaskContextMenuPlatformLogic.mjs" as TaskContextMenuPlatformLogic

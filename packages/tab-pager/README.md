@@ -12,7 +12,7 @@ or next desktop. Scrolling follows KDE's virtual desktop wrapping setting, and
 the widget updates when desktops are added, removed, reordered, renamed, or
 activated.
 
-The Plasma widget ID is `io.github.hnjae.tabpager`.
+The Plasma widget ID is `org.hnjae.tabpager`.
 
 ## Requirements
 

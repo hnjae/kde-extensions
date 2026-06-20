@@ -133,7 +133,7 @@ assert.match(menuQml, /taskCommandPort:\s*root\.taskCommandPort/);
 assert.doesNotMatch(menuQml, /console\.warn\("Numbered Task Manager action "/);
 assert.match(
   menuQml,
-  /import io\.github\.hnjae\.numberedtaskmanager as NumberedTaskManager/,
+  /import org\.hnjae\.numberedtaskmanager as NumberedTaskManager/,
 );
 assert.match(menuQml, /NumberedTaskManager\.TaskContextMenuBackend\s*\{/);
 assert.match(

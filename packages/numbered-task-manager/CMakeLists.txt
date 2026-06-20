@@ -5,9 +5,9 @@ cmake_minimum_required(VERSION 3.25)
 
 project(numberedtaskmanager VERSION 0.1.0 LANGUAGES CXX)
 
-set(QML_MODULE_URI "io.github.hnjae.numberedtaskmanager")
-set(QML_MODULE_DIR "io/github/hnjae/numberedtaskmanager")
-set(PLASMOID_ID "io.github.hnjae.numberedtaskmanager")
+set(QML_MODULE_URI "org.hnjae.numberedtaskmanager")
+set(QML_MODULE_DIR "org/hnjae/numberedtaskmanager")
+set(PLASMOID_ID "org.hnjae.numberedtaskmanager")
 
 find_package(ECM 6.0 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
@@ -67,8 +67,8 @@ install(TARGETS numberedtaskmanagerplugin
     LIBRARY DESTINATION "${KDE_INSTALL_QMLDIR}/${QML_MODULE_DIR}"
 )
 install(FILES
-    src/io/github/hnjae/numberedtaskmanager/qmldir
-    src/io/github/hnjae/numberedtaskmanager/numberedtaskmanagerplugin.qmltypes
+    src/org/hnjae/numberedtaskmanager/qmldir
+    src/org/hnjae/numberedtaskmanager/numberedtaskmanagerplugin.qmltypes
     DESTINATION "${KDE_INSTALL_QMLDIR}/${QML_MODULE_DIR}"
 )
 install(DIRECTORY package/

@@ -7,7 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const pluginId = "io.github.hnjae.kwin-run-or-raise";
+const pluginId = "org.hnjae.kwin-run-or-raise";
 const packageDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",

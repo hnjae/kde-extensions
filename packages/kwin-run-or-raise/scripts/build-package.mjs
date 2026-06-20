@@ -34,7 +34,7 @@ const metadata = {
     Category: "Window Management",
     Description: "Run or raise configured applications with global shortcuts.",
     Icon: "preferences-system-windows",
-    Id: "io.github.hnjae.kwin-run-or-raise",
+    Id: "org.hnjae.kwin-run-or-raise",
     License: "AGPL-3.0-or-later",
     Name: "Run or Raise",
     Version: "0.1.0",

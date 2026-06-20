@@ -31,7 +31,7 @@ test("build output has KWin script package structure", async () => {
   );
 
   const plugin = metadata.KPlugin as Record<string, unknown>;
-  assert.equal(plugin.Id, "io.github.hnjae.kwin-run-or-raise");
+  assert.equal(plugin.Id, "org.hnjae.kwin-run-or-raise");
   assert.equal(plugin.Version, "0.1.0");
   assert.equal(plugin.License, "AGPL-3.0-or-later");
 });

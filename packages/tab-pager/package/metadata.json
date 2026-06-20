@@ -10,7 +10,7 @@
     "Description": "A Plasma 6 widget for switching between virtual desktops.",
     "EnabledByDefault": true,
     "Icon": "user-desktop",
-    "Id": "io.github.hnjae.tabpager",
+    "Id": "org.hnjae.tabpager",
     "License": "AGPL-3.0-or-later",
     "Name": "Tab Pager",
     "Version": "0.1.0",
