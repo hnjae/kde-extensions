@@ -9,12 +9,14 @@
           metadataJson = builtins.fromJSON (builtins.readFile ../../package/metadata.json);
           clangToolchain = pkgs.llvmPackages.clang;
           pluginId = metadataJson.KPlugin.Id;
+          qmlModuleDir = lib.replaceStrings [ "." ] [ "/" ] pluginId;
           version = metadataJson.KPlugin.Version;
 
           sourceRoot = ../../.;
           source = lib.fileset.toSource {
             root = sourceRoot;
             fileset = lib.fileset.unions [
+              ../../.clang-tidy
               ../../CMakeLists.txt
               ../../LICENSES
               ../../metainfo
@@ -54,6 +56,7 @@
           passthru = {
             inherit
               pluginId
+              qmlModuleDir
               source
               version
               ;

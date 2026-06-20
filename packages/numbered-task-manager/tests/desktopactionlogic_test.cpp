@@ -9,17 +9,19 @@
 #include <QTest>
 #include <QVariantMap>
 
+#include <utility>
+
 class FakeLaunchJob final : public KJob {
   Q_OBJECT
 
 public:
-  explicit FakeLaunchJob(int errorCode, const QString &errorText,
-                         int *startCounter, QObject *parent = nullptr)
-      : KJob(parent), m_errorCode(errorCode), m_errorText(errorText),
+  explicit FakeLaunchJob(int errorCode, QString errorText, int *startCounter,
+                         QObject *parent = nullptr)
+      : KJob(parent), m_errorCode(errorCode), m_errorText(std::move(errorText)),
         m_startCounter(startCounter) {}
 
   void start() override {
-    if (m_startCounter) {
+    if (m_startCounter != nullptr) {
       ++(*m_startCounter);
     }
     if (m_errorCode != 0) {
@@ -49,14 +51,23 @@ void DesktopActionLogicTest::filtersHiddenServiceActions() {
       {
           .text = QStringLiteral("Visible Action"),
           .iconName = QStringLiteral("visible-icon"),
+          .noDisplay = false,
+          .separator = false,
+          .serviceAction = {},
       },
       {
           .text = QStringLiteral("Hidden Action"),
           .iconName = QStringLiteral("hidden-icon"),
           .noDisplay = true,
+          .separator = false,
+          .serviceAction = {},
       },
       {
+          .text = {},
+          .iconName = {},
+          .noDisplay = false,
           .separator = true,
+          .serviceAction = {},
       },
   };
 
@@ -75,6 +86,10 @@ void DesktopActionLogicTest::addsLauncherContextToDescriptors() {
       {
           .text = QStringLiteral("Open Private Window"),
           .iconName = QStringLiteral("window-new"),
+          .launcherUrl = {},
+          .desktopEntryPath = {},
+          .separator = false,
+          .serviceAction = {},
       },
   };
 
@@ -93,9 +108,12 @@ void DesktopActionLogicTest::addsLauncherContextToDescriptors() {
 void DesktopActionLogicTest::emitsLaunchFailureResultFromFakeJob() {
   const DesktopActionDescriptor descriptor{
       .text = QStringLiteral("Broken Action"),
+      .iconName = {},
       .launcherUrl = QStringLiteral("applications:broken.desktop"),
       .desktopEntryPath =
           QStringLiteral("/usr/share/applications/broken.desktop"),
+      .separator = false,
+      .serviceAction = {},
   };
   int startCount = 0;
   QList<QVariantMap> results;
@@ -107,7 +125,7 @@ void DesktopActionLogicTest::emitsLaunchFailureResultFromFakeJob() {
                                  &startCount);
       },
       [&](const QVariantMap &result) { results << result; });
-  QVERIFY(action);
+  QVERIFY(action != nullptr);
 
   action->trigger();
 

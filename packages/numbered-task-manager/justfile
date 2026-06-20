@@ -56,3 +56,11 @@ lint-js-host:
 [group('lint')]
 lint-qml:
     nix develop "{{ dev_shell }}" -c numbered-task-manager-lint-qml
+
+[group('lint')]
+lint-clang-tidy:
+    nix develop "{{ dev_shell }}" -c numbered-task-manager-lint-clang-tidy
+
+[group('lint')]
+lint-clazy:
+    nix develop "{{ dev_shell }}" -c numbered-task-manager-lint-clazy

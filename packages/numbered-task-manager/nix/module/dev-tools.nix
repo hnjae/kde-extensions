@@ -11,16 +11,13 @@
       }:
       let
         package = config.packages.numbered-task-manager;
-        qmlImportPaths = [
-          "${package}/lib/qt-6/qml"
-          "${pkgs.kdePackages.qtdeclarative}/lib/qt-6/qml"
-          "${pkgs.kdePackages.kconfig}/lib/qt-6/qml"
-          "${pkgs.kdePackages.kirigami.unwrapped}/lib/qt-6/qml"
-          "${pkgs.kdePackages.ksvg}/lib/qt-6/qml"
-          "${pkgs.kdePackages.libplasma}/lib/qt-6/qml"
-          "${pkgs.kdePackages.plasma-workspace}/lib/qt-6/qml"
-        ];
-        qmlImportFlags = lib.concatMapStringsSep " " (path: "-I ${lib.escapeShellArg path}") qmlImportPaths;
+        ci = import ../lib/numbered-task-manager-ci.nix {
+          inherit
+            lib
+            package
+            pkgs
+            ;
+        };
         buildKPackage = pkgs.writeShellApplication {
           name = "numbered-task-manager-build-kpackage";
           runtimeInputs = [
@@ -104,90 +101,21 @@
             printf 'Created %s\n' "$archive_path"
           '';
         };
-        runtimeInputs = [
-          pkgs.biome
-          pkgs.coreutils
-          pkgs.findutils
-          pkgs.git
-          pkgs.kdePackages.kpackage
-          pkgs.kdePackages.libplasma
-          pkgs.kdePackages.plasma-workspace
-          pkgs.nodejs
-          pkgs.qt6.qtdeclarative
-          pkgs.zip
-        ];
-        localProjectPreamble = ''
-          set -euo pipefail
-
-          repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-          if [ -d "$repo_root/packages/numbered-task-manager" ]; then
-            cd "$repo_root/packages/numbered-task-manager"
-          fi
-        '';
-        mkDevCommand =
-          name: text:
-          pkgs.writeShellApplication {
-            inherit name runtimeInputs;
-            text = localProjectPreamble + text;
-          };
-        qmllsWrapper = pkgs.writeShellApplication {
-          name = "numbered-task-manager-qmlls";
-          runtimeInputs = runtimeInputs;
-          text = ''
-            set -euo pipefail
-
-            repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-            project_dir="$repo_root"
-            if [ -d "$repo_root/packages/numbered-task-manager" ]; then
-              project_dir="$repo_root/packages/numbered-task-manager"
-            fi
-
-            exec ${pkgs.kdePackages.qtdeclarative}/bin/qmlls \
-              -I "$project_dir/package/contents/ui" \
-              ${qmlImportFlags} \
-              "$@"
-          '';
-        };
       in
       {
         plasmaExtensions.devShell.packages = [
           buildKPackage
-          qmllsWrapper
-          (mkDevCommand "numbered-task-manager-lint" ''
-            biome lint --error-on-warnings package/contents/ui/*.mjs tests/*.mjs
-            find package/contents/ui -name '*.qml' -print0 \
-              | sort -z \
-              | xargs -0 qmllint \
-                  --ignore-settings \
-                  --max-warnings 0 \
-                  --unqualified disable \
-                  ${qmlImportFlags}
-          '')
-          (mkDevCommand "numbered-task-manager-test" ''
-            for test_file in tests/*.test.mjs
-            do
-              node "$test_file"
-            done
-          '')
-          (mkDevCommand "numbered-task-manager-lint-js" ''
-            biome lint --error-on-warnings package/contents/ui/*.mjs tests/*.mjs
-          '')
-          (mkDevCommand "numbered-task-manager-lint-qml" ''
-            find package/contents/ui -name '*.qml' -print0 \
-              | sort -z \
-              | xargs -0 qmllint \
-                  --ignore-settings \
-                  --max-warnings 0 \
-                  --unqualified disable \
-                  ${qmlImportFlags}
-          '')
         ]
-        ++ runtimeInputs;
+        ++ ci.lspDevShellPackages
+        ++ ci.devShellPackages
+        ++ [
+          pkgs.zip
+        ]
+        ++ ci.checkNativeBuildInputs
+        ++ ci.checkBuildInputs;
 
-        plasmaExtensions.devShell.qmlImportPaths = qmlImportPaths;
-        plasmaExtensions.devShell.qtPluginPaths = [
-          "${pkgs.kdePackages.libplasma}/lib/qt-6/plugins"
-        ];
+        plasmaExtensions.devShell.qmlImportPaths = ci.qmlImportPaths;
+        plasmaExtensions.devShell.qtPluginPaths = ci.qtPluginPaths;
       };
   };
 }

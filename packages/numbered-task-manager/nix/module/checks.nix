@@ -11,17 +11,13 @@
       }:
       let
         package = config.packages.numbered-task-manager;
-        packageRoot = ".";
-        qmlImportPaths = [
-          "${package}/lib/qt-6/qml"
-          "${pkgs.kdePackages.qtdeclarative}/lib/qt-6/qml"
-          "${pkgs.kdePackages.kconfig}/lib/qt-6/qml"
-          "${pkgs.kdePackages.kirigami.unwrapped}/lib/qt-6/qml"
-          "${pkgs.kdePackages.ksvg}/lib/qt-6/qml"
-          "${pkgs.kdePackages.libplasma}/lib/qt-6/qml"
-          "${pkgs.kdePackages.plasma-workspace}/lib/qt-6/qml"
-        ];
-        qmlImportFlags = lib.concatMapStringsSep " " (path: "-I ${lib.escapeShellArg path}") qmlImportPaths;
+        ci = import ../lib/numbered-task-manager-ci.nix {
+          inherit
+            lib
+            package
+            pkgs
+            ;
+        };
       in
       {
         checks.numbered-task-manager-check = pkgs.stdenv.mkDerivation {
@@ -29,26 +25,8 @@
           inherit (package) version source;
           src = package.source;
 
-          nativeBuildInputs = [
-            pkgs.appstream
-            pkgs.biome
-            pkgs.cmake
-            pkgs.ninja
-            pkgs.kdePackages.kpackage
-            pkgs.kdePackages.extra-cmake-modules
-            pkgs.kdePackages.libplasma
-            pkgs.kdePackages.plasma-workspace
-            pkgs.nodejs
-            pkgs.qt6.qtdeclarative
-          ];
-
-          buildInputs = [
-            pkgs.kdePackages.kconfig
-            pkgs.kdePackages.kio
-            pkgs.kdePackages.kservice
-            pkgs.kdePackages.qtbase
-            pkgs.kdePackages.qtdeclarative
-          ];
+          nativeBuildInputs = ci.checkNativeBuildInputs;
+          buildInputs = ci.checkBuildInputs;
 
           dontConfigure = true;
           dontWrapQtApps = true;
@@ -56,91 +34,22 @@
           buildPhase = ''
             runHook preBuild
 
-            cmake -S ${packageRoot} -B build -G Ninja \
-              -DBUILD_TESTING=ON \
-              -DKDE_INSTALL_QMLDIR=lib/qt-6/qml
-            cmake --build build
-            ctest --test-dir build --output-on-failure
+            build_dir=build
+            install_prefix="$TMPDIR/install"
 
-            biome lint --error-on-warnings ${packageRoot}/package/contents/ui/*.mjs ${packageRoot}/tests/*.mjs
-
-            installed_plasmoid="${package}/share/plasma/plasmoids/${package.pluginId}"
-            installed_metainfo="${package}/share/metainfo/${package.pluginId}.metainfo.xml"
-            installed_license_dir="${package}/share/licenses/numbered-task-manager"
-            required_plasmoid_files="
-              metadata.json
-              contents/ui/main.qml
-              contents/ui/TaskItem.qml
-              contents/ui/AttentionItem.qml
-              contents/ui/TaskContextMenu.qml
-              contents/ui/TaskFrame.qml
-              contents/ui/ActivityScopeLogic.mjs
-              contents/ui/LauncherListLogic.mjs
-              contents/ui/TaskActivityLogic.mjs
-              contents/ui/TaskContextMenuLogic.mjs
-              contents/ui/TaskEntryLogic.mjs
-              contents/ui/TaskItemPresentationLogic.mjs
-              contents/ui/RemoteAttentionLogic.mjs
-              contents/ui/TaskModelLogic.mjs
-              contents/ui/TaskMetricsLogic.mjs
-              contents/ui/TaskVisualLogic.mjs
-              contents/ui/VisibleTaskItemsLogic.mjs
-              contents/ui/NumberBadge.qml
-              contents/config/main.xml
-            "
-            for file in $required_plasmoid_files
-            do
-              test -f "$installed_plasmoid/$file"
-            done
-
-            test -f "$installed_license_dir/AGPL-3.0-or-later.txt"
-            test -f "$installed_license_dir/CC0-1.0.txt"
-
-            for test_file in ${packageRoot}/tests/*.test.mjs
-            do
-              node "$test_file"
-            done
-
-            QT_QPA_PLATFORM=offscreen qml ${qmlImportFlags} ${packageRoot}/tests/qml-js-module-smoke.qml
-
-            find ${packageRoot}/package/contents/ui -name '*.qml' -print0 \
-              | sort -z \
-              | xargs -0 qmllint \
-                  --ignore-settings \
-                  --max-warnings 0 \
-                  --unqualified disable \
-                  ${qmlImportFlags}
-
-            find "$installed_plasmoid/contents/ui" -name '*.qml' -print0 \
-              | sort -z \
-              | xargs -0 qmllint \
-                  --ignore-settings \
-                  --max-warnings 0 \
-                  --unqualified disable \
-                  ${qmlImportFlags}
-
-            # KAboutLicense does not map AGPL identifiers, so the KPackage
-            # generator cannot export our project license. Ship explicit
-            # AppStream metadata and validate that installed artifact instead.
-            test -f "$installed_metainfo"
-            grep -q '<project_license>AGPL-3.0-or-later</project_license>' "$installed_metainfo"
-            grep -q '<metadata_license>CC0-1.0</metadata_license>' "$installed_metainfo"
-            appstreamcli validate --no-net "$installed_metainfo"
-
-            export HOME="$TMPDIR/home"
-            export QT_PLUGIN_PATH="${pkgs.kdePackages.libplasma}/lib/qt-6/plugins''${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
-            mkdir -p "$HOME" "$TMPDIR/plasmoids"
-
-            kpackagetool6 \
-              --type Plasma/Applet \
-              --packageroot "$TMPDIR/plasmoids" \
-              --install "$installed_plasmoid"
-
-            for file in $required_plasmoid_files
-            do
-              test -f "$TMPDIR/plasmoids/${package.pluginId}/$file"
-            done
-            kpackagetool6 --hash "$TMPDIR/plasmoids/${package.pluginId}"
+            ${ci.cmakeConfigure}
+            ${ci.cmakeBuild}
+            ${ci.cmakeTest}
+            ${ci.cmakeInstall}
+            ${ci.jsLint}
+            ${ci.jsTest}
+            ${ci.qmlSmoke}
+            ${ci.qmlLint}
+            ${ci.clangTidy}
+            ${ci.clazy}
+            ${ci.packageLayout}
+            ${ci.appstream}
+            ${ci.kpackage}
 
             runHook postBuild
           '';

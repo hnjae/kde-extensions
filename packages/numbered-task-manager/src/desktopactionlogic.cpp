@@ -60,12 +60,13 @@ descriptorsWithContext(const QList<DesktopActionDescriptor> &descriptors,
 QVariantMap
 desktopActionLaunchFailureResult(const DesktopActionDescriptor &descriptor,
                                  KJob *job) {
+  const bool hasJob = job != nullptr;
   QVariantMap context{
       {QStringLiteral("launcherUrl"), descriptor.launcherUrl},
       {QStringLiteral("desktopEntryPath"), descriptor.desktopEntryPath},
       {QStringLiteral("desktopActionText"), descriptor.text},
-      {QStringLiteral("errorCode"), job ? job->error() : 0},
-      {QStringLiteral("errorMessage"), job ? job->errorString() : QString()},
+      {QStringLiteral("errorCode"), hasJob ? job->error() : 0},
+      {QStringLiteral("errorMessage"), hasJob ? job->errorString() : QString()},
   };
   return QVariantMap{
       {QStringLiteral("action"), QStringLiteral("desktopAction")},
@@ -81,7 +82,7 @@ desktopActionFromDescriptor(const DesktopActionDescriptor &descriptor,
                             QObject *parent,
                             const DesktopActionJobFactory &jobFactory,
                             const DesktopActionResultHandler &resultHandler) {
-  if (!parent) {
+  if (parent == nullptr) {
     return nullptr;
   }
 
@@ -97,15 +98,15 @@ desktopActionFromDescriptor(const DesktopActionDescriptor &descriptor,
                      }
 
                      KJob *job = jobFactory(descriptor);
-                     if (!job) {
+                     if (job == nullptr) {
                        return;
                      }
 
                      QObject::connect(
                          job, &KJob::result, action,
                          [descriptor, resultHandler](KJob *completedJob) {
-                           if (!completedJob || completedJob->error() == 0 ||
-                               !resultHandler) {
+                           if (completedJob == nullptr ||
+                               completedJob->error() == 0 || !resultHandler) {
                              return;
                            }
 
@@ -126,14 +127,14 @@ desktopActionsFromDescriptors(const QList<DesktopActionDescriptor> &descriptors,
                               const DesktopActionJobFactory &jobFactory,
                               const DesktopActionResultHandler &resultHandler) {
   QVariantList actions;
-  if (!parent) {
+  if (parent == nullptr) {
     return actions;
   }
 
   for (const DesktopActionDescriptor &descriptor : descriptors) {
     QAction *action = desktopActionFromDescriptor(descriptor, parent,
                                                   jobFactory, resultHandler);
-    if (action) {
+    if (action != nullptr) {
       actions << QVariant::fromValue(action);
     }
   }

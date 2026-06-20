@@ -18,7 +18,7 @@ QUrl TaskContextMenuBackend::desktopEntryUrl(const QUrl &launcherUrl) const {
   if (launcherUrl.isValid() &&
       launcherUrl.scheme() == QLatin1String("applications")) {
     const KService::Ptr service = KService::serviceByMenuId(launcherUrl.path());
-    if (service) {
+    if (service.data() != nullptr) {
       return QUrl::fromLocalFile(service->entryPath());
     }
   }
@@ -29,7 +29,7 @@ QUrl TaskContextMenuBackend::desktopEntryUrl(const QUrl &launcherUrl) const {
 QVariantList TaskContextMenuBackend::desktopActions(const QUrl &launcherUrl,
                                                     QObject *parent) {
   QVariantList actions;
-  if (!parent) {
+  if (parent == nullptr) {
     return actions;
   }
 
@@ -41,7 +41,7 @@ QVariantList TaskContextMenuBackend::desktopActions(const QUrl &launcherUrl,
 
   const KService::Ptr service =
       KService::serviceByDesktopPath(entryUrl.toLocalFile());
-  if (!service) {
+  if (service.data() == nullptr) {
     return actions;
   }
 
