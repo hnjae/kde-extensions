@@ -1,0 +1,21 @@
+# Numbered Task Manager Task List
+
+- The widget uses an icons-and-text task item layout and follows KDE task manager interaction patterns unless this spec says otherwise.
+- Task backgrounds and state indicators follow the active Plasma task-manager theme for normal, hover, active, minimized, demanding-attention, and drag-drop target states, with a muted presentation for closed pinned launchers.
+- Task backgrounds fill the panel cross-axis: the available height in horizontal panels and the available width in vertical panels.
+- The widget fills available panel space like KDE's task manager: horizontal panels expand the widget across available width, and vertical panels expand it across available height.
+- Adjacent task backgrounds do not add a fixed layout gap beyond the active Plasma task-manager theme geometry.
+- In horizontal panels, all visible normal task items use the same adaptive slot width, regardless of title length or whether the item is a window or a closed pinned launcher.
+- Horizontal slot width is based on the available widget width and the number of visible items, capped at a comfortable maximum and shrinking evenly as item count grows.
+- If the visible item count cannot fit at the minimum readable slot width, task items keep that minimum width and the existing horizontal overflow behavior is the physical limit.
+- Task icon size follows KDE Plasma 6.6's default icons-and-text task manager behavior for the same panel size and active Plasma theme.
+- The active window uses the Plasma task-manager active background state, but its icon is not rendered with the hover-active icon appearance unless the task itself is highlighted by hover, keyboard focus, or an open task menu.
+- The first nine normal visible task slots are numbered `1` through `9`.
+- Normal tasks after slot 9 remain visible but are not numbered.
+- In supported normal horizontal panel sizes, the expected number style is a badge over the lower-left corner of the task icon.
+- Number badges use KDE's configured fixed-width font.
+- If the task icon is too small for a readable badge, the number is shown as an accessibility fallback text prefix before the icon and any visible title instead; this applies equally to windows, pinned-slot windows, and pinned launcher icons.
+- The normal task list shows tasks from the current virtual desktop.
+- The widget is not limited to the current screen.
+- Activity filtering follows KDE's task manager behavior. Empty activity lists and KDE's null activity UUID both mean "all activities".
+- Horizontal panels are the supported v1 target. Vertical panels may work, but they are best-effort in v1.

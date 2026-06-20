@@ -1,7 +1,6 @@
 # Numbered Task Manager Architecture
 
-This document records implementation constraints for the user behavior described
-in `SPEC.md`.
+This document records implementation constraints for the user behavior described in `../spec/README.md`.
 
 ## Implementation Strategy
 
