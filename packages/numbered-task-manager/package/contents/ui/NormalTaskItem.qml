@@ -17,7 +17,6 @@ TaskItem {
     property real taskListHeight: 0
     property real taskListWidth: 0
     property real taskSlotWidth: 0
-    property bool vertical: false
     readonly property var item: root.visibleItem || ({})
     readonly property var entry: root.item.entry || ({})
 

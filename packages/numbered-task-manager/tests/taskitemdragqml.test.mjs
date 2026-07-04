@@ -49,7 +49,9 @@ assert.match(
   sourceQml,
   /xAxis\.enabled:\s*!root\.vertical[\s\S]*?yAxis\.enabled:\s*root\.vertical/,
 );
-assert.match(sourceQml, /QtQuick\.Drag\.active:\s*dragHandler\.active/);
+assert.match(sourceQml, /QtQuick\.Drag\.active:\s*false/);
+assert.match(sourceQml, /dragSurface\.Drag\.active\s*=\s*true;/);
+assert.match(sourceQml, /dragSurface\.Drag\.active\s*=\s*false;/);
 assert.match(
   sourceQml,
   /QtQuick\.Drag\.mimeData:\s*TaskInteractionLogic\.taskDragMimeData\(root\.dragMimeType,\s*root\.taskIndex\)/,

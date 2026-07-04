@@ -65,7 +65,7 @@ assert.match(sourceQml, /required property var activationAdapter/);
 assert.match(sourceQml, /required property var contextMenuAdapter/);
 assert.match(sourceQml, /required property var moveAdapter/);
 assert.match(sourceQml, /required property var visibleItem/);
-assert.match(sourceQml, /property bool vertical:\s*false/);
+assert.doesNotMatch(sourceQml, /property bool vertical:\s*false/);
 assert.match(sourceQml, /property real taskListHeight:\s*0/);
 assert.match(sourceQml, /property real taskListWidth:\s*0/);
 assert.match(sourceQml, /property real taskSlotWidth:\s*0/);
