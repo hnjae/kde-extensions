@@ -196,14 +196,16 @@ let
     kpackagetool6 --hash "$TMPDIR/plasmoids/${package.pluginId}"
   '';
 
-  localPreamble = ''
+  localRepoPreamble = ''
     set -euo pipefail
 
     repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
     if [ -d "$repo_root/packages/numbered-task-manager" ]; then
       cd "$repo_root/packages/numbered-task-manager"
     fi
+  '';
 
+  localBuildPreamble = localRepoPreamble + ''
     build_dir="''${NUMBERED_TASK_MANAGER_BUILD_DIR:-build}"
     install_prefix="''${NUMBERED_TASK_MANAGER_INSTALL_PREFIX:-$PWD/.numbered-task-manager-install}"
     if [ -z "''${TMPDIR:-}" ]; then
@@ -255,13 +257,15 @@ let
       pkgs.git
     ];
 
-  mkDevCommand =
-    name: text:
+  mkDevCommandWithPreamble =
+    preamble: name: text:
     pkgs.writeShellApplication {
       inherit name;
       runtimeInputs = devRuntimeInputs;
-      text = localPreamble + text;
+      text = preamble + text;
     };
+  mkDevCommand = mkDevCommandWithPreamble localRepoPreamble;
+  mkBuildDevCommand = mkDevCommandWithPreamble localBuildPreamble;
 
   clangdWrapper = pkgs.writeShellApplication {
     name = "numbered-task-manager-clangd";
@@ -275,7 +279,7 @@ let
   qmllsWrapper = pkgs.writeShellApplication {
     name = "numbered-task-manager-qmlls";
     runtimeInputs = devRuntimeInputs;
-    text = localPreamble + ''
+    text = localBuildPreamble + ''
       exec ${pkgs.kdePackages.qtdeclarative}/bin/qmlls \
         --no-cmake-calls \
         --build-dir "$build_dir" \
@@ -315,16 +319,16 @@ in
   ];
 
   devShellPackages = [
-    (mkDevCommand "numbered-task-manager-configure" cmakeConfigure)
+    (mkBuildDevCommand "numbered-task-manager-configure" cmakeConfigure)
     (mkDevCommand "numbered-task-manager-test" ''
       ${jsTest}
     '')
-    (mkDevCommand "numbered-task-manager-test-cpp" ''
+    (mkBuildDevCommand "numbered-task-manager-test-cpp" ''
       ${cmakeConfigure}
       ${cmakeBuild}
       ${cmakeTest}
     '')
-    (mkDevCommand "numbered-task-manager-lint" ''
+    (mkBuildDevCommand "numbered-task-manager-lint" ''
       ${localBuildAndInstall}
       ${jsLint}
       ${qmlLint}
@@ -334,19 +338,19 @@ in
     (mkDevCommand "numbered-task-manager-lint-js" ''
       ${jsLint}
     '')
-    (mkDevCommand "numbered-task-manager-lint-qml" ''
+    (mkBuildDevCommand "numbered-task-manager-lint-qml" ''
       ${localBuildAndInstall}
       ${qmlLint}
     '')
-    (mkDevCommand "numbered-task-manager-lint-clang-tidy" ''
+    (mkBuildDevCommand "numbered-task-manager-lint-clang-tidy" ''
       ${cmakeConfigure}
       ${clangTidy}
     '')
-    (mkDevCommand "numbered-task-manager-lint-clazy" ''
+    (mkBuildDevCommand "numbered-task-manager-lint-clazy" ''
       ${cmakeConfigure}
       ${clazy}
     '')
-    (mkDevCommand "numbered-task-manager-ci-local" ''
+    (mkBuildDevCommand "numbered-task-manager-ci-local" ''
       ${localBuildAndInstall}
       ${cmakeTest}
       ${jsLint}
