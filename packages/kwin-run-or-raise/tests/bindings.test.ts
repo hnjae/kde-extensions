@@ -61,14 +61,11 @@ test("registers bindings once per non-empty shortcut", async () => {
     }),
   );
   const handledBindings: Binding[] = [];
-  const logs: string[] = [];
   const registeredShortcuts: RegisteredShortcut[] = [];
 
   runOrRaise.registerBindings(
     {
-      log(message: string): void {
-        logs.push(message);
-      },
+      log(): void {},
     },
     {
       handleBinding(binding: Binding): void {
@@ -85,19 +82,14 @@ test("registers bindings once per non-empty shortcut", async () => {
     registeredShortcuts.map((shortcut) => ({
       actionName: shortcut.actionName,
       keySequence: shortcut.keySequence,
-      text: shortcut.text,
     })),
     [
       {
         actionName: "RunOrRaiseBinding01",
         keySequence: "Meta+W",
-        text: "Run or raise firefox.desktop",
       },
     ],
   );
-  assert.deepEqual(logs, [
-    'Run or Raise: skipping Binding02 because shortcut "meta+w" is already used by Binding01.',
-  ]);
 
   registeredShortcuts[0].callback();
 

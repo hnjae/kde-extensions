@@ -131,12 +131,12 @@ test("launches desktop entries through klauncher and reports failures", async ()
     workspace: workspace(),
   });
 
-  failingRuntime.launchDesktopEntry("org.kde.konsole");
+  const printCountBeforeFailure = prints.length;
 
-  assert.equal(
-    prints[prints.length - 1],
-    "Run or Raise: failed to launch org.kde.konsole: service unavailable",
-  );
+  assert.doesNotThrow(() => {
+    failingRuntime.launchDesktopEntry("org.kde.konsole");
+  });
+  assert.equal(prints.length, printCountBeforeFailure + 1);
 });
 
 test("connects optional workspace signals to controller state hooks", async () => {

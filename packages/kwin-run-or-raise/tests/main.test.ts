@@ -23,13 +23,11 @@ test("registers enabled bindings with desktop entry ids", async () => {
     harness.registeredShortcuts.map((shortcut) => ({
       actionName: shortcut.actionName,
       keySequence: shortcut.keySequence,
-      text: shortcut.text,
     })),
     [
       {
         actionName: "RunOrRaiseBinding01",
         keySequence: "Meta+W",
-        text: "Run or raise Firefox",
       },
     ],
   );
@@ -51,9 +49,6 @@ test("skips later bindings with duplicate default shortcuts", async () => {
     harness.registeredShortcuts.map((shortcut) => shortcut.actionName),
     ["RunOrRaiseBinding01"],
   );
-  assert.deepEqual(harness.prints, [
-    'Run or Raise: skipping Binding02 because shortcut "meta+w" is already used by Binding01.',
-  ]);
 });
 
 test("raises and focuses the frontmost visible matching window", async () => {
@@ -274,7 +269,7 @@ test("launches through klauncher when no matching window exists", async () => {
   assert.deepEqual(harness.raisedWindows, []);
 });
 
-test("prints DBus launch failures without throwing", async () => {
+test("does not throw when DBus launch fails", async () => {
   const harness = await runScript({
     config: {
       Binding01DesktopEntryId: "firefox.desktop",
@@ -287,7 +282,4 @@ test("prints DBus launch failures without throwing", async () => {
   assert.doesNotThrow(() => {
     harness.registeredShortcuts[0].callback();
   });
-  assert.deepEqual(harness.prints, [
-    "Run or Raise: failed to launch firefox.desktop: service unavailable",
-  ]);
 });

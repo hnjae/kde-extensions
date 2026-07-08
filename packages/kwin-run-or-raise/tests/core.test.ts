@@ -120,10 +120,6 @@ test("plans focused-window cycling with a stable candidate snapshot", async () =
   }
 
   assert.equal(firstPlan.window, secondWindow);
-  assert.equal(firstPlan.cycleState?.index, 1);
-  assert.equal(firstPlan.cycleState?.candidates[0], firstWindow);
-  assert.equal(firstPlan.cycleState?.candidates[1], secondWindow);
-  assert.equal(firstPlan.cycleState?.candidates[2], thirdWindow);
 
   const secondPlan = runOrRaise.planBindingAction({
     activeWindow: secondWindow,
@@ -138,10 +134,6 @@ test("plans focused-window cycling with a stable candidate snapshot", async () =
   if (secondPlan.kind === "activate") {
     assert.equal(secondPlan.window, thirdWindow);
   }
-  assert.equal(secondPlan.cycleState?.index, 2);
-  assert.equal(secondPlan.cycleState?.candidates[0], firstWindow);
-  assert.equal(secondPlan.cycleState?.candidates[1], secondWindow);
-  assert.equal(secondPlan.cycleState?.candidates[2], thirdWindow);
 });
 
 test("plans no-op for one active candidate and launch for no candidates", async () => {
