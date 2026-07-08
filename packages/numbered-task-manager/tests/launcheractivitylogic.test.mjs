@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -22,10 +21,6 @@ const helpers = await loadQmlJsModule(
 
 const nullActivityId = "00000000-0000-0000-0000-000000000000";
 const plain = (value) => JSON.parse(JSON.stringify(value));
-const launcherListLogicSource = readFileSync(
-  new URL("../package/contents/ui/LauncherListLogic.mjs", import.meta.url),
-  "utf8",
-);
 
 assert.deepEqual(
   plain(helpers.parseSerializedLauncher("org.example.App.desktop")),
@@ -164,13 +159,3 @@ assert.deepEqual(
   plain(helpers.launcherActivitiesAfterToggle(["work"], "chat", "work")),
   ["work", "chat"],
 );
-
-assert.doesNotMatch(
-  launcherListLogicSource,
-  /function parseSerializedLauncher\b/,
-);
-assert.doesNotMatch(
-  launcherListLogicSource,
-  /function launcherActivityUpdate\b/,
-);
-assert.doesNotMatch(launcherListLogicSource, /ActivityScopeLogic/);

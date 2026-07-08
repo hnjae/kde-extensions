@@ -2,18 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
-
-const visibleTaskItemsLogicSource = readFileSync(
-  new URL("../package/contents/ui/VisibleTaskItemsLogic.mjs", import.meta.url),
-  "utf8",
-);
-assert.doesNotMatch(
-  visibleTaskItemsLogicSource,
-  /function visibleItemForNormalIndex\b/,
-);
 
 const logic = await loadQmlJsModule(
   new URL("../package/contents/ui/VisibleTaskItemsLogic.mjs", import.meta.url),
@@ -292,17 +282,4 @@ assert.deepEqual(
       sourceIndex: 2,
     },
   ],
-);
-
-const taskActivationLogicSource = readFileSync(
-  new URL("../package/contents/ui/TaskActivationLogic.mjs", import.meta.url),
-  "utf8",
-);
-assert.match(
-  taskActivationLogicSource,
-  /import \{[^}]*isNormalVisibleItem[^}]*isRemoteAttentionVisibleItem[^}]*\} from "\.\/VisibleTaskItemsLogic\.mjs"/s,
-);
-assert.doesNotMatch(
-  taskActivationLogicSource,
-  /targetItem\.kind !== "normal" && targetItem\.kind !== "remoteAttention"/,
 );

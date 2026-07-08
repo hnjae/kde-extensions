@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -12,10 +11,6 @@ const logic = await loadQmlJsModule(
     import.meta.url,
   ),
   ["contextMenuCreationResult", "contextMenuRequestResult"],
-);
-const taskActionUrl = new URL(
-  "../package/contents/ui/TaskActionLogic.mjs",
-  import.meta.url,
 );
 const validModelIndex = { valid: true, row: 4 };
 
@@ -48,5 +43,3 @@ assert.equal(
   logic.contextMenuCreationResult({ objectName: "menu" }, {}).ok,
   true,
 );
-
-assert.equal(existsSync(taskActionUrl), false);

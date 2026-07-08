@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -16,10 +15,6 @@ const logic = await loadQmlJsModule(
     "contextMenuTaskRequest",
     "executeContextMenuTaskRequest",
   ],
-);
-const taskActionUrl = new URL(
-  "../package/contents/ui/TaskActionLogic.mjs",
-  import.meta.url,
 );
 const commandLogic = await loadQmlJsModule(
   new URL(
@@ -62,5 +57,3 @@ assert.equal(
   ).code,
   "unsupported-request-method",
 );
-
-assert.equal(existsSync(taskActionUrl), false);

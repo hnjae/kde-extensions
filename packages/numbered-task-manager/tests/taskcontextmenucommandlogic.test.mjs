@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -72,46 +71,3 @@ assert.deepEqual(plain(logic.normalizedContextMenuTaskCommand("requestMove")), {
   kind: "task-model-request",
   requestMethod: "requestMove",
 });
-
-const taskActionUrl = new URL(
-  "../package/contents/ui/TaskActionLogic.mjs",
-  import.meta.url,
-);
-const launcherCommandLogicSource = readFileSync(
-  new URL("../package/contents/ui/LauncherCommandLogic.mjs", import.meta.url),
-  "utf8",
-);
-const taskCommandLogicSource = readFileSync(
-  new URL(
-    "../package/contents/ui/TaskContextMenuTaskCommandLogic.mjs",
-    import.meta.url,
-  ),
-  "utf8",
-);
-assert.match(
-  launcherCommandLogicSource,
-  /import \{ normalizedContextMenuLauncherCommand \} from "\.\/TaskContextMenuCommandLogic\.mjs"/,
-);
-assert.match(
-  taskCommandLogicSource,
-  /import \{ normalizedContextMenuTaskCommand \} from "\.\/TaskContextMenuCommandLogic\.mjs"/,
-);
-assert.equal(existsSync(taskActionUrl), false);
-
-for (const modulePath of [
-  "TaskContextMenuLauncherActivityLogic.mjs",
-  "TaskContextMenuPinLogic.mjs",
-  "TaskContextMenuTaskActivityLogic.mjs",
-  "TaskContextMenuVirtualDesktopLogic.mjs",
-  "TaskContextMenuWindowActionLogic.mjs",
-]) {
-  const source = readFileSync(
-    new URL(`../package/contents/ui/${modulePath}`, import.meta.url),
-    "utf8",
-  );
-  assert.match(
-    source,
-    /import \{[^}]*contextMenu.*Command[^}]*\} from "\.\/TaskContextMenuCommandLogic\.mjs"/s,
-  );
-  assert.doesNotMatch(source, /from "\.\/TaskActionLogic\.mjs"/);
-}

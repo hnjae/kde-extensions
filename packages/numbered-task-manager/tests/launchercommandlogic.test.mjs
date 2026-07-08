@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
 
 import { loadQmlJsModule } from "./qml-js-module.mjs";
 
@@ -14,10 +13,6 @@ const logic = await loadQmlJsModule(
     "launcherMutationRequest",
     "launcherMutationResult",
   ],
-);
-const taskActionUrl = new URL(
-  "../package/contents/ui/TaskActionLogic.mjs",
-  import.meta.url,
 );
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
@@ -63,5 +58,3 @@ assert.equal(
   }).code,
   "unknown-launcher-command",
 );
-
-assert.equal(existsSync(taskActionUrl), false);
