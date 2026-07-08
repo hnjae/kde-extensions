@@ -14,7 +14,11 @@ declare module "node:assert/strict" {
       expected?: RegExp | (new (...args: never[]) => Error),
       message?: string,
     ): Promise<void>;
-    throws(fn: () => unknown, expected?: RegExp, message?: string): void;
+    throws(
+      fn: () => unknown,
+      expected?: RegExp | (new (...args: never[]) => Error),
+      message?: string,
+    ): void;
   };
 
   export default assert;

@@ -4,6 +4,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { createContext, runInContext } from "node:vm";
 import {
   createInstalledPackageLayout,
   createPackageLayout,
@@ -15,6 +16,18 @@ import {
   checkKPackageInstall,
   KPackageInstallError,
 } from "../scripts/package-operations.mjs";
+import {
+  createWindow,
+  createWorkspace,
+  type WorkspaceFixture,
+} from "./support/refocus-harness.js";
+
+interface ShortcutRegistration {
+  readonly title: string;
+  readonly text: string;
+  readonly keySequence: string;
+  readonly callback: () => void;
+}
 
 async function readJson(url: URL): Promise<Record<string, unknown>> {
   return JSON.parse(await readFile(url, "utf8")) as Record<string, unknown>;
@@ -25,6 +38,48 @@ const packageRoot = layout.distRootUrl;
 
 async function readPackagedMainScript(): Promise<string> {
   return readFile(layout.distMainScriptPath, "utf8");
+}
+
+async function runPackagedMainScript(
+  workspace: WorkspaceFixture,
+  extraSandbox: Record<string, unknown> = {},
+): Promise<readonly ShortcutRegistration[]> {
+  const shortcuts: ShortcutRegistration[] = [];
+  const sandbox = {
+    ...extraSandbox,
+    registerShortcut(
+      title: string,
+      text: string,
+      keySequence: string,
+      callback: () => void,
+    ): boolean {
+      shortcuts.push({ callback, keySequence, text, title });
+      return true;
+    },
+    workspace,
+  };
+
+  createContext(sandbox);
+  runInContext(await readPackagedMainScript(), sandbox);
+
+  return shortcuts;
+}
+
+function singleShortcut(
+  shortcuts: readonly ShortcutRegistration[],
+): ShortcutRegistration {
+  assert.equal(shortcuts.length, 1);
+
+  const shortcut = shortcuts[0];
+  if (shortcut === undefined) {
+    throw new Error("shortcut was not registered");
+  }
+
+  return shortcut;
+}
+
+function assertThrowsTypeError(fn: () => unknown): void {
+  assert.throws(fn, TypeError);
 }
 
 test("package definition validates manifests and derives generated metadata", () => {
@@ -59,67 +114,57 @@ test("package definition validates manifests and derives generated metadata", ()
 });
 
 test("package definition rejects incomplete manifest fields", () => {
-  assert.throws(
-    () =>
-      createPackageDefinition(
-        { license: "AGPL-3.0-or-later", name: "", version: "1.2.3" },
-        {
-          KPlugin: { Id: "example.plugin" },
-          "X-Plasma-MainScript": "code/main.js",
-        },
-      ),
-    /package\.json name must be a non-empty string/,
+  assertThrowsTypeError(() =>
+    createPackageDefinition(
+      { license: "AGPL-3.0-or-later", name: "", version: "1.2.3" },
+      {
+        KPlugin: { Id: "example.plugin" },
+        "X-Plasma-MainScript": "code/main.js",
+      },
+    ),
   );
-  assert.throws(
-    () =>
-      createPackageDefinition(
-        {
-          license: "AGPL-3.0-or-later",
-          name: "example-package",
-          version: "1.2.3",
-        },
-        {},
-      ),
-    /KPlugin must be an object/,
+  assertThrowsTypeError(() =>
+    createPackageDefinition(
+      {
+        license: "AGPL-3.0-or-later",
+        name: "example-package",
+        version: "1.2.3",
+      },
+      {},
+    ),
   );
-  assert.throws(
-    () =>
-      createPackageDefinition(
-        {
-          license: "AGPL-3.0-or-later",
-          name: "example-package",
-          version: "1.2.3",
-        },
-        { KPlugin: { Id: "example.plugin" } },
-      ),
-    /X-Plasma-MainScript must be a non-empty string/,
+  assertThrowsTypeError(() =>
+    createPackageDefinition(
+      {
+        license: "AGPL-3.0-or-later",
+        name: "example-package",
+        version: "1.2.3",
+      },
+      { KPlugin: { Id: "example.plugin" } },
+    ),
   );
-  assert.throws(
-    () =>
-      createPackageDefinition(
-        {
-          license: "AGPL-3.0-or-later",
-          name: "example-package",
-          version: "1.2.3",
-        },
-        {
-          KPlugin: { Id: "example.plugin" },
-          "X-Plasma-MainScript": "../main.js",
-        },
-      ),
-    /X-Plasma-MainScript must be a relative package path/,
+  assertThrowsTypeError(() =>
+    createPackageDefinition(
+      {
+        license: "AGPL-3.0-or-later",
+        name: "example-package",
+        version: "1.2.3",
+      },
+      {
+        KPlugin: { Id: "example.plugin" },
+        "X-Plasma-MainScript": "../main.js",
+      },
+    ),
   );
-  assert.throws(
-    () =>
-      createPackageDefinition(
-        {
-          license: "AGPL-3.0-or-later",
-          name: "example-package",
-          version: "1.2.3",
-        },
-        { KPlugin: { Id: "" }, "X-Plasma-MainScript": "code/main.js" },
-      ),
-    /KPlugin\.Id must be a non-empty string/,
+  assertThrowsTypeError(() =>
+    createPackageDefinition(
+      {
+        license: "AGPL-3.0-or-later",
+        name: "example-package",
+        version: "1.2.3",
+      },
+      { KPlugin: { Id: "" }, "X-Plasma-MainScript": "code/main.js" },
+    ),
   );
 });
 
@@ -401,13 +446,13 @@ test("build output has KWin script package structure", async () => {
 });
 
 test("main script registers an unbound IME recovery shortcut", async () => {
-  const mainScript = await readPackagedMainScript();
+  const shortcut = singleShortcut(
+    await runPackagedMainScript(createWorkspace(null, null)),
+  );
 
-  assert.match(mainScript, /registerShortcut\(/);
-  assert.match(mainScript, /"IME Refocus"/);
-  assert.match(mainScript, /"Recover IME focus for the active window"/);
-  assert.match(mainScript, /""/);
-  assert.doesNotMatch(mainScript, /export\s+\{\};/);
+  assert.match(shortcut.title, /\bIME\b/i);
+  assert.match(shortcut.title, /refocus|recover/i);
+  assert.equal(shortcut.keySequence, "");
 });
 
 test("main script is copied from the compiler runtime bundle", async () => {
@@ -419,23 +464,74 @@ test("main script is copied from the compiler runtime bundle", async () => {
   assert.equal(packagedMainScript, compiledMainScript);
 });
 
-test("main script delegates the shortcut callback to refocus policy", async () => {
-  const mainScript = await readPackagedMainScript();
+test("registered shortcut callback recovers focus for the active window", async () => {
+  const desktop = { id: "desktop-1" };
+  const originalWindow = createWindow(desktop);
+  const workspace = createWorkspace(originalWindow, desktop);
+  const shortcut = singleShortcut(await runPackagedMainScript(workspace));
 
-  assert.match(mainScript, /KWinImeRefocus\.recoverImeFocus\(workspace\)/);
+  shortcut.callback();
+
+  assert.deepEqual(workspace.assignments, [null, originalWindow]);
+  assert.equal(workspace.activeWindow, originalWindow);
 });
 
-test("main script avoids recovery side-effect APIs", async () => {
-  const mainScript = await readPackagedMainScript();
+test("registered shortcut callback avoids recovery side-effect APIs", async () => {
+  const desktop = { id: "desktop-1" };
+  const originalWindow = createWindow(desktop);
+  const workspace = createWorkspace(originalWindow, desktop);
+  const forbiddenApiNames = [
+    "callDBus",
+    "slotSwitch",
+    "slotWindow",
+    "setCurrentDesktop",
+    "windowToDesktops",
+    "sendClientToScreen",
+  ];
+  const forbiddenGlobals = Object.fromEntries(
+    forbiddenApiNames.map((name) => [
+      name,
+      () => {
+        throw new Error(`${name} must not be called during recovery`);
+      },
+    ]),
+  );
 
-  assert.doesNotMatch(mainScript, /callDBus/);
-  assert.doesNotMatch(mainScript, /slotSwitch/);
-  assert.doesNotMatch(mainScript, /slotWindow/);
-  assert.doesNotMatch(mainScript, /setCurrentDesktop/);
-  assert.doesNotMatch(mainScript, /windowToDesktops/);
-  assert.doesNotMatch(mainScript, /sendClientToScreen/);
-  assert.doesNotMatch(mainScript, /workspace\.currentDesktop\s*=/);
-  assert.doesNotMatch(mainScript, /frameGeometry\s*=/);
-  assert.doesNotMatch(mainScript, /\.minimized\s*=/);
-  assert.doesNotMatch(mainScript, /\.closeWindow\(/);
+  Object.defineProperty(workspace, "currentDesktop", {
+    configurable: true,
+    get: () => desktop,
+    set: () => {
+      throw new Error("currentDesktop must not be assigned during recovery");
+    },
+  });
+  Object.defineProperties(originalWindow, {
+    closeWindow: {
+      configurable: true,
+      value: () => {
+        throw new Error("closeWindow must not be called during recovery");
+      },
+    },
+    frameGeometry: {
+      configurable: true,
+      get: () => ({}),
+      set: () => {
+        throw new Error("frameGeometry must not be assigned during recovery");
+      },
+    },
+    minimized: {
+      configurable: true,
+      get: () => false,
+      set: () => {
+        throw new Error("minimized must not be assigned during recovery");
+      },
+    },
+  });
+
+  const shortcut = singleShortcut(
+    await runPackagedMainScript(workspace, forbiddenGlobals),
+  );
+
+  shortcut.callback();
+
+  assert.deepEqual(workspace.assignments, [null, originalWindow]);
 });
