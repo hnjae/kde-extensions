@@ -60,18 +60,13 @@ QtQuick.Item {
 
     function beginTaskDrag() {
         root.dragReturnAnimationEnabled = false;
-        dragSurface.z = 1;
-        dragSurface.Drag.active = true;
+        dragSurface.beginDrag();
     }
 
     function finishTaskDrag() {
-        dragSurface.Drag.drop();
-        dragSurface.Drag.active = false;
+        dragSurface.finishDrag();
         root.dropHover = false;
         root.dragReturnAnimationEnabled = true;
-        dragSurface.x = 0;
-        dragSurface.y = 0;
-        dragSurface.z = 0;
     }
 
     QtQuick.Item {
@@ -79,6 +74,19 @@ QtQuick.Item {
 
         width: parent.width
         height: parent.height
+
+        function beginDrag() {
+            dragSurface.z = 1;
+            Drag.active = true;
+        }
+
+        function finishDrag() {
+            Drag.drop();
+            Drag.active = false;
+            dragSurface.x = 0;
+            dragSurface.y = 0;
+            dragSurface.z = 0;
+        }
 
         QtQuick.Drag.active: false
         QtQuick.Drag.hotSpot.x: width / 2
