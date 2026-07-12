@@ -7,11 +7,13 @@ import QtQuick as QtQuick
 import "ActionResultLogic.mjs" as ActionResultLogic
 
 QtQuick.QtObject {
+    property var warningSink: console
+
     function logActionResult(result) {
         if (!ActionResultLogic.shouldLogActionResult(result)) {
             return;
         }
 
-        console.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
+        warningSink.warn("Numbered Task Manager action " + result.action + " " + result.code + ": " + JSON.stringify(result.context || {}));
     }
 }

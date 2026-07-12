@@ -66,7 +66,7 @@ QtQuick.Item {
             property bool launcherPinned: launcherPosition !== -1
             property var persistentModelIndex: root.taskModel.makePersistentModelIndex(index)
             property var lifecycleState: NormalTaskSourceLifecycleLogic.createNormalTaskSourceRowState()
-            property string publishedKey: lifecycleState.publishedKey || ""
+            property string publishedKey: ""
             property var taskInfo: TaskModelLogic.createNormalTaskEntry({
                 activities: model.Activities,
                 active: model.IsActive,
@@ -141,6 +141,7 @@ QtQuick.Item {
 
             function executeLifecycleCommands(output) {
                 lifecycleState = output.state;
+                publishedKey = lifecycleState.publishedKey || "";
                 const commands = Array.from(output.commands || []);
                 for (let i = 0; i < commands.length; ++i) {
                     const command = commands[i];

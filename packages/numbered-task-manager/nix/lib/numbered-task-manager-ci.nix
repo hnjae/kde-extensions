@@ -26,9 +26,6 @@ let
     "${pkgs.kdePackages.plasma-workspace}/lib/qt-6/qml"
   ];
   qmlImportFlags = lib.concatMapStringsSep " " (path: "-I ${lib.escapeShellArg path}") qmlImportPaths;
-  qmlTestImportFlags = lib.concatMapStringsSep " " (
-    path: "-import ${lib.escapeShellArg path}"
-  ) qmlImportPaths;
   qtPluginPaths = [
     "${pkgs.kdePackages.libplasma}/lib/qt-6/plugins"
   ];
@@ -80,6 +77,7 @@ let
       -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
       -DBUILD_TESTING=ON \
       -DKDE_INSTALL_QMLDIR=lib/qt-6/qml \
+      -DNUMBERED_TASK_MANAGER_QML_IMPORT_PATHS=${lib.escapeShellArg (lib.concatStringsSep ";" qmlImportPaths)} \
       -DCMAKE_INSTALL_PREFIX="$install_prefix"
   '';
 
@@ -114,14 +112,7 @@ let
   '';
 
   qmlComponentTest = ''
-    export HOME="$TMPDIR/qml-test-home"
-    mkdir -p "$HOME"
-    QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
-      ${pkgs.coreutils}/bin/timeout 60s \
-      qmltestrunner \
-      -input tests/qml \
-      -import "$install_prefix/lib/qt-6/qml" \
-      ${qmlTestImportFlags}
+    ctest --test-dir "$build_dir" --output-on-failure -R '^qml_component_tests$'
   '';
 
   nativePackageSmoke = ''

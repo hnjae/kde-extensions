@@ -109,7 +109,7 @@ QtQuick.Item {
             property string launcherUrl: TaskEntryLogic.launcherUrlFromRoles(model.LauncherUrlWithoutIcon, model.LauncherUrl)
             property var lifecycleState: RemoteAttentionLogic.createRemoteAttentionSourceRowState()
             property var persistentModelIndex: root.taskModel.makePersistentModelIndex(index)
-            property string publishedKey: lifecycleState.publishedKey || ""
+            property string publishedKey: ""
             property var taskInfo: RemoteAttentionLogic.createRemoteAttentionEntry({
                 activities: model.Activities,
                 appName: model.AppName,
@@ -162,6 +162,7 @@ QtQuick.Item {
 
             function executeLifecycleCommands(output) {
                 lifecycleState = output.state;
+                publishedKey = lifecycleState.publishedKey || "";
                 const commands = Array.from(output.commands || []);
                 for (let i = 0; i < commands.length; ++i) {
                     const command = commands[i];

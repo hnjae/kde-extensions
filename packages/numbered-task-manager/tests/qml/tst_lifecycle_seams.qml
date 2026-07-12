@@ -19,7 +19,7 @@ TestCase {
 
     Component {
         id: fakeMenuComponent
-        QtObject {
+        Item {
             property var desktopActionBackend
             property var launcherReadPort
             property var modelIndex
@@ -32,7 +32,10 @@ TestCase {
             signal launcherCommandRequested(var command)
             signal closed
             function show() {
-                closed();
+                Qt.callLater(() => {
+                    closed();
+                    destroy();
+                });
             }
         }
     }
@@ -60,6 +63,7 @@ TestCase {
     }
 
     function test_menu_lifetime_callbacks_survive_factory_boundary() {
+        const originalChildCount = menuAdapter.children.length;
         let opened = 0;
         let closed = 0;
         menuAdapter.openTaskContextMenu({
@@ -73,6 +77,7 @@ TestCase {
             visualParentWidth: 100
         });
         compare(opened, 1);
-        compare(closed, 1);
+        tryVerify(() => closed === 1);
+        tryVerify(() => menuAdapter.children.length === originalChildCount);
     }
 }

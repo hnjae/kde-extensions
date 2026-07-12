@@ -69,6 +69,23 @@ QtQuick.Item {
         root.dragReturnAnimationEnabled = true;
     }
 
+    function handleTaskDragEntered(drag) {
+        const sourceIndex = TaskInteractionLogic.taskDropSourceIndex(drag.getDataAsString(root.dragMimeType));
+        root.dropHover = TaskInteractionLogic.canAcceptTaskDrop(sourceIndex, root.taskIndex, root.canDropTask);
+    }
+
+    function handleTaskDragExited() {
+        root.dropHover = false;
+    }
+
+    function handleTaskDrop(drop) {
+        const sourceIndex = TaskInteractionLogic.taskDropSourceIndex(drop.getDataAsString(root.dragMimeType));
+        root.dropHover = false;
+        if (TaskInteractionLogic.canAcceptTaskDrop(sourceIndex, root.taskIndex, root.canDropTask)) {
+            root.taskDropped(sourceIndex, root.taskIndex, drop);
+        }
+    }
+
     QtQuick.Item {
         id: dragSurface
 
@@ -196,20 +213,15 @@ QtQuick.Item {
         keys: root.dragMimeType ? [root.dragMimeType] : []
 
         onEntered: drag => {
-            const sourceIndex = TaskInteractionLogic.taskDropSourceIndex(drag.getDataAsString(root.dragMimeType));
-            root.dropHover = TaskInteractionLogic.canAcceptTaskDrop(sourceIndex, root.taskIndex, root.canDropTask);
+            root.handleTaskDragEntered(drag);
         }
 
         onExited: {
-            root.dropHover = false;
+            root.handleTaskDragExited();
         }
 
         onDropped: drop => {
-            const sourceIndex = TaskInteractionLogic.taskDropSourceIndex(drop.getDataAsString(root.dragMimeType));
-            root.dropHover = false;
-            if (TaskInteractionLogic.canAcceptTaskDrop(sourceIndex, root.taskIndex, root.canDropTask)) {
-                root.taskDropped(sourceIndex, root.taskIndex, drop);
-            }
+            root.handleTaskDrop(drop);
         }
     }
 

@@ -18,7 +18,7 @@ KSvg.FrameSvgItem {
     property bool launcher: false
     property bool minimized: false
     property bool mutedLauncher: false
-    property int panelLocation: Plasmoid.location
+    property int panelLocation: Plasmoid.location ?? PlasmaCore.Types.Floating
     readonly property real contentBottomMargin: margins.bottom
     readonly property real contentLeftMargin: margins.left
     readonly property real contentRightMargin: margins.right

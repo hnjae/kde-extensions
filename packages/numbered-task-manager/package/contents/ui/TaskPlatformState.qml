@@ -12,8 +12,10 @@ QtQuick.QtObject {
     id: root
 
     required property var taskModel
-    readonly property string currentActivity: activityInfo.currentActivity
-    readonly property var currentDesktop: virtualDesktopInfo.currentDesktop
+    property var activityInfo: defaultActivityInfo
+    property var virtualDesktopInfo: defaultVirtualDesktopInfo
+    readonly property string currentActivity: root.activityInfo.currentActivity
+    readonly property var currentDesktop: root.virtualDesktopInfo.currentDesktop
     property int launcherRevision: 0
 
     function noteLauncherListChanged() {
@@ -37,15 +39,19 @@ QtQuick.QtObject {
         return ActivityScopeLogic.isInCurrentActivity(activities, root.currentActivity);
     }
 
-    readonly property TaskManager.ActivityInfo _activityInfo: TaskManager.ActivityInfo {
-        id: activityInfo
-
-        onCurrentActivityChanged: {
-            root.launcherRevision += 1;
-        }
+    readonly property TaskManager.ActivityInfo _defaultActivityInfo: TaskManager.ActivityInfo {
+        id: defaultActivityInfo
     }
 
-    readonly property TaskManager.VirtualDesktopInfo _virtualDesktopInfo: TaskManager.VirtualDesktopInfo {
-        id: virtualDesktopInfo
+    readonly property TaskManager.VirtualDesktopInfo _defaultVirtualDesktopInfo: TaskManager.VirtualDesktopInfo {
+        id: defaultVirtualDesktopInfo
+    }
+
+    readonly property QtQuick.Connections _activityInfoConnections: QtQuick.Connections {
+        target: root.activityInfo
+
+        function onCurrentActivityChanged() {
+            root.launcherRevision += 1;
+        }
     }
 }
