@@ -26,6 +26,9 @@ let
     "${pkgs.kdePackages.plasma-workspace}/lib/qt-6/qml"
   ];
   qmlImportFlags = lib.concatMapStringsSep " " (path: "-I ${lib.escapeShellArg path}") qmlImportPaths;
+  qmlTestImportFlags = lib.concatMapStringsSep " " (
+    path: "-import ${lib.escapeShellArg path}"
+  ) qmlImportPaths;
   qtPluginPaths = [
     "${pkgs.kdePackages.libplasma}/lib/qt-6/plugins"
   ];
@@ -108,6 +111,17 @@ let
       -I "$install_prefix/lib/qt-6/qml" \
       ${qmlImportFlags} \
       tests/qml-js-module-smoke.qml
+  '';
+
+  qmlComponentTest = ''
+    export HOME="$TMPDIR/qml-test-home"
+    mkdir -p "$HOME"
+    QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
+      ${pkgs.coreutils}/bin/timeout 60s \
+      qmltestrunner \
+      -input tests/qml \
+      -import "$install_prefix/lib/qt-6/qml" \
+      ${qmlTestImportFlags}
   '';
 
   nativePackageSmoke = ''
@@ -321,6 +335,7 @@ in
     nativePackageSmoke
     packageLayout
     qmlImportPaths
+    qmlComponentTest
     qmlLint
     qmlSmoke
     qtPluginPaths
@@ -342,6 +357,10 @@ in
       ${cmakeConfigure}
       ${cmakeBuild}
       ${cmakeTest}
+    '')
+    (mkBuildDevCommand "numbered-task-manager-test-qml" ''
+      ${localBuildAndInstall}
+      ${qmlComponentTest}
     '')
     (mkBuildDevCommand "numbered-task-manager-lint" ''
       ${localBuildAndInstall}
@@ -371,6 +390,7 @@ in
       ${jsLint}
       ${jsTest}
       ${qmlSmoke}
+      ${qmlComponentTest}
       ${qmlLint}
       ${clangTidy}
       ${clazy}

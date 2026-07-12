@@ -11,6 +11,7 @@ QtQuick.Item {
     id: root
 
     property var launcherReadPort
+    property QtQuick.Component menuComponent: contextMenuComponent
     property var taskCommandPort
     property var taskRolePort
     readonly property NumberedTaskManager.TaskContextMenuBackend desktopActionBackend: NumberedTaskManager.TaskContextMenuBackend {
@@ -52,7 +53,7 @@ QtQuick.Item {
         }
 
         const visualParent = menuRequest.visualParent;
-        const menu = contextMenuComponent.createObject(visualParent, {
+        const menu = root.menuComponent.createObject(visualParent, {
             desktopActionBackend: root.desktopActionBackend,
             launcherReadPort: root.launcherReadPort,
             modelIndex: menuRequest.modelIndex,
@@ -61,7 +62,7 @@ QtQuick.Item {
             taskRolePort: menuRequest.taskRolePort,
             visualParent: visualParent,
             visualParentWidth: menuRequest.visualParentWidth
-        }) as TaskContextMenu;
+        });
         const creationResult = TaskContextMenuRequestLogic.contextMenuCreationResult(menu, menuRequest);
         if (!creationResult.ok) {
             actionResult(creationResult);
@@ -69,11 +70,14 @@ QtQuick.Item {
         }
 
         notifyContextMenuOpened(menuRequest);
+        // qmllint disable missing-property
+        // The injectable component is required to implement the menu protocol checked by the executable boundary test.
         menu.closed.connect(() => root.notifyContextMenuClosed(menuRequest));
 
         menu.actionResult.connect(result => root.actionResult(result));
         menu.launcherCommandRequested.connect(command => root.launcherCommandRequested(command));
         menu.show();
+        // qmllint enable missing-property
     }
 
     QtQuick.Component {

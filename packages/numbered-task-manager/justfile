@@ -30,6 +30,10 @@ test:
 test-host:
     for test_file in tests/*.test.mjs; do node "$test_file"; done
 
+[group('test')]
+test-qml:
+    nix develop "{{ dev_shell }}" -c numbered-task-manager-test-qml
+
 [group('lint')]
 lint:
     nix develop "{{ dev_shell }}" -c numbered-task-manager-lint

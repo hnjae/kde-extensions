@@ -52,6 +52,7 @@ Downstream packages should use the complete CMake install tree rather than packa
 
 ```sh
 just test
+just test-qml
 just lint-qml
 just check
 just build

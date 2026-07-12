@@ -55,6 +55,8 @@ export function contextMenuRequestResult(request) {
     actionResult("openContextMenu", "ready", true, false, context),
     {
       modelIndex: menuRequest.modelIndex,
+      onContextMenuClosed: menuRequest.onContextMenuClosed,
+      onContextMenuOpened: menuRequest.onContextMenuOpened,
       task: menuRequest.task || {},
       taskRolePort: menuRequest.taskRolePort,
       visualParent: menuRequest.visualParent,

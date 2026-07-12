@@ -44,6 +44,7 @@
             ${ci.jsLint}
             ${ci.jsTest}
             ${ci.qmlSmoke}
+            ${ci.qmlComponentTest}
             ${ci.qmlLint}
             ${ci.clangTidy}
             ${ci.clazy}

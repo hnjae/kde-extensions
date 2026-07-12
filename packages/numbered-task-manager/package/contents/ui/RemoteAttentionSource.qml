@@ -13,7 +13,7 @@ import "VisibleTaskItemsLogic.mjs" as VisibleTaskItemsLogic
 QtQuick.Item {
     id: root
 
-    readonly property var taskModel: attentionTasksModel
+    property var taskModel: attentionTasksModel
     property string currentActivity: ""
     property string currentDesktop: ""
     property var isInCurrentActivity: null
@@ -53,7 +53,7 @@ QtQuick.Item {
     }
 
     function requestActivate(modelIndex) {
-        attentionTasksModel.requestActivate(modelIndex);
+        root.taskModel.requestActivate(modelIndex);
     }
 
     function requestVisibleActivation() {
@@ -96,7 +96,7 @@ QtQuick.Item {
     TaskContextMenuRolePort {
         id: taskRolePort
 
-        taskModel: attentionTasksModel
+        taskModel: root.taskModel
     }
 
     QtQuick.Repeater {
