@@ -12,6 +12,7 @@
 ## Verification
 
 - Run the package lint/check commands after implementation changes.
+- Keep pure policy and transformation coverage in JavaScript module tests. Exercise critical QML binding, signal-routing, timer, effect-port, and object-lifecycle boundaries as executable offscreen component tests against the installed native module; reserve source-text assertions for explicit static policies that cannot be observed through component behavior.
 - Load an applet component that instantiates the owned native backend from the actual system-package output, using that output's Qt QML import path, so verification fails when the applet and native module are packaged separately.
 - Manually verify in Plasma that `Meta+1` through `Meta+9` target the numbered visible slots.
 - Verify pinned launcher activation opens in place and does not append the first matching window to the far right.
