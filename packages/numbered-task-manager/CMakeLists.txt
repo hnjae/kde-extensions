@@ -25,6 +25,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(numberedtaskmanagerplugin SHARED
+    src/desktopactionjobowner.cpp
+    src/desktopactionjobowner.h
     src/desktopactionlogic.cpp
     src/desktopactionlogic.h
     src/numberedtaskmanagerplugin.cpp
@@ -46,6 +48,8 @@ target_link_libraries(numberedtaskmanagerplugin PRIVATE
 
 if(BUILD_TESTING)
     add_executable(desktopactionlogic_test
+        src/desktopactionjobowner.cpp
+        src/desktopactionjobowner.h
         src/desktopactionlogic.cpp
         src/desktopactionlogic.h
         tests/desktopactionlogic_test.cpp

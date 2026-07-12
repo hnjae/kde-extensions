@@ -20,6 +20,14 @@ const desktopActionLogicSource = readFileSync(
   new URL("../src/desktopactionlogic.cpp", import.meta.url),
   "utf8",
 );
+const desktopActionJobOwnerHeader = readFileSync(
+  new URL("../src/desktopactionjobowner.h", import.meta.url),
+  "utf8",
+);
+const desktopActionJobOwnerSource = readFileSync(
+  new URL("../src/desktopactionjobowner.cpp", import.meta.url),
+  "utf8",
+);
 
 assert.match(desktopActionLogicHeader, /struct DesktopActionDescriptor/);
 assert.match(
@@ -74,10 +82,13 @@ assert.match(
   source,
   /KIO::ApplicationLauncherJob\(descriptor\.serviceAction\)/,
 );
-assert.match(desktopActionLogicSource, /connect\(.*job, &KJob::result/s);
+assert.match(desktopActionJobOwnerHeader, /class DesktopActionJobOwner/);
+assert.match(desktopActionJobOwnerSource, /job, &KJob::result/);
+assert.match(desktopActionJobOwnerSource, /job, &KJob::finished/);
+assert.match(desktopActionJobOwnerSource, /job->kill\(KJob::Quietly\)/);
 assert.match(desktopActionLogicSource, /desktop-action-launch-failed/);
 assert.match(desktopActionLogicHeader, /DesktopActionResultHandler/);
-assert.match(desktopActionLogicSource, /resultHandler\(actionResult\)/);
+assert.match(desktopActionJobOwnerSource, /m_resultHandler\(/);
 assert.match(desktopActionLogicSource, /descriptor\.launcherUrl/);
 assert.match(desktopActionLogicSource, /descriptor\.text/);
 
@@ -88,6 +99,6 @@ assert.match(
 assert.match(source, /descriptorsWithContext\(descriptors, launcherUrl/);
 assert.match(
   source,
-  /return desktopActionsFromDescriptors\(\s*contextualDescriptors,\s*parent,/,
+  /return desktopActionsFromDescriptors\(\s*contextualDescriptors, parent, m_desktopActionJobOwner,/,
 );
 assert.match(source, /Q_EMIT desktopActionResult\(result\)/);

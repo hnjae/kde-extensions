@@ -37,6 +37,8 @@ using DesktopActionJobFactory =
     std::function<KJob *(const DesktopActionDescriptor &descriptor)>;
 using DesktopActionResultHandler =
     std::function<void(const QVariantMap &result)>;
+using DesktopActionTriggerHandler =
+    std::function<void(const DesktopActionDescriptor &descriptor)>;
 
 [[nodiscard]] QList<DesktopActionSource>
 desktopActionSources(const QList<KServiceAction> &serviceActions);
@@ -51,11 +53,8 @@ desktopActionLaunchFailureResult(const DesktopActionDescriptor &descriptor,
                                  KJob *job);
 [[nodiscard]] QAction *
 desktopActionFromDescriptor(const DesktopActionDescriptor &descriptor,
-                            QObject *parent,
-                            const DesktopActionJobFactory &jobFactory,
-                            const DesktopActionResultHandler &resultHandler);
-[[nodiscard]] QVariantList
-desktopActionsFromDescriptors(const QList<DesktopActionDescriptor> &descriptors,
-                              QObject *parent,
-                              const DesktopActionJobFactory &jobFactory,
-                              const DesktopActionResultHandler &resultHandler);
+                            QObject *parent, QObject *triggerContext,
+                            const DesktopActionTriggerHandler &triggerHandler);
+[[nodiscard]] QVariantList desktopActionsFromDescriptors(
+    const QList<DesktopActionDescriptor> &descriptors, QObject *parent,
+    QObject *triggerContext, const DesktopActionTriggerHandler &triggerHandler);

@@ -4,6 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
+import org.hnjae.numberedtaskmanager as NumberedTaskManager
 import "TaskContextMenuRequestLogic.mjs" as TaskContextMenuRequestLogic
 
 QtQuick.Item {
@@ -12,6 +13,11 @@ QtQuick.Item {
     property var launcherReadPort
     property var taskCommandPort
     property var taskRolePort
+    readonly property NumberedTaskManager.TaskContextMenuBackend desktopActionBackend: NumberedTaskManager.TaskContextMenuBackend {
+        onDesktopActionResult: result => {
+            root.actionResult(result);
+        }
+    }
 
     signal actionResult(var result)
     signal launcherCommandRequested(var command)
@@ -47,6 +53,7 @@ QtQuick.Item {
 
         const visualParent = menuRequest.visualParent;
         const menu = contextMenuComponent.createObject(visualParent, {
+            desktopActionBackend: root.desktopActionBackend,
             launcherReadPort: root.launcherReadPort,
             modelIndex: menuRequest.modelIndex,
             task: menuRequest.task || {},

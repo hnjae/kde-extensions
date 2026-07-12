@@ -69,6 +69,10 @@ assert.match(
   sourceQml,
   /import "TaskContextMenuRequestLogic\.mjs" as TaskContextMenuRequestLogic/,
 );
+assert.match(
+  sourceQml,
+  /import org\.hnjae\.numberedtaskmanager as NumberedTaskManager/,
+);
 assert.doesNotMatch(
   sourceQml,
   /import "TaskActionLogic\.mjs" as TaskActionLogic/,
@@ -94,6 +98,15 @@ assert.match(
   /TaskContextMenuRequestLogic\.contextMenuRequestResult\(contextMenuRequest\(request\)\)/,
 );
 assert.match(sourceQml, /contextMenuComponent\.createObject\(visualParent/);
+assert.match(
+  sourceQml,
+  /NumberedTaskManager\.TaskContextMenuBackend\s+desktopActionBackend/,
+);
+assert.match(
+  sourceQml,
+  /onDesktopActionResult:\s*result\s*=>\s*\{[\s\S]*?root\.actionResult\(result\);[\s\S]*?\}/,
+);
+assert.match(sourceQml, /desktopActionBackend:\s*root\.desktopActionBackend/);
 assert.match(sourceQml, /launcherReadPort:\s*root\.launcherReadPort/);
 assert.doesNotMatch(sourceQml, /launcherModel:\s*root\.launcherModel/);
 assert.match(sourceQml, /taskRolePort:\s*menuRequest\.taskRolePort/);
@@ -131,15 +144,8 @@ assert.match(menuQml, /launcherReadPort:\s*root\.launcherReadPort/);
 assert.match(menuQml, /taskRolePort:\s*root\.taskRolePort/);
 assert.match(menuQml, /taskCommandPort:\s*root\.taskCommandPort/);
 assert.doesNotMatch(menuQml, /console\.warn\("Numbered Task Manager action "/);
-assert.match(
-  menuQml,
-  /import org\.hnjae\.numberedtaskmanager as NumberedTaskManager/,
-);
-assert.match(menuQml, /NumberedTaskManager\.TaskContextMenuBackend\s*\{/);
-assert.match(
-  menuQml,
-  /onDesktopActionResult:\s*result\s*=>\s*\{[\s\S]*?root\.actionResult\(result\);[\s\S]*?\}/,
-);
+assert.match(menuQml, /required property var desktopActionBackend/);
+assert.doesNotMatch(menuQml, /NumberedTaskManager\.TaskContextMenuBackend/);
 assert.match(menuQml, /desktopActions\(root\.taskRoles\.launcherUrl/);
 assert.match(menuQml, /item\.action = modelData/);
 assert.match(menuQml, /id:\s*moreActionsItem/);
@@ -148,6 +154,7 @@ assert.match(menuQml, /icon:\s*actionState\.icon \|\| ""/);
 assert.match(cmakeSource, /project\(numberedtaskmanager\b/);
 assert.match(cmakeSource, /add_library\(numberedtaskmanagerplugin SHARED/);
 assert.match(cmakeSource, /src\/taskcontextmenubackend\.cpp/);
+assert.match(cmakeSource, /src\/desktopactionjobowner\.cpp/);
 assert.match(cmakeSource, /install\(DIRECTORY package\//);
 
 assert.match(rolePortQml, /property var taskModel/);

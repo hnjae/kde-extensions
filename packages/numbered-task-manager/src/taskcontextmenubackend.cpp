@@ -3,6 +3,7 @@
 
 #include "taskcontextmenubackend.h"
 
+#include "desktopactionjobowner.h"
 #include "desktopactionlogic.h"
 
 #include <KDesktopFile>
@@ -10,7 +11,15 @@
 #include <KService>
 
 TaskContextMenuBackend::TaskContextMenuBackend(QObject *parent)
-    : QObject(parent) {}
+    : QObject(parent),
+      m_desktopActionJobOwner(new DesktopActionJobOwner(
+          [](const DesktopActionDescriptor &descriptor) -> KJob * {
+            return new KIO::ApplicationLauncherJob(descriptor.serviceAction);
+          },
+          [this](const QVariantMap &result) {
+            Q_EMIT desktopActionResult(result);
+          },
+          this)) {}
 
 TaskContextMenuBackend::~TaskContextMenuBackend() = default;
 
@@ -50,11 +59,8 @@ QVariantList TaskContextMenuBackend::desktopActions(const QUrl &launcherUrl,
   const QList<DesktopActionDescriptor> contextualDescriptors =
       descriptorsWithContext(descriptors, launcherUrl, entryUrl.toLocalFile());
   return desktopActionsFromDescriptors(
-      contextualDescriptors, parent,
-      [](const DesktopActionDescriptor &descriptor) -> KJob * {
-        return new KIO::ApplicationLauncherJob(descriptor.serviceAction);
-      },
-      [this](const QVariantMap &result) {
-        Q_EMIT desktopActionResult(result);
+      contextualDescriptors, parent, m_desktopActionJobOwner,
+      [this](const DesktopActionDescriptor &descriptor) {
+        m_desktopActionJobOwner->launch(descriptor);
       });
 }

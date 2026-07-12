@@ -79,10 +79,9 @@ desktopActionLaunchFailureResult(const DesktopActionDescriptor &descriptor,
 
 QAction *
 desktopActionFromDescriptor(const DesktopActionDescriptor &descriptor,
-                            QObject *parent,
-                            const DesktopActionJobFactory &jobFactory,
-                            const DesktopActionResultHandler &resultHandler) {
-  if (parent == nullptr) {
+                            QObject *parent, QObject *triggerContext,
+                            const DesktopActionTriggerHandler &triggerHandler) {
+  if (parent == nullptr || triggerContext == nullptr) {
     return nullptr;
   }
 
@@ -91,49 +90,28 @@ desktopActionFromDescriptor(const DesktopActionDescriptor &descriptor,
   action->setIcon(QIcon::fromTheme(descriptor.iconName));
   action->setSeparator(descriptor.separator);
 
-  QObject::connect(action, &QAction::triggered, action,
-                   [action, descriptor, jobFactory, resultHandler]() {
-                     if (!jobFactory) {
-                       return;
+  QObject::connect(action, &QAction::triggered, triggerContext,
+                   [descriptor, triggerHandler]() {
+                     if (triggerHandler) {
+                       triggerHandler(descriptor);
                      }
-
-                     KJob *job = jobFactory(descriptor);
-                     if (job == nullptr) {
-                       return;
-                     }
-
-                     QObject::connect(
-                         job, &KJob::result, action,
-                         [descriptor, resultHandler](KJob *completedJob) {
-                           if (completedJob == nullptr ||
-                               completedJob->error() == 0 || !resultHandler) {
-                             return;
-                           }
-
-                           const QVariantMap actionResult =
-                               desktopActionLaunchFailureResult(descriptor,
-                                                                completedJob);
-                           resultHandler(actionResult);
-                         });
-                     job->start();
                    });
 
   return action;
 }
 
-QVariantList
-desktopActionsFromDescriptors(const QList<DesktopActionDescriptor> &descriptors,
-                              QObject *parent,
-                              const DesktopActionJobFactory &jobFactory,
-                              const DesktopActionResultHandler &resultHandler) {
+QVariantList desktopActionsFromDescriptors(
+    const QList<DesktopActionDescriptor> &descriptors, QObject *parent,
+    QObject *triggerContext,
+    const DesktopActionTriggerHandler &triggerHandler) {
   QVariantList actions;
   if (parent == nullptr) {
     return actions;
   }
 
   for (const DesktopActionDescriptor &descriptor : descriptors) {
-    QAction *action = desktopActionFromDescriptor(descriptor, parent,
-                                                  jobFactory, resultHandler);
+    QAction *action = desktopActionFromDescriptor(
+        descriptor, parent, triggerContext, triggerHandler);
     if (action != nullptr) {
       actions << QVariant::fromValue(action);
     }

@@ -8,6 +8,8 @@
 #include <QVariantList>
 #include <QVariantMap>
 
+class DesktopActionJobOwner;
+
 class TaskContextMenuBackend : public QObject {
   Q_OBJECT
 
@@ -22,4 +24,6 @@ public:
 
 private:
   [[nodiscard]] QUrl desktopEntryUrl(const QUrl &launcherUrl) const;
+
+  DesktopActionJobOwner *m_desktopActionJobOwner = nullptr;
 };

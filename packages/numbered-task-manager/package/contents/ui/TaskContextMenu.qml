@@ -7,7 +7,6 @@ import QtQuick as QtQuick
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid
-import org.hnjae.numberedtaskmanager as NumberedTaskManager
 import "TaskContextMenuFooterLogic.mjs" as TaskContextMenuFooterLogic
 import "TaskContextMenuLogic.mjs" as TaskContextMenuLogic
 import "TaskContextMenuPlatformLogic.mjs" as TaskContextMenuPlatformLogic
@@ -59,13 +58,14 @@ PlasmaExtras.Menu {
     readonly property var pinActionsSection: actionSections.pinActions
     readonly property var taskActivityActionsSection: actionSections.taskActivityActions
     readonly property var virtualDesktopActionsSection: actionSections.virtualDesktopActions
-    readonly property var desktopActions: contextMenuBackend.desktopActions(root.taskRoles.launcherUrl || "", root)
+    readonly property var desktopActions: desktopActionBackend.desktopActions(root.taskRoles.launcherUrl || "", root)
     readonly property var configureFooterAction: Plasmoid.internalAction("configure")
     readonly property var configureFooterActionState: TaskContextMenuFooterLogic.contextMenuFooterAction("configureWidget", configureFooterAction)
     readonly property var editModeFooterAction: Plasmoid.containment ? Plasmoid.containment.internalAction("configure") : null
     readonly property var editModeFooterActionState: TaskContextMenuFooterLogic.contextMenuFooterAction("editMode", editModeFooterAction)
     readonly property var footerActionSection: TaskContextMenuFooterLogic.contextMenuFooterSection(configureFooterActionState, editModeFooterActionState)
     property var launcherReadPort
+    required property var desktopActionBackend
     property var modelIndex
     property var task: ({})
     property var taskCommandPort
@@ -162,14 +162,6 @@ PlasmaExtras.Menu {
 
         onClicked: {
             actionDispatcher.triggerAction(pinAction);
-        }
-    }
-
-    readonly property NumberedTaskManager.TaskContextMenuBackend _contextMenuBackend: NumberedTaskManager.TaskContextMenuBackend {
-        id: contextMenuBackend
-
-        onDesktopActionResult: result => {
-            root.actionResult(result);
         }
     }
 
