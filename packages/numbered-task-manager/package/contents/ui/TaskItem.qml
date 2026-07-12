@@ -4,6 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick as QtQuick
+import QtQuick
 import QtQuick.Layouts as QtQuickLayouts
 import org.kde.kirigami as Kirigami
 import org.kde.kirigami.platform as KirigamiPlatform
@@ -110,6 +111,7 @@ QtQuick.Item {
         QtQuick.Drag.hotSpot.y: height / 2
         QtQuick.Drag.keys: root.dragMimeType ? [root.dragMimeType] : []
         QtQuick.Drag.mimeData: TaskInteractionLogic.taskDragMimeData(root.dragMimeType, root.taskIndex)
+        QtQuick.Drag.source: root
         QtQuick.Drag.supportedActions: QtQuick.Qt.MoveAction
 
         TaskLikeItemShell {
@@ -214,6 +216,7 @@ QtQuick.Item {
 
         onEntered: drag => {
             root.handleTaskDragEntered(drag);
+            drag.accepted = root.dropHover;
         }
 
         onExited: {

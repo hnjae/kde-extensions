@@ -18,7 +18,7 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(CTest)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Test)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick Test)
 find_package(KF6 REQUIRED COMPONENTS Config KIO Service)
 
 set(CMAKE_AUTOMOC ON)
@@ -99,6 +99,41 @@ if(BUILD_TESTING)
     set_tests_properties(qml_component_tests PROPERTIES
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software"
         TIMEOUT 60
+    )
+
+    add_executable(qml_drag_integration_test tests/qml_host_integration_test.cpp)
+    target_compile_definitions(qml_drag_integration_test PRIVATE
+        NUMBERED_TASK_MANAGER_DRAG_FIXTURE="${CMAKE_SOURCE_DIR}/tests/qml/fixtures/DragIntegrationHarness.qml"
+    )
+    target_link_libraries(qml_drag_integration_test PRIVATE
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Qml
+        Qt6::Quick
+        Qt6::Test
+    )
+    add_test(NAME qml_drag_integration_test COMMAND qml_drag_integration_test)
+    string(REPLACE ";" ":" qml_test_import_path "${QML_BUILD_DIR};${NUMBERED_TASK_MANAGER_QML_IMPORT_PATHS}")
+    set_tests_properties(qml_drag_integration_test PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software;QML2_IMPORT_PATH=${qml_test_import_path}"
+        TIMEOUT 60
+    )
+
+    find_program(PLASMAWINDOWED_EXECUTABLE plasmawindowed REQUIRED)
+    find_program(TIMEOUT_EXECUTABLE timeout REQUIRED)
+    find_program(BASH_EXECUTABLE bash REQUIRED)
+    find_program(DBUS_RUN_SESSION_EXECUTABLE dbus-run-session REQUIRED)
+    add_test(NAME plasma_applet_smoke
+        COMMAND "${BASH_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tests/plasma_applet_smoke.sh"
+            "${TIMEOUT_EXECUTABLE}"
+            "${DBUS_RUN_SESSION_EXECUTABLE}"
+            "${NUMBERED_TASK_MANAGER_DBUS_SESSION_CONFIG}"
+            "${PLASMAWINDOWED_EXECUTABLE}"
+            "${CMAKE_SOURCE_DIR}/package"
+    )
+    set_tests_properties(plasma_applet_smoke PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software;QML2_IMPORT_PATH=${qml_test_import_path}"
+        TIMEOUT 10
     )
 endif()
 

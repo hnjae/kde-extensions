@@ -77,6 +77,7 @@ let
       -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
       -DBUILD_TESTING=ON \
       -DKDE_INSTALL_QMLDIR=lib/qt-6/qml \
+      -DNUMBERED_TASK_MANAGER_DBUS_SESSION_CONFIG=${pkgs.dbus}/share/dbus-1/session.conf \
       -DNUMBERED_TASK_MANAGER_QML_IMPORT_PATHS=${lib.escapeShellArg (lib.concatStringsSep ";" qmlImportPaths)} \
       -DCMAKE_INSTALL_PREFIX="$install_prefix"
   '';
@@ -112,7 +113,7 @@ let
   '';
 
   qmlComponentTest = ''
-    ctest --test-dir "$build_dir" --output-on-failure -R '^qml_component_tests$'
+    ctest --test-dir "$build_dir" --output-on-failure -R '^(qml_(component_tests|drag_integration_test)|plasma_applet_smoke)$'
   '';
 
   nativePackageSmoke = ''
@@ -247,6 +248,7 @@ let
     pkgs.biome
     pkgs.clazy
     pkgs.cmake
+    pkgs.dbus
     pkgs.findutils
     pkgs.kdePackages.extra-cmake-modules
     pkgs.kdePackages.kpackage
