@@ -23,14 +23,38 @@ system, bind it to `Meta+0` in Plasma's shortcut settings.
   virtual desktop. It stays outside the numbered task order and becomes the
   `Meta+0` target while visible.
 
-## Development checks
+## Requirements
+
+- KDE Plasma 6.6 or newer.
+- Qt 6 and KDE Frameworks 6 runtime packages from the target distribution.
+
+Numbered Task Manager includes a native QML plugin. A loose `.plasmoid` archive is not a supported installation artifact because Plasma's applet installer does not install the compiled plugin into the target system's Qt 6 QML import path.
+
+## Install
+
+### NixOS
+
+Use the flake package in your system configuration so the applet and native QML module are installed together:
+
+```nix
+environment.systemPackages = [
+  inputs.kde-plasma-extensions.packages.${pkgs.stdenv.hostPlatform.system}.numbered-task-manager
+];
+```
+
+Then rebuild the system and restart Plasma Shell or log out and back in before adding the widget.
+
+Downstream packages should use the complete CMake install tree rather than packaging only the applet directory.
+
+## Development
+
+`just build` produces the coherent Nix system package containing both the applet and native QML module.
 
 ```sh
 just test
 just lint-qml
 just check
 just build
-just build-kpackage
 ```
 
 Manual Plasma verification is still required for shortcut delivery,

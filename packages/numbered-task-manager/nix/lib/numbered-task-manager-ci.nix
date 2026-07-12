@@ -110,6 +110,20 @@ let
       tests/qml-js-module-smoke.qml
   '';
 
+  nativePackageSmoke = ''
+    packaged_adapter="${package}/share/plasma/plasmoids/${package.pluginId}/contents/ui/TaskContextMenuAdapter.qml"
+    test -f "$packaged_adapter"
+    test -f "${package}/lib/qt-6/qml/${package.qmlModuleDir}/qmldir"
+    test -f "${package}/lib/qt-6/qml/${package.qmlModuleDir}/libnumberedtaskmanagerplugin.so"
+
+    QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
+      ${pkgs.coreutils}/bin/timeout 30s \
+      qml \
+      ${qmlImportFlags} \
+      tests/native-package-smoke.qml \
+      -- "$packaged_adapter"
+  '';
+
   qmlLint = ''
     mapfile -t qml_sources < <(${pkgs.findutils}/bin/find package/contents/ui -name '*.qml' -print | sort)
     mapfile -t installed_qml_sources < <(${pkgs.findutils}/bin/find "$install_prefix/share/plasma/plasmoids/${package.pluginId}/contents/ui" -name '*.qml' -print | sort)
@@ -304,6 +318,7 @@ in
     jsLint
     jsTest
     kpackage
+    nativePackageSmoke
     packageLayout
     qmlImportPaths
     qmlLint
@@ -360,6 +375,7 @@ in
       ${clangTidy}
       ${clazy}
       ${packageLayout}
+      ${nativePackageSmoke}
       ${appstream}
       ${kpackage}
     '')

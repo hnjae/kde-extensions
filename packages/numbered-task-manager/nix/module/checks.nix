@@ -48,6 +48,7 @@
             ${ci.clangTidy}
             ${ci.clazy}
             ${ci.packageLayout}
+            ${ci.nativePackageSmoke}
             ${ci.appstream}
             ${ci.kpackage}
 
