@@ -171,10 +171,7 @@ PlasmoidItem {
         onLauncherListChanged: {
             taskPlatformState.noteLauncherListChanged();
             if (!launcherSync.updatingLauncherConfig) {
-                if (launcherSync.reconcileLauncherListChange(launcherList)) {
-                    return;
-                }
-                launcherSync.persistLaunchers(launcherSyncPort.modelLaunchers);
+                launcherSync.observeModelLauncherList(launcherList);
             }
         }
     }

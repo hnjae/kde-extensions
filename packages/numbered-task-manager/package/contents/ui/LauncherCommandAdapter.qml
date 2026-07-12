@@ -45,7 +45,7 @@ QtQuick.QtObject {
         }
 
         const launcherList = launcherPort && launcherPort.launcherList ? launcherPort.launcherList : [];
-        if (!launcherSync || typeof launcherSync.persistLaunchers !== "function") {
+        if (!launcherSync || typeof launcherSync.synchronizeLauncherList !== "function") {
             const missingSyncResult = LauncherCommandLogic.launcherMutationPersistenceResult(result, {
                 code: "missing-launcher-sync",
                 failedTargets: ["sync"],
@@ -56,9 +56,9 @@ QtQuick.QtObject {
             return missingSyncResult;
         }
 
-        let persistResult;
+        let syncResult;
         try {
-            persistResult = launcherSync.persistLaunchers(launcherList);
+            syncResult = launcherSync.synchronizeLauncherList(launcherList, action);
         } catch (error) {
             const failedResult = LauncherCommandLogic.launcherMutationPersistenceResult(result, {
                 code: "launcher-persistence-threw",
@@ -71,7 +71,7 @@ QtQuick.QtObject {
             return failedResult;
         }
 
-        const persistenceResult = LauncherCommandLogic.launcherMutationPersistenceResult(result, persistResult);
+        const persistenceResult = LauncherCommandLogic.launcherMutationPersistenceResult(result, syncResult);
         if (!persistenceResult.ok) {
             actionResult(persistenceResult);
             return persistenceResult;
@@ -96,7 +96,7 @@ QtQuick.QtObject {
         }
 
         if (result.action === "replaceLauncherList") {
-            launcherSync.applyLauncherList(result.launchers);
+            return launcherSync.synchronizeLauncherList(result.launchers, result.action);
         }
         return result;
     }

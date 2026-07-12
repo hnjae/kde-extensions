@@ -88,18 +88,24 @@ assert.match(
 );
 assert.match(
   sourceQml,
-  /if \(!launcherSync \|\| typeof launcherSync\.persistLaunchers !== "function"\)/,
+  /if \(!launcherSync \|\| typeof launcherSync\.synchronizeLauncherList !== "function"\)/,
 );
 assert.match(sourceQml, /missing-launcher-sync/);
 assert.match(sourceQml, /launcher-persistence-threw/);
-assert.match(sourceQml, /launcherSync\.persistLaunchers\(launcherList\)/);
 assert.match(
   sourceQml,
-  /const persistenceResult = LauncherCommandLogic\.launcherMutationPersistenceResult\(result, persistResult\);/,
+  /launcherSync\.synchronizeLauncherList\(launcherList, action\)/,
+);
+assert.match(
+  sourceQml,
+  /const persistenceResult = LauncherCommandLogic\.launcherMutationPersistenceResult\(result, syncResult\);/,
 );
 assert.match(sourceQml, /if \(!persistenceResult\.ok\)/);
 assert.match(sourceQml, /return persistenceResult;/);
 assert.match(sourceQml, /return pinLauncher\(result\.launcherUrl\);/);
 assert.match(sourceQml, /return unpinLauncher\(result\.launcherUrl\);/);
-assert.match(sourceQml, /launcherSync\.applyLauncherList\(result\.launchers\)/);
+assert.match(
+  sourceQml,
+  /launcherSync\.synchronizeLauncherList\(result\.launchers, result\.action\)/,
+);
 assert.match(sourceQml, /actionResult\(result\)/);

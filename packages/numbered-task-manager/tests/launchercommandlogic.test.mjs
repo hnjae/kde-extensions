@@ -58,3 +58,29 @@ assert.equal(
   }).code,
   "unknown-launcher-command",
 );
+assert.deepEqual(
+  plain(
+    logic.launcherMutationPersistenceResult(
+      logic.launcherMutationRequest("pinLauncher", "app.desktop"),
+      {
+        code: "reconciliation-pending",
+        failedTargets: ["config"],
+        ok: false,
+        targetLaunchers: ["app.desktop"],
+      },
+    ),
+  ),
+  {
+    action: "pinLauncher",
+    code: "reconciliation-pending",
+    context: {
+      failedTargets: ["config"],
+      launcherUrl: "app.desktop",
+      launchers: ["app.desktop"],
+      syncCode: "reconciliation-pending",
+    },
+    diagnostic: false,
+    launcherUrl: "app.desktop",
+    ok: false,
+  },
+);

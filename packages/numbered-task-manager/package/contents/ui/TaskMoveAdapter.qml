@@ -45,7 +45,8 @@ QtQuick.QtObject {
             return false;
         }
 
-        return launcherSync.applyLauncherList(result.launchers);
+        const syncResult = launcherSync.synchronizeLauncherList(result.launchers, "movePinnedLauncher");
+        return Boolean(syncResult && (syncResult.ok || syncResult.code === "reconciliation-pending"));
     }
 
     function canMovePinnedLauncher(sourceEntry, targetEntry) {

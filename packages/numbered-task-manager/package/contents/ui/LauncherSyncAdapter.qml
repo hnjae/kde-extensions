@@ -11,8 +11,15 @@ QtQuick.QtObject {
 
     property var launcherSyncPort
     property var launcherSyncState: LauncherSyncLogic.createLauncherSyncState()
-    property var launcherReconciliationState: launcherSyncState.reconciliation
     property bool updatingLauncherConfig: false
+    readonly property QtQuick.Timer retryTimer: QtQuick.Timer {
+        interval: 0
+        repeat: false
+
+        onTriggered: {
+            root.retryPendingLauncherSync();
+        }
+    }
 
     signal actionResult(var result)
 
@@ -32,30 +39,38 @@ QtQuick.QtObject {
         };
     }
 
-    function persistLaunchers(launchers) {
-        const output = LauncherSyncLogic.persistLaunchers(launchers, syncPorts(), launcherSyncState);
-        launcherSyncState = output.state;
-        logLauncherSyncResult("persistLaunchers", output.result);
-        return output.result;
+    function applySyncOutput(action, output) {
+        if (!output) {
+            return null;
+        }
+
+        launcherSyncState = output.state || launcherSyncState;
+        if (output.retryRequested) {
+            retryTimer.restart();
+        } else {
+            retryTimer.stop();
+        }
+        logLauncherSyncResult(action, output.result);
+        return output.result || null;
     }
 
-    function applyLauncherList(launchers) {
-        const output = LauncherSyncLogic.applyLauncherList(launchers, syncPorts(), launcherSyncState);
-        launcherSyncState = output.state;
-        logLauncherSyncResult("applyLauncherList", output.result);
-        return Boolean(output.changed);
+    function synchronizeLauncherList(launchers, cause) {
+        const action = cause || "synchronizeLauncherList";
+        const output = LauncherSyncLogic.synchronizeLauncherList(launchers, syncPorts(), launcherSyncState, action);
+        return applySyncOutput(action, output);
     }
 
-    function recordLauncherSyncResult(action, result) {
-        launcherSyncState = LauncherSyncLogic.launcherSyncStateAfterResult(launcherSyncState, result);
-        logLauncherSyncResult(action, result);
+    function observeModelLauncherList(modelLaunchers) {
+        const action = "observeModelLauncherList";
+        const output = LauncherSyncLogic.observeModelLauncherList(modelLaunchers, syncPorts(), launcherSyncState);
+        applySyncOutput(action, output);
+        return Boolean(output && output.handled);
     }
 
-    function reconcileLauncherListChange(modelLaunchers) {
-        const output = LauncherSyncLogic.reconcileLauncherListChange(modelLaunchers, syncPorts(), launcherSyncState);
-        launcherSyncState = output.state;
-        logLauncherSyncResult("reconcileLauncherList", output.result);
-        return Boolean(output.handled);
+    function retryPendingLauncherSync() {
+        const action = "retryLauncherList";
+        const output = LauncherSyncLogic.retryPendingLauncherSync(syncPorts(), launcherSyncState, action);
+        return applySyncOutput(action, output);
     }
 
     function logLauncherSyncResult(action, result) {

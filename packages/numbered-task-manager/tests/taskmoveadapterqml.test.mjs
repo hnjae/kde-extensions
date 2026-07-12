@@ -113,4 +113,7 @@ assert.match(sourceQml, /taskMovePort\.launcherList/);
 assert.match(sourceQml, /taskMovePort\.launcherPosition\(launcherUrl\)/);
 assert.doesNotMatch(sourceQml, /taskModel\.launcherList/);
 assert.doesNotMatch(sourceQml, /taskModel\.launcherPosition/);
-assert.match(sourceQml, /launcherSync\.applyLauncherList\(result\.launchers\)/);
+assert.match(
+  sourceQml,
+  /launcherSync\.synchronizeLauncherList\(result\.launchers, "movePinnedLauncher"\)/,
+);

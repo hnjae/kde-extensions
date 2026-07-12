@@ -8,20 +8,11 @@ import { loadQmlJsModule } from "./qml-js-module.mjs";
 const logic = await loadQmlJsModule(
   new URL("../package/contents/ui/LauncherSyncLogic.mjs", import.meta.url),
   [
-    "applyLauncherList",
-    "createLauncherReconciliationState",
     "createLauncherSyncState",
-    "launcherConfigConvergence",
-    "launcherConfigUpdate",
-    "launcherModelConvergence",
-    "launcherModelUpdate",
-    "launcherReconciliationAfterResult",
-    "launcherReconciliationDecision",
     "launcherSyncActionResult",
-    "launcherSyncRetryClassification",
-    "runLauncherListUpdateTransaction",
-    "persistLaunchers",
-    "reconcileLauncherListChange",
+    "observeModelLauncherList",
+    "retryPendingLauncherSync",
+    "synchronizeLauncherList",
   ],
 );
 
@@ -34,8 +25,13 @@ function createPorts(values = {}) {
     modelLaunchers: Array.from(values.modelLaunchers || []),
     updating: false,
   };
+  const attempts = {
+    config: 0,
+    model: 0,
+  };
 
   return {
+    attempts,
     calls,
     ports: {
       readConfigLaunchers: () => state.configLaunchers,
@@ -45,8 +41,15 @@ function createPorts(values = {}) {
         state.updating = updating;
       },
       writeConfigLaunchers: (launchers) => {
+        attempts.config += 1;
         calls.push(["writeConfigLaunchers", Array.from(launchers || [])]);
-        if (values.throwConfigWrite) {
+        if (values.applyConfigBeforeThrow) {
+          state.configLaunchers = Array.from(launchers || []);
+        }
+        if (
+          values.throwConfigWrite === true ||
+          attempts.config <= Number(values.throwConfigWrites || 0)
+        ) {
           throw Object.assign(new Error("config denied"), {
             code: "E_CONFIG_DENIED",
           });
@@ -56,8 +59,15 @@ function createPorts(values = {}) {
         }
       },
       writeModelLaunchers: (launchers) => {
+        attempts.model += 1;
         calls.push(["writeModelLaunchers", Array.from(launchers || [])]);
-        if (values.throwModelWrite) {
+        if (values.applyModelBeforeThrow) {
+          state.modelLaunchers = Array.from(launchers || []);
+        }
+        if (
+          values.throwModelWrite === true ||
+          attempts.model <= Number(values.throwModelWrites || 0)
+        ) {
           throw new Error("model denied");
         }
         if (!values.ignoreModelWrite) {
@@ -70,365 +80,213 @@ function createPorts(values = {}) {
 }
 
 assert.deepEqual(plain(logic.createLauncherSyncState()), {
-  reconciliation: {
-    attempts: 0,
-    launchers: [],
-    maxAttempts: 1,
-    pending: false,
-  },
-});
-assert.deepEqual(plain(logic.createLauncherReconciliationState()), {
-  attempts: 0,
-  launchers: [],
-  maxAttempts: 1,
+  maxRetries: 1,
   pending: false,
+  retries: 0,
+  targetLaunchers: [],
 });
-assert.deepEqual(
-  plain(logic.launcherConfigUpdate(["a.desktop"], ["", "a.desktop"])),
-  {
-    changed: false,
-    launchers: ["a.desktop"],
-  },
-);
-assert.deepEqual(
-  plain(
-    logic.launcherConfigConvergence(
-      logic.launcherConfigUpdate(["a.desktop"], ["b.desktop"]),
-      ["a.desktop"],
-    ),
-  ),
-  {
-    changed: true,
-    code: "write-mismatch",
-    configConverged: false,
-    configLaunchers: ["a.desktop"],
-    failedTargets: ["config"],
-    launchers: ["b.desktop"],
-    ok: false,
-    retryClassification: "retry-after-change",
-  },
-);
-assert.deepEqual(
-  plain(
-    logic.launcherModelUpdate(["a.desktop"], ["old.desktop"], ["a.desktop"]),
-  ),
-  {
-    changed: true,
-    configChanged: true,
-    launchers: ["a.desktop"],
-    modelChanged: false,
-  },
-);
-assert.equal(
-  logic.launcherSyncRetryClassification({
-    code: "write-failed",
-    ok: false,
-  }),
-  "fatal",
-);
-assert.deepEqual(
-  plain(
-    logic.launcherSyncActionResult("persistLaunchers", {
-      code: "write-mismatch",
-      configLaunchers: ["old.desktop"],
-      failedTargets: ["config"],
-      launchers: ["next.desktop"],
-      ok: false,
-      retryClassification: "retry-after-change",
-    }),
-  ),
-  {
-    action: "syncLaunchers",
-    code: "write-mismatch",
-    context: {
-      configLaunchers: ["old.desktop"],
-      failedTargets: ["config"],
-      launchers: ["next.desktop"],
-      launcherSyncAction: "persistLaunchers",
-      modelLaunchers: [],
-      retryClassification: "retry-after-change",
-    },
-    diagnostic: true,
-    ok: false,
-  },
-);
-assert.equal(
-  logic.launcherSyncActionResult("persistLaunchers", {
-    code: "converged",
-    ok: true,
-  }),
-  null,
-);
-assert.deepEqual(
-  plain(
-    logic.launcherReconciliationDecision(
-      {
-        attempts: 0,
-        launchers: ["b.desktop"],
-        maxAttempts: 1,
-        pending: true,
-      },
-      ["a.desktop"],
-      ["old.desktop"],
-    ),
-  ),
-  {
-    action: "retry",
-    launchers: ["b.desktop"],
-    state: {
-      attempts: 1,
-      launchers: ["b.desktop"],
-      maxAttempts: 1,
-      pending: true,
-    },
-  },
-);
-const launcherUpdateState = { updatingLauncherConfig: false };
-assert.deepEqual(
-  plain(
-    logic.runLauncherListUpdateTransaction(launcherUpdateState, () => {
-      assert.equal(launcherUpdateState.updatingLauncherConfig, true);
-      return { code: "converged", ok: true };
-    }),
-  ),
-  {
-    code: "converged",
-    ok: true,
-  },
-);
-assert.equal(launcherUpdateState.updatingLauncherConfig, false);
 
 {
   const { calls, ports, state } = createPorts({
     configLaunchers: ["a.desktop"],
     modelLaunchers: ["a.desktop"],
   });
-  const output = logic.persistLaunchers(["a.desktop"], ports);
+  const output = logic.synchronizeLauncherList(
+    ["", "a.desktop"],
+    ports,
+    logic.createLauncherSyncState(),
+    "replaceLauncherList",
+  );
 
-  assert.deepEqual(plain(output), {
-    result: {
-      changed: false,
-      code: "unchanged",
-      configConverged: true,
-      configLaunchers: ["a.desktop"],
-      failedTargets: [],
-      launchers: ["a.desktop"],
-      ok: true,
-    },
-    state: {
-      reconciliation: {
-        attempts: 0,
-        launchers: [],
-        maxAttempts: 1,
-        pending: false,
-      },
-    },
-  });
+  assert.equal(output.result.ok, true);
+  assert.equal(output.result.code, "unchanged");
+  assert.equal(output.retryRequested, false);
   assert.deepEqual(calls, []);
   assert.equal(state.updating, false);
 }
 
 {
   const { calls, ports, state } = createPorts({
-    configLaunchers: ["a.desktop"],
+    configLaunchers: ["old.desktop"],
+    modelLaunchers: ["old.desktop"],
+    throwConfigWrites: 1,
   });
-  const output = logic.persistLaunchers(["b.desktop"], ports);
+  const initial = logic.synchronizeLauncherList(
+    ["next.desktop"],
+    ports,
+    logic.createLauncherSyncState(),
+    "replaceLauncherList",
+  );
 
-  assert.equal(output.result.ok, true);
-  assert.equal(output.result.code, "converged");
-  assert.deepEqual(output.result.configLaunchers, ["b.desktop"]);
+  assert.equal(initial.result.ok, false);
+  assert.equal(initial.result.code, "reconciliation-pending");
+  assert.deepEqual(initial.result.failedTargets, ["config"]);
+  assert.deepEqual(initial.result.modelLaunchers, ["next.desktop"]);
+  assert.deepEqual(initial.result.configLaunchers, ["old.desktop"]);
+  assert.equal(initial.result.writeFailures[0].target, "config");
+  assert.equal(initial.result.writeFailures[0].errorCode, "E_CONFIG_DENIED");
+  assert.equal(initial.retryRequested, true);
+  assert.deepEqual(plain(initial.state), {
+    maxRetries: 1,
+    pending: true,
+    retries: 0,
+    targetLaunchers: ["next.desktop"],
+  });
+  assert.equal(state.updating, false);
+
+  const retried = logic.retryPendingLauncherSync(
+    ports,
+    initial.state,
+    "replaceLauncherList",
+  );
+  assert.equal(retried.result.ok, true);
+  assert.equal(retried.result.code, "converged");
+  assert.equal(retried.retryRequested, false);
+  assert.deepEqual(plain(retried.state), {
+    maxRetries: 1,
+    pending: false,
+    retries: 0,
+    targetLaunchers: [],
+  });
   assert.deepEqual(calls, [
     ["setUpdatingLauncherConfig", true],
-    ["writeConfigLaunchers", ["b.desktop"]],
+    ["writeConfigLaunchers", ["next.desktop"]],
+    ["writeModelLaunchers", ["next.desktop"]],
+    ["setUpdatingLauncherConfig", false],
+    ["setUpdatingLauncherConfig", true],
+    ["writeConfigLaunchers", ["next.desktop"]],
     ["setUpdatingLauncherConfig", false],
   ]);
-  assert.equal(state.updating, false);
 }
 
 {
-  const { calls, ports, state } = createPorts({
-    configLaunchers: ["a.desktop"],
+  const { ports, state } = createPorts({
+    configLaunchers: ["old.desktop"],
+    modelLaunchers: ["old.desktop"],
     throwConfigWrite: true,
   });
-  const output = logic.persistLaunchers(["b.desktop"], ports);
+  const initial = logic.synchronizeLauncherList(
+    ["next.desktop"],
+    ports,
+    logic.createLauncherSyncState(),
+    "replaceLauncherList",
+  );
+  const expired = logic.retryPendingLauncherSync(
+    ports,
+    initial.state,
+    "replaceLauncherList",
+  );
 
-  assert.deepEqual(plain(output.result), {
-    changed: false,
-    code: "write-failed",
-    error: "config denied",
-    errorCode: "E_CONFIG_DENIED",
-    errorMessage: "config denied",
-    errorName: "Error",
-    ok: false,
-    retryClassification: "fatal",
-  });
-  assert.deepEqual(calls, [
-    ["setUpdatingLauncherConfig", true],
-    ["writeConfigLaunchers", ["b.desktop"]],
-    ["setUpdatingLauncherConfig", false],
-  ]);
+  assert.equal(expired.result.ok, false);
+  assert.equal(expired.result.code, "reconciliation-expired");
+  assert.deepEqual(expired.result.failedTargets, ["config"]);
+  assert.equal(expired.retryRequested, false);
+  assert.equal(expired.state.pending, false);
   assert.equal(state.updating, false);
+  assert.equal(
+    logic.launcherSyncActionResult("replaceLauncherList", initial.result),
+    null,
+  );
+  assert.equal(
+    logic.launcherSyncActionResult("replaceLauncherList", expired.result).code,
+    "reconciliation-expired",
+  );
 }
 
 {
   const { ports } = createPorts({
-    configLaunchers: ["a.desktop"],
-    ignoreConfigWrite: true,
-  });
-  const output = logic.persistLaunchers(["b.desktop"], ports);
-
-  assert.equal(output.result.ok, false);
-  assert.equal(output.result.code, "write-mismatch");
-  assert.equal(output.result.retryClassification, "retry-after-change");
-  assert.deepEqual(output.result.failedTargets, ["config"]);
-  assert.deepEqual(output.state.reconciliation.launchers, ["b.desktop"]);
-  assert.equal(output.state.reconciliation.pending, true);
-}
-
-{
-  const { calls, ports } = createPorts({
-    configLaunchers: ["old.desktop"],
-    modelLaunchers: ["a.desktop"],
-  });
-  const output = logic.applyLauncherList(["a.desktop"], ports);
-
-  assert.equal(output.changed, true);
-  assert.equal(output.result.ok, true);
-  assert.deepEqual(calls, [
-    ["setUpdatingLauncherConfig", true],
-    ["writeConfigLaunchers", ["a.desktop"]],
-    ["setUpdatingLauncherConfig", false],
-  ]);
-}
-
-{
-  const { calls, ports } = createPorts({
-    configLaunchers: ["a.desktop"],
-    modelLaunchers: ["old.desktop"],
-  });
-  const output = logic.applyLauncherList(["a.desktop"], ports);
-
-  assert.equal(output.changed, true);
-  assert.equal(output.result.ok, true);
-  assert.deepEqual(calls, [
-    ["setUpdatingLauncherConfig", true],
-    ["writeModelLaunchers", ["a.desktop"]],
-    ["setUpdatingLauncherConfig", false],
-  ]);
-}
-
-{
-  const { calls, ports } = createPorts({
-    configLaunchers: ["old-config.desktop"],
-    modelLaunchers: ["old-model.desktop"],
-  });
-  const output = logic.applyLauncherList(["next.desktop"], ports);
-
-  assert.equal(output.changed, true);
-  assert.equal(output.result.ok, true);
-  assert.deepEqual(calls, [
-    ["setUpdatingLauncherConfig", true],
-    ["writeModelLaunchers", ["next.desktop"]],
-    ["writeConfigLaunchers", ["next.desktop"]],
-    ["setUpdatingLauncherConfig", false],
-  ]);
-}
-
-{
-  const { calls, ports } = createPorts({
     configLaunchers: ["old.desktop"],
     modelLaunchers: ["old.desktop"],
+    throwModelWrites: 1,
   });
-  const pending = logic.createLauncherSyncState({
-    reconciliation: {
-      attempts: 0,
-      launchers: ["next.desktop"],
-      maxAttempts: 1,
-      pending: true,
-    },
-  });
-  const output = logic.reconcileLauncherListChange(
-    ["old.desktop"],
-    ports,
-    pending,
-  );
-
-  assert.equal(output.handled, true);
-  assert.equal(output.action, "retry");
-  assert.equal(output.result.ok, true);
-  assert.deepEqual(output.state.reconciliation, {
-    attempts: 1,
-    launchers: [],
-    maxAttempts: 1,
-    pending: false,
-  });
-  assert.deepEqual(calls, [
-    ["setUpdatingLauncherConfig", true],
-    ["writeModelLaunchers", ["next.desktop"]],
-    ["writeConfigLaunchers", ["next.desktop"]],
-    ["setUpdatingLauncherConfig", false],
-  ]);
-}
-
-{
-  const { calls, ports } = createPorts({
-    configLaunchers: ["next.desktop"],
-    modelLaunchers: ["next.desktop"],
-  });
-  const pending = logic.createLauncherSyncState({
-    reconciliation: {
-      attempts: 0,
-      launchers: ["next.desktop"],
-      maxAttempts: 1,
-      pending: true,
-    },
-  });
-  const output = logic.reconcileLauncherListChange(
+  const initial = logic.synchronizeLauncherList(
     ["next.desktop"],
     ports,
-    pending,
+    logic.createLauncherSyncState(),
+    "replaceLauncherList",
   );
 
-  assert.equal(output.handled, true);
-  assert.equal(output.action, "clear");
-  assert.deepEqual(output.state.reconciliation, {
-    attempts: 0,
-    launchers: [],
-    maxAttempts: 1,
-    pending: false,
+  assert.deepEqual(initial.result.failedTargets, ["model"]);
+  assert.deepEqual(initial.result.configLaunchers, ["next.desktop"]);
+  assert.deepEqual(initial.result.modelLaunchers, ["old.desktop"]);
+  assert.equal(
+    logic.retryPendingLauncherSync(ports, initial.state).result.ok,
+    true,
+  );
+}
+
+{
+  const { ports } = createPorts({
+    applyConfigBeforeThrow: true,
+    applyModelBeforeThrow: true,
+    configLaunchers: ["old.desktop"],
+    modelLaunchers: ["old.desktop"],
+    throwConfigWrite: true,
+    throwModelWrite: true,
   });
-  assert.deepEqual(calls, []);
+  const output = logic.synchronizeLauncherList(
+    ["next.desktop"],
+    ports,
+    logic.createLauncherSyncState(),
+  );
+
+  assert.equal(output.result.ok, true);
+  assert.equal(output.result.code, "converged");
+  assert.equal(output.result.writeFailures.length, 2);
+  assert.equal(output.retryRequested, false);
+}
+
+{
+  const { ports } = createPorts({
+    configLaunchers: ["old.desktop"],
+    modelLaunchers: ["old.desktop"],
+    throwConfigWrite: true,
+  });
+  const first = logic.synchronizeLauncherList(
+    ["first.desktop"],
+    ports,
+    logic.createLauncherSyncState(),
+  );
+  const latest = logic.synchronizeLauncherList(
+    ["latest.desktop"],
+    ports,
+    first.state,
+  );
+
+  assert.equal(latest.state.pending, true);
+  assert.equal(latest.state.retries, 0);
+  assert.deepEqual(latest.state.targetLaunchers, ["latest.desktop"]);
 }
 
 {
   const { calls, ports } = createPorts({
     configLaunchers: ["old.desktop"],
-    modelLaunchers: ["old.desktop"],
+    modelLaunchers: ["external.desktop"],
   });
-  const pending = logic.createLauncherSyncState({
-    reconciliation: {
-      attempts: 1,
-      launchers: ["next.desktop"],
-      maxAttempts: 1,
-      pending: true,
-    },
-  });
-  const output = logic.reconcileLauncherListChange(
-    ["old.desktop"],
+  const idle = logic.observeModelLauncherList(
+    ["external.desktop"],
     ports,
-    pending,
+    logic.createLauncherSyncState(),
   );
+  assert.equal(idle.handled, true);
+  assert.equal(idle.result.ok, true);
+  assert.deepEqual(calls, [
+    ["setUpdatingLauncherConfig", true],
+    ["writeConfigLaunchers", ["external.desktop"]],
+    ["setUpdatingLauncherConfig", false],
+  ]);
 
-  assert.equal(output.handled, true);
-  assert.equal(output.action, "expired");
-  assert.equal(output.result.ok, false);
-  assert.equal(output.result.code, "reconciliation-expired");
-  assert.equal(output.result.retryClassification, "fatal");
-  assert.deepEqual(output.state.reconciliation, {
-    attempts: 1,
-    launchers: [],
-    maxAttempts: 1,
-    pending: false,
+  const pendingState = logic.createLauncherSyncState({
+    pending: true,
+    retries: 0,
+    targetLaunchers: ["latest.desktop"],
   });
-  assert.deepEqual(calls, []);
+  const pending = logic.observeModelLauncherList(
+    ["external.desktop"],
+    ports,
+    pendingState,
+  );
+  assert.equal(pending.handled, true);
+  assert.equal(pending.result, undefined);
+  assert.deepEqual(pending.state.targetLaunchers, ["latest.desktop"]);
 }

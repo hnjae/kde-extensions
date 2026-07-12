@@ -135,7 +135,9 @@ export function launcherMutationPersistenceResult(
   if (failedTargets.length > 0) {
     context.failedTargets = failedTargets;
   }
-  const launchers = normalizedStringList(persistence.launchers);
+  const launchers = normalizedStringList(
+    persistence.targetLaunchers || persistence.launchers,
+  );
   if (launchers.length > 0) {
     context.launchers = launchers;
   }
@@ -166,12 +168,13 @@ export function launcherMutationPersistenceResult(
     );
   }
 
+  const pending = persistence.code === "reconciliation-pending";
   return Object.assign(
     actionResult(
       request.action || "launcherMutation",
       persistence.code || "launcher-persistence-failed",
       false,
-      true,
+      !pending,
       context,
     ),
     {
