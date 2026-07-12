@@ -5,12 +5,14 @@
 - The package currently declares Plasma 6.6 as the minimum supported API version; keep that minimum unless an implementation detail requires raising it.
 - Visual task metrics should match KDE Plasma 6.6's default icons-and-text task manager through local helper logic with explicit inputs, not through imports of Plasma private task-manager QML modules.
 - Nix build, check, and development shells must include the QML import path for Plasma Workspace so `org.kde.taskmanager` resolves during linting and local development.
+- Treat the Nix package and downstream packages built from the complete CMake install tree as the supported distribution units. Each package must contain the applet, native QML module, metadata, and licenses in their platform paths; a loose applet archive is not a supported installation artifact.
 - If the implementation imports or adapts upstream Plasma task manager QML files, preserve their SPDX copyright and license headers.
 - If upstream GPL-2.0-or-later QML code is included, document the source file and commit or Plasma branch in the adapted file header.
 
 ## Verification
 
 - Run the package lint/check commands after implementation changes.
+- Load an applet component that instantiates the owned native backend from the actual system-package output, using that output's Qt QML import path, so verification fails when the applet and native module are packaged separately.
 - Manually verify in Plasma that `Meta+1` through `Meta+9` target the numbered visible slots.
 - Verify pinned launcher activation opens in place and does not append the first matching window to the far right.
 - Verify opening an extra same-application window keeps the existing pinned-slot window in place, appends the new window after the pinned prefix, and does not group the windows.
